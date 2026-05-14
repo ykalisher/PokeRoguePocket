@@ -21,8 +21,8 @@ function init() {
  * Handles the "New Game" button click.
  */
 function handleNewGame() {
-    alert('Starting a new game of Squish!');
-    // TODO: Implement game initialization and transition to game board
+    // Redirect to the game board page
+    window.location.href = 'game.html';
 }
 
 /**

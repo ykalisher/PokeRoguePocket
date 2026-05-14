@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squish - Game Board</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-board" id="game-board">
+        <!-- The draggable card -->
+        <div id="game-card" class="card"></div>
+
+        <!-- Target slots -->
+        <div class="slot" id="slot-1" style="top: 10%; left: 10%;" data-name="The North-West Corner">Slot 1</div>
+        <div class="slot" id="slot-2" style="top: 10%; right: 10%;" data-name="The North-East Corner">Slot 2</div>
+        <div class="slot" id="slot-3" style="bottom: 10%; left: 10%;" data-name="The South-West Corner">Slot 3</div>
+        <div class="slot" id="slot-4" style="bottom: 10%; right: 10%;" data-name="The South-East Corner">Slot 4</div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
