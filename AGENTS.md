@@ -10,6 +10,6 @@ The project should remain simple, portable, and easy to understand. Prefer clear
 
 - Use plain JavaScript, HTML, and CSS.
 
-- Do not use third-party libraries, frameworks, build tools, package managers, CDNs, or external runtime dependencies unless explicitly approved. The only approved library is flask, which is used to serve the website.
+- Do not use third-party libraries, frameworks, build tools, package managers, CDNs, or external runtime dependencies unless explicitly approved.
 
 - The game should run directly in a modern browser from local files or a simple static server.
