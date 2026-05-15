@@ -1,0 +1,13 @@
+[
+  {
+    "name": "Blastoise",
+    "type1": "WATER",
+    "type2": "MONSTER",
+    "type3": "NONE",
+    "id": "0009",
+    "baseHealth": 79,
+    "baseAttack": 85,
+    "baseDefense": 105,
+    "baseSpeed": 78
+  }
+]
