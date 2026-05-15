@@ -15,7 +15,7 @@ const PokeType = Object.freeze({
     FLYING: 'FLYING',
     FOSSIL: 'FOSSIL',
     GHOST: 'GHOST',
-    GROURMET: 'GROURMET',
+    GOURMET: 'GOURMET',
     GRASS: 'GRASS',
     GROUND: 'GROUND',
     HUMAN: 'HUMAN',
