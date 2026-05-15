@@ -64,6 +64,17 @@ const Target = Object.freeze({
 });
 
 class Pokemon {
+    /**
+     * @param {string} name
+     * @param {PokeType} type1
+     * @param {PokeType} type2
+     * @param {PokeType} type3
+     * @param {string} id
+     * @param {number} baseHealth
+     * @param {number} baseAttack
+     * @param {number} baseDefense
+     * @param {number} baseSpeed
+     */
     constructor(name, type1, type2, type3, id, baseHealth, baseAttack, baseDefense, baseSpeed) {
         this.name = name;
         this.type1 = type1;
@@ -78,6 +89,15 @@ class Pokemon {
 }
 
 class Attack {
+    /**
+     * @param {string} name
+     * @param {PokeType} type1
+     * @param {PokeType} type2
+     * @param {number} basePower
+     * @param {Status} status
+     * @param {StatChange[]} statChanges
+     * @param {Target} target
+     */
     constructor(name, type1, type2, basePower, status, statChanges, target) {
         this.name = name;
         this.type1 = type1;
@@ -90,6 +110,12 @@ class Attack {
 }
 
 class Item {
+    /**
+     * @param {string} name
+     * @param {Target} target
+     * @param {Status[]} status
+     * @param {StatChange[]} statChanges
+     */
     constructor(name, target, status, statChanges) {
         this.name = name;
         this.target = target;
@@ -99,6 +125,11 @@ class Item {
 }
 
 class PokemonCard {
+    /**
+     * @param {Pokemon} species
+     * @param {Status[]} currentStatus
+     * @param {StatChange[]} statChanges
+     */
     constructor(species, currentStatus, statChanges) {
         this.species = species;
         this.currentHealth = species.baseHealth;
