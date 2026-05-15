@@ -129,6 +129,7 @@ async function handleAddAttack(rl) {
     attack.statChanges = await askEnumArray(rl, 'Stat Changes', StatChange);
     
     attack.target = await askEnum(rl, 'Select Target', Target);
+    attack.full_type_requirements = await askBoolean(rl, 'Does this attack have full type requirements? (y/n): ');
 
     return attack;
 }
@@ -164,6 +165,15 @@ async function askInt(rl, prompt) {
         const val = parseInt(input, 10);
         if (!isNaN(val) && val > 0) return val;
         console.log('Please enter a valid integer greater than 0.');
+    }
+}
+
+async function askBoolean(rl, prompt) {
+    while (true) {
+        const input = (await rl.question(prompt)).trim().toLowerCase();
+        if (input === 'y') return true;
+        if (input === 'n') return false;
+        console.log('Please enter "y" for yes or "n" for no.');
     }
 }
 

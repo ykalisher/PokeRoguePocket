@@ -97,8 +97,9 @@ class Attack {
      * @param {Status} status
      * @param {StatChange[]} statChanges
      * @param {Target} target
+     * @param {boolean} full_type_requirements
      */
-    constructor(name, type1, type2, basePower, status, statChanges, target) {
+    constructor(name, type1, type2, basePower, status, statChanges, target, full_type_requirements) {
         this.name = name;
         this.type1 = type1;
         this.type2 = type2;
@@ -106,6 +107,7 @@ class Attack {
         this.status = status;
         this.statChanges = statChanges;
         this.target = target;
+        this.full_type_requirements = full_type_requirements;
     }
 }
 
