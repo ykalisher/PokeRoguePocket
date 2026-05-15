@@ -53,6 +53,17 @@ h1 {
     opacity: 0.6;
 }
 
+/* Back button specific styling */
+.btn-back {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+    text-decoration: none;
+    text-align: center;
+    width: auto; /* Override fixed width for the back button */
+}
+
 /* --- Game Board Styles --- */
 
 .game-board {
