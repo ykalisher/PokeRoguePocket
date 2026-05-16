@@ -9,7 +9,7 @@ const StateManager = {
      */
     async load_pokemon() {
         try {
-            const response = await fetch('data/Pokemon.json');
+            const response = await fetch('pokemon.json');
             if (!response.ok) throw new Error(`Failed to load Pokemon.json: ${response.statusText}`);
             return await response.json();
         } catch (error) {
@@ -24,7 +24,7 @@ const StateManager = {
      */
     async load_items() {
         try {
-            const response = await fetch('data/Items.json');
+            const response = await fetch('items.json');
             if (!response.ok) throw new Error(`Failed to load Items.json: ${response.statusText}`);
             return await response.json();
         } catch (error) {
@@ -39,7 +39,7 @@ const StateManager = {
      */
     async load_attacks() {
         try {
-            const response = await fetch('data/Attacks.json');
+            const response = await fetch('attacks.json');
             if (!response.ok) throw new Error(`Failed to load Attacks.json: ${response.statusText}`);
             return await response.json();
         } catch (error) {
