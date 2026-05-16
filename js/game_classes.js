@@ -158,4 +158,13 @@ class Bag {
         /** @type {number} */
         this.pokedollars = 0;
     }
+
+    /**
+     * Saves the current bag state to localStorage.
+     */
+    save() {
+        const key = `bag_${this.id}`;
+        const data = JSON.stringify(this);
+        localStorage.setItem(key, data);
+    }
 }
