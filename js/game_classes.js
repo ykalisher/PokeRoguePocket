@@ -146,6 +146,7 @@ class Bag {
      * Represents a player's inventory and deck.
      */
     constructor() {
+        this.id = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
         /** @type {PokemonCard[]} */
         this.pokemon = [];
         /** @type {Item[]} */
