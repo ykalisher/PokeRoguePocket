@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Potion",
+    "target": "ALLY",
+    "status": [
+      "HEAL"
+    ],
+    "statChanges": []
+  }
+]

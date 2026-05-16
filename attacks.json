@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Surf",
+    "type1": "AQUATIC",
+    "type2": "WATER",
+    "basePower": 90,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  }
+]
