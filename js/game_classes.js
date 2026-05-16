@@ -140,3 +140,21 @@ class PokemonCard {
         this.statChanges = statChanges;
     }
 }
+
+class Bag {
+    /**
+     * Represents a player's inventory and deck.
+     */
+    constructor() {
+        /** @type {PokemonCard[]} */
+        this.pokemon = [];
+        /** @type {Item[]} */
+        this.items = [];
+        /** @type {Attack[]} */
+        this.attacks = [];
+        /** @type {(PokemonCard|Item|Attack)[]} */
+        this.deck = [];
+        /** @type {number} */
+        this.pokedollars = 0;
+    }
+}
