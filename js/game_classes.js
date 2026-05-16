@@ -147,12 +147,12 @@ class Bag {
      */
     constructor() {
         this.id = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
-        /** @type {PokemonCard[]} */
-        this.pokemon = [];
-        /** @type {Item[]} */
-        this.items = [];
-        /** @type {Attack[]} */
-        this.attacks = [];
+        /** @type {Object.<string, number>} */
+        this.pokemon = {};
+        /** @type {Object.<string, number>} */
+        this.items = {};
+        /** @type {Object.<string, number>} */
+        this.attacks = {};
         /** @type {(PokemonCard|Item|Attack)[]} */
         this.deck = [];
         /** @type {number} */
