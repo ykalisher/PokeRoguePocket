@@ -4,47 +4,87 @@
  */
 const StateManager = {
     /**
+     * Converts JSON records into a dictionary keyed by object name.
+     * @param {Object[]} records
+     * @param {Function} createObject
+     * @returns {Object}
+     */
+    create_name_dictionary(records, createObject) {
+        return records.reduce((dictionary, record) => {
+            dictionary[record.name] = createObject(record);
+            return dictionary;
+        }, {});
+    },
+
+    /**
      * Loads the Pokemon species data from the data folder.
-     * @returns {Promise<Pokemon[]>}
+     * @returns {Promise<Object.<string, Pokemon>>}
      */
     async load_pokemon() {
         try {
             const response = await fetch('pokemon.json');
             if (!response.ok) throw new Error(`Failed to load Pokemon.json: ${response.statusText}`);
-            return await response.json();
+            const pokemon = await response.json();
+            return this.create_name_dictionary(pokemon, (record) => new Pokemon(
+                record.name,
+                record.type1,
+                record.type2,
+                record.type3,
+                record.id,
+                record.baseHealth,
+                record.baseAttack,
+                record.baseDefense,
+                record.baseSpeed
+            ));
         } catch (error) {
             console.error("Error loading pokemon data:", error);
-            return [];
+            return {};
         }
     },
 
     /**
      * Loads the item data from the data folder.
-     * @returns {Promise<Item[]>}
+     * @returns {Promise<Object.<string, Item>>}
      */
     async load_items() {
         try {
             const response = await fetch('items.json');
             if (!response.ok) throw new Error(`Failed to load Items.json: ${response.statusText}`);
-            return await response.json();
+            const items = await response.json();
+            return this.create_name_dictionary(items, (record) => new Item(
+                record.name,
+                record.target,
+                record.status,
+                record.statChanges
+            ));
         } catch (error) {
             console.error("Error loading items data:", error);
-            return [];
+            return {};
         }
     },
 
     /**
      * Loads the attack data from the data folder.
-     * @returns {Promise<Attack[]>}
+     * @returns {Promise<Object.<string, Attack>>}
      */
     async load_attacks() {
         try {
             const response = await fetch('attacks.json');
             if (!response.ok) throw new Error(`Failed to load Attacks.json: ${response.statusText}`);
-            return await response.json();
+            const attacks = await response.json();
+            return this.create_name_dictionary(attacks, (record) => new Attack(
+                record.name,
+                record.type1,
+                record.type2,
+                record.basePower,
+                record.status,
+                record.statChanges,
+                record.target,
+                record.full_type_requirements
+            ));
         } catch (error) {
             console.error("Error loading attacks data:", error);
-            return [];
+            return {};
         }
     },
 
