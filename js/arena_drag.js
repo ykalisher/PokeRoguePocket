@@ -83,6 +83,7 @@
         ghost.style.height = `${rect.height}px`;
         document.body.appendChild(ghost);
 
+        showDragActionHighlights(drag.cardId);
         updateDragGhost(event.clientX, event.clientY);
     }
 
@@ -123,10 +124,22 @@
         const boardCardElement = element.closest('[data-board-card-id]');
 
         if (boardCardElement) {
-            const targetCardId = boardCardElement.dataset.boardCardId;
+            const boardOwner = boardCardElement.dataset.boardOwner;
+            const boardCardId = boardCardElement.dataset.boardCardId;
+            const dropAction = arena.Controller.getDropActionForBoardCard(drag.cardId, boardOwner, boardCardId);
 
-            if (arena.Controller.canDropCardOnOpponentCard(drag.cardId, targetCardId)) {
-                return { element: boardCardElement, kind: 'target', targetCardId };
+            if (dropAction) {
+                return { element: boardCardElement, ...dropAction };
+            }
+        }
+
+        const groupElement = element.closest('[data-target-group-owner]');
+
+        if (groupElement) {
+            const dropAction = arena.Controller.getDropActionForTargetGroup(drag.cardId, groupElement.dataset.targetGroupOwner);
+
+            if (dropAction) {
+                return { element: groupElement, ...dropAction };
             }
         }
 
@@ -140,17 +153,7 @@
 
         if (!candidate) return;
 
-        if (candidate.kind === 'slot') {
-            state.selectedCardId = draggedCardId;
-
-            if (state.phase === 'opening-place') {
-                arena.Controller.placeSelectedOpeningCard();
-            } else {
-                arena.Controller.placeSelectedCard();
-            }
-        } else if (candidate.kind === 'target') {
-            arena.Controller.attackWithDraggedCard(draggedCardId, candidate.targetCardId);
-        }
+        arena.Controller.handleCardDrop(draggedCardId, candidate);
     }
 
     function cancelDrag(event) {
@@ -161,6 +164,7 @@
 
     function cleanupDrag() {
         clearDropHighlights();
+        clearDragActionHighlights();
 
         if (state.drag && state.drag.ghost) {
             state.drag.ghost.remove();
@@ -176,6 +180,50 @@
     function clearDropHighlights() {
         document.querySelectorAll('.is-drop-target').forEach(element => {
             element.classList.remove('is-drop-target');
+        });
+    }
+
+    function showDragActionHighlights(cardId) {
+        document.querySelectorAll('[data-board-card-id]').forEach(element => {
+            const dropAction = arena.Controller.getDropActionForBoardCard(
+                cardId,
+                element.dataset.boardOwner,
+                element.dataset.boardCardId
+            );
+
+            if (!dropAction) return;
+
+            element.classList.add('is-drag-action-preview');
+
+            if (dropAction.kind === 'attack-user') {
+                element.classList.add('is-user-option');
+            } else if (dropAction.kind === 'target-card' || dropAction.kind === 'target-group') {
+                element.classList.add('is-action-target');
+            }
+        });
+
+        ['player', 'opponent'].forEach(owner => {
+            const dropAction = arena.Controller.getDropActionForTargetGroup(cardId, owner);
+
+            if (!dropAction) return;
+
+            const groupElement = document.querySelector(`.side-panel--${owner} .played-slots`);
+
+            if (!groupElement) return;
+
+            groupElement.classList.add('is-group-target', 'is-drag-group-preview');
+            groupElement.dataset.targetGroupOwner = owner;
+        });
+    }
+
+    function clearDragActionHighlights() {
+        document.querySelectorAll('.is-drag-action-preview').forEach(element => {
+            element.classList.remove('is-drag-action-preview', 'is-user-option', 'is-action-target');
+        });
+
+        document.querySelectorAll('.is-drag-group-preview').forEach(element => {
+            element.classList.remove('is-group-target', 'is-drag-group-preview');
+            element.removeAttribute('data-target-group-owner');
         });
     }
 

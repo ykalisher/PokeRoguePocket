@@ -6,7 +6,7 @@
     'use strict';
 
     const state = arena.state;
-    const { SECOND_SLOT_INDEX } = arena.Constants;
+    const { BOARD_SLOT_COUNT, DAMAGE_PERCENT } = arena.Constants;
     const model = arena.Model;
     const render = () => arena.Render.render();
 
@@ -20,7 +20,10 @@
         state.isResolving = true;
         state.log = [];
         state.phase = 'opening-place';
-        state.pendingAttackCardId = null;
+        state.itemUsed = { opponent: false, player: false };
+        state.pendingActionCardId = null;
+        state.pendingUserCardId = null;
+        state.plannedActions = { opponent: [], player: [] };
         state.players = {
             opponent: model.createPlayer('opponent', 'Rival'),
             player: model.createPlayer('player', 'You')
@@ -49,14 +52,17 @@
         render();
     }
 
-    function startTurn(playerId) {
+    function startPlayerTurn() {
         if (checkGameOver()) return;
 
-        const player = state.players[playerId];
-        state.currentPlayer = playerId;
+        const player = state.players.player;
+        state.currentPlayer = 'player';
         state.isResolving = false;
         state.phase = 'turn';
-        state.pendingAttackCardId = null;
+        state.itemUsed = { opponent: false, player: false };
+        state.pendingActionCardId = null;
+        state.pendingUserCardId = null;
+        state.plannedActions = { opponent: [], player: [] };
         state.selectedCardId = null;
         state.turnNumber += 1;
 
@@ -70,22 +76,7 @@
 
         render();
 
-        if (checkGameOver()) return;
-
-        if (playerId === 'opponent') {
-            state.isResolving = true;
-            render();
-            clearTimeout(state.flowTimer);
-            state.flowTimer = setTimeout(runOpponentTurn, 650);
-            return;
-        }
-
-        if (!hasAvailablePlayerAction()) {
-            state.isResolving = true;
-            logEvent('You have no card available.');
-            render();
-            endTurnAfterDelay(520);
-        }
+        checkGameOver();
     }
 
     function handleArenaClick(event) {
@@ -94,10 +85,24 @@
             return;
         }
 
+        const targetGroup = event.target.closest('[data-target-group-owner]');
+
+        if (targetGroup && isTargetingPhase()) {
+            chooseTargetGroup(targetGroup.dataset.targetGroupOwner);
+            return;
+        }
+
+        const boardCard = event.target.closest('[data-board-card-id]');
+
+        if (boardCard) {
+            handleBoardCardClick(boardCard.dataset.boardOwner, boardCard.dataset.boardCardId);
+            return;
+        }
+
         const targetButton = event.target.closest('[data-target-card-id]');
 
         if (targetButton) {
-            attackTargetCard(targetButton.dataset.targetCardId);
+            chooseTargetCard(targetButton.dataset.targetOwner, targetButton.dataset.targetCardId);
             return;
         }
 
@@ -114,10 +119,10 @@
 
         const action = actionButton.dataset.action;
 
-        if (action === 'attack') {
-            attackWithSelectedCard();
-        } else if (action === 'cancel-attack') {
-            cancelAttackTargeting();
+        if (action === 'cancel-action') {
+            cancelActionSelection();
+        } else if (action === 'end-turn') {
+            endPlayerTurn();
         } else if (action === 'place') {
             if (state.phase === 'opening-place') {
                 placeSelectedOpeningCard();
@@ -133,12 +138,35 @@
         if (!canPlayerSelectCard()) return;
 
         const player = state.players.player;
-        const cardExists = player.hand.some(card => card.id === cardId);
+        const card = model.findHandCard(player, cardId);
 
-        if (!cardExists) return;
+        if (!card) return;
 
-        state.selectedCardId = state.selectedCardId === cardId ? null : cardId;
-        render();
+        if (state.phase === 'opening-place') {
+            if (!model.isPokemonCard(card)) {
+                showPopup('Choose a Pokemon card for the opening slot.');
+                return;
+            }
+
+            state.selectedCardId = state.selectedCardId === cardId ? null : cardId;
+            render();
+            return;
+        }
+
+        if (model.isPokemonCard(card)) {
+            state.selectedCardId = state.selectedCardId === cardId ? null : cardId;
+            render();
+            return;
+        }
+
+        if (model.isAttackCard(card)) {
+            beginAttackUserSelection(cardId);
+            return;
+        }
+
+        if (model.isItemCard(card)) {
+            beginItemTargeting(cardId);
+        }
     }
 
     function placeSelectedOpeningCard() {
@@ -147,6 +175,10 @@
         const player = state.players.player;
 
         if (player.board[0]) return;
+
+        const selectedCard = model.findHandCard(player, state.selectedCardId);
+
+        if (!model.isPokemonCard(selectedCard)) return;
 
         const card = model.removeCardFromHand(player, state.selectedCardId);
 
@@ -164,99 +196,207 @@
         state.flowTimer = setTimeout(() => {
             model.flipOpeningCards();
             logEvent('Opening cards flipped.');
-            startTurn('player');
+            startPlayerTurn();
         }, 700);
     }
 
-    function attackWithSelectedCard() {
-        if (!canPlayerAttack() || !state.selectedCardId) return;
+    function beginAttackUserSelection(cardId) {
+        if (!canPlayerAct()) return;
 
-        const attackingCard = state.players.player.hand.find(card => card.id === state.selectedCardId);
+        const attackCard = model.findHandCard(state.players.player, cardId);
 
-        if (!attackingCard) return;
+        if (!model.isAttackCard(attackCard)) return;
 
-        state.pendingAttackCardId = state.selectedCardId;
-        state.selectedCardId = null;
-        state.phase = 'targeting-attack';
+        const users = getEligibleAttackUsers('player', attackCard);
 
-        logEvent(`Choose a target for ${model.getCardName(attackingCard)}.`);
-        render();
-    }
-
-    function attackTargetCard(targetCardId) {
-        if (state.phase !== 'targeting-attack' || !state.pendingAttackCardId) return;
-
-        resolveAttack(state.pendingAttackCardId, targetCardId);
-    }
-
-    function attackWithDraggedCard(attackingCardId, targetCardId) {
-        if (!canPlayerAttack()) return;
-
-        resolveAttack(attackingCardId, targetCardId);
-    }
-
-    function resolveAttack(attackingCardId, targetCardId) {
-        const targetCard = state.players.opponent.board.find(card => card && card.id === targetCardId);
-
-        if (!targetCard) return;
-
-        const player = state.players.player;
-        const attackingCard = model.removeCardFromHand(player, attackingCardId);
-
-        if (!attackingCard) {
-            cancelAttackTargeting();
+        if (users.length === 0) {
+            showPopup(`No active Pokemon can use ${model.getCardName(attackCard)}.`);
             return;
         }
 
-        attackingCard.faceUp = true;
-        player.discard.unshift(attackingCard);
-        state.pendingAttackCardId = null;
+        state.pendingActionCardId = cardId;
+        state.pendingUserCardId = null;
+        state.selectedCardId = cardId;
+        state.phase = 'selecting-attack-user';
+
+        logEvent(`Choose a Pokemon to use ${model.getCardName(attackCard)}.`);
+        render();
+    }
+
+    function chooseAttackUser(userCardId) {
+        if (state.phase !== 'selecting-attack-user' || !state.pendingActionCardId) return;
+
+        const attackCard = model.findHandCard(state.players.player, state.pendingActionCardId);
+        const userCard = model.getBoardCardById('player', userCardId);
+        const users = attackCard ? getEligibleAttackUsers('player', attackCard) : [];
+
+        if (!userCard || !users.some(card => card.id === userCardId)) return;
+
+        const targets = model.getTargetOptionsForAction(attackCard, 'player', userCardId);
+
+        if (targets.length === 0) {
+            showPopup(`${model.getCardName(attackCard)} has no valid target.`);
+            cancelActionSelection();
+            return;
+        }
+
+        state.pendingUserCardId = userCardId;
+        state.phase = 'selecting-attack-target';
+
+        logEvent(`Choose a target for ${model.getCardName(attackCard)}.`);
+        render();
+    }
+
+    function beginItemTargeting(cardId) {
+        if (!canPlayerAct()) return;
+
+        const itemCard = model.findHandCard(state.players.player, cardId);
+
+        if (!model.isItemCard(itemCard)) return;
+
+        if (state.itemUsed.player) {
+            showPopup('You already used an item this turn.');
+            return;
+        }
+
+        const targets = model.getTargetOptionsForAction(itemCard, 'player', null);
+
+        if (targets.length === 0) {
+            showPopup(`${model.getCardName(itemCard)} has no valid target.`);
+            return;
+        }
+
+        state.pendingActionCardId = cardId;
+        state.pendingUserCardId = null;
+        state.selectedCardId = cardId;
+        state.phase = 'selecting-item-target';
+
+        logEvent(`Choose a target for ${model.getCardName(itemCard)}.`);
+        render();
+    }
+
+    function handleBoardCardClick(owner, cardId) {
+        if (state.phase === 'selecting-attack-user') {
+            if (owner === 'player') chooseAttackUser(cardId);
+            return;
+        }
+
+        if (isTargetingPhase()) {
+            chooseTargetCard(owner, cardId);
+        }
+    }
+
+    function chooseTargetCard(owner, cardId) {
+        if (!isTargetingPhase()) return;
+
+        const options = getPendingTargetOptions();
+
+        if (!model.targetOptionsIncludeCard(options, owner, cardId)) return;
+
+        commitPendingTarget({ kind: 'single', owner, cardId });
+    }
+
+    function chooseTargetGroup(owner) {
+        if (!isTargetingPhase()) return;
+
+        const options = getPendingTargetOptions();
+
+        if (!model.targetOptionsIncludeGroup(options, owner)) return;
+
+        commitPendingTarget({ kind: 'group', owner });
+    }
+
+    function commitPendingTarget(selection) {
+        if (state.phase === 'selecting-attack-target') {
+            queuePlayerAttack(selection);
+            return;
+        }
+
+        if (state.phase === 'selecting-item-target') {
+            usePendingItem(selection);
+        }
+    }
+
+    function queuePlayerAttack(selection) {
+        const player = state.players.player;
+        const attackCard = model.removeCardFromHand(player, state.pendingActionCardId);
+        const userCard = model.getBoardCardById('player', state.pendingUserCardId);
+
+        if (!attackCard || !userCard) {
+            cancelActionSelection();
+            return;
+        }
+
+        attackCard.faceUp = true;
+        state.plannedActions.player.push({
+            card: attackCard,
+            owner: 'player',
+            selection: { ...selection },
+            speed: model.getPokemonSpeed(userCard),
+            userCardId: userCard.id
+        });
+
+        logEvent(`${model.getCardName(userCard)} readied ${model.getCardName(attackCard)}.`);
+        clearPendingAction();
+        state.phase = 'turn';
+        render();
+    }
+
+    function usePendingItem(selection) {
+        const player = state.players.player;
+        const itemCard = model.removeCardFromHand(player, state.pendingActionCardId);
+
+        if (!itemCard) {
+            cancelActionSelection();
+            return;
+        }
+
+        itemCard.faceUp = true;
+        state.itemUsed.player = true;
+        applyItemCard(itemCard, selection, 'player');
+        player.discard.unshift(itemCard);
+        clearPendingAction();
+        state.phase = 'turn';
+        render();
+    }
+
+    function cancelActionSelection() {
+        if (!['selecting-attack-user', 'selecting-attack-target', 'selecting-item-target'].includes(state.phase)) return;
+
+        clearPendingAction();
+        state.phase = 'turn';
+        render();
+    }
+
+    function clearPendingAction() {
+        state.pendingActionCardId = null;
+        state.pendingUserCardId = null;
         state.selectedCardId = null;
-        state.isResolving = true;
-        state.phase = 'turn';
-
-        logEvent(`${player.name} attacked ${model.getCardName(targetCard)} with ${model.getCardName(attackingCard)}.`);
-        showPopup(`${model.getCardName(attackingCard)} attacks ${model.getCardName(targetCard)}. No damage is resolved yet.`);
-        render();
-        endTurnAfterDelay(900);
     }
 
-    function cancelAttackTargeting() {
-        if (state.phase !== 'targeting-attack') return;
-
-        state.selectedCardId = state.pendingAttackCardId;
-        state.pendingAttackCardId = null;
-        state.phase = 'turn';
-        render();
-    }
-
-    function placeSelectedCard() {
+    function placeSelectedCard(slotIndex = getFirstOpenSlot(state.players.player)) {
         if (!canPlayerAct() || !state.selectedCardId) return;
 
         const player = state.players.player;
+        const selectedCard = model.findHandCard(player, state.selectedCardId);
 
-        if (player.board[SECOND_SLOT_INDEX]) return;
+        if (!model.isPokemonCard(selectedCard)) return;
+        if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT || player.board[slotIndex]) return;
 
         const card = model.removeCardFromHand(player, state.selectedCardId);
 
         if (!card) return;
 
         card.faceUp = true;
-        player.board[SECOND_SLOT_INDEX] = card;
+        player.board[slotIndex] = card;
         state.selectedCardId = null;
-        state.isResolving = true;
 
         logEvent(`${player.name} placed ${model.getCardName(card)}.`);
         render();
-        endTurnAfterDelay(520);
     }
 
     function canPlayerAct() {
         return state.currentPlayer === 'player' && state.phase === 'turn' && !state.finished && !state.isResolving;
-    }
-
-    function canPlayerAttack() {
-        return canPlayerAct() && model.hasOpponentBoardTarget();
     }
 
     function canPlayerSelectCard() {
@@ -264,75 +404,210 @@
         return state.currentPlayer === 'player' && selectablePhase && !state.finished && !state.isResolving;
     }
 
-    function hasAvailablePlayerAction() {
+    function canPlaceSelectedCard() {
+        if (!state.selectedCardId) return false;
+
         const player = state.players.player;
+        const selectedCard = model.findHandCard(player, state.selectedCardId);
 
-        if (!canPlayerAct() || player.hand.length === 0) return false;
+        return canPlayerAct() && model.isPokemonCard(selectedCard) && getFirstOpenSlot(player) !== -1;
+    }
 
-        return !player.board[SECOND_SLOT_INDEX] || model.hasOpponentBoardTarget();
+    function canPlayerEndTurn() {
+        return canPlayerAct() && getBlockingAttackers('player').length === 0;
+    }
+
+    function getBlockingAttackers(playerId) {
+        const player = state.players[playerId];
+
+        return model.getBoardCards(playerId).filter(card => (
+            !model.hasQueuedAttack(playerId, card.id) &&
+            model.hasUsableAttackInHand(player, card)
+        ));
     }
 
     function canDropCardOnSlot(cardId, slotOwner, slotIndex) {
         if (slotOwner !== 'player' || !model.playerHasCardInHand(cardId)) return false;
 
         const player = state.players.player;
+        const card = model.findHandCard(player, cardId);
+
+        if (!model.isPokemonCard(card)) return false;
 
         if (state.phase === 'opening-place') {
             return canPlayerSelectCard() && slotIndex === 0 && !player.board[0];
         }
 
-        return canPlayerAct() && slotIndex === SECOND_SLOT_INDEX && !player.board[SECOND_SLOT_INDEX];
+        return canPlayerAct() && slotIndex >= 0 && slotIndex < BOARD_SLOT_COUNT && !player.board[slotIndex];
     }
 
-    function canDropCardOnOpponentCard(cardId, targetCardId) {
-        const targetExists = state.players.opponent.board.some(card => card && card.id === targetCardId);
+    function getDropActionForBoardCard(cardId, boardOwner, boardCardId) {
+        if (!canPlayerAct() || !model.playerHasCardInHand(cardId)) return null;
 
-        return canPlayerAttack() && model.playerHasCardInHand(cardId) && targetExists;
+        const card = model.findHandCard(state.players.player, cardId);
+
+        if (model.isAttackCard(card)) {
+            const userCard = model.getBoardCardById(boardOwner, boardCardId);
+
+            if (
+                boardOwner === 'player' &&
+                userCard &&
+                getEligibleAttackUsers('player', card).some(pokemonCard => pokemonCard.id === boardCardId)
+            ) {
+                return { kind: 'attack-user', owner: boardOwner, userCardId: boardCardId };
+            }
+        }
+
+        if (model.isItemCard(card) && !state.itemUsed.player) {
+            const options = model.getTargetOptionsForAction(card, 'player', null);
+
+            if (model.targetOptionsIncludeCard(options, boardOwner, boardCardId)) {
+                return { kind: 'target-card', owner: boardOwner, cardId: boardCardId };
+            }
+
+            if (model.targetOptionsIncludeGroup(options, boardOwner)) {
+                return { kind: 'target-group', owner: boardOwner };
+            }
+        }
+
+        return null;
+    }
+
+    function getDropActionForTargetGroup(cardId, groupOwner) {
+        if (!canPlayerAct() || !model.playerHasCardInHand(cardId)) return null;
+
+        const card = model.findHandCard(state.players.player, cardId);
+
+        if (!model.isItemCard(card) || state.itemUsed.player) return null;
+
+        const options = model.getTargetOptionsForAction(card, 'player', null);
+
+        if (!model.targetOptionsIncludeGroup(options, groupOwner)) return null;
+
+        return { kind: 'target-group', owner: groupOwner };
+    }
+
+    function handleCardDrop(cardId, candidate) {
+        if (!candidate) return;
+
+        if (candidate.kind === 'slot') {
+            state.selectedCardId = cardId;
+
+            if (state.phase === 'opening-place') {
+                placeSelectedOpeningCard();
+            } else {
+                placeSelectedCard(candidate.slotIndex);
+            }
+            return;
+        }
+
+        if (candidate.kind === 'attack-user') {
+            beginAttackUserSelection(cardId);
+            chooseAttackUser(candidate.userCardId);
+            return;
+        }
+
+        if (candidate.kind === 'target-card') {
+            beginItemTargeting(cardId);
+            chooseTargetCard(candidate.owner, candidate.cardId);
+            return;
+        }
+
+        if (candidate.kind === 'target-group') {
+            beginItemTargeting(cardId);
+            chooseTargetGroup(candidate.owner);
+        }
     }
 
     async function runOpponentTurn() {
         if (state.finished || state.currentPlayer !== 'opponent') return;
 
         const opponent = state.players.opponent;
-        const secondSlotOpen = !opponent.board[SECOND_SLOT_INDEX];
+        const drawnCard = model.drawCard(opponent);
 
-        if (secondSlotOpen && opponent.hand.length > 0) {
-            await animateOpponentMoveToSlot(SECOND_SLOT_INDEX);
-
-            if (state.finished || state.currentPlayer !== 'opponent') return;
-
-            const card = opponent.hand.shift();
-            card.faceUp = true;
-            opponent.board[SECOND_SLOT_INDEX] = card;
-            logEvent(`${opponent.name} placed ${model.getCardName(card)}.`);
-            render();
-            endTurnAfterDelay(650);
-            return;
+        if (drawnCard) {
+            logEvent(`${opponent.name} drew a card.`);
+        } else {
+            logEvent(`${opponent.name} could not draw.`);
         }
 
-        if (opponent.hand.length > 0) {
-            const targetCard = chooseOpponentAttackTarget();
-            await animateOpponentAttack(targetCard);
-
-            if (state.finished || state.currentPlayer !== 'opponent') return;
-
-            const card = opponent.hand.shift();
-            card.faceUp = true;
-            opponent.discard.unshift(card);
-            logEvent(`${opponent.name} attacked ${targetCard ? model.getCardName(targetCard) : 'your side'} with ${model.getCardName(card)}.`);
-            showPopup(`${opponent.name} attacks ${targetCard ? model.getCardName(targetCard) : 'your side'} with ${model.getCardName(card)}.`);
-            render();
-            endTurnAfterDelay(900);
-            return;
-        }
-
-        logEvent(`${opponent.name} has no card available.`);
         render();
-        endTurnAfterDelay(520);
+        await model.sleep(280);
+        await placeOpponentPokemon();
+
+        chooseOpponentAttacks();
+        render();
+
+        clearTimeout(state.flowTimer);
+        state.flowTimer = setTimeout(resolveQueuedAttacks, 720);
     }
 
-    function chooseOpponentAttackTarget() {
-        return state.players.player.board.find(card => card) || null;
+    async function placeOpponentPokemon() {
+        const opponent = state.players.opponent;
+
+        for (let slotIndex = 0; slotIndex < BOARD_SLOT_COUNT; slotIndex += 1) {
+            if (opponent.board[slotIndex]) continue;
+
+            const pokemonCard = opponent.hand.find(model.isPokemonCard);
+
+            if (!pokemonCard) continue;
+
+            await animateOpponentMoveToSlot(slotIndex);
+
+            if (state.finished || state.currentPlayer !== 'opponent') return;
+
+            model.removeCardFromHand(opponent, pokemonCard.id);
+            pokemonCard.faceUp = true;
+            opponent.board[slotIndex] = pokemonCard;
+            logEvent(`${opponent.name} placed ${model.getCardName(pokemonCard)}.`);
+            render();
+            await model.sleep(180);
+        }
+    }
+
+    function chooseOpponentAttacks() {
+        const opponent = state.players.opponent;
+        const attackers = model.getBoardCards('opponent');
+        let chosenCount = 0;
+
+        attackers.forEach(userCard => {
+            const attackCard = opponent.hand.find(card => (
+                model.isAttackCard(card) &&
+                model.pokemonCanUseAttack(userCard, card) &&
+                model.getTargetOptionsForAction(card, 'opponent', userCard.id).length > 0
+            ));
+
+            if (!attackCard) return;
+
+            const selection = chooseOpponentTarget(attackCard, userCard);
+
+            if (!selection) return;
+
+            model.removeCardFromHand(opponent, attackCard.id);
+            attackCard.faceUp = true;
+            state.plannedActions.opponent.push({
+                card: attackCard,
+                owner: 'opponent',
+                selection,
+                speed: model.getPokemonSpeed(userCard),
+                userCardId: userCard.id
+            });
+            chosenCount += 1;
+            logEvent(`${opponent.name} readied ${model.getCardName(attackCard)}.`);
+        });
+
+        if (chosenCount === 0) {
+            logEvent(`${opponent.name} readied no attacks.`);
+        }
+    }
+
+    function chooseOpponentTarget(attackCard, userCard) {
+        const options = model.getTargetOptionsForAction(attackCard, 'opponent', userCard.id);
+        const preferredGroup = options.find(option => option.kind === 'group' && option.owner === 'player');
+        const preferredSingle = options.find(option => option.kind === 'single' && option.owner === 'player');
+        const fallback = options[0];
+
+        return preferredGroup || preferredSingle || fallback || null;
     }
 
     async function animateOpponentMoveToSlot(slotIndex) {
@@ -340,15 +615,6 @@
         const targetElement = document.querySelector(`.side-panel--opponent [data-slot-index="${slotIndex}"]`);
 
         await animateOpponentCardMotion(sourceElement, targetElement, 'opponent-place');
-    }
-
-    async function animateOpponentAttack(targetCard) {
-        const sourceElement = document.querySelector('.hand-row--opponent .playing-card');
-        const targetElement = targetCard
-            ? document.querySelector(`.side-panel--player [data-board-card-id="${targetCard.id}"]`)
-            : document.querySelector('.side-panel--player .played-slots');
-
-        await animateOpponentCardMotion(sourceElement, targetElement, 'opponent-attack');
     }
 
     async function animateOpponentCardMotion(sourceElement, targetElement, animationClass) {
@@ -378,34 +644,192 @@
         ghost.remove();
     }
 
-    function endTurnAfterDelay(delay) {
+    function endPlayerTurn() {
+        if (!canPlayerEndTurn()) return;
+
         if (checkGameOver()) return;
 
-        const nextPlayer = state.currentPlayer === 'player' ? 'opponent' : 'player';
+        const skippedAttackers = model.getBoardCards('player').filter(card => (
+            !model.hasQueuedAttack('player', card.id) &&
+            !model.hasUsableAttackInHand(state.players.player, card)
+        ));
+
+        skippedAttackers.forEach(card => {
+            logEvent(`${model.getCardName(card)} has no usable attack.`);
+        });
+
+        state.currentPlayer = 'opponent';
+        state.isResolving = true;
+        state.phase = 'opponent-planning';
+        clearPendingAction();
+        render();
 
         clearTimeout(state.flowTimer);
-        state.flowTimer = setTimeout(() => {
-            startTurn(nextPlayer);
-        }, delay);
+        state.flowTimer = setTimeout(runOpponentTurn, 650);
+    }
+
+    async function resolveQueuedAttacks() {
+        if (checkGameOver()) return;
+
+        state.currentPlayer = null;
+        state.isResolving = true;
+        state.phase = 'resolving';
+        render();
+
+        const actions = [
+            ...state.plannedActions.player,
+            ...state.plannedActions.opponent
+        ]
+            .map(action => ({ ...action, tieBreaker: Math.random() }))
+            .sort((left, right) => right.speed - left.speed || left.tieBreaker - right.tieBreaker);
+
+        if (actions.length === 0) {
+            logEvent('No attacks were chosen.');
+            render();
+            await model.sleep(650);
+            startPlayerTurn();
+            return;
+        }
+
+        for (const action of actions) {
+            if (checkGameOver()) return;
+
+            resolveQueuedAttack(action);
+            render();
+            await model.sleep(760);
+        }
+
+        state.plannedActions = { opponent: [], player: [] };
+
+        if (checkGameOver()) return;
+
+        clearTimeout(state.flowTimer);
+        state.flowTimer = setTimeout(startPlayerTurn, 620);
+    }
+
+    function resolveQueuedAttack(action) {
+        const attacker = model.getBoardCardById(action.owner, action.userCardId);
+
+        if (!attacker) {
+            discardActionCard(action);
+            logEvent(`${model.getCardName(action.card)} could not be used.`);
+            return;
+        }
+
+        const targets = model.getCardsForTargetSelection(action.selection);
+
+        if (targets.length === 0) {
+            discardActionCard(action);
+            logEvent(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}, but there was no target.`);
+            return;
+        }
+
+        const statuses = model.getActionStatuses(action.card);
+
+        showPopup(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}.`);
+
+        if (statuses.includes('SWITCH')) {
+            targets.forEach(target => switchPokemon(target.owner, target.card));
+        } else if (statuses.includes('HEAL')) {
+            targets.forEach(target => healPokemon(target.card));
+        } else {
+            targets.forEach(target => damagePokemon(target.owner, target.card));
+        }
+
+        discardActionCard(action);
+    }
+
+    function applyItemCard(itemCard, selection, actorId) {
+        const targets = model.getCardsForTargetSelection(selection);
+        const statuses = model.getActionStatuses(itemCard);
+
+        if (statuses.includes('SWITCH')) {
+            targets.forEach(target => switchPokemon(target.owner, target.card));
+            logEvent(`${state.players[actorId].name} used ${model.getCardName(itemCard)}.`);
+            showPopup(`${model.getCardName(itemCard)} switched a Pokemon out.`);
+            return;
+        }
+
+        if (statuses.includes('HEAL')) {
+            targets.forEach(target => healPokemon(target.card));
+            logEvent(`${state.players[actorId].name} used ${model.getCardName(itemCard)}.`);
+            showPopup(`${model.getCardName(itemCard)} restored health.`);
+            return;
+        }
+
+        logEvent(`${state.players[actorId].name} used ${model.getCardName(itemCard)}.`);
+        showPopup(`${model.getCardName(itemCard)} had no immediate effect.`);
+    }
+
+    function damagePokemon(ownerId, pokemonCard) {
+        const damage = Math.ceil(pokemonCard.pokemon.baseHealth * DAMAGE_PERCENT);
+
+        pokemonCard.currentHealth = Math.max(0, pokemonCard.currentHealth - damage);
+        logEvent(`${model.getCardName(pokemonCard)} took ${damage} damage.`);
+
+        if (pokemonCard.currentHealth === 0) {
+            knockOutPokemon(ownerId, pokemonCard);
+        }
+    }
+
+    function healPokemon(pokemonCard) {
+        const healing = Math.ceil(pokemonCard.pokemon.baseHealth * DAMAGE_PERCENT);
+
+        pokemonCard.currentHealth = Math.min(pokemonCard.pokemon.baseHealth, pokemonCard.currentHealth + healing);
+        logEvent(`${model.getCardName(pokemonCard)} healed ${healing} HP.`);
+    }
+
+    function switchPokemon(ownerId, pokemonCard) {
+        const owner = state.players[ownerId];
+        const removedCard = model.removeCardFromBoard(owner, pokemonCard.id);
+
+        if (!removedCard) return;
+
+        model.shuffleCardIntoDeck(owner, removedCard);
+        logEvent(`${model.getCardName(removedCard)} was shuffled into ${owner.name}'s deck.`);
+    }
+
+    function knockOutPokemon(ownerId, pokemonCard) {
+        const owner = state.players[ownerId];
+        const removedCard = model.removeCardFromBoard(owner, pokemonCard.id);
+
+        if (!removedCard) return;
+
+        removedCard.faceUp = true;
+        owner.knockout.unshift(removedCard);
+        owner.pokemonLeft = Math.max(0, owner.pokemonLeft - 1);
+        logEvent(`${model.getCardName(removedCard)} was knocked out.`);
+    }
+
+    function discardActionCard(action) {
+        const owner = state.players[action.owner];
+
+        action.card.faceUp = true;
+        owner.discard.unshift(action.card);
     }
 
     function checkGameOver() {
         if (state.finished) return true;
 
-        const playerDeckEmpty = state.players.player.deck.length === 0;
-        const opponentDeckEmpty = state.players.opponent.deck.length === 0;
+        const playerDefeated = state.players.player && state.players.player.pokemonLeft <= 0;
+        const opponentDefeated = state.players.opponent && state.players.opponent.pokemonLeft <= 0;
 
-        if (!playerDeckEmpty || !opponentDeckEmpty) return false;
+        if (!playerDefeated && !opponentDefeated) return false;
 
         state.finished = true;
         state.isResolving = false;
         state.currentPlayer = null;
         state.phase = 'finished';
-        state.pendingAttackCardId = null;
-        state.selectedCardId = null;
+        clearPendingAction();
 
-        logEvent('Both decks are empty. Prototype run complete.');
-        showPopup('Both decks are empty. Prototype run complete.');
+        const message = playerDefeated && opponentDefeated
+            ? 'Both sides are out of Pokemon.'
+            : playerDefeated
+                ? 'Rival wins.'
+                : 'You win.';
+
+        logEvent(message);
+        showPopup(message);
         render();
 
         return true;
@@ -428,14 +852,40 @@
         state.log = state.log.slice(0, 3);
     }
 
+    function getEligibleAttackUsers(playerId, attackCard) {
+        return model.getBoardCards(playerId).filter(card => (
+            !model.hasQueuedAttack(playerId, card.id) &&
+            model.pokemonCanUseAttack(card, attackCard) &&
+            model.getTargetOptionsForAction(attackCard, playerId, card.id).length > 0
+        ));
+    }
+
+    function getPendingTargetOptions() {
+        const pendingCard = model.findHandCard(state.players.player, state.pendingActionCardId);
+
+        if (!pendingCard) return [];
+
+        return model.getTargetOptionsForAction(pendingCard, 'player', state.pendingUserCardId);
+    }
+
+    function getFirstOpenSlot(player) {
+        return player.board.findIndex(card => !card);
+    }
+
+    function isTargetingPhase() {
+        return state.phase === 'selecting-attack-target' || state.phase === 'selecting-item-target';
+    }
+
     arena.Controller = {
-        attackWithDraggedCard,
-        canDropCardOnOpponentCard,
         canDropCardOnSlot,
         canPlayerAct,
-        canPlayerAttack,
+        canPlayerEndTurn,
         canPlayerSelectCard,
-        cancelAttackTargeting,
+        canPlaceSelectedCard,
+        cancelActionSelection,
+        getDropActionForBoardCard,
+        getDropActionForTargetGroup,
+        handleCardDrop,
         handleArenaClick,
         placeSelectedCard,
         placeSelectedOpeningCard,

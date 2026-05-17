@@ -34,6 +34,7 @@ const PokeType = Object.freeze({
 });
 
 const Status = Object.freeze({
+    NONE: 'NONE',
     BURN: 'BURN',
     CONFUSION: 'CONFUSION',
     FATIGUE: 'FATIGUE',
@@ -63,6 +64,10 @@ const Target = Object.freeze({
     ALL_OPPONENTS: 'ALL_OPPONENTS'
 });
 
+function compactTypes(types) {
+    return types.filter(type => type && type !== PokeType.NONE);
+}
+
 class Pokemon {
     /**
      * @param {string} name
@@ -86,6 +91,14 @@ class Pokemon {
         this.baseDefense = baseDefense;
         this.baseSpeed = baseSpeed;
     }
+
+    get types() {
+        return compactTypes([this.type1, this.type2, this.type3]);
+    }
+
+    get portraitPath() {
+        return `assets/portraits/${encodeURIComponent(this.name)}.png`;
+    }
 }
 
 class Attack {
@@ -108,6 +121,10 @@ class Attack {
         this.statChanges = statChanges;
         this.target = target;
         this.full_type_requirements = full_type_requirements;
+    }
+
+    get types() {
+        return compactTypes([this.type1, this.type2]);
     }
 }
 
@@ -133,9 +150,12 @@ class PokemonCard {
      * @param {StatChange[]} statChanges
      */
     constructor(species, currentStatus, statChanges) {
+        this.kind = 'pokemon';
         this.species = species;
+        this.pokemon = species;
         this.currentHealth = species.baseHealth;
         this.id = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+        this.faceUp = false;
         this.currentStatus = currentStatus;
         this.statChanges = statChanges;
     }
