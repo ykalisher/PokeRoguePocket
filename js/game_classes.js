@@ -1,6 +1,5 @@
 const PokeType = Object.freeze({
     AMORPHOUS: 'AMORPHOUS',
-    AQUATIC: 'AQUATIC',
     ARTIFICIAL: 'ARTIFICIAL',
     BABY: 'BABY',
     BUG: 'BUG',
@@ -8,10 +7,8 @@ const PokeType = Object.freeze({
     DRAGON: 'DRAGON',
     ELECTRIC: 'ELECTRIC',
     FAIRY: 'FAIRY',
-    FIELD: 'FIELD',
     FIGHTING: 'FIGHTING',
     FIRE: 'FIRE',
-    FLORA: 'FLORA',
     FLYING: 'FLYING',
     FOSSIL: 'FOSSIL',
     GHOST: 'GHOST',
@@ -20,16 +17,14 @@ const PokeType = Object.freeze({
     GROUND: 'GROUND',
     HUMAN: 'HUMAN',
     ICE: 'ICE',
-    LIGHT: 'LIGHT',
+    LEGENDARY: 'LEGENDARY',
     MONSTER: 'MONSTER',
     NORMAL: 'NORMAL',
     POISON: 'POISON',
     PSYCHIC: 'PSYCHIC',
     ROCK: 'ROCK',
-    SOUND: 'SOUND',
     STEEL: 'STEEL',
     WATER: 'WATER',
-    WILD: 'WILD',
     NONE: 'NONE'
 });
 

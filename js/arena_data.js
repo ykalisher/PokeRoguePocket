@@ -32,8 +32,8 @@
         attacks: [
             {
                 name: 'Surf',
-                type1: 'AQUATIC',
-                type2: 'WATER',
+                type1: 'WATER',
+                type2: 'NONE',
                 basePower: 90,
                 status: 'NONE',
                 statChanges: [],

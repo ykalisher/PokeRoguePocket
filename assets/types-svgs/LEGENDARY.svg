@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100%" height="100%" viewBox="0 0 42 42" version="1.1" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;">
+    <g transform="matrix(1,0,0,1,3,3)">
+        <g id="LEGENDARY" transform="matrix(0.949174,0,0,0.949174,1.76912,1.9115)">
+            <circle cx="17.1" cy="16.95" r="17" style="fill:rgb(238,211,104);stroke:rgb(99,73,132);stroke-width:2.11px;"/>
+            <path d="M17.1,5.65L20.36,12.25L27.65,13.31L22.38,18.44L23.62,25.7L17.1,22.27L10.58,25.7L11.82,18.44L6.55,13.31L13.84,12.25L17.1,5.65Z" style="fill:rgb(48,44,50);fill-opacity:0.2;"/>
+            <path d="M17.1,4.6L20.67,11.83L28.65,12.99L22.88,18.62L24.24,26.57L17.1,22.82L9.96,26.57L11.32,18.62L5.55,12.99L13.53,11.83L17.1,4.6Z" style="fill:rgb(48,44,50);"/>
+            <path d="M17.1,10.37L18.86,13.94L22.8,14.51L19.95,17.28L20.62,21.2L17.1,19.35L13.58,21.2L14.25,17.28L11.4,14.51L15.34,13.94L17.1,10.37Z" style="fill:rgb(238,211,104);"/>
+            <circle cx="17.1" cy="16.95" r="2.35" style="fill:rgb(99,73,132);"/>
+        </g>
+    </g>
+</svg>
