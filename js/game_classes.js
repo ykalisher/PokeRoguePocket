@@ -153,6 +153,11 @@ class PokemonCard {
         this.faceUp = false;
         this.currentStatus = currentStatus;
         this.statChanges = statChanges;
+        this.statStages = {
+            attack: 0,
+            defense: 0,
+            speed: 0
+        };
     }
 }
 

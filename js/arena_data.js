@@ -12,7 +12,8 @@
         ITEM_CARDS_PER_DECK: 4,
         OPENING_HAND_SIZE: 3,
         POKEMON_CARDS_PER_DECK: 4,
-        SECOND_SLOT_INDEX: 1
+        SECOND_SLOT_INDEX: 1,
+        STAT_CHANGE_TRIGGER_CHANCE: 1 / 3
     });
 
     const fallbackRecords = Object.freeze({

@@ -560,6 +560,51 @@ button.playing-card:focus-visible {
     animation: damage-float 0.86s ease-out forwards;
 }
 
+.stat-change-float {
+    position: fixed;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 34px;
+    transform: translate(-50%, -50%);
+    color: #fbf6e8;
+    font-size: clamp(0.62rem, 0.86vw, 0.82rem);
+    font-weight: 950;
+    letter-spacing: 0;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.42);
+    pointer-events: none;
+}
+
+.stat-change-float::before {
+    content: "";
+    display: block;
+    width: 8px;
+    height: 20px;
+    border-radius: 999px;
+}
+
+.stat-change-float--up {
+    animation: stat-change-up 0.9s ease-out forwards;
+}
+
+.stat-change-float--up::before {
+    background: linear-gradient(180deg, #42cf78, #237b45);
+    clip-path: polygon(50% 0, 100% 44%, 72% 44%, 72% 100%, 28% 100%, 28% 44%, 0 44%);
+}
+
+.stat-change-float--down {
+    flex-direction: column-reverse;
+    animation: stat-change-down 0.9s ease-out forwards;
+}
+
+.stat-change-float--down::before {
+    background: linear-gradient(180deg, #d84c3d, #8e2f28);
+    clip-path: polygon(28% 0, 72% 0, 72% 56%, 100% 56%, 50% 100%, 0 56%, 28% 56%);
+}
+
 .board-slot.is-drop-target,
 .playing-card.is-drop-target {
     outline: 3px solid var(--gold);
@@ -699,6 +744,28 @@ button.playing-card:focus-visible {
     min-width: 0;
     overflow: visible;
     white-space: nowrap;
+}
+
+.stat-grid .stat-cell--up {
+    color: #237b45;
+}
+
+.stat-grid .stat-cell--down {
+    color: #b04332;
+}
+
+.stat-grid small {
+    margin-left: 2px;
+    font-size: 0.82em;
+    font-weight: 900;
+}
+
+.stage-up {
+    color: #237b45;
+}
+
+.stage-down {
+    color: #b04332;
 }
 
 .card-topline,
@@ -871,6 +938,36 @@ button.playing-card:focus-visible {
     100% {
         opacity: 0;
         transform: translate(-50%, -190%) scale(0.96);
+    }
+}
+
+@keyframes stat-change-up {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -18%) scale(0.84);
+    }
+    18% {
+        opacity: 1;
+        transform: translate(-50%, -72%) scale(1.12);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -148%) scale(0.98);
+    }
+}
+
+@keyframes stat-change-down {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -82%) scale(0.84);
+    }
+    18% {
+        opacity: 1;
+        transform: translate(-50%, -28%) scale(1.12);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, 64%) scale(0.98);
     }
 }
 

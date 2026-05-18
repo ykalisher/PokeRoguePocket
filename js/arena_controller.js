@@ -6,7 +6,7 @@
     'use strict';
 
     const state = arena.state;
-    const { BOARD_SLOT_COUNT, DAMAGE_PERCENT } = arena.Constants;
+    const { BOARD_SLOT_COUNT, DAMAGE_PERCENT, STAT_CHANGE_TRIGGER_CHANCE } = arena.Constants;
     const model = arena.Model;
     const render = () => arena.Render.render();
 
@@ -793,21 +793,34 @@
         }
 
         const statuses = model.getActionStatuses(action.card);
+        const statChanges = model.getActionStatChanges(action.card);
+        const isDamaging = isDamagingAttack(action.card);
+        let handledEffect = false;
 
         showPopup(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}.`);
         const impactCenter = await animateAttackCard(action, targets);
 
         if (statuses.includes('SWITCH')) {
             targets.forEach(target => switchPokemon(target.owner, target.card));
+            handledEffect = true;
         } else if (statuses.includes('HEAL')) {
             targets.forEach(target => healPokemon(target.card));
-        } else if (isDamagingAttack(action.card)) {
-            const damageResults = targets.map(target => damagePokemon(target.owner, target.card));
+            handledEffect = true;
+        } else if (isDamaging) {
+            const damageResults = targets.map(target => damagePokemon(target.owner, target.card, attacker));
 
             showDamageNumbers(damageResults);
+            handledEffect = true;
             await model.sleep(560);
-        } else {
+        } else if (statuses.length > 0) {
             logEvent(`${model.getCardName(action.card)} status effects are not implemented yet.`);
+            handledEffect = true;
+        }
+
+        handledEffect = maybeApplyAttackStatChanges(action.card, targets, isDamaging) || handledEffect;
+
+        if (!handledEffect && statChanges.length === 0) {
+            logEvent(`${model.getCardName(action.card)} had no effect.`);
         }
 
         await discardActionCard(action, impactCenter);
@@ -861,27 +874,37 @@
     function applyItemCard(itemCard, selection, actorId) {
         const targets = model.getCardsForTargetSelection(selection);
         const statuses = model.getActionStatuses(itemCard);
+        const statChanges = model.getActionStatChanges(itemCard);
+        let didSomething = false;
 
         if (statuses.includes('SWITCH')) {
             targets.forEach(target => switchPokemon(target.owner, target.card));
-            logEvent(`${state.players[actorId].name} used ${model.getCardName(itemCard)}.`);
-            showPopup(`${model.getCardName(itemCard)} switched a Pokemon out.`);
-            return;
+            didSomething = true;
         }
 
         if (statuses.includes('HEAL')) {
             targets.forEach(target => healPokemon(target.card));
-            logEvent(`${state.players[actorId].name} used ${model.getCardName(itemCard)}.`);
-            showPopup(`${model.getCardName(itemCard)} restored health.`);
-            return;
+            didSomething = true;
+        }
+
+        if (statChanges.length > 0) {
+            applyStatChangesToTargets(statChanges, targets);
+            didSomething = true;
         }
 
         logEvent(`${state.players[actorId].name} used ${model.getCardName(itemCard)}.`);
-        showPopup(`${model.getCardName(itemCard)} had no immediate effect.`);
+        showPopup(didSomething
+            ? `${model.getCardName(itemCard)} took effect.`
+            : `${model.getCardName(itemCard)} had no immediate effect.`
+        );
     }
 
-    function damagePokemon(ownerId, pokemonCard) {
-        const damage = Math.ceil(pokemonCard.pokemon.baseHealth * DAMAGE_PERCENT);
+    function damagePokemon(ownerId, pokemonCard, attackerCard) {
+        const attackerAttackMultiplier = model.getPokemonStatMultiplier(attackerCard, 'attack');
+        const targetDefenseMultiplier = model.getPokemonStatMultiplier(pokemonCard, 'defense');
+        const baseDamage = pokemonCard.pokemon.baseHealth * DAMAGE_PERCENT;
+        const statRatio = targetDefenseMultiplier > 0 ? attackerAttackMultiplier / targetDefenseMultiplier : attackerAttackMultiplier;
+        const damage = Math.max(1, Math.ceil(baseDamage * statRatio));
         const damagePercent = Math.ceil((damage / pokemonCard.pokemon.baseHealth) * 100);
 
         pokemonCard.currentHealth = Math.max(0, pokemonCard.currentHealth - damage);
@@ -897,6 +920,78 @@
             damagePercent,
             ownerId
         };
+    }
+
+    function maybeApplyAttackStatChanges(actionCard, targets, isDamaging) {
+        const statChanges = model.getActionStatChanges(actionCard);
+
+        if (statChanges.length === 0) return false;
+
+        if (isDamaging && Math.random() >= STAT_CHANGE_TRIGGER_CHANCE) {
+            logEvent(`${model.getCardName(actionCard)} stat changes did not activate.`);
+            return false;
+        }
+
+        return applyStatChangesToTargets(statChanges, targets);
+    }
+
+    function applyStatChangesToTargets(statChanges, targets) {
+        let appliedAny = false;
+
+        targets.forEach(target => {
+            if (model.getBoardCardById(target.owner, target.card.id) !== target.card) return;
+
+            const results = statChanges
+                .map(statChange => model.applyStatChange(target.card, statChange))
+                .filter(Boolean);
+
+            if (results.length === 0) return;
+
+            appliedAny = true;
+            logStatChangeResult(target.card, results);
+            showStatChangeAnimations(target.owner, target.card.id, results);
+        });
+
+        return appliedAny;
+    }
+
+    function logStatChangeResult(pokemonCard, results) {
+        const changedResults = results.filter(result => result.changed);
+
+        if (changedResults.length === 0) {
+            logEvent(`${model.getCardName(pokemonCard)}'s affected stats are already at their limits.`);
+            return;
+        }
+
+        const summary = changedResults
+            .map(result => `${result.shortLabel} ${model.formatStatStage(result.nextStage)}`)
+            .join(', ');
+
+        logEvent(`${model.getCardName(pokemonCard)}'s ${summary}.`);
+    }
+
+    function showStatChangeAnimations(ownerId, cardId, results) {
+        const changedResults = results.filter(result => result.changed);
+        const targetElement = getBoardCardElement(ownerId, cardId);
+
+        if (!targetElement || changedResults.length === 0) return;
+
+        const rect = targetElement.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        changedResults.forEach((result, index) => {
+            const marker = document.createElement('div');
+            const offset = (index - (changedResults.length - 1) / 2) * 34;
+
+            marker.className = `stat-change-float stat-change-float--${result.delta > 0 ? 'up' : 'down'}`;
+            marker.textContent = result.shortLabel;
+            marker.style.left = `${centerX + offset}px`;
+            marker.style.top = `${centerY}px`;
+            document.body.appendChild(marker);
+
+            setTimeout(() => marker.remove(), 920);
+        });
     }
 
     function healPokemon(pokemonCard) {

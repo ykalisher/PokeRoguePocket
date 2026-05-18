@@ -13,6 +13,37 @@
         POKEMON_CARDS_PER_DECK
     } = arena.Constants;
 
+    const STAT_STAGE_MIN = -6;
+    const STAT_STAGE_MAX = 6;
+    const STAT_STAGE_MULTIPLIERS = Object.freeze({
+        '-6': 0.1,
+        '-5': 0.2,
+        '-4': 0.35,
+        '-3': 0.5,
+        '-2': 0.67,
+        '-1': 0.8,
+        0: 1,
+        1: 1.5,
+        2: 2,
+        3: 2.5,
+        4: 3,
+        5: 3.5,
+        6: 4
+    });
+    const STAT_CHANGE_DELTAS = Object.freeze({
+        ATTACK_DOWN: { delta: -1, stat: 'attack' },
+        ATTACK_UP: { delta: 1, stat: 'attack' },
+        DEFENSE_DOWN: { delta: -1, stat: 'defense' },
+        DEFENSE_UP: { delta: 1, stat: 'defense' },
+        SPEED_DOWN: { delta: -1, stat: 'speed' },
+        SPEED_UP: { delta: 1, stat: 'speed' }
+    });
+    const STAT_LABELS = Object.freeze({
+        attack: { baseKey: 'baseAttack', label: 'Attack', shortLabel: 'ATK' },
+        defense: { baseKey: 'baseDefense', label: 'Defense', shortLabel: 'DEF' },
+        speed: { baseKey: 'baseSpeed', label: 'Speed', shortLabel: 'SPD' }
+    });
+
     const state = {
         currentPlayer: null,
         elements: {},
@@ -77,7 +108,8 @@
             kind: 'pokemon',
             owner,
             pokemon,
-            statChanges: []
+            statChanges: [],
+            statStages: createDefaultStatStages()
         };
     }
 
@@ -231,8 +263,101 @@
         return statuses.filter(status => status && status !== 'NONE');
     }
 
+    function getActionStatChanges(card) {
+        const statChanges = isAttackCard(card)
+            ? card.attack.statChanges
+            : isItemCard(card)
+                ? card.item.statChanges
+                : [];
+
+        return (Array.isArray(statChanges) ? statChanges : [])
+            .filter(statChange => Boolean(STAT_CHANGE_DELTAS[statChange]));
+    }
+
+    function createDefaultStatStages() {
+        return {
+            attack: 0,
+            defense: 0,
+            speed: 0
+        };
+    }
+
+    function ensureStatStages(card) {
+        if (!isPokemonCard(card)) return createDefaultStatStages();
+
+        if (!card.statStages || typeof card.statStages !== 'object') {
+            card.statStages = createDefaultStatStages();
+        }
+
+        Object.keys(STAT_LABELS).forEach(stat => {
+            if (!Number.isFinite(card.statStages[stat])) {
+                card.statStages[stat] = 0;
+            }
+
+            card.statStages[stat] = clampStage(card.statStages[stat]);
+        });
+
+        return card.statStages;
+    }
+
+    function getPokemonStatStage(card, stat) {
+        if (!isPokemonCard(card) || !STAT_LABELS[stat]) return 0;
+
+        return ensureStatStages(card)[stat];
+    }
+
+    function getPokemonStatMultiplier(card, stat) {
+        return STAT_STAGE_MULTIPLIERS[getPokemonStatStage(card, stat)] || 1;
+    }
+
+    function getPokemonEffectiveStat(card, stat) {
+        if (!isPokemonCard(card) || !STAT_LABELS[stat]) return 0;
+
+        const baseStat = Number(card.pokemon[STAT_LABELS[stat].baseKey]) || 0;
+
+        return Math.max(1, Math.round(baseStat * getPokemonStatMultiplier(card, stat)));
+    }
+
+    function applyStatChange(card, statChange) {
+        if (!isPokemonCard(card)) return null;
+
+        const change = STAT_CHANGE_DELTAS[statChange];
+
+        if (!change) return null;
+
+        const stages = ensureStatStages(card);
+        const previousStage = stages[change.stat];
+        const nextStage = clampStage(previousStage + change.delta);
+
+        stages[change.stat] = nextStage;
+
+        return {
+            changed: previousStage !== nextStage,
+            delta: change.delta,
+            label: STAT_LABELS[change.stat].label,
+            nextStage,
+            previousStage,
+            shortLabel: STAT_LABELS[change.stat].shortLabel,
+            stat: change.stat
+        };
+    }
+
+    function formatStatStage(stage) {
+        const normalizedStage = clampStage(stage);
+
+        if (normalizedStage > 0) return `+${normalizedStage}`;
+
+        return String(normalizedStage);
+    }
+
+    function clampStage(stage) {
+        const numericStage = Number(stage) || 0;
+
+        return Math.max(STAT_STAGE_MIN, Math.min(STAT_STAGE_MAX, numericStage));
+    }
+
     function getPokemonSpeed(card) {
-        return isPokemonCard(card) ? card.pokemon.baseSpeed : 0;
+        return getPokemonEffectiveStat(card, 'speed');
     }
 
     function isPokemonCard(card) {
@@ -436,7 +561,10 @@
         drawOpeningHands,
         findHandCard,
         flipOpeningCards,
+        applyStatChange,
+        formatStatStage,
         getActionStatuses,
+        getActionStatChanges,
         getActionTarget,
         getBoardCardById,
         getBoardCardOwner,
@@ -445,6 +573,9 @@
         getCardTypes,
         getCardsForTargetSelection,
         getHealthPercent,
+        getPokemonEffectiveStat,
+        getPokemonStatMultiplier,
+        getPokemonStatStage,
         getPokemonSpeed,
         getPortraitHue,
         getPortraitInitials,

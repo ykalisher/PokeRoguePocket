@@ -245,20 +245,37 @@
             </div>
             <div class="stat-grid">
                 <span>HP ${species.baseHealth}</span>
-                <span>ATK ${species.baseAttack}</span>
-                <span>DEF ${species.baseDefense}</span>
-                <span>SPD ${species.baseSpeed}</span>
+                ${renderStatCell(card, 'attack')}
+                ${renderStatCell(card, 'defense')}
+                ${renderStatCell(card, 'speed')}
             </div>
         `;
+    }
+
+    function renderStatCell(card, stat) {
+        const labels = {
+            attack: 'ATK',
+            defense: 'DEF',
+            speed: 'SPD'
+        };
+        const stage = arena.Model.getPokemonStatStage(card, stat);
+        const stageClass = stage > 0
+            ? ' stat-cell--up'
+            : stage < 0
+                ? ' stat-cell--down'
+                : '';
+        const stageLabel = stage === 0
+            ? ''
+            : `<small class="${stage > 0 ? 'stage-up' : 'stage-down'}">${arena.Model.formatStatStage(stage)}</small>`;
+
+        return `<span class="stat-cell${stageClass}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}${stageLabel ? ` ${stageLabel}` : ''}</span>`;
     }
 
     function renderActionCardContent(card, label) {
         const isAttack = arena.Model.isAttackCard(card);
         const types = arena.Model.getCardTypes(card);
         const target = formatTarget(arena.Model.getActionTarget(card));
-        const requirement = isAttack
-            ? card.attack.full_type_requirements ? 'Needs all listed types' : 'Needs one listed type'
-            : formatStatuses(arena.Model.getActionStatuses(card));
+        const note = formatActionNote(card, isAttack);
 
         return `
             <div class="action-card-shell">
@@ -266,9 +283,24 @@
                 <span class="action-card-name">${arena.Model.getCardName(card)}</span>
                 ${types.length > 0 ? `<div class="action-type-row">${renderTypeIcons(types, 'action-type-row')}</div>` : '<div class="action-type-row action-type-row--empty">No type</div>'}
                 <span class="action-card-meta">${target}</span>
-                <span class="action-card-note">${requirement}</span>
+                <span class="action-card-note">${note}</span>
             </div>
         `;
+    }
+
+    function formatActionNote(card, isAttack) {
+        const notes = [];
+        const effects = formatEffects(card);
+
+        if (isAttack) {
+            notes.push(card.attack.full_type_requirements ? 'Needs all types' : 'Needs one type');
+        }
+
+        if (effects !== 'No effect') {
+            notes.push(effects);
+        }
+
+        return notes.length > 0 ? notes.join(' | ') : 'No effect';
     }
 
     function renderTypeIcons(types, className) {
@@ -403,6 +435,31 @@
         if (!statuses.length) return 'No effect';
 
         return statuses.map(status => status.toLowerCase()).join(', ');
+    }
+
+    function formatEffects(card) {
+        const parts = [];
+        const statuses = formatStatuses(arena.Model.getActionStatuses(card));
+        const statChanges = formatStatChanges(arena.Model.getActionStatChanges(card));
+
+        if (statuses !== 'No effect') parts.push(statuses);
+        if (statChanges !== 'No effect') parts.push(statChanges);
+
+        return parts.length > 0 ? parts.join(', ') : 'No effect';
+    }
+
+    function formatStatChanges(statChanges) {
+        const labels = {
+            ATTACK_DOWN: 'ATK -1',
+            ATTACK_UP: 'ATK +1',
+            DEFENSE_DOWN: 'DEF -1',
+            DEFENSE_UP: 'DEF +1',
+            SPEED_DOWN: 'SPD -1',
+            SPEED_UP: 'SPD +1'
+        };
+        const formatted = statChanges.map(statChange => labels[statChange]).filter(Boolean);
+
+        return formatted.length > 0 ? formatted.join(', ') : 'No effect';
     }
 
     arena.Render = {
