@@ -10,6 +10,17 @@
     function handlePointerDown(event) {
         if (event.button !== undefined && event.button !== 0) return;
 
+        const pendingActionCard = event.target.closest('[data-pending-action-card-id]');
+
+        if (pendingActionCard) {
+            const cardId = pendingActionCard.dataset.pendingActionCardId;
+
+            if (!arena.Controller.canDragPendingActionCard(cardId)) return;
+
+            state.drag = createDragState(cardId, pendingActionCard, event);
+            return;
+        }
+
         const cardButton = event.target.closest('[data-card-id]');
 
         if (!cardButton || !arena.Controller.canPlayerSelectCard()) return;
@@ -18,14 +29,18 @@
 
         if (!arena.Model.playerHasCardInHand(cardId)) return;
 
-        state.drag = {
+        state.drag = createDragState(cardId, cardButton, event);
+    }
+
+    function createDragState(cardId, sourceElement, event) {
+        return {
             cardId,
             ghost: null,
             isDragging: false,
             offsetX: 0,
             offsetY: 0,
             pointerId: event.pointerId,
-            sourceElement: cardButton,
+            sourceElement,
             startX: event.clientX,
             startY: event.clientY
         };
@@ -211,8 +226,17 @@
 
             if (!groupElement) return;
 
-            groupElement.classList.add('is-group-target', 'is-drag-group-preview');
-            groupElement.dataset.targetGroupOwner = owner;
+            if (!groupElement.classList.contains('is-group-target')) {
+                groupElement.classList.add('is-group-target');
+                groupElement.dataset.dragAddedGroupTarget = 'true';
+            }
+
+            groupElement.classList.add('is-drag-group-preview');
+
+            if (!groupElement.dataset.targetGroupOwner) {
+                groupElement.dataset.targetGroupOwner = owner;
+                groupElement.dataset.dragAddedGroupOwner = 'true';
+            }
         });
     }
 
@@ -222,8 +246,17 @@
         });
 
         document.querySelectorAll('.is-drag-group-preview').forEach(element => {
-            element.classList.remove('is-group-target', 'is-drag-group-preview');
-            element.removeAttribute('data-target-group-owner');
+            element.classList.remove('is-drag-group-preview');
+
+            if (element.dataset.dragAddedGroupTarget === 'true') {
+                element.classList.remove('is-group-target');
+                element.removeAttribute('data-drag-added-group-target');
+            }
+
+            if (element.dataset.dragAddedGroupOwner === 'true') {
+                element.removeAttribute('data-target-group-owner');
+                element.removeAttribute('data-drag-added-group-owner');
+            }
         });
     }
 

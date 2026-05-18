@@ -73,12 +73,34 @@
         const card = player.board[slotIndex];
         const flags = getBoardCardFlags(player.id, card);
         const queued = card && arena.Model.hasQueuedAttack(player.id, card.id);
+        const pendingAttackHover = card ? renderPendingAttackHover(player.id, card) : '';
 
         return `
             <div class="board-slot" data-slot-owner="${player.id}" data-slot-index="${slotIndex}">
                 ${card ? renderCard(card, { ...flags, context: 'board', owner: player.id, reveal: card.faceUp, slotIndex }) : '<div class="empty-hand">Open</div>'}
+                ${pendingAttackHover}
                 ${queued ? '<span class="slot-badge">Ready</span>' : ''}
             </div>
+        `;
+    }
+
+    function renderPendingAttackHover(playerId, card) {
+        if (
+            state.phase !== 'selecting-attack-target' ||
+            playerId !== 'player' ||
+            state.pendingUserCardId !== card.id
+        ) {
+            return '';
+        }
+
+        const attackCard = arena.Model.findHandCard(state.players.player, state.pendingActionCardId);
+
+        if (!arena.Model.isAttackCard(attackCard)) return '';
+
+        return `
+            <button class="playing-card hand-card card-kind-${attackCard.kind} attack-hover-card" type="button" data-pending-action-card-id="${attackCard.id}" aria-label="Drag ${arena.Model.getCardName(attackCard)} to a target">
+                ${renderCardContent(attackCard, true)}
+            </button>
         `;
     }
 
@@ -118,6 +140,8 @@
     function renderHand(player) {
         const isOpponent = player.id === 'opponent';
         const cards = player.hand.map(card => {
+            if (shouldHideHandCard(card)) return '';
+
             if (isOpponent) {
                 return renderCard(card, { context: 'hand', reveal: false });
             }
@@ -125,7 +149,7 @@
             const selectedClass = state.selectedCardId === card.id || state.pendingActionCardId === card.id ? ' is-selected' : '';
 
             return `
-                <button class="playing-card hand-card card-kind-${card.kind}${selectedClass}" type="button" data-card-id="${card.id}" aria-label="Select ${arena.Model.getCardName(card)}">
+                <button class="playing-card hand-card card-kind-${card.kind}${selectedClass}" type="button" data-card-id="${card.id}" data-hand-card-id="${card.id}" aria-label="Select ${arena.Model.getCardName(card)}">
                     ${renderCardContent(card, true)}
                 </button>
             `;
@@ -141,6 +165,14 @@
         `;
     }
 
+    function shouldHideHandCard(card) {
+        return (
+            state.phase === 'selecting-attack-target' &&
+            card.id === state.pendingActionCardId &&
+            arena.Model.isAttackCard(card)
+        );
+    }
+
     function renderCard(card, options) {
         const reveal = options.reveal;
         const backClass = reveal ? '' : ' card-back';
@@ -152,10 +184,11 @@
         const tagName = options.singleTarget || options.userOption ? 'button' : 'div';
         const targetAttributes = options.singleTarget ? `type="button" data-target-card-id="${card.id}" data-target-owner="${options.owner}"` : options.userOption ? 'type="button"' : '';
         const boardAttributes = options.context === 'board' ? `data-board-card-id="${card.id}" data-board-owner="${options.owner}" data-board-slot="${options.slotIndex}"` : '';
+        const handAttributes = options.context === 'hand' ? `data-hand-card-id="${card.id}"` : '';
         const ariaLabel = options.singleTarget ? `Target ${arena.Model.getCardName(card)}` : `${reveal ? arena.Model.getCardName(card) : 'Face down card'}`;
 
         return `
-            <${tagName} class="playing-card ${options.context}-card${kindClass}${backClass}${targetClass}${actionTargetClass}${userOptionClass}${userActiveClass}" ${targetAttributes} ${boardAttributes} aria-label="${ariaLabel}">
+            <${tagName} class="playing-card ${options.context}-card${kindClass}${backClass}${targetClass}${actionTargetClass}${userOptionClass}${userActiveClass}" ${targetAttributes} ${boardAttributes} ${handAttributes} aria-label="${ariaLabel}">
                 ${renderCardContent(card, reveal)}
             </${tagName}>
         `;
@@ -179,6 +212,14 @@
         }
 
         return renderActionCardContent(card, 'Item');
+    }
+
+    function renderCardForAnimation(card, animationClass = 'attack-animation-card', reveal = true) {
+        return `
+            <div class="playing-card hand-card card-kind-${card.kind} ${animationClass}" aria-hidden="true">
+                ${renderCardContent(card, reveal)}
+            </div>
+        `;
     }
 
     function renderPokemonCardContent(card) {
@@ -280,7 +321,7 @@
             return state.isResolving ? 'Rival is placing an opening card.' : 'Choose your opening card.';
         }
         if (state.phase === 'selecting-attack-user') return 'Choose which Pokemon will use this attack.';
-        if (state.phase === 'selecting-attack-target') return 'Choose the attack target.';
+        if (state.phase === 'selecting-attack-target') return 'Drag the attack to a target or click a target.';
         if (state.phase === 'selecting-item-target') return 'Choose the item target.';
         if (state.phase === 'opponent-planning') return 'Rival is choosing attacks.';
         if (state.phase === 'resolving') return 'Attacks resolve by speed.';
@@ -365,6 +406,7 @@
     }
 
     arena.Render = {
-        render
+        render,
+        renderCardForAnimation
     };
 })(window.CardArena = window.CardArena || {});

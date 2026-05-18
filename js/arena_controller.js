@@ -52,12 +52,12 @@
         render();
     }
 
-    function startPlayerTurn() {
+    async function startPlayerTurn() {
         if (checkGameOver()) return;
 
         const player = state.players.player;
         state.currentPlayer = 'player';
-        state.isResolving = false;
+        state.isResolving = true;
         state.phase = 'turn';
         state.itemUsed = { opponent: false, player: false };
         state.pendingActionCardId = null;
@@ -74,6 +74,13 @@
             logEvent(`${player.name} could not draw.`);
         }
 
+        render();
+
+        if (drawnCard) {
+            await animateDrawCard('player', drawnCard);
+        }
+
+        state.isResolving = false;
         render();
 
         checkGameOver();
@@ -291,9 +298,14 @@
 
         const options = getPendingTargetOptions();
 
-        if (!model.targetOptionsIncludeCard(options, owner, cardId)) return;
+        if (model.targetOptionsIncludeCard(options, owner, cardId)) {
+            commitPendingTarget({ kind: 'single', owner, cardId });
+            return;
+        }
 
-        commitPendingTarget({ kind: 'single', owner, cardId });
+        if (model.targetOptionsIncludeGroup(options, owner)) {
+            commitPendingTarget({ kind: 'group', owner });
+        }
     }
 
     function chooseTargetGroup(owner) {
@@ -342,8 +354,9 @@
         render();
     }
 
-    function usePendingItem(selection) {
+    async function usePendingItem(selection) {
         const player = state.players.player;
+        const sourceCenter = getHandCardCenter('player', state.pendingActionCardId);
         const itemCard = model.removeCardFromHand(player, state.pendingActionCardId);
 
         if (!itemCard) {
@@ -354,9 +367,15 @@
         itemCard.faceUp = true;
         state.itemUsed.player = true;
         applyItemCard(itemCard, selection, 'player');
-        player.discard.unshift(itemCard);
         clearPendingAction();
         state.phase = 'turn';
+        state.isResolving = true;
+        render();
+
+        await animateDiscardCard('player', itemCard, sourceCenter);
+
+        player.discard.unshift(itemCard);
+        state.isResolving = false;
         render();
     }
 
@@ -417,6 +436,17 @@
         return canPlayerAct() && getBlockingAttackers('player').length === 0;
     }
 
+    function canDragPendingActionCard(cardId) {
+        return (
+            state.currentPlayer === 'player' &&
+            state.phase === 'selecting-attack-target' &&
+            !state.finished &&
+            !state.isResolving &&
+            state.pendingActionCardId === cardId &&
+            Boolean(model.findHandCard(state.players.player, cardId))
+        );
+    }
+
     function getBlockingAttackers(playerId) {
         const player = state.players[playerId];
 
@@ -442,6 +472,20 @@
     }
 
     function getDropActionForBoardCard(cardId, boardOwner, boardCardId) {
+        if (canDragPendingActionCard(cardId)) {
+            const options = getPendingTargetOptions();
+
+            if (model.targetOptionsIncludeCard(options, boardOwner, boardCardId)) {
+                return { kind: 'target-card', owner: boardOwner, cardId: boardCardId };
+            }
+
+            if (model.targetOptionsIncludeGroup(options, boardOwner)) {
+                return { kind: 'target-group', owner: boardOwner };
+            }
+
+            return null;
+        }
+
         if (!canPlayerAct() || !model.playerHasCardInHand(cardId)) return null;
 
         const card = model.findHandCard(state.players.player, cardId);
@@ -474,6 +518,14 @@
     }
 
     function getDropActionForTargetGroup(cardId, groupOwner) {
+        if (canDragPendingActionCard(cardId)) {
+            const options = getPendingTargetOptions();
+
+            if (!model.targetOptionsIncludeGroup(options, groupOwner)) return null;
+
+            return { kind: 'target-group', owner: groupOwner };
+        }
+
         if (!canPlayerAct() || !model.playerHasCardInHand(cardId)) return null;
 
         const card = model.findHandCard(state.players.player, cardId);
@@ -508,12 +560,22 @@
         }
 
         if (candidate.kind === 'target-card') {
+            if (canDragPendingActionCard(cardId)) {
+                chooseTargetCard(candidate.owner, candidate.cardId);
+                return;
+            }
+
             beginItemTargeting(cardId);
             chooseTargetCard(candidate.owner, candidate.cardId);
             return;
         }
 
         if (candidate.kind === 'target-group') {
+            if (canDragPendingActionCard(cardId)) {
+                chooseTargetGroup(candidate.owner);
+                return;
+            }
+
             beginItemTargeting(cardId);
             chooseTargetGroup(candidate.owner);
         }
@@ -532,7 +594,13 @@
         }
 
         render();
-        await model.sleep(280);
+
+        if (drawnCard) {
+            await animateDrawCard('opponent', drawnCard);
+        } else {
+            await model.sleep(280);
+        }
+
         await placeOpponentPokemon();
 
         chooseOpponentAttacks();
@@ -694,9 +762,9 @@
         for (const action of actions) {
             if (checkGameOver()) return;
 
-            resolveQueuedAttack(action);
+            await resolveQueuedAttack(action);
             render();
-            await model.sleep(760);
+            await model.sleep(180);
         }
 
         state.plannedActions = { opponent: [], player: [] };
@@ -707,11 +775,11 @@
         state.flowTimer = setTimeout(startPlayerTurn, 620);
     }
 
-    function resolveQueuedAttack(action) {
+    async function resolveQueuedAttack(action) {
         const attacker = model.getBoardCardById(action.owner, action.userCardId);
 
         if (!attacker) {
-            discardActionCard(action);
+            await discardActionCard(action);
             logEvent(`${model.getCardName(action.card)} could not be used.`);
             return;
         }
@@ -719,7 +787,7 @@
         const targets = model.getCardsForTargetSelection(action.selection);
 
         if (targets.length === 0) {
-            discardActionCard(action);
+            await discardActionCard(action);
             logEvent(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}, but there was no target.`);
             return;
         }
@@ -727,16 +795,67 @@
         const statuses = model.getActionStatuses(action.card);
 
         showPopup(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}.`);
+        const impactCenter = await animateAttackCard(action, targets);
 
         if (statuses.includes('SWITCH')) {
             targets.forEach(target => switchPokemon(target.owner, target.card));
         } else if (statuses.includes('HEAL')) {
             targets.forEach(target => healPokemon(target.card));
+        } else if (isDamagingAttack(action.card)) {
+            const damageResults = targets.map(target => damagePokemon(target.owner, target.card));
+
+            showDamageNumbers(damageResults);
+            await model.sleep(560);
         } else {
-            targets.forEach(target => damagePokemon(target.owner, target.card));
+            logEvent(`${model.getCardName(action.card)} status effects are not implemented yet.`);
         }
 
-        discardActionCard(action);
+        await discardActionCard(action, impactCenter);
+    }
+
+    async function animateAttackCard(action, targets) {
+        const sourceElement = getBoardCardElement(action.owner, action.userCardId);
+        const targetElements = targets
+            .map(target => getBoardCardElement(target.owner, target.card.id))
+            .filter(Boolean);
+
+        if (!sourceElement || targetElements.length === 0) {
+            await model.sleep(280);
+            return null;
+        }
+
+        const template = document.createElement('template');
+
+        template.innerHTML = arena.Render.renderCardForAnimation(action.card).trim();
+
+        const ghost = template.content.firstElementChild;
+
+        if (!ghost) {
+            await model.sleep(280);
+            return null;
+        }
+
+        document.body.appendChild(ghost);
+
+        const sourceCenter = getElementCenter(sourceElement);
+        const middleCenter = getArenaCenter();
+        const targetCenter = getElementsCenter(targetElements);
+
+        placeAnimationElement(ghost, sourceCenter);
+        ghost.classList.add('is-attack-windup');
+
+        await model.sleep(40);
+        ghost.classList.add('is-attack-moving');
+        placeAnimationElement(ghost, middleCenter);
+
+        await model.sleep(360);
+        ghost.classList.add('is-attack-impact');
+        placeAnimationElement(ghost, targetCenter);
+
+        await model.sleep(430);
+        ghost.remove();
+
+        return targetCenter;
     }
 
     function applyItemCard(itemCard, selection, actorId) {
@@ -763,6 +882,7 @@
 
     function damagePokemon(ownerId, pokemonCard) {
         const damage = Math.ceil(pokemonCard.pokemon.baseHealth * DAMAGE_PERCENT);
+        const damagePercent = Math.ceil((damage / pokemonCard.pokemon.baseHealth) * 100);
 
         pokemonCard.currentHealth = Math.max(0, pokemonCard.currentHealth - damage);
         logEvent(`${model.getCardName(pokemonCard)} took ${damage} damage.`);
@@ -770,6 +890,13 @@
         if (pokemonCard.currentHealth === 0) {
             knockOutPokemon(ownerId, pokemonCard);
         }
+
+        return {
+            cardId: pokemonCard.id,
+            damage,
+            damagePercent,
+            ownerId
+        };
     }
 
     function healPokemon(pokemonCard) {
@@ -801,10 +928,11 @@
         logEvent(`${model.getCardName(removedCard)} was knocked out.`);
     }
 
-    function discardActionCard(action) {
+    async function discardActionCard(action, startCenter = null) {
         const owner = state.players[action.owner];
 
         action.card.faceUp = true;
+        await animateDiscardCard(action.owner, action.card, startCenter);
         owner.discard.unshift(action.card);
     }
 
@@ -852,6 +980,165 @@
         state.log = state.log.slice(0, 3);
     }
 
+    function showDamageNumbers(damageResults) {
+        damageResults.forEach(result => {
+            const targetElement = getBoardCardElement(result.ownerId, result.cardId);
+
+            if (!targetElement) return;
+
+            const rect = targetElement.getBoundingClientRect();
+            const marker = document.createElement('div');
+
+            marker.className = 'damage-float';
+            marker.textContent = `-${result.damagePercent}%`;
+            marker.style.left = `${rect.left + rect.width / 2}px`;
+            marker.style.top = `${Math.max(8, rect.top - 10)}px`;
+            document.body.appendChild(marker);
+
+            setTimeout(() => marker.remove(), 880);
+        });
+    }
+
+    async function animateDrawCard(playerId, card) {
+        const deckElement = getPileCardElement(playerId, 'deck');
+        const handElement = getHandCardElement(playerId, card.id);
+
+        if (!deckElement || !handElement) {
+            await model.sleep(240);
+            return;
+        }
+
+        const ghost = createCardAnimationElement(card, 'draw-animation-card', playerId === 'player');
+
+        if (!ghost) {
+            await model.sleep(240);
+            return;
+        }
+
+        const sourceCenter = getElementCenter(deckElement);
+        const targetCenter = getElementCenter(handElement);
+
+        handElement.classList.add('is-arriving-card');
+        document.body.appendChild(ghost);
+        placeAnimationElement(ghost, sourceCenter);
+
+        await model.sleep(40);
+        ghost.classList.add('is-card-moving');
+        placeAnimationElement(ghost, targetCenter);
+
+        await model.sleep(430);
+        handElement.classList.remove('is-arriving-card');
+        ghost.remove();
+    }
+
+    async function animateDiscardCard(playerId, card, startCenter = null) {
+        const discardElement = getPileCardElement(playerId, 'discard');
+
+        if (!discardElement) {
+            await model.sleep(220);
+            return;
+        }
+
+        const ghost = createCardAnimationElement(card, 'discard-animation-card', true);
+
+        if (!ghost) {
+            await model.sleep(220);
+            return;
+        }
+
+        const sourceCenter = startCenter || getArenaCenter();
+        const targetCenter = getElementCenter(discardElement);
+
+        document.body.appendChild(ghost);
+        placeAnimationElement(ghost, sourceCenter);
+
+        await model.sleep(30);
+        ghost.classList.add('is-card-moving');
+        placeAnimationElement(ghost, targetCenter);
+
+        await model.sleep(420);
+        ghost.remove();
+    }
+
+    function createCardAnimationElement(card, animationClass, reveal) {
+        const template = document.createElement('template');
+
+        template.innerHTML = arena.Render.renderCardForAnimation(card, animationClass, reveal).trim();
+
+        return template.content.firstElementChild;
+    }
+
+    function isDamagingAttack(card) {
+        return model.isAttackCard(card) && Number(card.attack.basePower) > 0;
+    }
+
+    function getBoardCardElement(ownerId, cardId) {
+        return document.querySelector(`.side-panel--${ownerId} [data-board-card-id="${cardId}"]`);
+    }
+
+    function getHandCardElement(ownerId, cardId) {
+        return document.querySelector(`.hand-row--${ownerId} [data-hand-card-id="${cardId}"]`);
+    }
+
+    function getHandCardCenter(ownerId, cardId) {
+        const element = getHandCardElement(ownerId, cardId);
+
+        return element ? getElementCenter(element) : null;
+    }
+
+    function getPileCardElement(ownerId, pileType) {
+        return document.querySelector(`.side-panel--${ownerId} .pile--${pileType} .pile-card`);
+    }
+
+    function getElementCenter(element) {
+        const rect = element.getBoundingClientRect();
+
+        return {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2
+        };
+    }
+
+    function getArenaCenter() {
+        const board = state.elements.board;
+        const rect = board.getBoundingClientRect();
+
+        return {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2
+        };
+    }
+
+    function getElementsCenter(elements) {
+        const bounds = elements.reduce((box, element) => {
+            const rect = element.getBoundingClientRect();
+
+            return {
+                bottom: Math.max(box.bottom, rect.bottom),
+                left: Math.min(box.left, rect.left),
+                right: Math.max(box.right, rect.right),
+                top: Math.min(box.top, rect.top)
+            };
+        }, {
+            bottom: -Infinity,
+            left: Infinity,
+            right: -Infinity,
+            top: Infinity
+        });
+
+        return {
+            x: bounds.left + (bounds.right - bounds.left) / 2,
+            y: bounds.top + (bounds.bottom - bounds.top) / 2
+        };
+    }
+
+    function placeAnimationElement(element, center) {
+        const rect = element.getBoundingClientRect();
+
+        element.style.left = `${center.x - rect.width / 2}px`;
+        element.style.top = `${center.y - rect.height / 2}px`;
+    }
+
     function getEligibleAttackUsers(playerId, attackCard) {
         return model.getBoardCards(playerId).filter(card => (
             !model.hasQueuedAttack(playerId, card.id) &&
@@ -882,6 +1169,7 @@
         canPlayerEndTurn,
         canPlayerSelectCard,
         canPlaceSelectedCard,
+        canDragPendingActionCard,
         cancelActionSelection,
         getDropActionForBoardCard,
         getDropActionForTargetGroup,
