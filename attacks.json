@@ -8,5 +8,115 @@
     "statChanges": [],
     "target": "ALL_OPPONENTS",
     "full_type_requirements": false
+  },
+  {
+    "name": "Flamethrower",
+    "type1": "FIRE",
+    "type2": "DRAGON",
+    "basePower": 95,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Energy Ball",
+    "type1": "GRASS",
+    "type2": "NONE",
+    "basePower": 80,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Iron Head",
+    "type1": "STEEL",
+    "type2": "NONE",
+    "basePower": 85,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Bug Bite",
+    "type1": "BUG",
+    "type2": "NONE",
+    "basePower": 65,
+    "status": "FLINCH",
+    "statChanges": [
+      "DEFENSE_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Crunch",
+    "type1": "DARK",
+    "type2": "MONSTER",
+    "basePower": 80,
+    "status": "FLINCH",
+    "statChanges": [
+      "DEFENSE_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Legendary Pulse",
+    "type1": "LEGENDARY",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP",
+      "SPEED_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Deity's Fury",
+    "type1": "LEGENDARY",
+    "type2": "NONE",
+    "basePower": 110,
+    "status": "FATIGUE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Earth Power",
+    "type1": "GROUND",
+    "type2": "LEGENDARY",
+    "basePower": 90,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Thunderbolt",
+    "type1": "ELECTRIC",
+    "type2": "NONE",
+    "basePower": 95,
+    "status": "PARALYSIS",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Meditate",
+    "type1": "HUMAN",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "HEAL",
+    "statChanges": [
+      "ATTACK_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
   }
 ]

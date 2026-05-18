@@ -6,5 +6,37 @@
       "HEAL"
     ],
     "statChanges": []
+  },
+  {
+    "name": "Poke Ball",
+    "target": "ALLY",
+    "status": [
+      "SWITCH"
+    ],
+    "statChanges": []
+  },
+  {
+    "name": "X-Attack",
+    "target": "ALLY",
+    "status": [],
+    "statChanges": [
+      "ATTACK_UP"
+    ]
+  },
+  {
+    "name": "X-Defense",
+    "target": "ALLY",
+    "status": [],
+    "statChanges": [
+      "DEFENSE_UP"
+    ]
+  },
+  {
+    "name": "X-Speed",
+    "target": "ALLY",
+    "status": [],
+    "statChanges": [
+      "SPEED_UP"
+    ]
   }
 ]
