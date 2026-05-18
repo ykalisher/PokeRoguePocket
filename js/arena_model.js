@@ -43,6 +43,18 @@
         defense: { baseKey: 'baseDefense', label: 'Defense', shortLabel: 'DEF' },
         speed: { baseKey: 'baseSpeed', label: 'Speed', shortLabel: 'SPD' }
     });
+    const STATUS_DEFINITIONS = Object.freeze({
+        BURN: { iconPath: 'assets/status-icons/BURN.svg', label: 'Burn', showsToken: true },
+        CONFUSION: { iconPath: 'assets/status-icons/CONFUSION.svg', label: 'Confusion', showsToken: true },
+        FATIGUE: { iconPath: 'assets/status-icons/FATIGUE.png', label: 'Fatigue', showsToken: true },
+        FLINCH: { iconPath: 'assets/status-icons/FLINCH.svg', label: 'Flinch', showsToken: true },
+        HEAL: { iconPath: 'assets/status-icons/HEAL.png', label: 'Heal', showsToken: false },
+        PARALYSIS: { iconPath: 'assets/status-icons/PARALYSIS.svg', label: 'Paralysis', showsToken: true },
+        POISON: { iconPath: 'assets/status-icons/POISON.svg', label: 'Poison', showsToken: true },
+        PROTECT: { iconPath: 'assets/status-icons/PROTECT.png', label: 'Protect', showsToken: true },
+        SLEEP: { iconPath: 'assets/status-icons/SLEEP.svg', label: 'Sleep', showsToken: true },
+        SWITCH: { iconPath: 'assets/status-icons/SWITCH.png', label: 'Switch', showsToken: false }
+    });
 
     const state = {
         currentPlayer: null,
@@ -261,6 +273,88 @@
                 : [];
 
         return statuses.filter(status => status && status !== 'NONE');
+    }
+
+    function applyStatus(card, status) {
+        const normalizedStatus = normalizeStatus(status);
+
+        if (!isPokemonCard(card) || !isBattleStatus(normalizedStatus)) return null;
+
+        const currentStatuses = ensurePokemonStatuses(card);
+        const added = !currentStatuses.some(statusEntry => statusEntry.status === normalizedStatus);
+
+        if (added) {
+            currentStatuses.push({ status: normalizedStatus });
+        }
+
+        return {
+            added,
+            iconPath: getStatusIconPath(normalizedStatus),
+            label: formatStatusName(normalizedStatus),
+            status: normalizedStatus
+        };
+    }
+
+    function ensurePokemonStatuses(card) {
+        if (!isPokemonCard(card)) return [];
+
+        const seen = new Set();
+        const statuses = [];
+        const rawStatuses = Array.isArray(card.currentStatus) ? card.currentStatus : [];
+
+        rawStatuses.forEach(statusEntry => {
+            const status = normalizeStatus(statusEntry);
+
+            if (!isBattleStatus(status) || seen.has(status)) return;
+
+            seen.add(status);
+            statuses.push(typeof statusEntry === 'object' && statusEntry
+                ? { ...statusEntry, status }
+                : { status }
+            );
+        });
+
+        card.currentStatus = statuses;
+        return card.currentStatus;
+    }
+
+    function getPokemonStatuses(card) {
+        return ensurePokemonStatuses(card).map(statusEntry => ({
+            ...statusEntry,
+            iconPath: getStatusIconPath(statusEntry.status),
+            label: formatStatusName(statusEntry.status)
+        }));
+    }
+
+    function isBattleStatus(status) {
+        const definition = STATUS_DEFINITIONS[status];
+
+        return Boolean(definition && definition.showsToken);
+    }
+
+    function getStatusIconPath(status) {
+        const definition = STATUS_DEFINITIONS[status];
+
+        return definition ? definition.iconPath : '';
+    }
+
+    function formatStatusName(status) {
+        const definition = STATUS_DEFINITIONS[status];
+
+        if (definition) return definition.label;
+
+        return String(status || '')
+            .toLowerCase()
+            .split('_')
+            .map(part => part ? part[0].toUpperCase() + part.slice(1) : '')
+            .join(' ');
+    }
+
+    function normalizeStatus(status) {
+        if (typeof status === 'string') return status && status !== 'NONE' ? status : null;
+        if (status && typeof status.status === 'string') return status.status !== 'NONE' ? status.status : null;
+
+        return null;
     }
 
     function getActionStatChanges(card) {
@@ -557,6 +651,7 @@
     arena.state = state;
     arena.Model = {
         createPlayer,
+        applyStatus,
         drawCard,
         drawOpeningHands,
         findHandCard,
@@ -577,14 +672,17 @@
         getPokemonStatMultiplier,
         getPokemonStatStage,
         getPokemonSpeed,
+        getPokemonStatuses,
         getPortraitHue,
         getPortraitInitials,
         getPortraitUrl,
+        getStatusIconPath,
         getTargetOptionsForAction,
         hasOpponentBoardTarget,
         hasQueuedAttack,
         hasUsableAttackInHand,
         isAttackCard,
+        isBattleStatus,
         isItemCard,
         isPokemonCard,
         placeOpeningCard,

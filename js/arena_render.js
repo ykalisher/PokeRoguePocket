@@ -233,6 +233,7 @@
                         <img class="portrait-img" src="${arena.Model.getPortraitUrl(card)}" alt="">
                         <span>${arena.Model.getPortraitInitials(card)}</span>
                     </div>
+                    ${renderStatusTokens(card)}
                     <div class="type-row">${renderTypeIcons(species.types, 'type-row')}</div>
                     <span class="card-name">${species.name}</span>
                 </div>
@@ -248,6 +249,22 @@
                 ${renderStatCell(card, 'attack')}
                 ${renderStatCell(card, 'defense')}
                 ${renderStatCell(card, 'speed')}
+            </div>
+        `;
+    }
+
+    function renderStatusTokens(card) {
+        const statuses = arena.Model.getPokemonStatuses(card);
+
+        if (statuses.length === 0) return '';
+
+        return `
+            <div class="status-token-row" aria-label="Statuses: ${statuses.map(status => status.label).join(', ')}">
+                ${statuses.map(status => `
+                    <span class="status-token status-token--${status.status.toLowerCase()}" title="${status.label}">
+                        <img src="${status.iconPath}" alt="${status.label}">
+                    </span>
+                `).join('')}
             </div>
         `;
     }

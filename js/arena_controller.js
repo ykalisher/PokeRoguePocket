@@ -803,18 +803,21 @@
         if (statuses.includes('SWITCH')) {
             targets.forEach(target => switchPokemon(target.owner, target.card));
             handledEffect = true;
-        } else if (statuses.includes('HEAL')) {
-            targets.forEach(target => healPokemon(target.card));
-            handledEffect = true;
-        } else if (isDamaging) {
-            const damageResults = targets.map(target => damagePokemon(target.owner, target.card, attacker));
+        } else {
+            if (statuses.includes('HEAL')) {
+                targets.forEach(target => healPokemon(target.card));
+                handledEffect = true;
+            }
 
-            showDamageNumbers(damageResults);
-            handledEffect = true;
-            await model.sleep(560);
-        } else if (statuses.length > 0) {
-            logEvent(`${model.getCardName(action.card)} status effects are not implemented yet.`);
-            handledEffect = true;
+            if (isDamaging) {
+                const damageResults = targets.map(target => damagePokemon(target.owner, target.card, attacker));
+
+                showDamageNumbers(damageResults);
+                handledEffect = true;
+                await model.sleep(560);
+            }
+
+            handledEffect = maybeApplyAttackStatuses(action.card, targets, isDamaging) || handledEffect;
         }
 
         handledEffect = maybeApplyAttackStatChanges(action.card, targets, isDamaging) || handledEffect;
@@ -892,6 +895,10 @@
             didSomething = true;
         }
 
+        if (applyStatusesToTargets(getBattleStatuses(itemCard), targets)) {
+            didSomething = true;
+        }
+
         logEvent(`${state.players[actorId].name} used ${model.getCardName(itemCard)}.`);
         showPopup(didSomething
             ? `${model.getCardName(itemCard)} took effect.`
@@ -920,6 +927,56 @@
             damagePercent,
             ownerId
         };
+    }
+
+    function maybeApplyAttackStatuses(actionCard, targets, isDamaging) {
+        const statuses = getBattleStatuses(actionCard);
+
+        if (statuses.length === 0) return false;
+
+        if (isDamaging && Math.random() >= STAT_CHANGE_TRIGGER_CHANCE) {
+            logEvent(`${model.getCardName(actionCard)} status did not activate.`);
+            return false;
+        }
+
+        return applyStatusesToTargets(statuses, targets);
+    }
+
+    function getBattleStatuses(actionCard) {
+        return model.getActionStatuses(actionCard).filter(model.isBattleStatus);
+    }
+
+    function applyStatusesToTargets(statuses, targets) {
+        let appliedAny = false;
+
+        targets.forEach(target => {
+            if (model.getBoardCardById(target.owner, target.card.id) !== target.card) return;
+
+            const results = statuses
+                .map(status => model.applyStatus(target.card, status))
+                .filter(Boolean);
+
+            if (results.length === 0) return;
+
+            appliedAny = true;
+            logStatusResult(target.card, results);
+        });
+
+        return appliedAny;
+    }
+
+    function logStatusResult(pokemonCard, results) {
+        const addedResults = results.filter(result => result.added);
+        const statusNames = (addedResults.length > 0 ? addedResults : results)
+            .map(result => result.label)
+            .join(', ');
+
+        if (addedResults.length === 0) {
+            logEvent(`${model.getCardName(pokemonCard)} already has ${statusNames}.`);
+            return;
+        }
+
+        logEvent(`${model.getCardName(pokemonCard)} gained ${statusNames}.`);
     }
 
     function maybeApplyAttackStatChanges(actionCard, targets, isDamaging) {
