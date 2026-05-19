@@ -885,6 +885,22 @@ button.playing-card:focus-visible {
     gap: 3px;
 }
 
+.action-type-row .type-icon {
+    width: clamp(20px, 2vw, 28px);
+    height: clamp(20px, 2vw, 28px);
+}
+
+.action-type-row--all-required {
+    width: fit-content;
+    justify-self: center;
+    align-items: center;
+    padding: 3px 7px;
+    border: 1px solid rgba(52, 152, 219, 0.74);
+    border-radius: 999px;
+    background-color: rgba(52, 152, 219, 0.18);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.34);
+}
+
 .action-type-row--empty {
     color: rgba(37, 27, 24, 0.48);
     font-size: clamp(0.42rem, 0.62vw, 0.56rem);
@@ -1136,9 +1152,9 @@ button.playing-card:focus-visible {
 
 @media (min-width: 700px) {
     .game-page {
-        --card-w: clamp(84px, 6.8vw, 112px);
-        --hand-card-w: clamp(72px, 5.8vw, 94px);
-        --pile-card-w: clamp(60px, 4.7vw, 80px);
+        --card-w: clamp(96px, 7.6vw, 128px);
+        --hand-card-w: clamp(84px, 6.4vw, 108px);
+        --pile-card-w: clamp(70px, 5.3vw, 92px);
         --panel-gap: clamp(8px, 1vw, 14px);
     }
 
@@ -1221,16 +1237,72 @@ button.playing-card:focus-visible {
     .event-log {
         grid-column: 1 / -1;
         width: 100%;
-        font-size: 0.78rem;
+        font-size: 0.86rem;
+    }
+
+    .playing-card {
+        gap: 3px;
+        padding: clamp(5px, 0.58vw, 8px);
+    }
+
+    .board-slot {
+        min-width: calc(var(--card-w) + 18px);
+        min-height: calc(var(--card-h) + 16px);
+        padding: 8px;
+    }
+
+    .slot-badge {
+        right: 4px;
+        top: 4px;
+        padding: 3px 7px;
+        font-size: 0.7rem;
+    }
+
+    .pile-label,
+    .hand-label {
+        font-size: 0.84rem;
     }
 
     .card-name {
-        font-size: clamp(0.62rem, 0.78vw, 0.82rem);
+        font-size: clamp(0.74rem, 0.86vw, 0.94rem);
     }
 
     .health-row,
     .stat-grid {
-        font-size: clamp(0.52rem, 0.66vw, 0.68rem);
+        font-size: clamp(0.62rem, 0.72vw, 0.78rem);
+    }
+
+    .card-topline,
+    .card-footer {
+        font-size: clamp(0.7rem, 1vw, 0.88rem);
+    }
+
+    .type-icon {
+        width: clamp(14px, 1.15vw, 20px);
+        height: clamp(14px, 1.15vw, 20px);
+    }
+
+    .action-type-row .type-icon {
+        width: clamp(28px, 2.3vw, 40px);
+        height: clamp(28px, 2.3vw, 40px);
+    }
+
+    .status-token {
+        width: clamp(18px, 1.35vw, 24px);
+        height: clamp(18px, 1.35vw, 24px);
+    }
+
+    .action-card-kind {
+        font-size: clamp(0.52rem, 0.68vw, 0.66rem);
+    }
+
+    .action-card-name {
+        font-size: clamp(0.72rem, 0.98vw, 0.92rem);
+    }
+
+    .action-card-meta,
+    .action-card-note {
+        font-size: clamp(0.48rem, 0.64vw, 0.64rem);
     }
 }
 

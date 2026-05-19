@@ -292,26 +292,25 @@
         const isAttack = arena.Model.isAttackCard(card);
         const types = arena.Model.getCardTypes(card);
         const target = formatTarget(arena.Model.getActionTarget(card));
-        const note = formatActionNote(card, isAttack);
+        const note = formatActionNote(card);
+        const allTypesRequired = isAttack && card.attack.full_type_requirements && types.length > 1;
+        const typeRowClass = allTypesRequired ? ' action-type-row--all-required' : '';
+        const typeRequirementLabel = allTypesRequired ? 'All listed types required' : 'Any listed type required';
 
         return `
             <div class="action-card-shell">
                 <span class="action-card-kind">${label}</span>
                 <span class="action-card-name">${arena.Model.getCardName(card)}</span>
-                ${types.length > 0 ? `<div class="action-type-row">${renderTypeIcons(types, 'action-type-row')}</div>` : '<div class="action-type-row action-type-row--empty">No type</div>'}
+                ${types.length > 0 ? `<div class="action-type-row${typeRowClass}" title="${typeRequirementLabel}" aria-label="${typeRequirementLabel}">${renderTypeIcons(types, 'action-type-row')}</div>` : '<div class="action-type-row action-type-row--empty">No type</div>'}
                 <span class="action-card-meta">${target}</span>
                 <span class="action-card-note">${note}</span>
             </div>
         `;
     }
 
-    function formatActionNote(card, isAttack) {
+    function formatActionNote(card) {
         const notes = [];
         const effects = formatEffects(card);
-
-        if (isAttack) {
-            notes.push(card.attack.full_type_requirements ? 'Needs all types' : 'Needs one type');
-        }
 
         if (effects !== 'No effect') {
             notes.push(effects);

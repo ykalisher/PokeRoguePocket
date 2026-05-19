@@ -10,6 +10,26 @@
     "full_type_requirements": false
   },
   {
+    "name": "Waterfall",
+    "type1": "WATER",
+    "type2": "NONE",
+    "basePower": 80,
+    "status": "FLINCH",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Withdraw",
+    "type1": "WATER",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "PROTECT",
+    "statChanges": [],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
     "name": "Flamethrower",
     "type1": "FIRE",
     "type2": "DRAGON",
@@ -27,6 +47,36 @@
     "status": "NONE",
     "statChanges": [],
     "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Sleep Powder",
+    "type1": "GRASS",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "SLEEP",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Dizzy Spores",
+    "type1": "GRASS",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "CONFUSION",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Exhausting Roar",
+    "type1": "MONSTER",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "FATIGUE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
     "full_type_requirements": false
   },
   {

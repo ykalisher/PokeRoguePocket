@@ -20,6 +20,12 @@
         window.addEventListener('pointercancel', arena.Drag.cancelDrag);
 
         await arena.Data.loadGameData();
-        arena.Controller.resetPrototype();
+
+        if (arena.Model.restoreSavedBattleState()) {
+            arena.Render.render();
+            arena.Model.saveBattleState();
+        } else {
+            arena.Controller.resetPrototype();
+        }
     }
 })(window.CardArena = window.CardArena || {});

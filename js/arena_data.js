@@ -8,12 +8,21 @@
     arena.Constants = Object.freeze({
         ATTACK_CARDS_PER_DECK: 12,
         BOARD_SLOT_COUNT: 2,
+        BURN_DAMAGE_PERCENT: 0.05,
+        CONFUSION_DAMAGE_PERCENT: 0.1,
+        CONFUSION_RECOVERY_CHANCE: 0.5,
+        CONFUSION_SELF_DAMAGE_CHANCE: 0.5,
         DAMAGE_PERCENT: 0.2,
         ITEM_CARDS_PER_DECK: 4,
         OPENING_HAND_SIZE: 3,
+        PARALYSIS_SKIP_CHANCE: 1 / 3,
+        POISON_DAMAGE_PERCENT: 0.1,
         POKEMON_CARDS_PER_DECK: 4,
         SECOND_SLOT_INDEX: 1,
-        STAT_CHANGE_TRIGGER_CHANCE: 1 / 3
+        SLEEP_GUARANTEED_WAKE_ATTEMPT: 4,
+        SLEEP_WAKE_CHANCE: 0.5,
+        STAT_CHANGE_TRIGGER_CHANCE: 1 / 3,
+        STATUS_TRIGGER_CHANCE: 1 / 3
     });
 
     const fallbackRecords = Object.freeze({

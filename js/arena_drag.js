@@ -74,7 +74,11 @@
         if (drag.isDragging) {
             event.preventDefault();
             const candidate = getDropCandidate(event.clientX, event.clientY);
+
             state.suppressNextClick = true;
+            setTimeout(() => {
+                state.suppressNextClick = false;
+            }, 0);
             finishDrag(candidate);
             return;
         }

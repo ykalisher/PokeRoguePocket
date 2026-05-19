@@ -6,13 +6,30 @@
     'use strict';
 
     const state = arena.state;
-    const { BOARD_SLOT_COUNT, DAMAGE_PERCENT, STAT_CHANGE_TRIGGER_CHANCE } = arena.Constants;
+    const {
+        BOARD_SLOT_COUNT,
+        BURN_DAMAGE_PERCENT,
+        CONFUSION_DAMAGE_PERCENT,
+        CONFUSION_RECOVERY_CHANCE,
+        CONFUSION_SELF_DAMAGE_CHANCE,
+        DAMAGE_PERCENT,
+        PARALYSIS_SKIP_CHANCE,
+        POISON_DAMAGE_PERCENT,
+        SLEEP_GUARANTEED_WAKE_ATTEMPT,
+        SLEEP_WAKE_CHANCE,
+        STAT_CHANGE_TRIGGER_CHANCE,
+        STATUS_TRIGGER_CHANCE
+    } = arena.Constants;
     const model = arena.Model;
-    const render = () => arena.Render.render();
+    const render = () => {
+        arena.Render.render();
+        model.saveBattleState();
+    };
 
     function resetPrototype() {
         clearTimeout(state.flowTimer);
         clearTimeout(state.popupTimer);
+        model.clearSavedBattleState();
         state.elements.popup.hidden = true;
 
         state.currentPlayer = 'player';
@@ -89,7 +106,8 @@
     function handleArenaClick(event) {
         if (state.suppressNextClick) {
             state.suppressNextClick = false;
-            return;
+
+            if (!event.target.closest('[data-action]')) return;
         }
 
         const targetGroup = event.target.closest('[data-target-group-owner]');
@@ -248,6 +266,12 @@
         }
 
         state.pendingUserCardId = userCardId;
+
+        if (isSelfTargetSelection(attackCard, targets, userCardId)) {
+            queuePlayerAttack(targets[0]);
+            return;
+        }
+
         state.phase = 'selecting-attack-target';
 
         logEvent(`Choose a target for ${model.getCardName(attackCard)}.`);
@@ -354,9 +378,20 @@
         render();
     }
 
+    function isSelfTargetSelection(attackCard, targets, userCardId) {
+        return (
+            model.getActionTarget(attackCard) === 'SELF' &&
+            targets.length === 1 &&
+            targets[0].kind === 'single' &&
+            targets[0].owner === 'player' &&
+            targets[0].cardId === userCardId
+        );
+    }
+
     async function usePendingItem(selection) {
         const player = state.players.player;
         const sourceCenter = getHandCardCenter('player', state.pendingActionCardId);
+        const targets = model.getCardsForTargetSelection(selection);
         const itemCard = model.removeCardFromHand(player, state.pendingActionCardId);
 
         if (!itemCard) {
@@ -366,13 +401,18 @@
 
         itemCard.faceUp = true;
         state.itemUsed.player = true;
-        applyItemCard(itemCard, selection, 'player');
         clearPendingAction();
         state.phase = 'turn';
         state.isResolving = true;
         render();
 
-        await animateDiscardCard('player', itemCard, sourceCenter);
+        const impactCenter = await animateItemCard(itemCard, sourceCenter, targets);
+
+        applyItemCard(itemCard, selection, 'player');
+        render();
+        await model.sleep(180);
+
+        await animateDiscardCard('player', itemCard, impactCenter || sourceCenter);
 
         player.discard.unshift(itemCard);
         state.isResolving = false;
@@ -603,6 +643,8 @@
 
         await placeOpponentPokemon();
 
+        await useOpponentItem();
+
         chooseOpponentAttacks();
         render();
 
@@ -667,6 +709,103 @@
         if (chosenCount === 0) {
             logEvent(`${opponent.name} readied no attacks.`);
         }
+    }
+
+    async function useOpponentItem() {
+        if (state.itemUsed.opponent) return false;
+
+        const opponent = state.players.opponent;
+        const itemPlan = chooseOpponentItem();
+
+        if (!itemPlan) return false;
+
+        const sourceCenter = getHandCardCenter('opponent', itemPlan.card.id);
+        const targets = model.getCardsForTargetSelection(itemPlan.selection);
+        const itemCard = model.removeCardFromHand(opponent, itemPlan.card.id);
+
+        if (!itemCard) return false;
+
+        itemCard.faceUp = true;
+        state.itemUsed.opponent = true;
+        render();
+
+        const impactCenter = await animateItemCard(itemCard, sourceCenter, targets);
+
+        applyItemCard(itemCard, itemPlan.selection, 'opponent');
+        render();
+        await model.sleep(180);
+
+        await animateDiscardCard('opponent', itemCard, impactCenter || sourceCenter);
+
+        opponent.discard.unshift(itemCard);
+        render();
+        await model.sleep(180);
+
+        return true;
+    }
+
+    function chooseOpponentItem() {
+        const opponent = state.players.opponent;
+
+        for (const itemCard of opponent.hand.filter(model.isItemCard)) {
+            const selection = chooseOpponentItemTarget(itemCard);
+
+            if (selection) return { card: itemCard, selection };
+        }
+
+        return null;
+    }
+
+    function chooseOpponentItemTarget(itemCard) {
+        const options = model.getTargetOptionsForAction(itemCard, 'opponent', null);
+
+        if (options.length === 0) return null;
+
+        const statuses = model.getActionStatuses(itemCard);
+        const statChanges = model.getActionStatChanges(itemCard);
+
+        if (statuses.includes('HEAL')) {
+            return chooseDamagedAllyTarget(options, 'opponent');
+        }
+
+        if (statChanges.some(statChange => statChange.endsWith('_UP'))) {
+            return chooseTargetOwnedBy(options, 'opponent');
+        }
+
+        if (statChanges.some(statChange => statChange.endsWith('_DOWN'))) {
+            return chooseTargetOwnedBy(options, 'player');
+        }
+
+        if (getBattleStatuses(itemCard).length > 0) {
+            return options[0];
+        }
+
+        return null;
+    }
+
+    function chooseDamagedAllyTarget(options, ownerId) {
+        const damagedTargets = options
+            .filter(option => option.kind === 'single' && option.owner === ownerId)
+            .map(option => ({
+                option,
+                card: model.getBoardCardById(option.owner, option.cardId)
+            }))
+            .filter(target => target.card && target.card.currentHealth < target.card.pokemon.baseHealth)
+            .sort((left, right) => left.card.currentHealth - right.card.currentHealth);
+
+        if (damagedTargets.length > 0) return damagedTargets[0].option;
+
+        const groupTarget = options.find(option => (
+            option.kind === 'group' &&
+            option.owner === ownerId &&
+            model.getBoardCards(ownerId).some(card => card.currentHealth < card.pokemon.baseHealth)
+        ));
+
+        return groupTarget || null;
+    }
+
+    function chooseTargetOwnedBy(options, ownerId) {
+        return options.find(option => option.owner === ownerId) || null;
     }
 
     function chooseOpponentTarget(attackCard, userCard) {
@@ -748,31 +887,224 @@
             ...state.plannedActions.player,
             ...state.plannedActions.opponent
         ]
-            .map(action => ({ ...action, tieBreaker: Math.random() }))
-            .sort((left, right) => right.speed - left.speed || left.tieBreaker - right.tieBreaker);
+            .map(action => ({
+                ...action,
+                priority: getActionPriority(action),
+                speed: getActionSpeed(action),
+                tieBreaker: Math.random()
+            }))
+            .sort((left, right) => (
+                right.priority - left.priority ||
+                right.speed - left.speed ||
+                left.tieBreaker - right.tieBreaker
+            ));
 
         if (actions.length === 0) {
             logEvent('No attacks were chosen.');
             render();
             await model.sleep(650);
-            startPlayerTurn();
-            return;
-        }
+        } else {
+            for (const action of actions) {
+                if (checkGameOver()) return;
 
-        for (const action of actions) {
-            if (checkGameOver()) return;
+                await resolveQueuedAttack(action);
+                render();
 
-            await resolveQueuedAttack(action);
-            render();
-            await model.sleep(180);
+                if (checkGameOver()) return;
+
+                await model.sleep(180);
+            }
         }
 
         state.plannedActions = { opponent: [], player: [] };
+
+        if (await resolveEndOfTurnStatuses()) return;
 
         if (checkGameOver()) return;
 
         clearTimeout(state.flowTimer);
         state.flowTimer = setTimeout(startPlayerTurn, 620);
+    }
+
+    function getActionSpeed(action) {
+        const attacker = model.getBoardCardById(action.owner, action.userCardId);
+
+        return attacker ? model.getPokemonSpeed(attacker) : -1;
+    }
+
+    function getActionPriority(action) {
+        return model.getActionStatuses(action.card).includes('PROTECT') ? 1 : 0;
+    }
+
+    async function resolvePreAttackStatuses(action, attacker) {
+        const flinchReason = getFlinchBlockReason(attacker);
+
+        if (flinchReason) return flinchReason;
+
+        const sleepResult = resolveSleepAttempt(attacker);
+
+        if (sleepResult.blocked || sleepResult.changed) {
+            render();
+        }
+
+        if (sleepResult.blocked) return sleepResult;
+
+        const confusionResult = await resolveConfusionAttempt(action.owner, attacker);
+
+        if (confusionResult.blocked) return confusionResult;
+
+        return getParalysisBlockReason(attacker) || confusionResult;
+    }
+
+    function getFlinchBlockReason(attacker) {
+        if (model.hasPokemonStatus(attacker, 'FLINCH')) {
+            return {
+                blocked: true,
+                message: `${model.getCardName(attacker)} flinched and could not attack.`,
+                popup: `${model.getCardName(attacker)} flinched.`
+            };
+        }
+
+        return null;
+    }
+
+    function getParalysisBlockReason(attacker) {
+        if (model.hasPokemonStatus(attacker, 'PARALYSIS') && Math.random() < PARALYSIS_SKIP_CHANCE) {
+            return {
+                blocked: true,
+                message: `${model.getCardName(attacker)} is paralyzed and could not attack.`,
+                popup: `${model.getCardName(attacker)} is paralyzed.`
+            };
+        }
+
+        return null;
+    }
+
+    function resolveSleepAttempt(attacker) {
+        const sleepStatus = model.getPokemonStatusEntry(attacker, 'SLEEP');
+
+        if (!sleepStatus) return { blocked: false };
+
+        sleepStatus.wakeAttempts = (Number(sleepStatus.wakeAttempts) || 0) + 1;
+        sleepStatus.lastWakeAttemptTurn = state.turnNumber;
+
+        const canWake = sleepStatus.wakeAttempts > 1;
+        const mustWake = sleepStatus.wakeAttempts >= SLEEP_GUARANTEED_WAKE_ATTEMPT;
+        const wokeUp = mustWake || (canWake && Math.random() < SLEEP_WAKE_CHANCE);
+
+        if (wokeUp) {
+            model.removePokemonStatus(attacker, 'SLEEP');
+            logEvent(`${model.getCardName(attacker)} woke up.`);
+            return { blocked: false, changed: true };
+        }
+
+        logEvent(sleepStatus.wakeAttempts === 1
+            ? `${model.getCardName(attacker)} is fast asleep.`
+            : `${model.getCardName(attacker)} is still asleep.`
+        );
+        showPopup(`${model.getCardName(attacker)} is asleep.`);
+
+        return { blocked: true, changed: true };
+    }
+
+    function tickSleepTimersWithoutAttack() {
+        const results = [];
+
+        ['player', 'opponent'].forEach(ownerId => {
+            model.getBoardCards(ownerId).forEach(pokemonCard => {
+                const sleepStatus = model.getPokemonStatusEntry(pokemonCard, 'SLEEP');
+
+                if (!sleepStatus || pokemonCard.currentHealth <= 0 || sleepStatus.lastWakeAttemptTurn === state.turnNumber) return;
+
+                sleepStatus.wakeAttempts = (Number(sleepStatus.wakeAttempts) || 0) + 1;
+                sleepStatus.lastWakeAttemptTurn = state.turnNumber;
+
+                const canWake = sleepStatus.wakeAttempts > 1;
+                const mustWake = sleepStatus.wakeAttempts >= SLEEP_GUARANTEED_WAKE_ATTEMPT;
+                const wokeUp = mustWake || (canWake && Math.random() < SLEEP_WAKE_CHANCE);
+
+                if (wokeUp) {
+                    model.removePokemonStatus(pokemonCard, 'SLEEP');
+                    logEvent(`${model.getCardName(pokemonCard)} woke up.`);
+                } else {
+                    logEvent(sleepStatus.wakeAttempts === 1
+                        ? `${model.getCardName(pokemonCard)} is fast asleep.`
+                        : `${model.getCardName(pokemonCard)} is still asleep.`
+                    );
+                }
+
+                results.push({ card: pokemonCard, ownerId, wokeUp });
+            });
+        });
+
+        return results;
+    }
+
+    async function resolveConfusionAttempt(ownerId, attacker) {
+        if (!model.hasPokemonStatus(attacker, 'CONFUSION')) return { blocked: false };
+
+        if (Math.random() < CONFUSION_RECOVERY_CHANCE) {
+            model.removePokemonStatus(attacker, 'CONFUSION');
+            logEvent(`${model.getCardName(attacker)} snapped out of confusion.`);
+            render();
+            await model.sleep(180);
+            return { blocked: false, changed: true };
+        }
+
+        if (Math.random() >= CONFUSION_SELF_DAMAGE_CHANCE) {
+            logEvent(`${model.getCardName(attacker)} fought through confusion.`);
+            return { blocked: false };
+        }
+
+        const damageResult = damagePokemonByStatus(ownerId, attacker, CONFUSION_DAMAGE_PERCENT, 'confusion');
+
+        render();
+        showDamageNumbers([damageResult]);
+        showPopup(damageResult && damageResult.damage > 0
+            ? `${model.getCardName(attacker)} hurt itself in confusion.`
+            : `${model.getCardName(attacker)} is confused.`
+        );
+
+        if (damageResult && damageResult.damage > 0) {
+            await model.sleep(560);
+        } else {
+            await model.sleep(220);
+        }
+
+        const pokemonCard = model.getBoardCardById(ownerId, attacker.id);
+
+        if (pokemonCard && pokemonCard.currentHealth === 0) {
+            knockOutPokemon(ownerId, pokemonCard);
+            render();
+        }
+
+        return { blocked: true, changed: true };
+    }
+
+    function resolveActionTargets(action, attacker) {
+        const currentTargets = model.getCardsForTargetSelection(action.selection);
+
+        if (currentTargets.length > 0 || !action.selection || action.selection.kind !== 'single') {
+            return {
+                retargeted: false,
+                targets: currentTargets
+            };
+        }
+
+        const fallbackSelection = model.getTargetOptionsForAction(action.card, action.owner, attacker.id)
+            .find(option => option.kind === 'single' && option.cardId !== action.selection.cardId);
+
+        if (!fallbackSelection) {
+            return {
+                retargeted: false,
+                targets: []
+            };
+        }
+
+        return {
+            retargeted: true,
+            targets: model.getCardsForTargetSelection(fallbackSelection)
+        };
     }
 
     async function resolveQueuedAttack(action) {
@@ -784,12 +1116,26 @@
             return;
         }
 
-        const targets = model.getCardsForTargetSelection(action.selection);
+        const attackBlockReason = await resolvePreAttackStatuses(action, attacker);
+
+        if (attackBlockReason.blocked) {
+            await discardActionCard(action);
+            if (attackBlockReason.message) logEvent(attackBlockReason.message);
+            if (attackBlockReason.popup) showPopup(attackBlockReason.popup);
+            return;
+        }
+
+        const targetResolution = resolveActionTargets(action, attacker);
+        const targets = targetResolution.targets;
 
         if (targets.length === 0) {
             await discardActionCard(action);
             logEvent(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}, but there was no target.`);
             return;
+        }
+
+        if (targetResolution.retargeted) {
+            logEvent(`${model.getCardName(action.card)} changed target to ${model.getCardName(targets[0].card)}.`);
         }
 
         const statuses = model.getActionStatuses(action.card);
@@ -798,7 +1144,9 @@
         let handledEffect = false;
 
         showPopup(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}.`);
-        const impactCenter = await animateAttackCard(action, targets);
+        const impactCenter = isSelfTargetResolution(action, targets, attacker)
+            ? getBoardCardCenter(action.owner, attacker.id)
+            : await animateAttackCard(action, targets);
 
         if (statuses.includes('SWITCH')) {
             targets.forEach(target => switchPokemon(target.owner, target.card));
@@ -817,16 +1165,24 @@
                 await model.sleep(560);
             }
 
+            handledEffect = maybeApplyAttackStatChanges(action.card, targets, isDamaging) || handledEffect;
             handledEffect = maybeApplyAttackStatuses(action.card, targets, isDamaging) || handledEffect;
         }
-
-        handledEffect = maybeApplyAttackStatChanges(action.card, targets, isDamaging) || handledEffect;
 
         if (!handledEffect && statChanges.length === 0) {
             logEvent(`${model.getCardName(action.card)} had no effect.`);
         }
 
         await discardActionCard(action, impactCenter);
+    }
+
+    function isSelfTargetResolution(action, targets, attacker) {
+        return (
+            model.getActionTarget(action.card) === 'SELF' &&
+            targets.length === 1 &&
+            targets[0].owner === action.owner &&
+            targets[0].card === attacker
+        );
     }
 
     async function animateAttackCard(action, targets) {
@@ -874,6 +1230,45 @@
         return targetCenter;
     }
 
+    async function animateItemCard(itemCard, sourceCenter, targets) {
+        const targetElements = targets
+            .map(target => getBoardCardElement(target.owner, target.card.id))
+            .filter(Boolean);
+
+        if (!sourceCenter || targetElements.length === 0) {
+            await model.sleep(280);
+            return null;
+        }
+
+        const ghost = createCardAnimationElement(itemCard, 'attack-animation-card item-animation-card', true);
+
+        if (!ghost) {
+            await model.sleep(280);
+            return null;
+        }
+
+        document.body.appendChild(ghost);
+
+        const middleCenter = getArenaCenter();
+        const targetCenter = getElementsCenter(targetElements);
+
+        placeAnimationElement(ghost, sourceCenter);
+        ghost.classList.add('is-attack-windup');
+
+        await model.sleep(40);
+        ghost.classList.add('is-attack-moving');
+        placeAnimationElement(ghost, middleCenter);
+
+        await model.sleep(300);
+        ghost.classList.add('is-attack-impact');
+        placeAnimationElement(ghost, targetCenter);
+
+        await model.sleep(360);
+        ghost.remove();
+
+        return targetCenter;
+    }
+
     function applyItemCard(itemCard, selection, actorId) {
         const targets = model.getCardsForTargetSelection(selection);
         const statuses = model.getActionStatuses(itemCard);
@@ -907,8 +1302,18 @@
     }
 
     function damagePokemon(ownerId, pokemonCard, attackerCard) {
-        const attackerAttackMultiplier = model.getPokemonStatMultiplier(attackerCard, 'attack');
-        const targetDefenseMultiplier = model.getPokemonStatMultiplier(pokemonCard, 'defense');
+        if (isProtectedFromDamage(pokemonCard)) {
+            logEvent(`${model.getCardName(pokemonCard)} was protected from damage.`);
+            return {
+                cardId: pokemonCard.id,
+                damage: 0,
+                damagePercent: 0,
+                ownerId
+            };
+        }
+
+        const attackerAttackMultiplier = getBattleStatMultiplier(attackerCard, 'attack');
+        const targetDefenseMultiplier = getBattleStatMultiplier(pokemonCard, 'defense');
         const baseDamage = pokemonCard.pokemon.baseHealth * DAMAGE_PERCENT;
         const statRatio = targetDefenseMultiplier > 0 ? attackerAttackMultiplier / targetDefenseMultiplier : attackerAttackMultiplier;
         const damage = Math.max(1, Math.ceil(baseDamage * statRatio));
@@ -929,12 +1334,121 @@
         };
     }
 
+    function getBattleStatMultiplier(pokemonCard, stat) {
+        return model.getPokemonStatMultiplier(pokemonCard, stat) * model.getPokemonStatusMultiplier(pokemonCard, stat);
+    }
+
+    function isProtectedFromDamage(pokemonCard) {
+        return model.hasPokemonStatus(pokemonCard, 'PROTECT');
+    }
+
+    function damagePokemonByStatus(ownerId, pokemonCard, damagePercent, damageLabel) {
+        if (!pokemonCard || pokemonCard.currentHealth <= 0) return null;
+
+        if (isProtectedFromDamage(pokemonCard)) {
+            logEvent(`${model.getCardName(pokemonCard)} was protected from ${damageLabel} damage.`);
+            return {
+                cardId: pokemonCard.id,
+                damage: 0,
+                damagePercent: 0,
+                ownerId
+            };
+        }
+
+        const damage = Math.max(1, Math.ceil(pokemonCard.pokemon.baseHealth * damagePercent));
+        const actualDamage = Math.min(pokemonCard.currentHealth, damage);
+
+        if (actualDamage <= 0) return null;
+
+        pokemonCard.currentHealth = Math.max(0, pokemonCard.currentHealth - actualDamage);
+        logEvent(`${model.getCardName(pokemonCard)} took ${actualDamage} ${damageLabel} damage.`);
+
+        return {
+            cardId: pokemonCard.id,
+            damage: actualDamage,
+            damagePercent: Math.round((actualDamage / pokemonCard.pokemon.baseHealth) * 100),
+            ownerId
+        };
+    }
+
+    async function resolveEndOfTurnStatuses() {
+        const damageResults = applyEndOfTurnStatusDamage();
+
+        if (damageResults.length > 0) {
+            render();
+            showDamageNumbers(damageResults);
+            await model.sleep(620);
+        }
+
+        const sleepTickResults = tickSleepTimersWithoutAttack();
+        const removedStatuses = clearTurnStatuses();
+
+        if (damageResults.length > 0) {
+            damageResults.forEach(result => {
+                const pokemonCard = model.getBoardCardById(result.ownerId, result.cardId);
+
+                if (pokemonCard && pokemonCard.currentHealth === 0) {
+                    knockOutPokemon(result.ownerId, pokemonCard);
+                }
+            });
+        }
+
+        if (damageResults.length === 0 && sleepTickResults.length === 0 && removedStatuses.length === 0) return false;
+
+        render();
+
+        return checkGameOver();
+    }
+
+    function applyEndOfTurnStatusDamage() {
+        const results = [];
+        const damageStatuses = [
+            { label: 'poison', percent: POISON_DAMAGE_PERCENT, status: 'POISON' },
+            { label: 'burn', percent: BURN_DAMAGE_PERCENT, status: 'BURN' }
+        ];
+
+        ['player', 'opponent'].forEach(ownerId => {
+            model.getBoardCards(ownerId).forEach(pokemonCard => {
+                damageStatuses.forEach(statusDamage => {
+                    if (!model.hasPokemonStatus(pokemonCard, statusDamage.status)) return;
+
+                    const result = damagePokemonByStatus(ownerId, pokemonCard, statusDamage.percent, statusDamage.label);
+
+                    if (result && result.damage > 0) results.push(result);
+                });
+            });
+        });
+
+        return results;
+    }
+
+    function clearTurnStatuses() {
+        const removedStatuses = [];
+
+        ['player', 'opponent'].forEach(ownerId => {
+            model.getBoardCards(ownerId).forEach(pokemonCard => {
+                const removed = model.clearTurnStatuses(pokemonCard);
+
+                if (removed.length === 0) return;
+
+                removedStatuses.push(...removed.map(status => ({
+                    card: pokemonCard,
+                    ownerId,
+                    status
+                })));
+                logEvent(`${model.getCardName(pokemonCard)}'s ${removed.map(status => status.label).join(', ')} ended.`);
+            });
+        });
+
+        return removedStatuses;
+    }
+
     function maybeApplyAttackStatuses(actionCard, targets, isDamaging) {
         const statuses = getBattleStatuses(actionCard);
 
         if (statuses.length === 0) return false;
 
-        if (isDamaging && Math.random() >= STAT_CHANGE_TRIGGER_CHANCE) {
+        if (isDamaging && Math.random() >= STATUS_TRIGGER_CHANCE) {
             logEvent(`${model.getCardName(actionCard)} status did not activate.`);
             return false;
         }
@@ -967,16 +1481,35 @@
 
     function logStatusResult(pokemonCard, results) {
         const addedResults = results.filter(result => result.added);
-        const statusNames = (addedResults.length > 0 ? addedResults : results)
-            .map(result => result.label)
-            .join(', ');
+        const blockedResults = results.filter(result => result.blocked);
 
-        if (addedResults.length === 0) {
-            logEvent(`${model.getCardName(pokemonCard)} already has ${statusNames}.`);
+        if (addedResults.length > 0) {
+            const statusNames = addedResults
+                .map(result => result.label)
+                .join(', ');
+
+            logEvent(`${model.getCardName(pokemonCard)} gained ${statusNames}.`);
             return;
         }
 
-        logEvent(`${model.getCardName(pokemonCard)} gained ${statusNames}.`);
+        if (blockedResults.length > 0) {
+            const activeStatusNames = [...new Set(blockedResults.map(result => result.label))].join(', ');
+            const attemptedStatusNames = [...new Set(blockedResults.map(result => result.attemptedLabel))].join(', ');
+
+            if (activeStatusNames === attemptedStatusNames) {
+                logEvent(`${model.getCardName(pokemonCard)} already has ${activeStatusNames}.`);
+                return;
+            }
+
+            logEvent(`${model.getCardName(pokemonCard)} already has ${activeStatusNames} and could not gain ${attemptedStatusNames}.`);
+            return;
+        }
+
+        const statusNames = results
+            .map(result => result.label)
+            .join(', ');
+
+        logEvent(`${model.getCardName(pokemonCard)} already has ${statusNames}.`);
     }
 
     function maybeApplyAttackStatChanges(actionCard, targets, isDamaging) {
@@ -1134,6 +1667,8 @@
 
     function showDamageNumbers(damageResults) {
         damageResults.forEach(result => {
+            if (!result || result.damage <= 0) return;
+
             const targetElement = getBoardCardElement(result.ownerId, result.cardId);
 
             if (!targetElement) return;
@@ -1226,6 +1761,12 @@
 
     function getBoardCardElement(ownerId, cardId) {
         return document.querySelector(`.side-panel--${ownerId} [data-board-card-id="${cardId}"]`);
+    }
+
+    function getBoardCardCenter(ownerId, cardId) {
+        const element = getBoardCardElement(ownerId, cardId);
+
+        return element ? getElementCenter(element) : null;
     }
 
     function getHandCardElement(ownerId, cardId) {

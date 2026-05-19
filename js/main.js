@@ -2,6 +2,8 @@
  * Squish - Main Menu Logic
  */
 
+const CURRENT_BATTLE_STORAGE_KEY = 'card-arena-current-battle';
+
 document.addEventListener('DOMContentLoaded', () => {
     init();
 });
@@ -21,7 +23,7 @@ function init() {
  * Handles the "New Game" button click.
  */
 function handleNewGame() {
-    // Redirect to the game board page
+    localStorage.removeItem(CURRENT_BATTLE_STORAGE_KEY);
     window.location.href = 'game.html';
 }
 
@@ -29,8 +31,9 @@ function handleNewGame() {
  * Handles the "Load Game" button click.
  */
 function handleLoadGame() {
-    alert('Loading your saved game...');
-    // TODO: Implement logic to retrieve saved game state from storage
+    if (!checkForSavedGames()) return;
+
+    window.location.href = 'game.html';
 }
 
 /**
@@ -46,15 +49,9 @@ function handleSettings() {
  */
 function updateLoadButtonState() {
     const loadBtn = document.getElementById('btn-load-game');
-    
-    // TODO: Replace this with actual check for saved games in localStorage or database
     const hasSavedGames = checkForSavedGames();
 
-    if (!hasSavedGames) {
-        loadBtn.disabled = true;
-    } else {
-        loadBtn.disabled = false;
-    }
+    loadBtn.disabled = !hasSavedGames;
 }
 
 /**
@@ -62,6 +59,5 @@ function updateLoadButtonState() {
  * @returns {boolean} True if saved games exist, false otherwise.
  */
 function checkForSavedGames() {
-    // Currently returning false to demonstrate the inactive state
-    return false;
+    return Boolean(localStorage.getItem(CURRENT_BATTLE_STORAGE_KEY));
 }

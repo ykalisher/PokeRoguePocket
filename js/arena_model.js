@@ -13,6 +13,8 @@
         POKEMON_CARDS_PER_DECK
     } = arena.Constants;
 
+    const BATTLE_STORAGE_KEY = 'card-arena-current-battle';
+    const BATTLE_STORAGE_VERSION = 1;
     const STAT_STAGE_MIN = -6;
     const STAT_STAGE_MAX = 6;
     const STAT_STAGE_MULTIPLIERS = Object.freeze({
@@ -44,15 +46,21 @@
         speed: { baseKey: 'baseSpeed', label: 'Speed', shortLabel: 'SPD' }
     });
     const STATUS_DEFINITIONS = Object.freeze({
-        BURN: { iconPath: 'assets/status-icons/BURN.svg', label: 'Burn', showsToken: true },
+        BURN: { iconPath: 'assets/status-icons/BURN.svg', label: 'Burn', showsToken: true, statMultipliers: { attack: 0.5 } },
         CONFUSION: { iconPath: 'assets/status-icons/CONFUSION.svg', label: 'Confusion', showsToken: true },
-        FATIGUE: { iconPath: 'assets/status-icons/FATIGUE.png', label: 'Fatigue', showsToken: true },
-        FLINCH: { iconPath: 'assets/status-icons/FLINCH.svg', label: 'Flinch', showsToken: true },
+        FATIGUE: {
+            durationTurns: 3,
+            iconPath: 'assets/status-icons/FATIGUE.png',
+            label: 'Fatigue',
+            showsToken: true,
+            statMultipliers: { defense: 0.75, speed: 0.75 }
+        },
+        FLINCH: { expires: 'turn', iconPath: 'assets/status-icons/FLINCH.svg', label: 'Flinch', showsToken: true },
         HEAL: { iconPath: 'assets/status-icons/HEAL.png', label: 'Heal', showsToken: false },
-        PARALYSIS: { iconPath: 'assets/status-icons/PARALYSIS.svg', label: 'Paralysis', showsToken: true },
+        PARALYSIS: { iconPath: 'assets/status-icons/PARALYSIS.svg', label: 'Paralysis', showsToken: true, statMultipliers: { speed: 0.5 } },
         POISON: { iconPath: 'assets/status-icons/POISON.svg', label: 'Poison', showsToken: true },
-        PROTECT: { iconPath: 'assets/status-icons/PROTECT.png', label: 'Protect', showsToken: true },
-        SLEEP: { iconPath: 'assets/status-icons/SLEEP.svg', label: 'Sleep', showsToken: true },
+        PROTECT: { expires: 'turn', iconPath: 'assets/status-icons/PROTECT.png', label: 'Protect', showsToken: true },
+        SLEEP: { iconPath: 'assets/status-icons/SLEEP.svg', initialState: () => ({ lastWakeAttemptTurn: null, wakeAttempts: 0 }), label: 'Sleep', showsToken: true },
         SWITCH: { iconPath: 'assets/status-icons/SWITCH.png', label: 'Switch', showsToken: false }
     });
 
@@ -91,17 +99,187 @@
         };
     }
 
+    function saveBattleState() {
+        if (!canUseStorage() || !shouldSaveBattleState()) return false;
+
+        try {
+            localStorage.setItem(BATTLE_STORAGE_KEY, JSON.stringify({
+                battle: serializeBattleState(),
+                savedAt: new Date().toISOString(),
+                version: BATTLE_STORAGE_VERSION
+            }));
+
+            return true;
+        } catch (error) {
+            console.warn('Could not save battle state.', error);
+            return false;
+        }
+    }
+
+    function restoreSavedBattleState() {
+        const savedBattle = loadSavedBattleState();
+
+        if (!savedBattle) return false;
+
+        state.currentPlayer = savedBattle.currentPlayer || 'player';
+        state.finished = Boolean(savedBattle.finished);
+        state.isResolving = false;
+        state.log = Array.isArray(savedBattle.log) ? savedBattle.log.slice(0, 3) : [];
+        state.phase = savedBattle.phase || 'turn';
+        state.flowTimer = null;
+        state.drag = null;
+        state.itemUsed = normalizeItemUsed(savedBattle.itemUsed);
+        state.pendingActionCardId = savedBattle.pendingActionCardId || null;
+        state.pendingUserCardId = savedBattle.pendingUserCardId || null;
+        state.plannedActions = normalizePlannedActions(savedBattle.plannedActions);
+        state.players = {
+            opponent: normalizeSavedPlayer(savedBattle.players && savedBattle.players.opponent, 'opponent', 'Rival'),
+            player: normalizeSavedPlayer(savedBattle.players && savedBattle.players.player, 'player', 'You')
+        };
+        state.popupTimer = null;
+        state.selectedCardId = savedBattle.selectedCardId || null;
+        state.suppressNextClick = false;
+        state.turnNumber = Number.isFinite(savedBattle.turnNumber) ? savedBattle.turnNumber : 0;
+
+        if (state.phase === 'resolving' || state.phase === 'opponent-planning') {
+            state.currentPlayer = 'player';
+            state.phase = 'turn';
+            state.plannedActions = { opponent: [], player: [] };
+        }
+
+        return true;
+    }
+
+    function clearSavedBattleState() {
+        if (!canUseStorage()) return false;
+
+        try {
+            localStorage.removeItem(BATTLE_STORAGE_KEY);
+            return true;
+        } catch (error) {
+            console.warn('Could not clear battle state.', error);
+            return false;
+        }
+    }
+
+    function hasSavedBattleState() {
+        return Boolean(loadSavedBattleState());
+    }
+
+    function loadSavedBattleState() {
+        if (!canUseStorage()) return null;
+
+        try {
+            const rawSavedState = localStorage.getItem(BATTLE_STORAGE_KEY);
+
+            if (!rawSavedState) return null;
+
+            const savedState = JSON.parse(rawSavedState);
+
+            if (!savedState || savedState.version !== BATTLE_STORAGE_VERSION || !savedState.battle) {
+                clearSavedBattleState();
+                return null;
+            }
+
+            return savedState.battle;
+        } catch (error) {
+            console.warn('Could not load battle state.', error);
+            clearSavedBattleState();
+            return null;
+        }
+    }
+
+    function canUseStorage() {
+        return typeof localStorage !== 'undefined';
+    }
+
+    function shouldSaveBattleState() {
+        if (!state.players || !state.players.player || !state.players.opponent) return false;
+        if (state.phase === 'setup') return false;
+        if (!state.finished && state.isResolving) return false;
+        if (state.phase === 'resolving' || state.phase === 'opponent-planning') return false;
+
+        return true;
+    }
+
+    function serializeBattleState() {
+        return {
+            currentPlayer: state.currentPlayer,
+            finished: state.finished,
+            itemUsed: state.itemUsed,
+            log: state.log,
+            pendingActionCardId: state.pendingActionCardId,
+            pendingUserCardId: state.pendingUserCardId,
+            phase: state.phase,
+            plannedActions: state.plannedActions,
+            players: state.players,
+            selectedCardId: state.selectedCardId,
+            turnNumber: state.turnNumber
+        };
+    }
+
+    function normalizeItemUsed(itemUsed) {
+        return {
+            opponent: Boolean(itemUsed && itemUsed.opponent),
+            player: Boolean(itemUsed && itemUsed.player)
+        };
+    }
+
+    function normalizePlannedActions(plannedActions) {
+        return {
+            opponent: Array.isArray(plannedActions && plannedActions.opponent) ? plannedActions.opponent : [],
+            player: Array.isArray(plannedActions && plannedActions.player) ? plannedActions.player : []
+        };
+    }
+
+    function normalizeSavedPlayer(player, id, name) {
+        const normalizedPlayer = player && typeof player === 'object' ? player : {};
+        const board = Array.isArray(normalizedPlayer.board) ? normalizedPlayer.board : [];
+        const deck = Array.isArray(normalizedPlayer.deck) ? normalizedPlayer.deck : [];
+        const discard = Array.isArray(normalizedPlayer.discard) ? normalizedPlayer.discard : [];
+        const hand = Array.isArray(normalizedPlayer.hand) ? normalizedPlayer.hand : [];
+        const knockout = Array.isArray(normalizedPlayer.knockout) ? normalizedPlayer.knockout : [];
+
+        return {
+            board: Array.from({ length: BOARD_SLOT_COUNT }, (_, index) => board[index] || null),
+            deck,
+            discard,
+            hand,
+            id,
+            knockout,
+            name: normalizedPlayer.name || name,
+            pokemonLeft: Number.isFinite(normalizedPlayer.pokemonLeft)
+                ? normalizedPlayer.pokemonLeft
+                : countRemainingPokemon({ board, deck, discard, hand })
+        };
+    }
+
+    function countRemainingPokemon(player) {
+        return [
+            ...player.board,
+            ...player.deck,
+            ...player.discard,
+            ...player.hand
+        ].filter(isPokemonCard).length;
+    }
+
     function createDeck(playerId) {
         const prefix = playerId === 'player' ? 'YOU' : 'OPP';
         const data = arena.GameData || { attacks: [], items: [], pokemon: [] };
+        const pokemonRecords = [];
         const deck = [];
 
         for (let index = 0; index < POKEMON_CARDS_PER_DECK && data.pokemon.length > 0; index += 1) {
-            deck.push(createPokemonCard(data.pokemon[index % data.pokemon.length], playerId, `${prefix}-PKM-${index + 1}`));
+            const pokemon = data.pokemon[index % data.pokemon.length];
+
+            pokemonRecords.push(pokemon);
+            deck.push(createPokemonCard(pokemon, playerId, `${prefix}-PKM-${index + 1}`));
         }
 
-        for (let index = 0; index < ATTACK_CARDS_PER_DECK && data.attacks.length > 0; index += 1) {
-            deck.push(createAttackCard(data.attacks[index % data.attacks.length], playerId, `${prefix}-ATK-${index + 1}`));
+        const attacks = getDemoAttacksForPokemon(data.attacks, pokemonRecords);
+
+        for (let index = 0; index < ATTACK_CARDS_PER_DECK && attacks.length > 0; index += 1) {
+            deck.push(createAttackCard(attacks[index % attacks.length], playerId, `${prefix}-ATK-${index + 1}`));
         }
 
         for (let index = 0; index < ITEM_CARDS_PER_DECK && data.items.length > 0; index += 1) {
@@ -109,6 +287,24 @@
         }
 
         return shuffle(deck);
+    }
+
+    function compactTypes(types) {
+        return types.filter(type => type && type !== 'NONE');
+    }
+
+    function getDemoAttacksForPokemon(attacks, pokemonRecords) {
+        const deckTypes = new Set(pokemonRecords.flatMap(pokemon => pokemon.types || compactTypes([
+            pokemon.type1,
+            pokemon.type2,
+            pokemon.type3
+        ])));
+
+        return attacks.filter(attack => {
+            const attackTypes = attack.types || compactTypes([attack.type1, attack.type2]);
+
+            return attackTypes.length > 0 && attackTypes.every(type => deckTypes.has(type));
+        });
     }
 
     function createPokemonCard(pokemon, owner, id) {
@@ -281,18 +477,22 @@
         if (!isPokemonCard(card) || !isBattleStatus(normalizedStatus)) return null;
 
         const currentStatuses = ensurePokemonStatuses(card);
-        const added = !currentStatuses.some(statusEntry => statusEntry.status === normalizedStatus);
+        const activeStatus = currentStatuses[0];
 
-        if (added) {
-            currentStatuses.push({ status: normalizedStatus });
+        if (activeStatus) {
+            return createStatusResult(activeStatus, {
+                added: false,
+                blocked: true,
+                attemptedLabel: formatStatusName(normalizedStatus),
+                attemptedStatus: normalizedStatus
+            });
         }
 
-        return {
-            added,
-            iconPath: getStatusIconPath(normalizedStatus),
-            label: formatStatusName(normalizedStatus),
-            status: normalizedStatus
-        };
+        const statusEntry = createStatusEntry(normalizedStatus);
+
+        currentStatuses.push(statusEntry);
+
+        return createStatusResult(statusEntry, { added: true });
     }
 
     function ensurePokemonStatuses(card) {
@@ -306,11 +506,12 @@
             const status = normalizeStatus(statusEntry);
 
             if (!isBattleStatus(status) || seen.has(status)) return;
+            if (statuses.length > 0) return;
 
             seen.add(status);
-            statuses.push(typeof statusEntry === 'object' && statusEntry
-                ? { ...statusEntry, status }
-                : { status }
+            statuses.push(statusEntry && typeof statusEntry === 'object'
+                ? { ...createStatusEntry(status), ...statusEntry, status }
+                : createStatusEntry(status)
             );
         });
 
@@ -320,10 +521,64 @@
 
     function getPokemonStatuses(card) {
         return ensurePokemonStatuses(card).map(statusEntry => ({
-            ...statusEntry,
-            iconPath: getStatusIconPath(statusEntry.status),
-            label: formatStatusName(statusEntry.status)
+            ...createStatusResult(statusEntry)
         }));
+    }
+
+    function getPokemonStatusEntry(card, status) {
+        const normalizedStatus = normalizeStatus(status);
+
+        if (!normalizedStatus) return null;
+
+        return ensurePokemonStatuses(card).find(statusEntry => statusEntry.status === normalizedStatus) || null;
+    }
+
+    function hasPokemonStatus(card, status) {
+        const normalizedStatus = normalizeStatus(status);
+
+        if (!normalizedStatus) return false;
+
+        return ensurePokemonStatuses(card).some(statusEntry => statusEntry.status === normalizedStatus);
+    }
+
+    function removePokemonStatus(card, status) {
+        const normalizedStatus = normalizeStatus(status);
+
+        if (!isPokemonCard(card) || !normalizedStatus) return null;
+
+        const statuses = ensurePokemonStatuses(card);
+        const statusIndex = statuses.findIndex(statusEntry => statusEntry.status === normalizedStatus);
+
+        if (statusIndex === -1) return null;
+
+        const [removedStatus] = statuses.splice(statusIndex, 1);
+        card.currentStatus = statuses;
+
+        return createStatusResult(removedStatus, { removed: true });
+    }
+
+    function clearTurnStatuses(card) {
+        if (!isPokemonCard(card)) return [];
+
+        const removedStatuses = [];
+        const remainingStatuses = ensurePokemonStatuses(card).filter(statusEntry => {
+            if (!isExpiringStatus(statusEntry.status)) return true;
+
+            if (isLimitedTurnStatus(statusEntry.status)) {
+                statusEntry.turnsRemaining = getNextTurnsRemaining(statusEntry);
+
+                if (statusEntry.turnsRemaining > 0) return true;
+            }
+
+            removedStatuses.push({
+                ...createStatusResult(statusEntry, { removed: true })
+            });
+
+            return false;
+        });
+
+        card.currentStatus = remainingStatuses;
+        return removedStatuses;
     }
 
     function isBattleStatus(status) {
@@ -332,10 +587,67 @@
         return Boolean(definition && definition.showsToken);
     }
 
+    function isExpiringStatus(status) {
+        return isTurnStatus(status) || isLimitedTurnStatus(status);
+    }
+
+    function isTurnStatus(status) {
+        const definition = STATUS_DEFINITIONS[status];
+
+        return Boolean(definition && definition.expires === 'turn');
+    }
+
+    function isLimitedTurnStatus(status) {
+        const definition = STATUS_DEFINITIONS[status];
+
+        return Boolean(definition && Number.isFinite(definition.durationTurns));
+    }
+
+    function getNextTurnsRemaining(statusEntry) {
+        const definition = STATUS_DEFINITIONS[statusEntry.status];
+        const currentTurnsRemaining = Number.isFinite(statusEntry.turnsRemaining)
+            ? statusEntry.turnsRemaining
+            : definition.durationTurns;
+
+        return Math.max(0, currentTurnsRemaining - 1);
+    }
+
+    function createStatusEntry(status) {
+        const definition = STATUS_DEFINITIONS[status];
+        const durationState = definition && Number.isFinite(definition.durationTurns)
+            ? { turnsRemaining: definition.durationTurns }
+            : {};
+        const initialState = definition && typeof definition.initialState === 'function'
+            ? definition.initialState()
+            : {};
+
+        return { ...durationState, ...initialState, status };
+    }
+
+    function createStatusResult(statusEntry, extra = {}) {
+        return {
+            ...statusEntry,
+            ...extra,
+            iconPath: getStatusIconPath(statusEntry.status),
+            label: formatStatusName(statusEntry.status)
+        };
+    }
+
     function getStatusIconPath(status) {
         const definition = STATUS_DEFINITIONS[status];
 
         return definition ? definition.iconPath : '';
+    }
+
+    function getPokemonStatusMultiplier(card, stat) {
+        if (!isPokemonCard(card) || !STAT_LABELS[stat]) return 1;
+
+        return ensurePokemonStatuses(card).reduce((multiplier, statusEntry) => {
+            const definition = STATUS_DEFINITIONS[statusEntry.status];
+            const statMultipliers = definition && definition.statMultipliers;
+
+            return multiplier * (statMultipliers && Number(statMultipliers[stat]) || 1);
+        }, 1);
     }
 
     function formatStatusName(status) {
@@ -408,8 +720,9 @@
         if (!isPokemonCard(card) || !STAT_LABELS[stat]) return 0;
 
         const baseStat = Number(card.pokemon[STAT_LABELS[stat].baseKey]) || 0;
+        const stagedStat = baseStat * getPokemonStatMultiplier(card, stat);
 
-        return Math.max(1, Math.round(baseStat * getPokemonStatMultiplier(card, stat)));
+        return Math.max(1, Math.round(stagedStat * getPokemonStatusMultiplier(card, stat)));
     }
 
     function applyStatChange(card, statChange) {
@@ -650,8 +963,10 @@
 
     arena.state = state;
     arena.Model = {
-        createPlayer,
         applyStatus,
+        clearTurnStatuses,
+        clearSavedBattleState,
+        createPlayer,
         drawCard,
         drawOpeningHands,
         findHandCard,
@@ -672,13 +987,17 @@
         getPokemonStatMultiplier,
         getPokemonStatStage,
         getPokemonSpeed,
+        getPokemonStatusEntry,
         getPokemonStatuses,
+        getPokemonStatusMultiplier,
         getPortraitHue,
         getPortraitInitials,
         getPortraitUrl,
         getStatusIconPath,
         getTargetOptionsForAction,
         hasOpponentBoardTarget,
+        hasPokemonStatus,
+        hasSavedBattleState,
         hasQueuedAttack,
         hasUsableAttackInHand,
         isAttackCard,
@@ -691,6 +1010,9 @@
         recycleDiscardIntoDeck,
         removeCardFromHand,
         removeCardFromBoard,
+        removePokemonStatus,
+        restoreSavedBattleState,
+        saveBattleState,
         shuffle,
         shuffleCardIntoDeck,
         targetOptionsIncludeCard,
