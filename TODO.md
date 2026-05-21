@@ -1,11 +1,51 @@
-# Remaining Tasks
-
-- [x] Add more pokemon, items, attacks, and portraits.
+# Tasks
+This file is for humans only! Agents should not act on this file unless explicitly requested to mark something as complete or add a  new item.
+## Data
+- [ ] Decide on type specializations for attacks
+	ARTIFICIAL: special boosting circumstances and item use,
+	BABY: Evolves into strong pokemon, but otherwise very weak
+	BUG: Gambling with multi-attack moves (a la fury attack)
+	DARK: flinching
+	DRAGON: "dragon" status effects on dragon attacks that can be changed with items
+	ELECTRIC: paralysis
+	FAIRY: teammate support
+	FIGHTING: gains power from status effects
+	FIRE: burn
+	FLYING: improving speeds and altering turn order,
+	FOSSIL: cannot be knocked out if health >40%
+	GHOST: fatigue
+	GOURMET: self-support
+	GRASS: sleep
+	GROUND: multi-target damage
+	HUMAN: double stat effects
+	ICE: ignoring stat effects
+	LEGENDARY: excessive moves
+	MONSTER: extreme stat tradeoffs (i.e. double attack, halve defense)
+	NORMAL: stat changes can only be +/- 1
+	POISON: poisoning
+	PSYCHIC: protecting team
+	ROCK: brute force
+	STEEL: defense
+	WATER: neutralizing/healing off effects
+- [ ] Redo pokemon given the new type specializations
+	- [ ] Add 3 pokemon for each type, and add 2 move for each type that pokemon has that synergize with it (If I add water/monster, that counts as 1 water, then need to add 3 more monster still)
+- [ ] Add more items
+## Overworld Mechanics
 - [ ] Decide on how you capture more pokemon.
 - [ ] Come up with algorithm for locations and selection.
 - [ ] Come up with algorithm or presets for opposing trainers.
 - [ ] Create system for shopkeeper and costs.
 - [ ] Decide on progression system.
+## Battle Mechanics
 - [x] Implement statuses and stat changes in battles.
-- [ ] Sort out the bizarre ui.
+- [ ] Implement new statuses or effects from types (healing status away, dragon types, multi-attack moves, fighting types, fossil types, normal types, altering turn order, human type, ice types)
+- [ ] Reorganize decks
+	- two decks, one for pokemon and one for moves/items. 
+	- Draw two pokemon to start with, and switch to shuffle it back into the deck and draw a new one out (drawing should occur before shuffling).
+	- Battle ends when someone either has no more pokemon on the field or runs out of pokemon to draw from; not all pokemon will be played in a battle
+	- *this isn't it yet but it's closer* Each pokemon should have moves equipped for battle, and a deck gets generated from that. Draw 5 moves each turn, discard unused moves at the end of the turn. (also add item to shuffle a move back into the deck for later use)
+- [ ] Decide on damage calculations
+## Misc
+- [ ] Sort out the disgusting ui.
+- [ ] Icons for the website
 - [ ] Make it a progressive web app (or at least have the option to be).

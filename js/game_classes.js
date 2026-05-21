@@ -149,7 +149,7 @@ class PokemonCard {
         this.species = species;
         this.pokemon = species;
         this.currentHealth = species.baseHealth;
-        this.id = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+        this.id = Math.floor(Math.random() * 32768).toString().padStart(5, '0');
         this.faceUp = false;
         this.currentStatus = currentStatus;
         this.statChanges = statChanges;
@@ -166,7 +166,7 @@ class Bag {
      * Represents a player's inventory and deck.
      */
     constructor() {
-        this.id = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+        this.id = Math.floor(Math.random() * 32768).toString().padStart(5, '0');
         /** @type {Object.<string, number>} */
         this.pokemon = {};
         /** @type {Object.<string, number>} */
