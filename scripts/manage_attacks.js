@@ -5,7 +5,6 @@ const { stdin: input, stdout: output } = require('process');
 const JSON_FILE = 'attacks.json';
 
 const PokeType = Object.freeze({
-    AMORPHOUS: 'AMORPHOUS',
     ARTIFICIAL: 'ARTIFICIAL',
     BABY: 'BABY',
     BUG: 'BUG',
@@ -40,6 +39,9 @@ const Status = Object.freeze({
     FATIGUE: 'FATIGUE',
     FLINCH: 'FLINCH',
     HEAL: 'HEAL',
+    HEAL_BURN: 'HEAL_BURN',
+    HEAL_STATUS: 'HEAL_STATUS',
+    MULTI_ATTACK: 'MULTI_ATTACK',
     PARALYSIS: 'PARALYSIS',
     POISON: 'POISON',
     PROTECT: 'PROTECT',
@@ -158,8 +160,8 @@ async function askInt(rl, prompt) {
     while (true) {
         const input = (await rl.question(prompt)).trim();
         const val = parseInt(input, 10);
-        if (!isNaN(val) && val > 0) return val;
-        console.log('Please enter a valid integer greater than 0.');
+        if (!isNaN(val) && val >= 0) return val;
+        console.log('Please enter a valid integer greater than or equal to 0.');
     }
 }
 

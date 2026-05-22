@@ -450,7 +450,9 @@
     function formatStatuses(statuses) {
         if (!statuses.length) return 'No effect';
 
-        return statuses.map(status => status.toLowerCase()).join(', ');
+        return statuses
+            .map(status => status.toLowerCase().replace(/_/g, ' '))
+            .join(', ');
     }
 
     function formatEffects(card) {

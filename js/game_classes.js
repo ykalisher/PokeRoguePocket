@@ -1,5 +1,4 @@
 const PokeType = Object.freeze({
-    AMORPHOUS: 'AMORPHOUS',
     ARTIFICIAL: 'ARTIFICIAL',
     BABY: 'BABY',
     BUG: 'BUG',
@@ -35,6 +34,9 @@ const Status = Object.freeze({
     FATIGUE: 'FATIGUE',
     FLINCH: 'FLINCH',
     HEAL: 'HEAL',
+    HEAL_BURN: 'HEAL_BURN',
+    HEAL_STATUS: 'HEAL_STATUS',
+    MULTI_ATTACK: 'MULTI_ATTACK',
     PARALYSIS: 'PARALYSIS',
     POISON: 'POISON',
     PROTECT: 'PROTECT',

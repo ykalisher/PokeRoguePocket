@@ -40,6 +40,9 @@
         SPEED_DOWN: { delta: -1, stat: 'speed' },
         SPEED_UP: { delta: 1, stat: 'speed' }
     });
+    const NORMAL_STAT_CHANGE_LIMIT = 1;
+    const HUMAN_STAT_CHANGE_MULTIPLIER = 2;
+    const FIGHTING_STATUS_ATTACK_MULTIPLIER = 1.5;
     const STAT_LABELS = Object.freeze({
         attack: { baseKey: 'baseAttack', label: 'Attack', shortLabel: 'ATK' },
         defense: { baseKey: 'baseDefense', label: 'Defense', shortLabel: 'DEF' },
@@ -57,6 +60,9 @@
         },
         FLINCH: { expires: 'turn', iconPath: 'assets/status-icons/FLINCH.svg', label: 'Flinch', showsToken: true },
         HEAL: { iconPath: 'assets/status-icons/HEAL.png', label: 'Heal', showsToken: false },
+        HEAL_BURN: { iconPath: 'assets/status-icons/HEAL.png', label: 'Heal Burn', showsToken: false },
+        HEAL_STATUS: { iconPath: 'assets/status-icons/HEAL.png', label: 'Heal Status', showsToken: false },
+        MULTI_ATTACK: { iconPath: '', label: 'Multi Attack', showsToken: false },
         PARALYSIS: { iconPath: 'assets/status-icons/PARALYSIS.svg', label: 'Paralysis', showsToken: true, statMultipliers: { speed: 0.5 } },
         POISON: { iconPath: 'assets/status-icons/POISON.svg', label: 'Poison', showsToken: true },
         PROTECT: { expires: 'turn', iconPath: 'assets/status-icons/PROTECT.png', label: 'Protect', showsToken: true },
@@ -312,6 +318,7 @@
             currentHealth: pokemon.baseHealth,
             currentStatus: [],
             faceUp: false,
+            hasUsedFossilRevival: false,
             id,
             kind: 'pokemon',
             owner,
@@ -448,8 +455,20 @@
     }
 
     function getCardTypes(card) {
-        if (isPokemonCard(card)) return card.pokemon.types || [];
-        if (isAttackCard(card)) return card.attack.types || [];
+        if (isPokemonCard(card)) {
+            return card.pokemon.types || compactTypes([
+                card.pokemon.type1,
+                card.pokemon.type2,
+                card.pokemon.type3
+            ]);
+        }
+
+        if (isAttackCard(card)) {
+            return card.attack.types || compactTypes([
+                card.attack.type1,
+                card.attack.type2
+            ]);
+        }
 
         return [];
     }
@@ -557,6 +576,17 @@
         return createStatusResult(removedStatus, { removed: true });
     }
 
+    function clearPokemonStatuses(card) {
+        if (!isPokemonCard(card)) return [];
+
+        const removedStatuses = ensurePokemonStatuses(card).map(statusEntry => ({
+            ...createStatusResult(statusEntry, { removed: true })
+        }));
+
+        card.currentStatus = [];
+        return removedStatuses;
+    }
+
     function clearTurnStatuses(card) {
         if (!isPokemonCard(card)) return [];
 
@@ -642,12 +672,36 @@
     function getPokemonStatusMultiplier(card, stat) {
         if (!isPokemonCard(card) || !STAT_LABELS[stat]) return 1;
 
-        return ensurePokemonStatuses(card).reduce((multiplier, statusEntry) => {
-            const definition = STATUS_DEFINITIONS[statusEntry.status];
-            const statMultipliers = definition && definition.statMultipliers;
+        const statuses = ensurePokemonStatuses(card);
+        const typeAbilityMultiplier = getPokemonTypeStatusMultiplier(card, stat, statuses);
 
-            return multiplier * (statMultipliers && Number(statMultipliers[stat]) || 1);
-        }, 1);
+        return statuses.reduce((multiplier, statusEntry) => (
+            multiplier * getStatusStatMultiplier(card, statusEntry.status, stat)
+        ), typeAbilityMultiplier);
+    }
+
+    function getStatusStatMultiplier(card, status, stat) {
+        if (stat === 'attack' && status === 'BURN' && pokemonHasType(card, 'FIGHTING')) {
+            return 1;
+        }
+
+        const definition = STATUS_DEFINITIONS[status];
+        const statMultipliers = definition && definition.statMultipliers;
+        const statMultiplier = statMultipliers ? Number(statMultipliers[stat]) : NaN;
+
+        return Number.isFinite(statMultiplier) ? statMultiplier : 1;
+    }
+
+    function getPokemonTypeStatusMultiplier(card, stat, statuses) {
+        if (stat !== 'attack' || statuses.length === 0 || !pokemonHasType(card, 'FIGHTING')) {
+            return 1;
+        }
+
+        return FIGHTING_STATUS_ATTACK_MULTIPLIER;
+    }
+
+    function pokemonHasType(card, type) {
+        return getCardTypes(card).includes(type);
     }
 
     function formatStatusName(status) {
@@ -678,6 +732,57 @@
 
         return (Array.isArray(statChanges) ? statChanges : [])
             .filter(statChange => Boolean(STAT_CHANGE_DELTAS[statChange]));
+    }
+
+    function getStatChangesForPokemon(card, statChanges) {
+        const validStatChanges = (Array.isArray(statChanges) ? statChanges : [])
+            .filter(statChange => Boolean(STAT_CHANGE_DELTAS[statChange]));
+
+        if (!isPokemonCard(card) || (!pokemonHasType(card, 'NORMAL') && !pokemonHasType(card, 'HUMAN'))) {
+            return validStatChanges;
+        }
+
+        const deltasByStat = validStatChanges.reduce((deltas, statChange) => {
+            const change = STAT_CHANGE_DELTAS[statChange];
+            const currentDelta = deltas[change.stat] || 0;
+
+            deltas[change.stat] = currentDelta + change.delta;
+
+            return deltas;
+        }, {});
+
+        return Object.keys(deltasByStat)
+            .flatMap(stat => getStatChangesForDelta(stat, getAdjustedStatChangeDelta(card, deltasByStat[stat])))
+            .filter(Boolean);
+    }
+
+    function getAdjustedStatChangeDelta(card, delta) {
+        const humanAdjustedDelta = pokemonHasType(card, 'HUMAN')
+            ? delta * HUMAN_STAT_CHANGE_MULTIPLIER
+            : delta;
+
+        return pokemonHasType(card, 'NORMAL')
+            ? clampNormalStatChangeDelta(humanAdjustedDelta)
+            : humanAdjustedDelta;
+    }
+
+    function clampNormalStatChangeDelta(delta) {
+        return Math.max(
+            -NORMAL_STAT_CHANGE_LIMIT,
+            Math.min(NORMAL_STAT_CHANGE_LIMIT, delta)
+        );
+    }
+
+    function getStatChangesForDelta(stat, delta) {
+        const direction = delta > 0
+            ? '_UP'
+            : delta < 0
+                ? '_DOWN'
+                : null;
+
+        if (!direction) return [];
+
+        return Array.from({ length: Math.abs(delta) }, () => `${stat.toUpperCase()}${direction}`);
     }
 
     function createDefaultStatStages() {
@@ -747,6 +852,18 @@
             shortLabel: STAT_LABELS[change.stat].shortLabel,
             stat: change.stat
         };
+    }
+
+    function clearPokemonStatChanges(card) {
+        if (!isPokemonCard(card)) return false;
+
+        const stages = ensureStatStages(card);
+        const hadChanges = Object.keys(STAT_LABELS).some(stat => stages[stat] !== 0);
+
+        card.statChanges = [];
+        card.statStages = createDefaultStatStages();
+
+        return hadChanges;
     }
 
     function formatStatStage(stage) {
@@ -964,6 +1081,8 @@
     arena.state = state;
     arena.Model = {
         applyStatus,
+        clearPokemonStatChanges,
+        clearPokemonStatuses,
         clearTurnStatuses,
         clearSavedBattleState,
         createPlayer,
@@ -987,6 +1106,7 @@
         getPokemonStatMultiplier,
         getPokemonStatStage,
         getPokemonSpeed,
+        getStatChangesForPokemon,
         getPokemonStatusEntry,
         getPokemonStatuses,
         getPokemonStatusMultiplier,

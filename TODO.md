@@ -12,7 +12,7 @@ This file is for humans only! Agents should not act on this file unless explicit
 	FIGHTING: gains power from status effects
 	FIRE: burn
 	FLYING: improving speeds and altering turn order,
-	FOSSIL: cannot be knocked out if health >40%
+	FOSSIL: if knocked out and another pokemon knocked out, then fossil comes back with 50% hp.
 	GHOST: fatigue
 	GOURMET: self-support
 	GRASS: sleep
@@ -24,8 +24,8 @@ This file is for humans only! Agents should not act on this file unless explicit
 	NORMAL: stat changes can only be +/- 1
 	POISON: poisoning
 	PSYCHIC: protecting team
-	ROCK: brute force
-	STEEL: defense
+	ROCK: increasing defense
+	STEEL: uses defense instead of attack
 	WATER: neutralizing/healing off effects
 - [ ] Redo pokemon given the new type specializations
 	- [ ] Add 3 pokemon for each type, and add 2 move for each type that pokemon has that synergize with it (If I add water/monster, that counts as 1 water, then need to add 3 more monster still)
@@ -38,13 +38,14 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [ ] Decide on progression system.
 ## Battle Mechanics
 - [x] Implement statuses and stat changes in battles.
-- [ ] Implement new statuses or effects from types (healing status away, dragon types, multi-attack moves, fighting types, fossil types, normal types, altering turn order, human type, ice types)
+- [x] Implement new statuses or effects from types (~healing status away~, ~multi-attack moves~, ~fighting types~, ~fossil types~, ~normal types~, ~human type~, ~ice types~, ~steel types~)
+- [ ] Implement dragon types
 - [ ] Reorganize decks
 	- two decks, one for pokemon and one for moves/items. 
 	- Draw two pokemon to start with, and switch to shuffle it back into the deck and draw a new one out (drawing should occur before shuffling).
 	- Battle ends when someone either has no more pokemon on the field or runs out of pokemon to draw from; not all pokemon will be played in a battle
 	- *this isn't it yet but it's closer* Each pokemon should have moves equipped for battle, and a deck gets generated from that. Draw 5 moves each turn, discard unused moves at the end of the turn. (also add item to shuffle a move back into the deck for later use)
-- [ ] Decide on damage calculations
+- [ ] Decide on damage calculations (also don't forget)
 ## Misc
 - [ ] Sort out the disgusting ui.
 - [ ] Icons for the website

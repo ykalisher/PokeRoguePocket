@@ -5,7 +5,6 @@ const { stdin: input, stdout: output } = require('process');
 const JSON_FILE = 'pokemon.json';
 
 const PokeType = Object.freeze({
-    AMORPHOUS: 'AMORPHOUS',
     ARTIFICIAL: 'ARTIFICIAL',
     BABY: 'BABY',
     BUG: 'BUG',
