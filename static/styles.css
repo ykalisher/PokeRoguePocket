@@ -74,32 +74,40 @@ h1 {
 
 /* --- Main Menu --- */
 
-.menu-page {
+.menu-page,
+.game-page {
     --felt: #17483d;
     --ink: #251b18;
     --gold: #e0b84f;
     --aqua: #4ab0a5;
     --muted: rgba(250, 246, 230, 0.72);
-
-    min-height: 100dvh;
-    height: auto;
-    overflow: auto;
-    background:
+    --page-bg:
         radial-gradient(circle at 18% 20%, rgba(224, 184, 79, 0.18), transparent 26%),
         radial-gradient(circle at 82% 76%, rgba(74, 176, 165, 0.16), transparent 28%),
         linear-gradient(145deg, #163633, #0b1e25 58%, #251b18);
-    color: #fbf6e8;
-}
-
-.menu-page .main-menu {
-    padding: clamp(28px, 7vw, 56px);
-    border: 1px solid rgba(251, 246, 232, 0.16);
-    background:
+    --panel-bg:
         linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
         linear-gradient(0deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
         linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.12)),
         var(--felt);
+
+    min-height: 100dvh;
+    height: auto;
+    overflow: auto;
+    background: var(--page-bg);
+    color: #fbf6e8;
+}
+
+.menu-page .main-menu,
+.side-panel {
+    border: 1px solid rgba(251, 246, 232, 0.16);
+    background: var(--panel-bg);
     background-size: 24px 24px, 24px 24px, auto, auto;
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.14);
+}
+
+.menu-page .main-menu {
+    padding: clamp(28px, 7vw, 56px);
     box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.14), 0 20px 48px rgba(0, 0, 0, 0.28);
 }
 
@@ -115,16 +123,22 @@ h1 {
     width: min(100%, 260px);
 }
 
-.menu-page .btn {
-    width: 100%;
+.menu-page .btn,
+.arena-button {
     border: 1px solid rgba(251, 246, 232, 0.22);
     border-radius: 6px;
     background-color: rgba(74, 176, 165, 0.28);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
     font-weight: 760;
 }
 
-.menu-page .btn:hover:not(:disabled) {
+.menu-page .btn {
+    width: 100%;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+}
+
+.menu-page .btn:hover:not(:disabled),
+.arena-button:hover:not(:disabled),
+.arena-button:focus-visible:not(:disabled) {
     background-color: rgba(74, 176, 165, 0.42);
 }
 
@@ -142,24 +156,11 @@ h1 {
     --pile-card-w: clamp(50px, 4vw, 60px);
     --pile-card-h: calc(var(--pile-card-w) * 1.38);
     --panel-gap: clamp(4px, 0.8vw, 8px);
-    --felt: #17483d;
     --felt-dark: #0f2f2d;
-    --ink: #251b18;
     --paper: #f7eed7;
-    --gold: #e0b84f;
     --coral: #d85f4f;
-    --aqua: #4ab0a5;
-    --muted: rgba(250, 246, 230, 0.72);
 
     display: block;
-    min-height: 100dvh;
-    height: auto;
-    overflow: auto;
-    background:
-        radial-gradient(circle at 18% 20%, rgba(224, 184, 79, 0.18), transparent 26%),
-        radial-gradient(circle at 82% 76%, rgba(74, 176, 165, 0.16), transparent 28%),
-        linear-gradient(145deg, #163633, #0b1e25 58%, #251b18);
-    color: #fbf6e8;
 }
 
 .game-page .btn-back {
@@ -191,14 +192,6 @@ h1 {
     grid-template-rows: auto minmax(0, 1fr) auto;
     gap: clamp(4px, 0.7vw, 8px);
     padding: clamp(5px, 0.8vw, 9px);
-    border: 1px solid rgba(251, 246, 232, 0.16);
-    background:
-        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.12)),
-        var(--felt);
-    background-size: 24px 24px, 24px 24px, auto, auto;
-    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.14);
 }
 
 .side-panel--opponent {
@@ -412,17 +405,29 @@ button.playing-card:focus-visible {
 }
 
 .playing-card.is-user-option {
+    --card-glow-start: rgba(224, 184, 79, 0.42);
+    --card-glow-size: 6px;
+    --card-glow-peak: rgba(224, 184, 79, 0.5);
+
     cursor: pointer;
-    animation: user-option-flash 1.45s ease-in-out infinite;
+    animation: card-glow-flash 1.45s ease-in-out infinite;
 }
 
 .playing-card.is-user-active {
-    animation: user-active-flash 0.72s ease-in-out infinite;
+    --card-glow-start: rgba(224, 184, 79, 0.58);
+    --card-glow-size: 8px;
+    --card-glow-peak: rgba(224, 184, 79, 0.68);
+
+    animation: card-glow-flash 0.72s ease-in-out infinite;
 }
 
 .playing-card.is-action-target {
+    --card-glow-start: rgba(74, 176, 165, 0.42);
+    --card-glow-size: 6px;
+    --card-glow-peak: rgba(74, 176, 165, 0.56);
+
     cursor: crosshair;
-    animation: action-target-flash 1.35s ease-in-out infinite;
+    animation: card-glow-flash 1.35s ease-in-out infinite;
 }
 
 .hand-card {
@@ -437,10 +442,19 @@ button.playing-card:focus-visible {
     opacity: 0.42;
 }
 
-.drag-ghost {
+.drag-ghost,
+.opponent-ghost,
+.attack-animation-card,
+.draw-animation-card,
+.discard-animation-card,
+.damage-float,
+.stat-change-float {
     position: fixed;
-    z-index: 1000;
     pointer-events: none;
+}
+
+.drag-ghost {
+    z-index: 1000;
     transform: rotate(2deg) scale(1.04);
 }
 
@@ -474,9 +488,7 @@ button.playing-card:focus-visible {
 }
 
 .opponent-ghost {
-    position: fixed;
     z-index: 1000;
-    pointer-events: none;
     transform: rotate(-2deg) scale(1.04);
     transition: left 0.48s ease, top 0.48s ease, transform 0.48s ease, opacity 0.48s ease;
 }
@@ -490,9 +502,7 @@ button.playing-card:focus-visible {
 }
 
 .attack-animation-card {
-    position: fixed;
     z-index: 1100;
-    pointer-events: none;
     transform: rotate(-2deg) scale(1.04);
     transition:
         left 0.34s cubic-bezier(0.2, 0.72, 0.24, 1),
@@ -513,9 +523,7 @@ button.playing-card:focus-visible {
 
 .draw-animation-card,
 .discard-animation-card {
-    position: fixed;
     z-index: 1080;
-    pointer-events: none;
     transform: rotate(-3deg) scale(0.96);
     transition:
         left 0.4s cubic-bezier(0.2, 0.72, 0.24, 1),
@@ -542,40 +550,37 @@ button.playing-card:focus-visible {
     opacity: 0;
 }
 
-.damage-float {
-    position: fixed;
+.damage-float,
+.stat-change-float {
     z-index: 1200;
+    color: #fbf6e8;
+    text-align: center;
+}
+
+.damage-float {
     min-width: 42px;
     transform: translate(-50%, -100%);
     padding: 3px 8px;
     border: 1px solid rgba(251, 246, 232, 0.62);
     border-radius: 999px;
     background-color: rgba(122, 26, 30, 0.94);
-    color: #fbf6e8;
     font-size: clamp(0.78rem, 1vw, 1rem);
     font-weight: 900;
-    text-align: center;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
-    pointer-events: none;
     animation: damage-float 0.86s ease-out forwards;
 }
 
 .stat-change-float {
-    position: fixed;
-    z-index: 1200;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
     min-width: 34px;
     transform: translate(-50%, -50%);
-    color: #fbf6e8;
     font-size: clamp(0.62rem, 0.86vw, 0.82rem);
     font-weight: 950;
     letter-spacing: 0;
-    text-align: center;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.42);
-    pointer-events: none;
 }
 
 .stat-change-float::before {
@@ -642,12 +647,21 @@ button.playing-card:focus-visible {
     align-self: start;
 }
 
+.card-name,
+.card-topline,
+.card-footer,
+.action-card-name,
+.action-card-meta,
+.action-card-note,
+.event-log li {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .card-name {
     grid-column: 1 / -1;
     min-width: 0;
-    overflow: hidden;
     text-align: center;
-    text-overflow: ellipsis;
     white-space: nowrap;
     font-size: clamp(0.46rem, 0.66vw, 0.62rem);
     font-weight: 850;
@@ -719,19 +733,24 @@ button.playing-card:focus-visible {
     pointer-events: none;
 }
 
+.status-token,
+.action-status-token {
+    place-items: center;
+    padding: 1px;
+    border-radius: 999px;
+}
+
 .status-token {
     width: clamp(12px, 1.15vw, 16px);
     height: clamp(12px, 1.15vw, 16px);
     display: grid;
-    place-items: center;
-    padding: 1px;
     border: 1px solid rgba(37, 27, 24, 0.46);
-    border-radius: 999px;
     background-color: rgba(247, 238, 215, 0.9);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.28);
 }
 
-.status-token img {
+.status-token img,
+.action-status-token img {
     display: block;
     width: 100%;
     height: 100%;
@@ -778,11 +797,13 @@ button.playing-card:focus-visible {
     white-space: nowrap;
 }
 
-.stat-grid .stat-cell--up {
+.stat-grid .stat-cell--up,
+.stage-up {
     color: #237b45;
 }
 
-.stat-grid .stat-cell--down {
+.stat-grid .stat-cell--down,
+.stage-down {
     color: #b04332;
 }
 
@@ -792,19 +813,9 @@ button.playing-card:focus-visible {
     font-weight: 900;
 }
 
-.stage-up {
-    color: #237b45;
-}
-
-.stage-down {
-    color: #b04332;
-}
-
 .card-topline,
 .card-footer {
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
     font-size: clamp(0.58rem, 1vw, 0.74rem);
     font-weight: 800;
@@ -837,18 +848,17 @@ button.playing-card:focus-visible {
 .playing-card.card-kind-attack:not(.card-back),
 .playing-card.card-kind-item:not(.card-back) {
     grid-template-rows: 1fr;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.08)),
+        var(--action-card-bg);
 }
 
 .playing-card.card-kind-attack:not(.card-back) {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.08)),
-        #e8f0ee;
+    --action-card-bg: #e8f0ee;
 }
 
 .playing-card.card-kind-item:not(.card-back) {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.08)),
-        #f1e4c8;
+    --action-card-bg: #f1e4c8;
 }
 
 .action-card-shell {
@@ -871,8 +881,6 @@ button.playing-card:focus-visible {
 .action-card-name {
     align-self: center;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
     color: rgba(37, 27, 24, 0.9);
     font-size: clamp(0.58rem, 0.92vw, 0.78rem);
     font-weight: 900;
@@ -951,20 +959,10 @@ button.playing-card:focus-visible {
     width: clamp(13px, calc(var(--card-w) * 0.2), 22px);
     height: clamp(13px, calc(var(--card-w) * 0.2), 22px);
     display: inline-grid;
-    place-items: center;
     flex: 0 0 auto;
-    padding: 1px;
     border: 1px solid rgba(37, 27, 24, 0.32);
-    border-radius: 999px;
     background-color: rgba(247, 238, 215, 0.92);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
-}
-
-.action-status-token img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
 }
 
 .action-status-token--text {
@@ -1009,8 +1007,6 @@ button.playing-card:focus-visible {
 .action-card-meta,
 .action-card-note {
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
     color: rgba(37, 27, 24, 0.68);
     font-size: clamp(0.38rem, 0.56vw, 0.54rem);
@@ -1021,33 +1017,13 @@ button.playing-card:focus-visible {
     color: rgba(37, 27, 24, 0.52);
 }
 
-@keyframes user-option-flash {
+@keyframes card-glow-flash {
     0%,
     100% {
-        box-shadow: 0 9px 16px rgba(0, 0, 0, 0.26), 0 0 0 0 rgba(224, 184, 79, 0.42);
+        box-shadow: 0 9px 16px rgba(0, 0, 0, 0.26), 0 0 0 0 var(--card-glow-start);
     }
     50% {
-        box-shadow: 0 9px 16px rgba(0, 0, 0, 0.26), 0 0 0 6px rgba(224, 184, 79, 0.5);
-    }
-}
-
-@keyframes user-active-flash {
-    0%,
-    100% {
-        box-shadow: 0 9px 16px rgba(0, 0, 0, 0.26), 0 0 0 0 rgba(224, 184, 79, 0.58);
-    }
-    50% {
-        box-shadow: 0 9px 16px rgba(0, 0, 0, 0.26), 0 0 0 8px rgba(224, 184, 79, 0.68);
-    }
-}
-
-@keyframes action-target-flash {
-    0%,
-    100% {
-        box-shadow: 0 9px 16px rgba(0, 0, 0, 0.26), 0 0 0 0 rgba(74, 176, 165, 0.42);
-    }
-    50% {
-        box-shadow: 0 9px 16px rgba(0, 0, 0, 0.26), 0 0 0 6px rgba(74, 176, 165, 0.56);
+        box-shadow: 0 9px 16px rgba(0, 0, 0, 0.26), 0 0 0 var(--card-glow-size) var(--card-glow-peak);
     }
 }
 
@@ -1184,19 +1160,14 @@ button.playing-card:focus-visible {
 .arena-button {
     min-height: 38px;
     padding: 8px 12px;
-    border: 1px solid rgba(251, 246, 232, 0.22);
-    border-radius: 6px;
     color: #fbf6e8;
-    background-color: rgba(74, 176, 165, 0.28);
     font: inherit;
     font-size: 0.88rem;
-    font-weight: 760;
     cursor: pointer;
 }
 
 .arena-button:hover:not(:disabled),
 .arena-button:focus-visible:not(:disabled) {
-    background-color: rgba(74, 176, 165, 0.42);
     outline: 2px solid rgba(224, 184, 79, 0.65);
     outline-offset: 2px;
 }
@@ -1223,8 +1194,6 @@ button.playing-card:focus-visible {
 }
 
 .event-log li {
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
