@@ -1,7 +1,7 @@
 # Tasks
 This file is for humans only! Agents should not act on this file unless explicitly requested to mark something as complete or add a  new item.
 ## Data
-- [ ] Decide on type specializations for attacks
+- [x] Decide on type specializations for attacks
 	ARTIFICIAL: special boosting circumstances and item use,
 	BABY: Evolves into strong pokemon, but otherwise very weak
 	BUG: Gambling with multi-attack moves (a la fury attack)
@@ -29,7 +29,8 @@ This file is for humans only! Agents should not act on this file unless explicit
 	WATER: neutralizing/healing off effects
 - [ ] Redo pokemon given the new type specializations
 	- [ ] Add 3 pokemon for each type, and add 2 move for each type that pokemon has that synergize with it (If I add water/monster, that counts as 1 water, then need to add 3 more monster still)
-- [ ] Add more items
+	- Currently on Typhlosion
+- [x] Add more items
 ## Overworld Mechanics
 - [ ] Decide on how you capture more pokemon.
 - [ ] Come up with algorithm for locations and selection.
@@ -43,9 +44,9 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [ ] Reorganize decks
 	- two decks, one for pokemon and one for moves/items. 
 	- Draw two pokemon to start with, and switch to shuffle it back into the deck and draw a new one out (drawing should occur before shuffling).
-	- Battle ends when someone either has no more pokemon on the field or runs out of pokemon to draw from; not all pokemon will be played in a battle
-	- *this isn't it yet but it's closer* Each pokemon should have moves equipped for battle, and a deck gets generated from that. Draw 5 moves each turn, discard unused moves at the end of the turn. (also add item to shuffle a move back into the deck for later use)
-- [ ] Decide on damage calculations (also don't forget)
+	- Battle ends when someone either has no more pokemon on the field or has had three (maybe four?) pokemon knocked out. Can bring up to 6 pokemon (is that too many, diluting the movepool too much? Or it forces monotype/dual type decks)
+	- Each pokemon should have moves equipped for battle, and a deck gets generated from that. Draw 5 moves each turn, discard unused moves at the end of the turn. (also add item to shuffle a move back into the deck for later use)
+- [x] Decide on damage calculations
 ## Misc
 - [ ] Sort out the disgusting ui.
 - [ ] Icons for the website

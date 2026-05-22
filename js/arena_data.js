@@ -105,12 +105,25 @@
     }
 
     function normalizeItem(record) {
+        const rawStatuses = Array.isArray(record.status) ? record.status : compactTypes([record.status]);
+        const rawStatChanges = Array.isArray(record.statChanges) ? record.statChanges : [];
+        const statChangeTypes = ['ATTACK_DOWN', 'ATTACK_UP', 'DEFENSE_DOWN', 'DEFENSE_UP', 'SPEED_DOWN', 'SPEED_UP'];
+
         return {
+            imagePath: record.imagePath || record.picturePath || record.image || `assets/items/${formatAssetName(record.name)}.png`,
             name: record.name,
-            statChanges: Array.isArray(record.statChanges) ? record.statChanges : [],
-            status: Array.isArray(record.status) ? record.status : compactTypes([record.status]),
+            statChanges: rawStatChanges.filter(change => statChangeTypes.includes(change)),
+            status: [...rawStatuses, ...rawStatChanges.filter(change => !statChangeTypes.includes(change))],
             target: record.target
         };
+    }
+
+    function formatAssetName(name) {
+        return String(name || 'item')
+            .trim()
+            .toUpperCase()
+            .replace(/[^A-Z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
     }
 
     function normalizeGameData(records) {

@@ -1,6 +1,6 @@
 [
   {
-    "name": "Potion",
+    "name": "Sitrus Berry",
     "target": "ALLY",
     "status": [
       "HEAL"
@@ -8,7 +8,15 @@
     "statChanges": []
   },
   {
-    "name": "Poke Ball",
+    "name": "Lum Berry",
+    "target": "ALLY",
+    "status": [],
+    "statChanges": [
+      "HEAL_STATUS"
+    ]
+  },
+  {
+    "name": "Withdraw Wand",
     "target": "ALLY",
     "status": [
       "SWITCH"
@@ -16,7 +24,7 @@
     "statChanges": []
   },
   {
-    "name": "X-Attack",
+    "name": "Liechi Berry",
     "target": "ALLY",
     "status": [],
     "statChanges": [
@@ -24,15 +32,16 @@
     ]
   },
   {
-    "name": "X-Defense",
+    "name": "Babiri Berry",
     "target": "ALLY",
     "status": [],
     "statChanges": [
       "DEFENSE_UP"
     ]
   },
+  
   {
-    "name": "X-Speed",
+    "name": "Salac Berry",
     "target": "ALLY",
     "status": [],
     "statChanges": [

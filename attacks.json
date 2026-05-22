@@ -1,55 +1,5 @@
 [
   {
-    "name": "Surf",
-    "type1": "WATER",
-    "type2": "NONE",
-    "basePower": 90,
-    "status": "NONE",
-    "statChanges": [],
-    "target": "ALL_OPPONENTS",
-    "full_type_requirements": false
-  },
-  {
-    "name": "Waterfall",
-    "type1": "WATER",
-    "type2": "NONE",
-    "basePower": 80,
-    "status": "FLINCH",
-    "statChanges": [],
-    "target": "OPPONENT",
-    "full_type_requirements": false
-  },
-  {
-    "name": "Withdraw",
-    "type1": "WATER",
-    "type2": "NONE",
-    "basePower": 0,
-    "status": "PROTECT",
-    "statChanges": [],
-    "target": "SELF",
-    "full_type_requirements": false
-  },
-  {
-    "name": "Flamethrower",
-    "type1": "FIRE",
-    "type2": "DRAGON",
-    "basePower": 95,
-    "status": "BURN",
-    "statChanges": [],
-    "target": "OPPONENT",
-    "full_type_requirements": false
-  },
-  {
-    "name": "Energy Ball",
-    "type1": "GRASS",
-    "type2": "NONE",
-    "basePower": 80,
-    "status": "NONE",
-    "statChanges": [],
-    "target": "OPPONENT",
-    "full_type_requirements": false
-  },
-  {
     "name": "Sleep Powder",
     "type1": "GRASS",
     "type2": "NONE",
@@ -60,99 +10,187 @@
     "full_type_requirements": false
   },
   {
-    "name": "Dizzy Spores",
+    "name": "Leech Seed",
     "type1": "GRASS",
-    "type2": "NONE",
-    "basePower": 0,
-    "status": "CONFUSION",
-    "statChanges": [],
-    "target": "OPPONENT",
-    "full_type_requirements": false
-  },
-  {
-    "name": "Exhausting Roar",
-    "type1": "MONSTER",
-    "type2": "NONE",
-    "basePower": 0,
+    "type2": "GHOST",
+    "basePower": 55,
     "status": "FATIGUE",
     "statChanges": [],
-    "target": "ALL_OPPONENTS",
+    "target": "OPPONENT",
     "full_type_requirements": false
   },
   {
-    "name": "Iron Head",
-    "type1": "STEEL",
+    "name": "Sludge Bomb",
+    "type1": "POISON",
     "type2": "NONE",
-    "basePower": 85,
-    "status": "NONE",
+    "basePower": 55,
+    "status": "POISON",
     "statChanges": [],
     "target": "OPPONENT",
     "full_type_requirements": false
   },
   {
-    "name": "Bug Bite",
-    "type1": "BUG",
+    "name": "Toxic",
+    "type1": "POISON",
     "type2": "NONE",
-    "basePower": 65,
-    "status": "FLINCH",
+    "basePower": 0,
+    "status": "POISON",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Flame Thrower",
+    "type1": "FIRE",
+    "type2": "DRAGON",
+    "basePower": 55,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Heat Wave",
+    "type1": "FIRE",
+    "type2": "FLYING",
+    "basePower": 55,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Air Slash",
+    "type1": "FLYING",
+    "type2": "NONE",
+    "basePower": 70,
+    "status": "NONE",
     "statChanges": [
-      "DEFENSE_DOWN"
+      "SPEED_DOWN"
     ],
     "target": "OPPONENT",
     "full_type_requirements": false
   },
   {
-    "name": "Crunch",
-    "type1": "DARK",
-    "type2": "MONSTER",
-    "basePower": 80,
-    "status": "FLINCH",
+    "name": "Tailwind",
+    "type1": "FLYING",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
     "statChanges": [
-      "DEFENSE_DOWN"
+      "SPEED_UP",
+      "SPEED_UP"
     ],
-    "target": "OPPONENT",
+    "target": "ALL_ALLIES",
     "full_type_requirements": false
   },
   {
-    "name": "Legendary Pulse",
-    "type1": "LEGENDARY",
+    "name": "Angered Roar",
+    "type1": "MONSTER",
     "type2": "NONE",
     "basePower": 0,
     "status": "NONE",
     "statChanges": [
       "ATTACK_UP",
-      "DEFENSE_UP",
-      "SPEED_UP"
+      "ATTACK_UP",
+      "DEFENSE_DOWN",
+      "DEFENSE_DOWN"
     ],
     "target": "SELF",
     "full_type_requirements": false
   },
   {
-    "name": "Deity's Fury",
-    "type1": "LEGENDARY",
-    "type2": "NONE",
-    "basePower": 110,
-    "status": "FATIGUE",
-    "statChanges": [],
-    "target": "ALL_OPPONENTS",
+    "name": "Crunch",
+    "type1": "MONSTER",
+    "type2": "DARK",
+    "basePower": 55,
+    "status": "FLINCH",
+    "statChanges": [
+      "DEFENSE_DOWN"
+    ],
+    "target": "OPPONENT",
     "full_type_requirements": false
   },
   {
-    "name": "Earth Power",
-    "type1": "GROUND",
-    "type2": "LEGENDARY",
-    "basePower": 90,
+    "name": "Hydro Pump",
+    "type1": "WATER",
+    "type2": "NONE",
+    "basePower": 80,
+    "status": "HEAL_BURN",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Mist",
+    "type1": "WATER",
+    "type2": "FAIRY",
+    "basePower": 0,
+    "status": "HEAL_STATUS",
+    "statChanges": [],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Waterfall",
+    "type1": "WATER",
+    "type2": "NONE",
+    "basePower": 70,
+    "status": "FLINCH",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Rain Dance",
+    "type1": "WATER",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "HEAL_STATUS",
+    "statChanges": [
+      "DEFENSE_UP"
+    ],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Mega Punch",
+    "type1": "FIGHTING",
+    "type2": "HUMAN",
+    "basePower": 70,
     "status": "NONE",
     "statChanges": [],
     "target": "OPPONENT",
     "full_type_requirements": false
   },
   {
-    "name": "Thunderbolt",
-    "type1": "ELECTRIC",
+    "name": "Soaking Smash",
+    "type1": "WATER",
+    "type2": "FIGHTING",
+    "basePower": 85,
+    "status": "HEAL_STATUS",
+    "statChanges": [
+      "DEFENSE_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Future Sight",
+    "type1": "PSYCHIC",
     "type2": "NONE",
-    "basePower": 95,
-    "status": "PARALYSIS",
+    "basePower": 0,
+    "status": "PROTECT",
+    "statChanges": [],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Mind Break",
+    "type1": "PSYCHIC",
+    "type2": "GHOST",
+    "basePower": 55,
+    "status": "CONFUSION",
     "statChanges": [],
     "target": "OPPONENT",
     "full_type_requirements": false
@@ -162,11 +200,313 @@
     "type1": "HUMAN",
     "type2": "NONE",
     "basePower": 0,
+    "status": "HEAL_STATUS",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Trick",
+    "type1": "HUMAN",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "CONFUSION",
+    "statChanges": [
+      "SPEED_DOWN",
+      "DEFENSE_DOWN",
+      "ATTACK_UP"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Overwork",
+    "type1": "FIGHTING",
+    "type2": "HUMAN",
+    "basePower": 0,
+    "status": "FATIGUE",
+    "statChanges": [
+      "ATTACK_UP",
+      "ATTACK_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Karate Smash",
+    "type1": "FIGHTING",
+    "type2": "NONE",
+    "basePower": 55,
+    "status": "NONE",
+    "statChanges": [
+      "DEFENSE_DOWN",
+      "DEFENSE_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Ooze",
+    "type1": "POISON",
+    "type2": "NONE",
+    "basePower": 50,
+    "status": "POISON",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Intimidating Stare",
+    "type1": "MONSTER",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "DEFENSE_DOWN",
+      "ATTACK_DOWN",
+      "SPEED_UP",
+      "SPEED_UP"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Shadow Ball",
+    "type1": "GHOST",
+    "type2": "NONE",
+    "basePower": 55,
+    "status": "FATIGUE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Jumpscare",
+    "type1": "GHOST",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "FLINCH",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Ghastly Grip",
+    "type1": "HUMAN",
+    "type2": "GHOST",
+    "basePower": 55,
+    "status": "FATIGUE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Dragon Rage",
+    "type1": "DRAGON",
+    "type2": "NONE",
+    "basePower": 65,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Dragon Dance",
+    "type1": "DRAGON",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "ATTACK_UP",
+      "SPEED_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Body Slam",
+    "type1": "NORMAL",
+    "type2": "NONE",
+    "basePower": 75,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Protect",
+    "type1": "NORMAL",
+    "type2": "PSYCHIC",
+    "basePower": 0,
+    "status": "PROTECT",
+    "statChanges": [],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Stockpile",
+    "type1": "GOURMET",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "DEFENSE_UP",
+      "DEFENSE_UP",
+      "SPEED_DOWN"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Snack Up",
+    "type1": "GOURMET",
+    "type2": "NONE",
+    "basePower": 0,
     "status": "HEAL",
     "statChanges": [
       "ATTACK_UP"
     ],
     "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Ice Beam",
+    "type1": "ICE",
+    "type2": "NONE",
+    "basePower": 70,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Blizzard",
+    "type1": "ICE",
+    "type2": "LEGENDARY",
+    "basePower": 80,
+    "status": "PARALYSIS",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Freeze-Dry",
+    "type1": "ICE",
+    "type2": "NONE",
+    "basePower": 50,
+    "status": "PARALYSIS",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Frigid Winds",
+    "type1": "ICE",
+    "type2": "FLYING",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "SPEED_DOWN",
+      "SPEED_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Great Storm",
+    "type1": "FLYING",
+    "type2": "LEGENDARY",
+    "basePower": 85,
+    "status": "NONE",
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Thunder Bolt",
+    "type1": "ELECTRIC",
+    "type2": "NONE",
+    "basePower": 55,
+    "status": "PARALYSIS",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Thunder Storm",
+    "type1": "ELECTRIC",
+    "type2": "LEGENDARY",
+    "basePower": 80,
+    "status": "PARALYSIS",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Eruption",
+    "type1": "FIRE",
+    "type2": "LEGENDARY",
+    "basePower": 80,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Dragon Claw",
+    "type1": "DRAGON",
+    "type2": "NONE",
+    "basePower": 65,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Shatter Reality",
+    "type1": "PSYCHIC",
+    "type2": "LEGENDARY",
+    "basePower": 85,
+    "status": "CONFUSION",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Dazzling Dance",
+    "type1": "FAIRY",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "HEAL",
+    "statChanges": [],
+    "target": "ALLY",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Nature's Blessing",
+    "type1": "GRASS",
+    "type2": "FAIRY",
+    "basePower": 0,
+    "status": "HEAL",
+    "statChanges": [
+      "DEFENSE_UP"
+    ],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Razor Leaf",
+    "type1": "GRASS",
+    "type2": "NONE",
+    "basePower": 55,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
     "full_type_requirements": false
   }
 ]

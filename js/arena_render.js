@@ -194,7 +194,7 @@
         `;
     }
 
-    function renderCardContent(card, reveal) {
+    function renderCardContent(card, reveal, options = {}) {
         if (!reveal) {
             return `
                 <div class="card-topline">Squish</div>
@@ -204,14 +204,14 @@
         }
 
         if (arena.Model.isPokemonCard(card)) {
-            return renderPokemonCardContent(card);
+            return renderPokemonCardContent(card, options);
         }
 
         if (arena.Model.isAttackCard(card)) {
-            return renderActionCardContent(card, 'Attack');
+            return renderActionCardContent(card, options);
         }
 
-        return renderActionCardContent(card, 'Item');
+        return renderActionCardContent(card, options);
     }
 
     function renderCardForAnimation(card, animationClass = 'attack-animation-card', reveal = true) {
@@ -222,7 +222,7 @@
         `;
     }
 
-    function renderPokemonCardContent(card) {
+    function renderPokemonCardContent(card, options = {}) {
         const healthPercent = arena.Model.getHealthPercent(card);
         const species = card.pokemon;
 
@@ -234,7 +234,7 @@
                         <span>${arena.Model.getPortraitInitials(card)}</span>
                     </div>
                     ${renderStatusTokens(card)}
-                    <div class="type-row">${renderTypeIcons(species.types, 'type-row')}</div>
+                    <div class="type-row">${renderTypeIcons(species.types, 'type-row', options)}</div>
                     <span class="card-name">${species.name}</span>
                 </div>
             </div>
@@ -272,7 +272,7 @@
     function renderStatCell(card, stat) {
         const labels = {
             attack: 'ATK',
-            defense: 'DEF',
+            defense: 'DF',
             speed: 'SPD'
         };
         const stage = arena.Model.getPokemonStatStage(card, stat);
@@ -288,30 +288,49 @@
         return `<span class="stat-cell${stageClass}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}${stageLabel ? ` ${stageLabel}` : ''}</span>`;
     }
 
-    function renderActionCardContent(card, label) {
+    function renderActionCardContent(card, options = {}) {
         const isAttack = arena.Model.isAttackCard(card);
         const types = arena.Model.getCardTypes(card);
         const target = formatTarget(arena.Model.getActionTarget(card));
-        const note = isAttack ? '' : formatActionNote(card);
         const allTypesRequired = isAttack && card.attack.full_type_requirements && types.length > 1;
         const typeRowClass = allTypesRequired ? ' action-type-row--all-required' : '';
         const typeRequirementLabel = allTypesRequired ? 'All listed types required' : 'Any listed type required';
 
         return `
             <div class="action-card-shell">
-                <span class="action-card-kind">${label}</span>
                 <span class="action-card-name">${arena.Model.getCardName(card)}</span>
-                ${types.length > 0 ? `<div class="action-type-row${typeRowClass}" title="${typeRequirementLabel}" aria-label="${typeRequirementLabel}">${renderTypeIcons(types, 'action-type-row')}</div>` : '<div class="action-type-row action-type-row--empty">No type</div>'}
-                ${isAttack ? renderAttackDetails(card) : ''}
+                ${isAttack ? renderActionTypeRow(types, typeRowClass, typeRequirementLabel, options) : renderItemPicture(card)}
+                ${renderActionDetails(card)}
                 <span class="action-card-meta">${target}</span>
-                ${isAttack ? '' : `<span class="action-card-note">${note}</span>`}
             </div>
         `;
     }
 
-    function renderAttackDetails(card) {
+    function renderActionTypeRow(types, typeRowClass, typeRequirementLabel, options) {
+        return types.length > 0
+            ? `<div class="action-type-row${typeRowClass}" title="${typeRequirementLabel}" aria-label="${typeRequirementLabel}">${renderTypeIcons(types, 'action-type-row', options)}</div>`
+            : '<div class="action-type-row action-type-row--empty">No type</div>';
+    }
+
+    function renderItemPicture(card) {
+        return `
+            <div class="item-picture-row">
+                <img class="item-picture" src="${getItemPictureUrl(card)}" alt="">
+            </div>
+        `;
+    }
+
+    function getItemPictureUrl(card) {
+        if (!arena.Model.isItemCard(card)) return '';
+
+        const item = card.item || {};
+
+        return item.imagePath || item.picturePath || item.image || `assets/items/${formatAssetName(item.name)}.png`;
+    }
+
+    function renderActionDetails(card) {
         const parts = [];
-        const basePower = Number(card.attack.basePower) || 0;
+        const basePower = arena.Model.isAttackCard(card) ? Number(card.attack.basePower) || 0 : 0;
         const statusIcons = renderActionStatusIcons(arena.Model.getActionStatuses(card));
         const statChanges = renderActionStatChanges(arena.Model.getActionStatChanges(card));
 
@@ -432,10 +451,26 @@
         return notes.length > 0 ? notes.join(' | ') : 'No effect';
     }
 
-    function renderTypeIcons(types, className) {
+    function renderTypeIcons(types, className, options = {}) {
         return types.slice(0, 3).map(type => `
-            <img class="type-icon" src="assets/types-svgs/${type}.svg" alt="${type}">
+            ${options.typeButtons
+                ? `<button class="type-filter-button" type="button" data-type="${type}" aria-pressed="false" aria-label="Filter by ${formatTypeName(type)} type"><img class="type-icon" src="assets/types-svgs/${type}.svg" alt="${type}"></button>`
+                : `<img class="type-icon" src="assets/types-svgs/${type}.svg" alt="${type}">`
+            }
         `).join('');
+    }
+
+    function renderCardPreview(card, options = {}) {
+        const className = options.className ? ` ${options.className}` : '';
+        const attributes = options.attributes || '';
+        const kindClass = ` card-kind-${card.kind}`;
+        const ariaLabel = arena.Model.getCardName(card);
+
+        return `
+            <div class="playing-card overview-card${kindClass}${className}" ${attributes} aria-label="${ariaLabel}">
+                ${renderCardContent(card, true, options)}
+            </div>
+        `;
     }
 
     function renderStatus() {
@@ -550,14 +585,30 @@
 
     function formatTarget(target) {
         const labels = {
-            ALL_ALLIES: 'All allies',
-            ALL_OPPONENTS: 'All opponents',
-            ALLY: 'Ally',
-            OPPONENT: 'Opponent',
+            ALL_ALLIES: 'All Allies',
+            ALL_OPPONENTS: 'All Opponents',
+            ALLY: 'One Ally',
+            OPPONENT: 'One Opponent',
             SELF: 'Self'
         };
 
         return labels[target] || 'No target';
+    }
+
+    function formatTypeName(type) {
+        return String(type || '')
+            .toLowerCase()
+            .split('_')
+            .map(part => part ? part[0].toUpperCase() + part.slice(1) : '')
+            .join(' ');
+    }
+
+    function formatAssetName(name) {
+        return String(name || 'item')
+            .trim()
+            .toUpperCase()
+            .replace(/[^A-Z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
     }
 
     function formatStatuses(statuses) {
@@ -595,6 +646,7 @@
 
     arena.Render = {
         render,
+        renderCardPreview,
         renderCardForAnimation
     };
 })(window.CardArena = window.CardArena || {});

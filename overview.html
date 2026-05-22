@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Rogue Pocket - Card Overview</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body class="game-page card-overview-page">
+    <a href="index.html" class="btn btn-back">Back</a>
+    <main class="card-overview" aria-labelledby="card-overview-title">
+        <header class="overview-header">
+            <div>
+                <h1 id="card-overview-title">Cards</h1>
+            </div>
+            <span id="type-filter-label" class="selected-pill overview-filter-pill">All Types</span>
+        </header>
+        <div id="card-overview" class="overview-content">
+            <section class="arena-status arena-status--loading">Loading cards...</section>
+        </div>
+    </main>
+    <script src="js/arena_data.js"></script>
+    <script src="js/arena_model.js"></script>
+    <script src="js/arena_render.js"></script>
+    <script src="js/card_overview.js"></script>
+</body>
+</html>
