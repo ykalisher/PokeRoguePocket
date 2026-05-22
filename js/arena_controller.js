@@ -918,29 +918,19 @@
         state.phase = 'resolving';
         render();
 
-        const actions = [
-            ...state.plannedActions.player,
-            ...state.plannedActions.opponent
-        ]
-            .map(action => ({
-                ...action,
-                priority: getActionPriority(action),
-                speed: getActionSpeed(action),
-                tieBreaker: Math.random()
-            }))
-            .sort((left, right) => (
-                right.priority - left.priority ||
-                right.speed - left.speed ||
-                left.tieBreaker - right.tieBreaker
-            ));
+        const actions = createResolutionActions();
 
         if (actions.length === 0) {
             logEvent('No attacks were chosen.');
             render();
             await model.sleep(650);
         } else {
-            for (const action of actions) {
+            while (actions.length > 0) {
                 if (checkGameOver()) return;
+
+                sortResolutionActions(actions);
+
+                const action = actions.shift();
 
                 await resolveQueuedAttack(action);
                 render();
@@ -959,6 +949,35 @@
 
         clearTimeout(state.flowTimer);
         state.flowTimer = setTimeout(startPlayerTurn, 620);
+    }
+
+    function createResolutionActions() {
+        return [
+            ...state.plannedActions.player,
+            ...state.plannedActions.opponent
+        ].map(action => ({
+            ...action,
+            priority: getActionPriority(action),
+            speed: getActionSpeed(action),
+            tieBreaker: Math.random()
+        }));
+    }
+
+    function sortResolutionActions(actions) {
+        actions.forEach(action => {
+            action.priority = getActionPriority(action);
+            action.speed = getActionSpeed(action);
+        });
+
+        actions.sort(compareResolutionActions);
+    }
+
+    function compareResolutionActions(left, right) {
+        return (
+            right.priority - left.priority ||
+            right.speed - left.speed ||
+            left.tieBreaker - right.tieBreaker
+        );
     }
 
     function getActionSpeed(action) {

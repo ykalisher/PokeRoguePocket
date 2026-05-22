@@ -907,6 +907,105 @@ button.playing-card:focus-visible {
     font-weight: 800;
 }
 
+.action-card-effects {
+    min-width: 0;
+    min-height: clamp(14px, calc(var(--card-w) * 0.21), 22px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px 3px;
+}
+
+.attack-power,
+.action-stat-change {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(37, 27, 24, 0.24);
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.46);
+    color: rgba(37, 27, 24, 0.78);
+    font-size: clamp(0.42rem, 0.6vw, 0.58rem);
+    font-weight: 900;
+    line-height: 1;
+}
+
+.attack-power {
+    padding: 2px 4px;
+    white-space: nowrap;
+}
+
+.action-status-list,
+.action-stat-change-list {
+    min-width: 0;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.action-status-token {
+    width: clamp(13px, calc(var(--card-w) * 0.2), 22px);
+    height: clamp(13px, calc(var(--card-w) * 0.2), 22px);
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    padding: 1px;
+    border: 1px solid rgba(37, 27, 24, 0.32);
+    border-radius: 999px;
+    background-color: rgba(247, 238, 215, 0.92);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+}
+
+.action-status-token img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.action-status-token--text {
+    color: rgba(37, 27, 24, 0.72);
+    font-size: clamp(0.34rem, 0.5vw, 0.48rem);
+    font-weight: 900;
+}
+
+.action-stat-change {
+    gap: 2px;
+    padding: 2px 3px;
+}
+
+.action-stat-name {
+    color: rgba(37, 27, 24, 0.74);
+}
+
+.stat-arrows {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.stat-arrow {
+    --stat-arrow-h: clamp(5px, calc(var(--card-w) * 0.072), 9px);
+    --stat-arrow-w: clamp(3px, calc(var(--card-w) * 0.045), 6px);
+    width: 0;
+    height: 0;
+    display: inline-block;
+    border-left: var(--stat-arrow-w) solid transparent;
+    border-right: var(--stat-arrow-w) solid transparent;
+}
+
+.stat-arrow--up {
+    border-bottom: var(--stat-arrow-h) solid #237b45;
+}
+
+.stat-arrow--down {
+    border-top: var(--stat-arrow-h) solid #b04332;
+}
+
 .action-card-meta,
 .action-card-note {
     min-width: 0;

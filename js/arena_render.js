@@ -292,7 +292,7 @@
         const isAttack = arena.Model.isAttackCard(card);
         const types = arena.Model.getCardTypes(card);
         const target = formatTarget(arena.Model.getActionTarget(card));
-        const note = formatActionNote(card);
+        const note = isAttack ? '' : formatActionNote(card);
         const allTypesRequired = isAttack && card.attack.full_type_requirements && types.length > 1;
         const typeRowClass = allTypesRequired ? ' action-type-row--all-required' : '';
         const typeRequirementLabel = allTypesRequired ? 'All listed types required' : 'Any listed type required';
@@ -302,10 +302,123 @@
                 <span class="action-card-kind">${label}</span>
                 <span class="action-card-name">${arena.Model.getCardName(card)}</span>
                 ${types.length > 0 ? `<div class="action-type-row${typeRowClass}" title="${typeRequirementLabel}" aria-label="${typeRequirementLabel}">${renderTypeIcons(types, 'action-type-row')}</div>` : '<div class="action-type-row action-type-row--empty">No type</div>'}
+                ${isAttack ? renderAttackDetails(card) : ''}
                 <span class="action-card-meta">${target}</span>
-                <span class="action-card-note">${note}</span>
+                ${isAttack ? '' : `<span class="action-card-note">${note}</span>`}
             </div>
         `;
+    }
+
+    function renderAttackDetails(card) {
+        const parts = [];
+        const basePower = Number(card.attack.basePower) || 0;
+        const statusIcons = renderActionStatusIcons(arena.Model.getActionStatuses(card));
+        const statChanges = renderActionStatChanges(arena.Model.getActionStatChanges(card));
+
+        if (basePower > 0) {
+            parts.push(`<span class="attack-power" title="Base power" aria-label="Base power ${basePower}">PWR ${basePower}</span>`);
+        }
+
+        if (statusIcons) parts.push(statusIcons);
+        if (statChanges) parts.push(statChanges);
+
+        if (parts.length === 0) return '';
+
+        return `<div class="action-card-effects">${parts.join('')}</div>`;
+    }
+
+    function renderActionStatusIcons(statuses) {
+        const icons = statuses
+            .map(status => {
+                const iconPath = arena.Model.getStatusIconPath(status);
+                const label = arena.Model.formatStatusName(status);
+
+                if (!iconPath) {
+                    return `<span class="action-status-token action-status-token--text" title="${label}" aria-label="${label}">${getStatusInitials(label)}</span>`;
+                }
+
+                return `
+                    <span class="action-status-token" title="${label}">
+                        <img src="${iconPath}" alt="${label}">
+                    </span>
+                `;
+            })
+            .join('');
+
+        return icons ? `<span class="action-status-list">${icons}</span>` : '';
+    }
+
+    function getStatusInitials(label) {
+        return label
+            .split(/\s+/)
+            .filter(Boolean)
+            .map(part => part[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase();
+    }
+
+    function renderActionStatChanges(statChanges) {
+        const groups = statChanges.reduce((changesByStat, statChange) => {
+            const detail = getStatChangeDetail(statChange);
+
+            if (!detail) return changesByStat;
+
+            if (!changesByStat[detail.stat]) {
+                changesByStat[detail.stat] = { down: 0, up: 0 };
+            }
+
+            changesByStat[detail.stat][detail.direction] += 1;
+
+            return changesByStat;
+        }, {});
+        const renderedChanges = ['ATK', 'DEF', 'SPD']
+            .map(stat => renderActionStatChange(stat, groups[stat]))
+            .filter(Boolean)
+            .join('');
+
+        return renderedChanges ? `<span class="action-stat-change-list">${renderedChanges}</span>` : '';
+    }
+
+    function getStatChangeDetail(statChange) {
+        const details = {
+            ATTACK_DOWN: { direction: 'down', stat: 'ATK' },
+            ATTACK_UP: { direction: 'up', stat: 'ATK' },
+            DEFENSE_DOWN: { direction: 'down', stat: 'DEF' },
+            DEFENSE_UP: { direction: 'up', stat: 'DEF' },
+            SPEED_DOWN: { direction: 'down', stat: 'SPD' },
+            SPEED_UP: { direction: 'up', stat: 'SPD' }
+        };
+
+        return details[statChange] || null;
+    }
+
+    function renderActionStatChange(stat, counts) {
+        if (!counts || (counts.up === 0 && counts.down === 0)) return '';
+
+        const upArrows = renderStatArrows('up', counts.up);
+        const downArrows = renderStatArrows('down', counts.down);
+        const labelParts = [];
+
+        if (counts.up > 0) labelParts.push(`${counts.up} ${formatStageWord(counts.up)} up`);
+        if (counts.down > 0) labelParts.push(`${counts.down} ${formatStageWord(counts.down)} down`);
+
+        return `
+            <span class="action-stat-change" title="${stat} ${labelParts.join(', ')}" aria-label="${stat} ${labelParts.join(', ')}">
+                <span class="action-stat-name">${stat}</span>
+                <span class="stat-arrows">${upArrows}${downArrows}</span>
+            </span>
+        `;
+    }
+
+    function renderStatArrows(direction, count) {
+        return Array.from({ length: count }, () => (
+            `<span class="stat-arrow stat-arrow--${direction}" aria-hidden="true"></span>`
+        )).join('');
+    }
+
+    function formatStageWord(count) {
+        return count === 1 ? 'stage' : 'stages';
     }
 
     function formatActionNote(card) {
