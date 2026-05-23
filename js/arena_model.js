@@ -59,6 +59,7 @@
             statMultipliers: { defense: 0.75, speed: 0.75 }
         },
         FLINCH: { expires: 'turn', iconPath: 'assets/status-icons/FLINCH.svg', label: 'Flinch', showsToken: true },
+        FULL_HEAL: { label: 'Full Heal', showsToken: false },
         HEAL: { iconPath: 'assets/status-icons/HEAL.png', label: 'Heal', showsToken: false },
         HEAL_BURN: { iconPath: 'assets/status-icons/HEAL_BURN.png', label: 'Heal Burn', showsToken: false },
         HEAL_STATUS: { iconPath: 'assets/status-icons/HEAL_STATUS.png', label: 'Heal Status', showsToken: false },
@@ -66,6 +67,7 @@
         PARALYSIS: { iconPath: 'assets/status-icons/PARALYSIS.svg', label: 'Paralysis', showsToken: true, statMultipliers: { speed: 0.5 } },
         POISON: { iconPath: 'assets/status-icons/POISON.svg', label: 'Poison', showsToken: true },
         PROTECT: { expires: 'turn', iconPath: 'assets/status-icons/PROTECT.png', label: 'Protect', showsToken: true },
+        SELF_INFLICT: { iconPath: 'assets/status-icons/SELF_INFLICT.png', label: 'Self-Inflict', showsToken: false },
         SLEEP: { iconPath: 'assets/status-icons/SLEEP.svg', initialState: () => ({ lastWakeAttemptTurn: null, wakeAttempts: 0 }), label: 'Sleep', showsToken: true },
         SWITCH: { iconPath: 'assets/status-icons/SWITCH.png', label: 'Switch', showsToken: false }
     });
@@ -482,12 +484,13 @@
 
     function getActionStatuses(card) {
         const statuses = isAttackCard(card)
-            ? [card.attack.status]
+            ? card.attack.status
             : isItemCard(card)
                 ? card.item.status
                 : [];
 
-        return statuses.filter(status => status && status !== 'NONE');
+        return (Array.isArray(statuses) ? statuses : [statuses])
+            .filter(status => status && status !== 'NONE');
     }
 
     function applyStatus(card, status) {

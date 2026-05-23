@@ -768,6 +768,10 @@
         const statuses = model.getActionStatuses(itemCard);
         const statChanges = model.getActionStatChanges(itemCard);
 
+        if (statuses.includes('FULL_HEAL')) {
+            return chooseRecoverableAllyTarget(options, 'opponent');
+        }
+
         if (statuses.includes('HEAL')) {
             return chooseDamagedAllyTarget(options, 'opponent');
         }
@@ -814,6 +818,40 @@
         ));
 
         return groupTarget || null;
+    }
+
+    function chooseRecoverableAllyTarget(options, ownerId) {
+        const recoverableTargets = options
+            .filter(option => option.kind === 'single' && option.owner === ownerId)
+            .map(option => ({
+                option,
+                card: model.getBoardCardById(option.owner, option.cardId)
+            }))
+            .filter(target => target.card && (
+                target.card.currentHealth < target.card.pokemon.baseHealth ||
+                model.getPokemonStatuses(target.card).length > 0
+            ))
+            .sort((left, right) => getRecoveryTargetScore(right.card) - getRecoveryTargetScore(left.card));
+
+        if (recoverableTargets.length > 0) return recoverableTargets[0].option;
+
+        const groupTarget = options.find(option => (
+            option.kind === 'group' &&
+            option.owner === ownerId &&
+            model.getBoardCards(ownerId).some(card => (
+                card.currentHealth < card.pokemon.baseHealth ||
+                model.getPokemonStatuses(card).length > 0
+            ))
+        ));
+
+        return groupTarget || null;
+    }
+
+    function getRecoveryTargetScore(card) {
+        const missingHealth = Math.max(0, card.pokemon.baseHealth - card.currentHealth);
+        const hasStatus = model.getPokemonStatuses(card).length > 0 ? card.pokemon.baseHealth : 0;
+
+        return missingHealth + hasStatus;
     }
 
     function chooseStatusedAllyTarget(options, ownerId, status = null) {
@@ -1207,7 +1245,7 @@
             targets.forEach(target => switchPokemon(target.owner, target.card));
             handledEffect = true;
         } else {
-            if (statuses.includes('HEAL')) {
+            if (hasHealthHealing(statuses)) {
                 targets.forEach(target => healPokemon(target.card));
                 handledEffect = true;
             }
@@ -1228,7 +1266,7 @@
 
             handledEffect = maybeApplyAttackStatChanges(
                 action.card,
-                targets,
+                getStatChangeTargets(action, attacker, targets),
                 isDamaging,
                 isMultiAttack ? MULTI_ATTACK_STAT_CHANGE_TRIGGER_CHANCE : STAT_CHANGE_TRIGGER_CHANCE
             ) || handledEffect;
@@ -1346,7 +1384,7 @@
             didSomething = true;
         }
 
-        if (statuses.includes('HEAL')) {
+        if (hasHealthHealing(statuses)) {
             targets.forEach(target => healPokemon(target.card));
             didSomething = true;
         }
@@ -1648,7 +1686,7 @@
     function applyStatusHealingEffects(statuses, targets) {
         let didSomething = false;
 
-        if (statuses.includes('HEAL_STATUS')) {
+        if (hasStatusHealing(statuses)) {
             didSomething = clearStatusesFromTargets(targets) || didSomething;
         }
 
@@ -1657,6 +1695,14 @@
         }
 
         return didSomething;
+    }
+
+    function hasHealthHealing(statuses) {
+        return statuses.includes('HEAL') || statuses.includes('FULL_HEAL');
+    }
+
+    function hasStatusHealing(statuses) {
+        return statuses.includes('HEAL_STATUS') || statuses.includes('FULL_HEAL');
     }
 
     function clearStatusesFromTargets(targets) {
@@ -1708,6 +1754,12 @@
         }
 
         return applyStatChangesToTargets(statChanges, targets);
+    }
+
+    function getStatChangeTargets(action, attacker, targets) {
+        if (!model.getActionStatuses(action.card).includes('SELF_INFLICT')) return targets;
+
+        return [{ owner: action.owner, card: attacker }];
     }
 
     function applyStatChangesToTargets(statChanges, targets) {

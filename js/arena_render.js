@@ -6,6 +6,9 @@
     'use strict';
 
     const state = arena.state;
+    const ACTION_STATUS_ICON_ALIASES = Object.freeze({
+        FULL_HEAL: ['HEAL', 'HEAL_STATUS']
+    });
 
     function render() {
         state.elements.board.innerHTML = `
@@ -348,6 +351,7 @@
 
     function renderActionStatusIcons(statuses) {
         const icons = statuses
+            .flatMap(getActionStatusIconStatuses)
             .map(status => {
                 const iconPath = arena.Model.getStatusIconPath(status);
                 const label = arena.Model.formatStatusName(status);
@@ -365,6 +369,10 @@
             .join('');
 
         return icons ? `<span class="action-status-list">${icons}</span>` : '';
+    }
+
+    function getActionStatusIconStatuses(status) {
+        return ACTION_STATUS_ICON_ALIASES[status] || [status];
     }
 
     function getStatusInitials(label) {
@@ -615,7 +623,7 @@
         if (!statuses.length) return 'No effect';
 
         return statuses
-            .map(status => status.toLowerCase().replace(/_/g, ' '))
+            .map(arena.Model.formatStatusName)
             .join(', ');
     }
 

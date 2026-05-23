@@ -718,7 +718,7 @@
     "type1": "GRASS",
     "type2": "PSYCHIC",
     "basePower": 0,
-    "status": "HEAL",
+    "status": "FULL_HEAL",
     "statChanges": [
       "ATTACK_UP",
       "DEFENSE_UP"

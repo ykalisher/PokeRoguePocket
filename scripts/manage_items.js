@@ -9,6 +9,7 @@ const Status = Object.freeze({
     CONFUSION: 'CONFUSION',
     FATIGUE: 'FATIGUE',
     FLINCH: 'FLINCH',
+    FULL_HEAL: 'FULL_HEAL',
     HEAL: 'HEAL',
     HEAL_BURN: 'HEAL_BURN',
     HEAL_STATUS: 'HEAL_STATUS',
@@ -16,6 +17,7 @@ const Status = Object.freeze({
     PARALYSIS: 'PARALYSIS',
     POISON: 'POISON',
     PROTECT: 'PROTECT',
+    SELF_INFLICT: 'SELF_INFLICT',
     SLEEP: 'SLEEP',
     SWITCH: 'SWITCH',
     NONE: 'NONE'
