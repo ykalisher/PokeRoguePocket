@@ -508,5 +508,269 @@
     "statChanges": [],
     "target": "ALL_OPPONENTS",
     "full_type_requirements": false
+  },
+  {
+    "name": "Cursed Flame",
+    "type1": "FIRE",
+    "type2": "GHOST",
+    "basePower": 65,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Sucker Punch",
+    "type1": "DARK",
+    "type2": "NONE",
+    "basePower": 55,
+    "status": "FLINCH",
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Murky Water",
+    "type1": "WATER",
+    "type2": "DARK",
+    "basePower": 55,
+    "status": "FLINCH",
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Swarming Strike",
+    "type1": "BUG",
+    "type2": "NONE",
+    "basePower": 25,
+    "status": "MULTI_ATTACK",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Buzz Up",
+    "type1": "BUG",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "ATTACK_UP",
+      "SPEED_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Swarming Punch",
+    "type1": "BUG",
+    "type2": "FIGHTING",
+    "basePower": 30,
+    "status": "MULTI_ATTACK",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Discharge",
+    "type1": "ELECTRIC",
+    "type2": "NONE",
+    "basePower": 50,
+    "status": "PARALYSIS",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Fairy Light",
+    "type1": "ELECTRIC",
+    "type2": "FAIRY",
+    "basePower": 0,
+    "status": "HEAL",
+    "statChanges": [
+      "DEFENSE_UP"
+    ],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Iron Head",
+    "type1": "STEEL",
+    "type2": "NONE",
+    "basePower": 70,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Iron Defense",
+    "type1": "STEEL",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "PROTECT",
+    "statChanges": [
+      "DEFENSE_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Bullet Punch",
+    "type1": "STEEL",
+    "type2": "BUG",
+    "basePower": 30,
+    "status": "MULTI_ATTACK",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Great Flood",
+    "type1": "WATER",
+    "type2": "LEGENDARY",
+    "basePower": 85,
+    "status": "HEAL_BURN",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Healing River",
+    "type1": "WATER",
+    "type2": "LEGENDARY",
+    "basePower": 0,
+    "status": "HEAL",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP"
+    ],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Rock Slide",
+    "type1": "ROCK",
+    "type2": "NONE",
+    "basePower": 60,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Stone Edge",
+    "type1": "ROCK",
+    "type2": "NONE",
+    "basePower": 70,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Titanic Boulder",
+    "type1": "ROCK",
+    "type2": "MONSTER",
+    "basePower": 70,
+    "status": "FLINCH",
+    "statChanges": [
+      "DEFENSE_DOWN",
+      "SPEED_UP",
+      "ATTACK_UP"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Crippling Crunch",
+    "type1": "DARK",
+    "type2": "MONSTER",
+    "basePower": 60,
+    "status": "FLINCH",
+    "statChanges": [
+      "DEFENSE_DOWN",
+      "SPEED_UP"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Decay",
+    "type1": "GRASS",
+    "type2": "PSYCHIC",
+    "basePower": 45,
+    "status": "SLEEP",
+    "statChanges": [
+      "DEFENSE_DOWN",
+      "SPEED_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Nature's Gift",
+    "type1": "GRASS",
+    "type2": "PSYCHIC",
+    "basePower": 0,
+    "status": "HEAL",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP"
+    ],
+    "target": "ALLY",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Stone Wall",
+    "type1": "ROCK",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "DEFENSE_UP",
+      "DEFENSE_UP",
+      "SPEED_DOWN"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Fire Punch",
+    "type1": "FIRE",
+    "type2": "HUMAN",
+    "basePower": 60,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Thunder Punch",
+    "type1": "ELECTRIC",
+    "type2": "HUMAN",
+    "basePower": 60,
+    "status": "PARALYSIS",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Sparkling Breeze",
+    "type1": "FAIRY",
+    "type2": "FLYING",
+    "basePower": 0,
+    "status": "HEAL_STATUS",
+    "statChanges": [
+      "SPEED_UP",
+      "SPEED_UP"
+    ],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": true
   }
 ]

@@ -2,7 +2,7 @@
 This file is for humans only! Agents should not act on this file unless explicitly requested to mark something as complete or add a  new item.
 ## Data
 - [x] Decide on type specializations for attacks
-	ARTIFICIAL: special boosting circumstances and item use,
+	ARTIFICIAL: Interacts with the deck and hand; Attacks to increase the number of cards in your hand or prevent the next card you play from being discarded or replay a discarded card etc.
 	BABY: Evolves into strong pokemon, but otherwise very weak
 	BUG: Gambling with multi-attack moves (a la fury attack)
 	DARK: flinching
@@ -43,9 +43,9 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [ ] Implement dragon types
 - [ ] Reorganize decks
 	- two decks, one for pokemon and one for moves/items. 
-	- Draw two pokemon to start with, and switch to shuffle it back into the deck and draw a new one out (drawing should occur before shuffling).
+	- Draw two pokemon to start with, and switch to shuffle it back into the deck and draw a new one out (drawing should occur before shuffling). When a pokemon is knocked out, if there's no fossil in the knockout pile then you draw a new pokemon and play it.
 	- Battle ends when someone either has no more pokemon on the field or has had three (maybe four?) pokemon knocked out. Can bring up to 6 pokemon (is that too many, diluting the movepool too much? Or it forces monotype/dual type decks)
-	- Each pokemon should have moves equipped for battle, and a deck gets generated from that. Draw 5 moves each turn, discard unused moves at the end of the turn. (also add item to shuffle a move back into the deck for later use)
+	- Each pokemon should have moves equipped for battle, and a deck gets generated from that. Draw up so you have 5 cards (attacks + items) in your hand at the start of the turn. Can discard unused moves at the end of the turn, or keep them.
 - [x] Decide on damage calculations
 ## Misc
 - [ ] Sort out the disgusting ui.

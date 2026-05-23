@@ -204,7 +204,7 @@
     "type3": "NONE",
     "id": "0166",
     "baseHealth": 50,
-    "baseAttack": 100,
+    "baseAttack": 90,
     "baseDefense": 50,
     "baseSpeed": 120
   },
@@ -306,17 +306,6 @@
     "baseAttack": 100,
     "baseDefense": 100,
     "baseSpeed": 100
-  },
-  {
-    "name": "Linoone",
-    "type1": "DARK",
-    "type2": "NORMAL",
-    "type3": "NONE",
-    "id": "0264",
-    "baseHealth": 78,
-    "baseAttack": 80,
-    "baseDefense": 60,
-    "baseSpeed": 140
   },
   {
     "name": "Mamoswine",
