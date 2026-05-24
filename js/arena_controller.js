@@ -5,39 +5,34 @@
  * 1. game.js calls arena.Data.loadGameData(), then either restores a saved
  *    battle through Model.restoreSavedBattleState() or starts fresh through
  *    Controller.resetPrototype().
- * 2. resetPrototype() builds both players, draws opening hands, enters
- *    opening-place, renders, then schedules runOpponentOpeningPlacement().
- * 3. runOpponentOpeningPlacement() animates the rival's first Pokemon into the
- *    board, places it face down, and releases control to the player.
- * 4. The player chooses an opening Pokemon through handleArenaClick() or
- *    Drag.handlePointerUp() -> handleCardDrop() -> placeSelectedOpeningCard().
- *    placeSelectedOpeningCard() places the card, flips both opening Pokemon,
- *    checks game over, then starts turn 1 with startPlayerTurn().
- * 5. startPlayerTurn() increments turnNumber, resets one-item-per-turn and
- *    pending action state, draws a card, renders/saves, then allows input.
- * 6. During the player turn, handleArenaClick() and handleCardDrop() route hand
- *    cards into three paths:
- *    - Pokemon cards can be placed in open player board slots.
+ * 2. resetPrototype() builds both players, draws two opening Pokemon from each
+ *    Pokemon deck into the board slots, animates them, then starts turn 1.
+ * 3. startPlayerTurn() increments turnNumber, resets one-item-per-turn and
+ *    pending action state, draws up to hand size, renders/saves, then allows input.
+ * 4. During the player turn, handleArenaClick() and handleCardDrop() route hand
+ *    cards into attack, item, and discard paths:
  *    - Attack cards select a valid allied Pokemon user, then select/drag to a
  *      legal target, then queue through queuePlayerAttack().
  *    - Item cards select/drag to a legal target and resolve immediately through
  *      usePendingItem() -> applyItemCard().
- * 7. endPlayerTurn() locks input, asks the opponent to act with runOpponentTurn(),
+ *    - Unused hand cards can be discarded by button or by dragging to discard.
+ * 5. endPlayerTurn() locks input, asks the opponent to act with runOpponentTurn(),
  *    then resolves all queued attacks with resolveQueuedAttacks().
- * 8. runOpponentTurn() may place Pokemon, queue attacks through
- *    chooseOpponentAttacks(), and use one item immediately through
- *    useOpponentItem() -> applyItemCard().
- * 9. resolveQueuedAttacks() creates one action per queued attack, sorts them by
+ * 6. runOpponentTurn() refills the rival hand, queues attacks through
+ *    chooseOpponentAttacks(), uses one item immediately through
+ *    useOpponentItem() -> applyItemCard(), then discards unplayable cards.
+ * 7. resolveQueuedAttacks() creates one action per queued attack, sorts them by
  *    priority, effective Speed, then random tie breaker, and resolves each live
  *    action with resolveQueuedAttack().
- * 10. resolveQueuedAttack() checks pre-attack blockers in order: Flinch, Sleep,
- *     Confusion, then Paralysis. If not blocked, targets are retargeted if
- *     needed, Switch/heal/status-heal/damage/stat-change/status effects are
- *     applied, and the attack card is discarded.
- * 11. resolveEndOfTurnStatuses() applies Poison/Burn damage, ticks Sleep for
+ * 8. resolveQueuedAttack() checks pre-attack blockers in order: Flinch, Sleep,
+ *    Confusion, then Paralysis. If not blocked, missing single targets are
+ *    retargeted when possible, Switch/heal/status-heal/damage/stat-change/status
+ *    effects are applied, and the attack card is discarded.
+ * 9. resolveEndOfTurnStatuses() applies Poison/Burn damage, ticks Sleep for
  *     sleeping Pokemon that did not already attempt to wake this turn, clears
  *     end-of-turn statuses such as Flinch/Protect/Fatigue, then checks game over.
- * 12. If the battle is still active, startPlayerTurn() begins the next turn.
+ * 10. Any queued knockout replacements are revived/drawn and animated.
+ * 11. If the battle is still active, startPlayerTurn() begins the next turn.
  *
  * Render/save boundary: call the local render() wrapper after state mutations
  * that should be visible and persisted. Animation helpers usually call
@@ -55,6 +50,7 @@
         CONFUSION_RECOVERY_CHANCE,
         CONFUSION_SELF_DAMAGE_CHANCE,
         DAMAGE_PERCENT,
+        KNOCKOUT_LIMIT,
         MULTI_ATTACK_MAX_HITS,
         MULTI_ATTACK_MIN_HITS,
         MULTI_ATTACK_STAT_CHANGE_TRIGGER_CHANCE,
@@ -75,7 +71,8 @@
     /**
      * Starts a brand-new battle after the page decides not to restore saved state.
      * This is the only fresh-game entry point: it resets phase, hands, queues,
-     * timers, logs, players, then schedules the opponent's opening placement.
+     * timers, logs, players, then auto-plays and animates each side's opening
+     * Pokemon.
      */
     function resetPrototype() {
         clearTimeout(state.flowTimer);
@@ -87,10 +84,11 @@
         state.finished = false;
         state.isResolving = true;
         state.log = [];
-        state.phase = 'opening-place';
+        state.phase = 'setup';
         state.itemUsed = { opponent: false, player: false };
         state.pendingActionCardId = null;
         state.pendingUserCardId = null;
+        state.pendingPokemonReplacements = [];
         state.plannedActions = { opponent: [], player: [] };
         state.players = {
             opponent: model.createPlayer('opponent', 'Rival'),
@@ -100,39 +98,32 @@
         state.selectedCardId = null;
         state.turnNumber = 0;
 
-        model.drawOpeningHands();
-        logEvent('Rival is placing an opening card.');
+        const openingPlacements = model.playOpeningPokemon();
+        logEvent('Both sides drew their opening Pokemon.');
         render();
 
-        state.flowTimer = setTimeout(runOpponentOpeningPlacement, 300);
+        state.flowTimer = setTimeout(() => runOpeningPokemonAnimations(openingPlacements), 240);
     }
 
-    /**
-     * Runs after resetPrototype() gives the rival a short animation delay.
-     * It places the rival's opening Pokemon face down and then unlocks the
-     * player so they can choose their own opening card.
-     */
-    async function runOpponentOpeningPlacement() {
-        if (state.finished || state.phase !== 'opening-place') return;
+    async function runOpeningPokemonAnimations(placements) {
+        if (state.finished || state.phase !== 'setup') return;
 
-        await animateOpponentMoveToSlot(0);
+        for (const placement of placements) {
+            await animatePokemonEnterBoard(placement.ownerId, placement.card, 'pokemon-deck');
+        }
 
-        if (state.finished || state.phase !== 'opening-place') return;
-
-        model.placeOpeningCard(state.players.opponent);
-        state.isResolving = false;
-        logEvent('Rival placed an opening card face down.');
-        logEvent('Choose your opening card.');
-        render();
+        startPlayerTurn();
     }
 
     /**
      * Begins each player-controlled turn after setup or end-of-turn cleanup.
-     * It advances turnNumber, clears pending/queued turn state, draws one card,
-     * renders the draw, then releases input unless the game has ended.
+     * It advances turnNumber, clears pending/queued turn state, refills the
+     * player's hand to its current hand size, then releases input unless the
+     * game has ended.
      */
     async function startPlayerTurn() {
         if (checkGameOver()) return;
+        if (await resolvePendingPokemonReplacements()) return;
 
         const player = state.players.player;
         state.currentPlayer = 'player';
@@ -145,17 +136,17 @@
         state.selectedCardId = null;
         state.turnNumber += 1;
 
-        const drawnCard = model.drawCard(player);
+        const drawnCards = model.drawCardsUpToHandSize(player);
 
-        if (drawnCard) {
-            logEvent(`${player.name} drew ${model.getCardName(drawnCard)}.`);
+        if (drawnCards.length > 0) {
+            logEvent(`${player.name} drew ${drawnCards.length} ${drawnCards.length === 1 ? 'card' : 'cards'}.`);
         } else {
-            logEvent(`${player.name} could not draw.`);
+            logEvent(`${player.name} kept their hand.`);
         }
 
         render();
 
-        if (drawnCard) {
+        for (const drawnCard of drawnCards) {
             await animateDrawCard('player', drawnCard);
         }
 
@@ -215,14 +206,12 @@
             cancelActionSelection();
         } else if (action === 'close-rules') {
             closeRulesWindow();
+        } else if (action === 'discard-selected') {
+            discardSelectedPlayerCard();
         } else if (action === 'end-turn') {
             endPlayerTurn();
         } else if (action === 'place') {
-            if (state.phase === 'opening-place') {
-                placeSelectedOpeningCard();
-            } else {
-                placeSelectedCard();
-            }
+            placeSelectedCard();
         } else if (action === 'reset') {
             resetPrototype();
         } else if (action === 'toggle-rules') {
@@ -249,9 +238,9 @@
     }
 
     /**
-     * Handles hand-card selection during setup and player turns. Pokemon cards
-     * toggle selection for placement, attacks move into user selection, and
-     * items move directly into target selection.
+     * Handles hand-card selection during player turns. Pokemon cards are no
+     * longer selectable because the Pokemon deck plays them automatically;
+     * attacks move into user selection, and items move directly into targeting.
      */
     function selectPlayerCard(cardId) {
         if (!canPlayerSelectCard()) return;
@@ -261,19 +250,8 @@
 
         if (!card) return;
 
-        if (state.phase === 'opening-place') {
-            if (!model.isPokemonCard(card)) {
-                showPopup('Choose a Pokemon card for the opening slot.');
-                return;
-            }
-
-            state.selectedCardId = state.selectedCardId === cardId ? null : cardId;
-            render();
-            return;
-        }
-
         if (model.isPokemonCard(card)) {
-            state.selectedCardId = state.selectedCardId === cardId ? null : cardId;
+            showPopup('Pokemon are played automatically.');
             render();
             return;
         }
@@ -286,41 +264,6 @@
         if (model.isItemCard(card)) {
             beginItemTargeting(cardId);
         }
-    }
-
-    /**
-     * Completes the player's opening placement. Once both opening cards are on
-     * the board, it flips them after a short delay and starts the first turn.
-     */
-    function placeSelectedOpeningCard() {
-        if (!canPlayerSelectCard() || !state.selectedCardId) return;
-
-        const player = state.players.player;
-
-        if (player.board[0]) return;
-
-        const selectedCard = model.findHandCard(player, state.selectedCardId);
-
-        if (!model.isPokemonCard(selectedCard)) return;
-
-        const card = model.removeCardFromHand(player, state.selectedCardId);
-
-        if (!card) return;
-
-        card.faceUp = false;
-        player.board[0] = card;
-        state.selectedCardId = null;
-        state.isResolving = true;
-
-        logEvent(`${player.name} placed ${model.getCardName(card)} face down.`);
-        render();
-
-        clearTimeout(state.flowTimer);
-        state.flowTimer = setTimeout(() => {
-            model.flipOpeningCards();
-            logEvent('Opening cards flipped.');
-            startPlayerTurn();
-        }, 700);
     }
 
     /**
@@ -339,6 +282,8 @@
 
         if (users.length === 0) {
             showPopup(`No active Pokemon can use ${model.getCardName(attackCard)}.`);
+            state.selectedCardId = cardId;
+            render();
             return;
         }
 
@@ -398,6 +343,8 @@
 
         if (state.itemUsed.player) {
             showPopup('You already used an item this turn.');
+            state.selectedCardId = cardId;
+            render();
             return;
         }
 
@@ -405,6 +352,8 @@
 
         if (targets.length === 0) {
             showPopup(`${model.getCardName(itemCard)} has no valid target.`);
+            state.selectedCardId = cardId;
+            render();
             return;
         }
 
@@ -485,14 +434,37 @@
      * action. Queued attacks do not affect the board until resolveQueuedAttacks().
      */
     function queuePlayerAttack(selection) {
-        const player = state.players.player;
-        const attackCard = model.removeCardFromHand(player, state.pendingActionCardId);
-        const userCard = model.getBoardCardById('player', state.pendingUserCardId);
+        return queuePlayerAttackForUser(state.pendingActionCardId, state.pendingUserCardId, selection);
+    }
 
-        if (!attackCard || !userCard) {
+    /**
+     * Shared final queue path for click-selected attacks and direct drag-to-target
+     * attacks. It revalidates the user and target at drop time before moving the
+     * attack card out of hand.
+     */
+    function queuePlayerAttackForUser(cardId, userCardId, selection) {
+        const player = state.players.player;
+        const queuedCard = model.findHandCard(player, cardId);
+        const userCard = model.getBoardCardById('player', userCardId);
+        const userCanQueue = queuedCard && userCard && (
+            !model.hasQueuedAttack('player', userCard.id) &&
+            model.pokemonCanUseAttack(userCard, queuedCard)
+        );
+        const targetOptions = userCanQueue
+            ? model.getTargetOptionsForAction(queuedCard, 'player', userCard.id)
+            : [];
+        const targetAllowed = selection && (
+            selection.kind === 'group'
+                ? model.targetOptionsIncludeGroup(targetOptions, selection.owner)
+                : model.targetOptionsIncludeCard(targetOptions, selection.owner, selection.cardId)
+        );
+
+        if (!queuedCard || !userCard || !userCanQueue || !targetAllowed) {
             cancelActionSelection();
-            return;
+            return false;
         }
+
+        const attackCard = model.removeCardFromHand(player, cardId);
 
         attackCard.faceUp = true;
         state.plannedActions.player.push({
@@ -507,6 +479,8 @@
         clearPendingAction();
         state.phase = 'turn';
         render();
+
+        return true;
     }
 
     function isSelfTargetSelection(attackCard, targets, userCardId) {
@@ -543,7 +517,7 @@
 
         const impactCenter = await animateItemCard(itemCard, sourceCenter, targets);
 
-        applyItemCard(itemCard, selection, 'player');
+        await applyItemCard(itemCard, selection, 'player');
         render();
         await model.sleep(180);
 
@@ -552,6 +526,70 @@
         player.discard.unshift(itemCard);
         state.isResolving = false;
         render();
+    }
+
+    function discardSelectedPlayerCard() {
+        const cardId = state.pendingActionCardId || state.selectedCardId;
+
+        if (!cardId) return;
+
+        discardPlayerHandCard(cardId);
+    }
+
+    async function discardPlayerHandCard(cardId) {
+        if (!canPlayerDiscardHandCard(cardId)) return false;
+
+        return discardHandCardFromHand('player', cardId, `${state.players.player.name} discarded`);
+    }
+
+    async function discardHandCardFromHand(ownerId, cardId, messagePrefix = null, options = {}) {
+        const owner = state.players[ownerId];
+        const sourceCenter = getHandCardCenter(ownerId, cardId) || getArenaCenter();
+        const card = model.removeCardFromHand(owner, cardId);
+        const shouldReleaseInput = options.releaseInput !== undefined
+            ? options.releaseInput
+            : ownerId === 'player';
+
+        if (!card) return false;
+
+        card.faceUp = true;
+        clearPendingAction();
+        state.phase = ownerId === 'player' && state.currentPlayer === 'player'
+            ? 'turn'
+            : state.phase;
+        state.isResolving = true;
+        render();
+
+        await animateDiscardCard(ownerId, card, sourceCenter);
+
+        owner.discard.unshift(card);
+
+        if (messagePrefix) {
+            logEvent(`${messagePrefix} ${model.getCardName(card)}.`);
+        }
+
+        state.isResolving = !shouldReleaseInput;
+        render();
+
+        return true;
+    }
+
+    function canPlayerDiscardHandCard(cardId) {
+        if (state.currentPlayer !== 'player' || state.finished || state.isResolving) return false;
+        if (!model.playerHasCardInHand(cardId)) return false;
+
+        if (state.phase === 'turn') return true;
+
+        return (
+            ['selecting-attack-user', 'selecting-attack-target', 'selecting-item-target'].includes(state.phase) &&
+            state.pendingActionCardId === cardId
+        );
+    }
+
+    function canDiscardSelectedCard() {
+        const cardId = state.pendingActionCardId || state.selectedCardId;
+
+        return Boolean(cardId) && canPlayerDiscardHandCard(cardId);
     }
 
     /**
@@ -573,8 +611,8 @@
     }
 
     /**
-     * Places a selected Pokemon from hand onto an open player board slot during
-     * the normal turn. Opening placement uses placeSelectedOpeningCard() instead.
+     * Legacy manual Pokemon placement path. Main battle flow now plays and
+     * replaces Pokemon from the Pokemon deck automatically.
      */
     function placeSelectedCard(slotIndex = getFirstOpenSlot(state.players.player)) {
         if (!canPlayerAct() || !state.selectedCardId) return;
@@ -606,17 +644,16 @@
     }
 
     /**
-     * True when the player can select cards in hand: opening placement or a
-     * normal unlocked turn.
+     * True when the player can select cards in hand during a normal unlocked turn.
      */
     function canPlayerSelectCard() {
-        const selectablePhase = state.phase === 'opening-place' || state.phase === 'turn';
+        const selectablePhase = state.phase === 'turn';
         return state.currentPlayer === 'player' && selectablePhase && !state.finished && !state.isResolving;
     }
 
     /**
-     * Used by render and click handling to decide whether the selected hand card
-     * can be placed as a Pokemon in an open board slot.
+     * Legacy manual-placement affordance. Pokemon no longer enter the main hand,
+     * so this normally returns false in the two-deck arena flow.
      */
     function canPlaceSelectedCard() {
         if (!state.selectedCardId) return false;
@@ -664,8 +701,7 @@
     }
 
     /**
-     * Drag guard for dropping a hand Pokemon into a board slot, with stricter
-     * rules for the opening slot during setup.
+     * Legacy drag guard for dropping a hand Pokemon into a board slot.
      */
     function canDropCardOnSlot(cardId, slotOwner, slotIndex) {
         if (slotOwner !== 'player' || !model.playerHasCardInHand(cardId)) return false;
@@ -675,11 +711,11 @@
 
         if (!model.isPokemonCard(card)) return false;
 
-        if (state.phase === 'opening-place') {
-            return canPlayerSelectCard() && slotIndex === 0 && !player.board[0];
-        }
-
         return canPlayerAct() && slotIndex >= 0 && slotIndex < BOARD_SLOT_COUNT && !player.board[slotIndex];
+    }
+
+    function canDropCardOnDiscard(cardId, pileOwner) {
+        return pileOwner === 'player' && canPlayerDiscardHandCard(cardId);
     }
 
     /**
@@ -715,6 +751,10 @@
             ) {
                 return { kind: 'attack-user', owner: boardOwner, userCardId: boardCardId };
             }
+
+            const directAttackDrop = getDirectAttackDropForCardTarget(card, boardOwner, boardCardId);
+
+            if (directAttackDrop) return directAttackDrop;
         }
 
         if (model.isItemCard(card) && !state.itemUsed.player) {
@@ -749,6 +789,10 @@
 
         const card = model.findHandCard(state.players.player, cardId);
 
+        if (model.isAttackCard(card)) {
+            return getDirectAttackDropForGroupTarget(card, groupOwner);
+        }
+
         if (!model.isItemCard(card) || state.itemUsed.player) return null;
 
         const options = model.getTargetOptionsForAction(card, 'player', null);
@@ -756,6 +800,41 @@
         if (!model.targetOptionsIncludeGroup(options, groupOwner)) return null;
 
         return { kind: 'target-group', owner: groupOwner };
+    }
+
+    function getDirectAttackDropForCardTarget(attackCard, targetOwner, targetCardId) {
+        const userCard = getEligibleAttackUsers('player', attackCard).find(card => (
+            model.targetOptionsIncludeCard(
+                model.getTargetOptionsForAction(attackCard, 'player', card.id),
+                targetOwner,
+                targetCardId
+            )
+        ));
+
+        if (!userCard) return null;
+
+        return {
+            kind: 'attack-target',
+            selection: { kind: 'single', owner: targetOwner, cardId: targetCardId },
+            userCardId: userCard.id
+        };
+    }
+
+    function getDirectAttackDropForGroupTarget(attackCard, targetOwner) {
+        const userCard = getEligibleAttackUsers('player', attackCard).find(card => (
+            model.targetOptionsIncludeGroup(
+                model.getTargetOptionsForAction(attackCard, 'player', card.id),
+                targetOwner
+            )
+        ));
+
+        if (!userCard) return null;
+
+        return {
+            kind: 'attack-target',
+            selection: { kind: 'group', owner: targetOwner },
+            userCardId: userCard.id
+        };
     }
 
     /**
@@ -767,18 +846,23 @@
 
         if (candidate.kind === 'slot') {
             state.selectedCardId = cardId;
+            placeSelectedCard(candidate.slotIndex);
+            return;
+        }
 
-            if (state.phase === 'opening-place') {
-                placeSelectedOpeningCard();
-            } else {
-                placeSelectedCard(candidate.slotIndex);
-            }
+        if (candidate.kind === 'discard') {
+            discardPlayerHandCard(cardId);
             return;
         }
 
         if (candidate.kind === 'attack-user') {
             beginAttackUserSelection(cardId);
             chooseAttackUser(candidate.userCardId);
+            return;
+        }
+
+        if (candidate.kind === 'attack-target') {
+            queuePlayerAttackForUser(cardId, candidate.userCardId, candidate.selection);
             return;
         }
 
@@ -806,65 +890,41 @@
 
     /**
      * Opponent planning phase called after the player ends their turn. The rival
-     * draws, fills board slots, may use one item immediately, queues attacks,
-     * then schedules attack resolution.
+     * refills to hand size, may use one item immediately, queues attacks,
+     * discards unplayable cards according to next-turn options, then schedules
+     * attack resolution.
      */
     async function runOpponentTurn() {
         if (state.finished || state.currentPlayer !== 'opponent') return;
 
         const opponent = state.players.opponent;
-        const drawnCard = model.drawCard(opponent);
+        const drawnCards = model.drawCardsUpToHandSize(opponent);
 
-        if (drawnCard) {
-            logEvent(`${opponent.name} drew a card.`);
+        if (drawnCards.length > 0) {
+            logEvent(`${opponent.name} drew ${drawnCards.length} ${drawnCards.length === 1 ? 'card' : 'cards'}.`);
         } else {
-            logEvent(`${opponent.name} could not draw.`);
+            logEvent(`${opponent.name} kept their hand.`);
         }
 
         render();
 
-        if (drawnCard) {
-            await animateDrawCard('opponent', drawnCard);
+        if (drawnCards.length > 0) {
+            for (const drawnCard of drawnCards) {
+                await animateDrawCard('opponent', drawnCard);
+            }
         } else {
             await model.sleep(280);
         }
-
-        await placeOpponentPokemon();
 
         await useOpponentItem();
 
         chooseOpponentAttacks();
         render();
 
+        await discardOpponentCardsForNextTurn();
+
         clearTimeout(state.flowTimer);
         state.flowTimer = setTimeout(resolveQueuedAttacks, 720);
-    }
-
-    /**
-     * Simple opponent placement AI: fill empty board slots with Pokemon from
-     * hand before choosing attacks.
-     */
-    async function placeOpponentPokemon() {
-        const opponent = state.players.opponent;
-
-        for (let slotIndex = 0; slotIndex < BOARD_SLOT_COUNT; slotIndex += 1) {
-            if (opponent.board[slotIndex]) continue;
-
-            const pokemonCard = opponent.hand.find(model.isPokemonCard);
-
-            if (!pokemonCard) continue;
-
-            await animateOpponentMoveToSlot(slotIndex);
-
-            if (state.finished || state.currentPlayer !== 'opponent') return;
-
-            model.removeCardFromHand(opponent, pokemonCard.id);
-            pokemonCard.faceUp = true;
-            opponent.board[slotIndex] = pokemonCard;
-            logEvent(`${opponent.name} placed ${model.getCardName(pokemonCard)}.`);
-            render();
-            await model.sleep(180);
-        }
     }
 
     /**
@@ -907,6 +967,57 @@
         }
     }
 
+    async function discardOpponentCardsForNextTurn() {
+        const opponent = state.players.opponent;
+        const playableCards = getPlayableNextTurnCards('opponent');
+        const playableCount = Math.min(3, playableCards.length);
+        const discardCount = Math.min(3 - playableCount, opponent.hand.length);
+
+        if (discardCount <= 0) return;
+
+        const playableIds = new Set(playableCards.map(card => card.id));
+        const discardCards = opponent.hand
+            .filter(card => !playableIds.has(card.id))
+            .slice(0, discardCount);
+
+        for (const card of discardCards) {
+            if (state.finished || state.currentPlayer !== 'opponent') return;
+
+            await discardHandCardFromHand('opponent', card.id, `${opponent.name} discarded`, { releaseInput: false });
+            await model.sleep(120);
+        }
+    }
+
+    function getPlayableNextTurnCards(playerId) {
+        const player = state.players[playerId];
+        const playableCards = [];
+        const usedAttackers = new Set();
+        let hasPlayableItem = false;
+
+        player.hand.forEach(card => {
+            if (model.isAttackCard(card)) {
+                const userCard = model.getBoardCards(playerId).find(pokemonCard => (
+                    !usedAttackers.has(pokemonCard.id) &&
+                    model.pokemonCanUseAttack(pokemonCard, card) &&
+                    model.getTargetOptionsForAction(card, playerId, pokemonCard.id).length > 0
+                ));
+
+                if (!userCard) return;
+
+                usedAttackers.add(userCard.id);
+                playableCards.push(card);
+                return;
+            }
+
+            if (!hasPlayableItem && model.isItemCard(card) && model.getTargetOptionsForAction(card, playerId, null).length > 0) {
+                hasPlayableItem = true;
+                playableCards.push(card);
+            }
+        });
+
+        return playableCards.slice(0, 3);
+    }
+
     /**
      * Uses at most one opponent item during the opponent planning phase. Like
      * player items, these resolve immediately instead of being queued.
@@ -931,7 +1042,7 @@
 
         const impactCenter = await animateItemCard(itemCard, sourceCenter, targets);
 
-        applyItemCard(itemCard, itemPlan.selection, 'opponent');
+        await applyItemCard(itemCard, itemPlan.selection, 'opponent');
         render();
         await model.sleep(180);
 
@@ -1213,6 +1324,10 @@
 
         if (checkGameOver()) return;
 
+        if (await resolvePendingPokemonReplacements()) return;
+
+        if (checkGameOver()) return;
+
         clearTimeout(state.flowTimer);
         state.flowTimer = setTimeout(startPlayerTurn, 620);
     }
@@ -1427,7 +1542,9 @@
 
     /**
      * Converts a queued target selection into live card targets. If a single
-     * target disappeared, it tries one legal single-target fallback.
+     * target disappeared before this attack resolves, it tries one legal
+     * single-target fallback. Group targets naturally re-read the current board,
+     * so they still hit whichever targets remain active.
      */
     function resolveActionTargets(action, attacker) {
         const currentTargets = model.getCardsForTargetSelection(action.selection);
@@ -1502,7 +1619,9 @@
             : await animateAttackCard(action, targets);
 
         if (statuses.includes('SWITCH')) {
-            targets.forEach(target => switchPokemon(target.owner, target.card));
+            for (const target of targets) {
+                await switchPokemon(target.owner, target.card);
+            }
             handledEffect = true;
         } else {
             if (hasHealthHealing(statuses)) {
@@ -1638,14 +1757,16 @@
      * Items share the same healing, status, stat, switch, and targeting helpers
      * as attacks, but they are never placed in the queued attack resolver.
      */
-    function applyItemCard(itemCard, selection, actorId) {
+    async function applyItemCard(itemCard, selection, actorId) {
         const targets = model.getCardsForTargetSelection(selection);
         const statuses = model.getActionStatuses(itemCard);
         const statChanges = model.getActionStatChanges(itemCard);
         let didSomething = false;
 
         if (statuses.includes('SWITCH')) {
-            targets.forEach(target => switchPokemon(target.owner, target.card));
+            for (const target of targets) {
+                await switchPokemon(target.owner, target.card);
+            }
             didSomething = true;
         }
 
@@ -1823,6 +1944,7 @@
     /**
      * Final cleanup after all queued attacks resolve. Poison/Burn damage happens
      * first, then non-attacking Sleep ticks, then expiring turn statuses clear.
+     * Knockout replacements are queued here and drawn after all cleanup is done.
      */
     async function resolveEndOfTurnStatuses() {
         const damageResults = applyEndOfTurnStatusDamage();
@@ -2147,22 +2269,33 @@
 
     /**
      * Resolves SWITCH by removing the target from the board, clearing stat
-     * stages, and shuffling the card back into its owner's deck.
+     * stages, placing it on the bottom of its owner's Pokemon deck, and drawing
+     * a replacement Pokemon immediately.
      */
-    function switchPokemon(ownerId, pokemonCard) {
+    async function switchPokemon(ownerId, pokemonCard) {
         const owner = state.players[ownerId];
+        const slotIndex = owner.board.findIndex(card => card && card.id === pokemonCard.id);
         const removedCard = model.removeCardFromBoard(owner, pokemonCard.id);
 
         if (!removedCard) return;
 
         model.clearPokemonStatChanges(removedCard);
-        model.shuffleCardIntoDeck(owner, removedCard);
-        logEvent(`${model.getCardName(removedCard)} was shuffled into ${owner.name}'s deck.`);
+        model.putPokemonOnBottomOfDeck(owner, removedCard);
+        logEvent(`${model.getCardName(removedCard)} went to the bottom of ${owner.name}'s Pokemon deck.`);
+
+        const replacementCard = model.drawPokemonToBoard(owner, slotIndex);
+
+        if (replacementCard) {
+            logEvent(`${owner.name} drew ${model.getCardName(replacementCard)} into the open slot.`);
+            render();
+            await animatePokemonEnterBoard(ownerId, replacementCard, 'pokemon-deck');
+        }
     }
 
     /**
-     * Removes a Pokemon at 0 HP, moves it to the knockout pile, decrements the
-     * owner's remaining Pokemon count, then checks for FOSSIL revival.
+     * Removes a Pokemon at 0 HP, moves it to the knockout pile, increments the
+     * owner's knockout count, then queues replacement for end-of-turn. Delaying
+     * replacement keeps later queued attacks from hitting a newly drawn Pokemon.
      */
     function knockOutPokemon(ownerId, pokemonCard) {
         const owner = state.players[ownerId];
@@ -2173,14 +2306,90 @@
 
         removedCard.faceUp = true;
         owner.knockout.unshift(removedCard);
-        owner.pokemonLeft = Math.max(0, owner.pokemonLeft - 1);
+        owner.knockoutCount = (Number(owner.knockoutCount) || 0) + 1;
+        model.updatePokemonLeft(owner);
         logEvent(`${model.getCardName(removedCard)} was knocked out.`);
 
-        reviveFossilPokemonFromKnockout(owner, slotIndex);
+        if (owner.knockoutCount >= KNOCKOUT_LIMIT) return;
+
+        queuePokemonReplacement(ownerId, slotIndex);
+    }
+
+    function queuePokemonReplacement(ownerId, slotIndex) {
+        if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT) return false;
+
+        const owner = state.players[ownerId];
+
+        if (!owner || owner.board[slotIndex]) return false;
+
+        const existingReplacement = state.pendingPokemonReplacements.some(replacement => (
+            replacement.ownerId === ownerId && replacement.slotIndex === slotIndex
+        ));
+
+        if (existingReplacement) return false;
+
+        state.pendingPokemonReplacements.push({ ownerId, slotIndex });
+
+        return true;
+    }
+
+    async function resolvePendingPokemonReplacements() {
+        if (!Array.isArray(state.pendingPokemonReplacements) || state.pendingPokemonReplacements.length === 0) return false;
+
+        const replacements = state.pendingPokemonReplacements.slice();
+
+        state.pendingPokemonReplacements = [];
+
+        for (const replacement of replacements) {
+            if (checkGameOver()) return true;
+
+            const owner = state.players[replacement.ownerId];
+
+            if (!owner || owner.board[replacement.slotIndex]) continue;
+
+            const fossilCard = reviveFossilPokemonFromKnockout(owner, replacement.slotIndex);
+
+            if (fossilCard) {
+                render();
+                await animatePokemonEnterBoard(owner.id, fossilCard, 'knockout');
+                continue;
+            }
+
+            const replacementCard = drawReplacementPokemon(owner, replacement.slotIndex);
+
+            render();
+
+            if (replacementCard) {
+                await animatePokemonEnterBoard(owner.id, replacementCard, 'pokemon-deck');
+            }
+
+            if (checkGameOver()) return true;
+        }
+
+        render();
+
+        return checkGameOver();
+    }
+
+    function drawReplacementPokemon(owner, slotIndex) {
+        if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT || owner.board[slotIndex]) return null;
+
+        const replacementCard = model.drawPokemonToBoard(owner, slotIndex);
+
+        if (!replacementCard) {
+            owner.lostByPokemonDeck = true;
+            model.updatePokemonLeft(owner);
+            logEvent(`${owner.name} had no Pokemon left to draw.`);
+            return null;
+        }
+
+        logEvent(`${owner.name} drew ${model.getCardName(replacementCard)} into the open slot.`);
+
+        return replacementCard;
     }
 
     /**
-     * FOSSIL special rule: when another ally is knocked out, a once-per-card
+     * FOSSIL special rule: during end-of-turn replacement, a once-per-card
      * Fossil already in the knockout pile can return to the vacated slot.
      */
     function reviveFossilPokemonFromKnockout(owner, slotIndex) {
@@ -2205,7 +2414,7 @@
         model.applyStatus(fossilCard, 'FATIGUE');
 
         owner.board[slotIndex] = fossilCard;
-        owner.pokemonLeft += 1;
+        model.updatePokemonLeft(owner);
         logEvent(`${model.getCardName(fossilCard)} revived from the knockout pile with Fatigue.`);
 
         return fossilCard;
@@ -2225,13 +2434,13 @@
 
     /**
      * Called after major state changes and during resolution loops. It ends the
-     * battle when either player has no active/remaining Pokemon.
+     * battle when either side reaches the knockout limit or cannot replace a KO.
      */
     function checkGameOver() {
         if (state.finished) return true;
 
-        const playerDefeated = state.players.player && state.players.player.pokemonLeft <= 0;
-        const opponentDefeated = state.players.opponent && state.players.opponent.pokemonLeft <= 0;
+        const playerDefeated = isPlayerDefeated(state.players.player);
+        const opponentDefeated = isPlayerDefeated(state.players.opponent);
 
         if (!playerDefeated && !opponentDefeated) return false;
 
@@ -2252,6 +2461,12 @@
         render();
 
         return true;
+    }
+
+    function isPlayerDefeated(player) {
+        if (!player) return false;
+
+        return Boolean(player.lostByPokemonDeck) || (Number(player.knockoutCount) || 0) >= KNOCKOUT_LIMIT;
     }
 
     function showPopup(message) {
@@ -2321,6 +2536,38 @@
 
         await model.sleep(430);
         handElement.classList.remove('is-arriving-card');
+        ghost.remove();
+    }
+
+    async function animatePokemonEnterBoard(playerId, card, sourcePileType = 'pokemon-deck') {
+        const sourceElement = getPileCardElement(playerId, sourcePileType);
+        const boardElement = getBoardCardElement(playerId, card.id);
+
+        if (!sourceElement || !boardElement) {
+            await model.sleep(260);
+            return;
+        }
+
+        const ghost = createCardAnimationElement(card, 'draw-animation-card pokemon-draw-animation-card', true);
+
+        if (!ghost) {
+            await model.sleep(260);
+            return;
+        }
+
+        const sourceCenter = getElementCenter(sourceElement);
+        const targetCenter = getElementCenter(boardElement);
+
+        boardElement.classList.add('is-arriving-card');
+        document.body.appendChild(ghost);
+        placeAnimationElement(ghost, sourceCenter);
+
+        await model.sleep(40);
+        ghost.classList.add('is-card-moving');
+        placeAnimationElement(ghost, targetCenter);
+
+        await model.sleep(430);
+        boardElement.classList.remove('is-arriving-card');
         ghost.remove();
     }
 
@@ -2469,13 +2716,14 @@
         canPlayerSelectCard,
         canPlaceSelectedCard,
         canDragPendingActionCard,
+        canDiscardSelectedCard,
+        canDropCardOnDiscard,
         cancelActionSelection,
         getDropActionForBoardCard,
         getDropActionForTargetGroup,
         handleCardDrop,
         handleArenaClick,
         placeSelectedCard,
-        placeSelectedOpeningCard,
         resetPrototype
     };
 })(window.CardArena = window.CardArena || {});

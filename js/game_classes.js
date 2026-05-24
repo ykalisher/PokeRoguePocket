@@ -13,9 +13,9 @@
  * - ICE attacks calculate damage from base Attack/Defense only, ignoring stat
  *   stages and status multipliers for both attacker and target.
  * - STEEL attacks use the attacker's Defense instead of Attack as the damage stat.
- * - FOSSIL Pokemon already in the knockout pile can revive once when another
- *   allied Pokemon is knocked out. They return to that board slot with 60% max
- *   HP, cleared statuses/stat stages, and Fatigue.
+ * - FOSSIL Pokemon already in the knockout pile can revive once at end of turn
+ *   after another allied Pokemon is knocked out. They return to that board slot
+ *   with 60% max HP, cleared statuses/stat stages, and Fatigue.
  */
 const PokeType = Object.freeze({
     ARTIFICIAL: 'ARTIFICIAL',
@@ -78,8 +78,8 @@ const PokeType = Object.freeze({
  *   a 20% activation chance instead of the normal damaging attack chance.
  * - SELF_INFLICT: Stat changes apply to the attacking Pokemon instead of the
  *   selected targets.
- * - SWITCH: Removes the target from the board, clears its stat stages, and
- *   shuffles it into its owner's deck.
+ * - SWITCH: Removes the target from the board, clears its stat stages, puts it
+ *   on the bottom of its owner's Pokemon deck, and draws a replacement.
  * - NONE: No status or action effect.
  */
 const Status = Object.freeze({

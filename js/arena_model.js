@@ -12,15 +12,15 @@
     'use strict';
 
     const {
-        ATTACK_CARDS_PER_DECK,
+        ATTACK_COPIES_PER_MAIN_DECK,
         BOARD_SLOT_COUNT,
-        ITEM_CARDS_PER_DECK,
-        OPENING_HAND_SIZE,
-        POKEMON_CARDS_PER_DECK
+        DEFAULT_BATTLE_DECK,
+        HAND_SIZE,
+        ITEM_CARDS_PER_MAIN_DECK
     } = arena.Constants;
 
     const BATTLE_STORAGE_KEY = 'card-arena-current-battle';
-    const BATTLE_STORAGE_VERSION = 1;
+    const BATTLE_STORAGE_VERSION = 2;
     const STAT_STAGE_MIN = -6;
     const STAT_STAGE_MAX = 6;
     const STAT_STAGE_MULTIPLIERS = Object.freeze({
@@ -90,6 +90,7 @@
         itemUsed: { opponent: false, player: false },
         pendingActionCardId: null,
         pendingUserCardId: null,
+        pendingPokemonReplacements: [],
         plannedActions: { opponent: [], player: [] },
         players: {},
         popupTimer: null,
@@ -100,21 +101,25 @@
     };
 
     /**
-     * Creates a player object with a freshly shuffled deck. Called by
+     * Creates a player object with freshly shuffled Pokemon and main decks. Called by
      * Controller.resetPrototype() when starting a new battle.
      */
     function createPlayer(id, name) {
-        const deck = createDeck(id);
+        const decks = createDecks(id);
 
         return {
             board: Array.from({ length: BOARD_SLOT_COUNT }, () => null),
-            deck,
+            deck: decks.mainDeck,
             discard: [],
             hand: [],
+            handSize: HAND_SIZE,
             id,
             knockout: [],
+            knockoutCount: 0,
+            lostByPokemonDeck: false,
             name,
-            pokemonLeft: deck.filter(isPokemonCard).length
+            pokemonDeck: decks.pokemonDeck,
+            pokemonLeft: decks.pokemonDeck.length
         };
     }
 
@@ -158,6 +163,7 @@
         state.itemUsed = normalizeItemUsed(savedBattle.itemUsed);
         state.pendingActionCardId = savedBattle.pendingActionCardId || null;
         state.pendingUserCardId = savedBattle.pendingUserCardId || null;
+        state.pendingPokemonReplacements = [];
         state.plannedActions = normalizePlannedActions(savedBattle.plannedActions);
         state.players = {
             opponent: normalizeSavedPlayer(savedBattle.players && savedBattle.players.opponent, 'opponent', 'Rival'),
@@ -278,62 +284,170 @@
     function normalizeSavedPlayer(player, id, name) {
         const normalizedPlayer = player && typeof player === 'object' ? player : {};
         const board = Array.isArray(normalizedPlayer.board) ? normalizedPlayer.board : [];
-        const deck = Array.isArray(normalizedPlayer.deck) ? normalizedPlayer.deck : [];
-        const discard = Array.isArray(normalizedPlayer.discard) ? normalizedPlayer.discard : [];
-        const hand = Array.isArray(normalizedPlayer.hand) ? normalizedPlayer.hand : [];
+        const deck = Array.isArray(normalizedPlayer.deck)
+            ? normalizedPlayer.deck.filter(card => !isPokemonCard(card))
+            : [];
+        const discard = Array.isArray(normalizedPlayer.discard)
+            ? normalizedPlayer.discard.filter(card => !isPokemonCard(card))
+            : [];
+        const hand = Array.isArray(normalizedPlayer.hand)
+            ? normalizedPlayer.hand.filter(card => !isPokemonCard(card))
+            : [];
         const knockout = Array.isArray(normalizedPlayer.knockout) ? normalizedPlayer.knockout : [];
-
-        return {
-            board: Array.from({ length: BOARD_SLOT_COUNT }, (_, index) => board[index] || null),
+        const pokemonDeck = Array.isArray(normalizedPlayer.pokemonDeck)
+            ? normalizedPlayer.pokemonDeck.filter(isPokemonCard)
+            : [];
+        const normalizedBoard = Array.from({ length: BOARD_SLOT_COUNT }, (_, index) => (
+            isPokemonCard(board[index]) ? board[index] : null
+        ));
+        const playerState = {
+            board: normalizedBoard,
             deck,
             discard,
             hand,
+            handSize: Number.isFinite(normalizedPlayer.handSize) ? normalizedPlayer.handSize : HAND_SIZE,
             id,
             knockout,
+            knockoutCount: Number.isFinite(normalizedPlayer.knockoutCount)
+                ? normalizedPlayer.knockoutCount
+                : knockout.filter(isPokemonCard).length,
+            lostByPokemonDeck: Boolean(normalizedPlayer.lostByPokemonDeck),
             name: normalizedPlayer.name || name,
-            pokemonLeft: Number.isFinite(normalizedPlayer.pokemonLeft)
-                ? normalizedPlayer.pokemonLeft
-                : countRemainingPokemon({ board, deck, discard, hand })
+            pokemonDeck,
+            pokemonLeft: 0
         };
+
+        updatePokemonLeft(playerState);
+
+        return playerState;
     }
 
     function countRemainingPokemon(player) {
         return [
             ...player.board,
-            ...player.deck,
-            ...player.discard,
-            ...player.hand
+            ...player.pokemonDeck
         ].filter(isPokemonCard).length;
     }
 
+    function updatePokemonLeft(player) {
+        if (!player) return 0;
+
+        player.pokemonLeft = countRemainingPokemon(player);
+
+        return player.pokemonLeft;
+    }
+
     /**
-     * Builds a small demo deck from normalized arena.GameData. Called only while
-     * creating a fresh player for resetPrototype().
+     * Builds the two-deck battle structure from a configured deck definition, or
+     * from the default arena deck when no explicit deck has been supplied.
      */
-    function createDeck(playerId) {
+    function createDecks(playerId) {
         const prefix = playerId === 'player' ? 'YOU' : 'OPP';
         const data = arena.GameData || { attacks: [], items: [], pokemon: [] };
-        const pokemonRecords = [];
+        const definition = getBattleDeckDefinition(playerId);
+        const pokemonDeck = createPokemonDeck(data.pokemon, definition, playerId, prefix);
+        const mainDeck = createMainDeck(data, definition, pokemonDeck.map(card => card.pokemon), playerId, prefix);
+
+        return {
+            mainDeck: shuffle(mainDeck),
+            pokemonDeck: shuffle(pokemonDeck)
+        };
+    }
+
+    function getBattleDeckDefinition(playerId) {
+        const configuredDeck = arena.BattleDecks && arena.BattleDecks[playerId];
+
+        return normalizeBattleDeckDefinition(configuredDeck) || DEFAULT_BATTLE_DECK;
+    }
+
+    function normalizeBattleDeckDefinition(definition) {
+        if (!definition || typeof definition !== 'object' || !Array.isArray(definition.pokemon)) return null;
+
+        return {
+            items: Array.isArray(definition.items) ? definition.items.slice(0, ITEM_CARDS_PER_MAIN_DECK) : [],
+            pokemon: definition.pokemon
+                .map(entry => typeof entry === 'string' ? { name: entry, attacks: [] } : entry)
+                .filter(entry => entry && entry.name)
+        };
+    }
+
+    function createPokemonDeck(pokemonRecords, definition, playerId, prefix) {
+        const selectedPokemon = definition.pokemon
+            .map(entry => findRecordByName(pokemonRecords, entry.name))
+            .filter(Boolean);
+        const records = selectedPokemon.length > 0 ? selectedPokemon : pokemonRecords.slice(0, BOARD_SLOT_COUNT);
+
+        return records.map((pokemon, index) => (
+            createPokemonCard(pokemon, playerId, `${prefix}-PKM-${index + 1}`)
+        ));
+    }
+
+    function createMainDeck(data, definition, pokemonRecords, playerId, prefix) {
         const deck = [];
+        const attackSelections = getSelectedAttacksForDeck(data.attacks, definition, pokemonRecords);
+        const itemSelections = getSelectedItemsForDeck(data.items, definition);
 
-        for (let index = 0; index < POKEMON_CARDS_PER_DECK && data.pokemon.length > 0; index += 1) {
-            const pokemon = data.pokemon[index % data.pokemon.length];
+        attackSelections.forEach((attack, selectionIndex) => {
+            for (let copyIndex = 0; copyIndex < ATTACK_COPIES_PER_MAIN_DECK; copyIndex += 1) {
+                const cardIndex = (selectionIndex * ATTACK_COPIES_PER_MAIN_DECK) + copyIndex + 1;
 
-            pokemonRecords.push(pokemon);
-            deck.push(createPokemonCard(pokemon, playerId, `${prefix}-PKM-${index + 1}`));
+                deck.push(createAttackCard(attack, playerId, `${prefix}-ATK-${cardIndex}`));
+            }
+        });
+
+        itemSelections.forEach((item, index) => {
+            deck.push(createItemCard(item, playerId, `${prefix}-ITM-${index + 1}`));
+        });
+
+        return deck;
+    }
+
+    function getSelectedAttacksForDeck(attacks, definition, pokemonRecords) {
+        const pokemonByName = new Map(pokemonRecords.map(pokemon => [pokemon.name, pokemon]));
+        const selectedAttacks = [];
+
+        definition.pokemon.forEach(entry => {
+            const species = pokemonByName.get(entry.name);
+            const attackNames = Array.isArray(entry.attacks) ? entry.attacks : [];
+
+            attackNames.forEach(attackName => {
+                const attack = findRecordByName(attacks, attackName);
+
+                if (!attack || (species && !speciesCanUseAttack(species, attack))) return;
+
+                selectedAttacks.push(attack);
+            });
+        });
+
+        return selectedAttacks.length > 0
+            ? selectedAttacks
+            : getDemoAttacksForPokemon(attacks, pokemonRecords).slice(0, pokemonRecords.length * 2);
+    }
+
+    function getSelectedItemsForDeck(items, definition) {
+        const selectedItems = definition.items
+            .slice(0, ITEM_CARDS_PER_MAIN_DECK)
+            .map(itemName => findRecordByName(items, itemName))
+            .filter(Boolean);
+
+        return selectedItems.length > 0 ? selectedItems : items.slice(0, ITEM_CARDS_PER_MAIN_DECK);
+    }
+
+    function findRecordByName(records, name) {
+        return records.find(record => record && record.name === name) || null;
+    }
+
+    function speciesCanUseAttack(species, attack) {
+        const pokemonTypes = species.types || compactTypes([species.type1, species.type2, species.type3]);
+        const requiredTypes = attack.types || compactTypes([attack.type1, attack.type2]);
+
+        if (requiredTypes.length === 0) return true;
+
+        if (attack.full_type_requirements) {
+            return requiredTypes.every(type => pokemonTypes.includes(type));
         }
 
-        const attacks = getDemoAttacksForPokemon(data.attacks, pokemonRecords);
-
-        for (let index = 0; index < ATTACK_CARDS_PER_DECK && attacks.length > 0; index += 1) {
-            deck.push(createAttackCard(attacks[index % attacks.length], playerId, `${prefix}-ATK-${index + 1}`));
-        }
-
-        for (let index = 0; index < ITEM_CARDS_PER_DECK && data.items.length > 0; index += 1) {
-            deck.push(createItemCard(data.items[index % data.items.length], playerId, `${prefix}-ITM-${index + 1}`));
-        }
-
-        return shuffle(deck);
+        return requiredTypes.some(type => pokemonTypes.includes(type));
     }
 
     function compactTypes(types) {
@@ -405,46 +519,46 @@
     }
 
     /**
-     * Draws both players' opening hands during resetPrototype() and guarantees
-     * each opening hand has at least one Pokemon when possible.
+     * Draws two opening Pokemon from each player's Pokemon deck and plays them
+     * directly into the active board slots.
      */
-    function drawOpeningHands() {
+    function playOpeningPokemon() {
+        const placements = [];
+
         Object.values(state.players).forEach(player => {
-            for (let count = 0; count < OPENING_HAND_SIZE; count += 1) {
-                drawCard(player);
+            for (let slotIndex = 0; slotIndex < BOARD_SLOT_COUNT; slotIndex += 1) {
+                const card = drawPokemonToBoard(player, slotIndex);
+
+                if (card) {
+                    placements.push({ card, ownerId: player.id, slotIndex });
+                }
             }
-
-            ensureOpeningHandHasPokemon(player);
         });
+
+        return placements;
     }
 
     /**
-     * Opponent setup helper: moves the first Pokemon in hand to board slot 0
-     * face down. Player opening placement is handled by the controller.
+     * Draws main-deck cards until the player's hand reaches its current hand
+     * size, recycling discard into the main deck as needed.
      */
-    function placeOpeningCard(player) {
-        const card = player.hand.find(isPokemonCard);
+    function drawCardsUpToHandSize(player) {
+        const drawnCards = [];
+        const handSize = getPlayerHandSize(player);
 
-        if (!card) return;
+        while (player.hand.length < handSize) {
+            const card = drawCard(player);
 
-        removeCardFromHand(player, card.id);
-        card.faceUp = false;
-        player.board[0] = card;
+            if (!card) break;
+
+            drawnCards.push(card);
+        }
+
+        return drawnCards;
     }
 
     /**
-     * Reveals both opening Pokemon after the player has chosen their opener.
-     */
-    function flipOpeningCards() {
-        Object.values(state.players).forEach(player => {
-            player.board.forEach(card => {
-                if (card) card.faceUp = true;
-            });
-        });
-    }
-
-    /**
-     * Draws one card for a turn or opening hand, recycling discard into deck
+     * Draws one card from the main deck, recycling discard into the main deck
      * first if the deck is empty.
      */
     function drawCard(player) {
@@ -459,6 +573,45 @@
         player.hand.push(card);
 
         return card;
+    }
+
+    function drawPokemonToBoard(player, slotIndex) {
+        if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT || player.board[slotIndex]) return null;
+
+        const card = drawPokemonCard(player);
+
+        if (!card) return null;
+
+        card.faceUp = true;
+        player.board[slotIndex] = card;
+        updatePokemonLeft(player);
+
+        return card;
+    }
+
+    function drawPokemonCard(player) {
+        if (!player || !Array.isArray(player.pokemonDeck) || player.pokemonDeck.length === 0) return null;
+
+        const card = player.pokemonDeck.shift();
+
+        card.faceUp = true;
+        updatePokemonLeft(player);
+
+        return card;
+    }
+
+    function putPokemonOnBottomOfDeck(player, card) {
+        if (!player || !isPokemonCard(card)) return false;
+
+        card.faceUp = false;
+        player.pokemonDeck.push(card);
+        updatePokemonLeft(player);
+
+        return true;
+    }
+
+    function getPlayerHandSize(player) {
+        return Number.isFinite(player && player.handSize) ? player.handSize : HAND_SIZE;
     }
 
     /**
@@ -1045,7 +1198,8 @@
     }
 
     /**
-     * Places a card face down into a newly shuffled deck, used by SWITCH.
+     * Places a card face down into the main deck and shuffles it. Kept for
+     * older deck effects that may still target the main deck.
      */
     function shuffleCardIntoDeck(player, card) {
         card.faceUp = false;
@@ -1196,32 +1350,6 @@
     }
 
     /**
-     * Opening-hand safety net called after opening draws so setup can always
-     * place a Pokemon if one exists in the deck.
-     */
-    function ensureOpeningHandHasPokemon(player) {
-        if (player.hand.some(isPokemonCard)) return;
-
-        const pokemonIndex = player.deck.findIndex(isPokemonCard);
-
-        if (pokemonIndex === -1) return;
-
-        const replacementIndex = player.hand.findIndex(card => !isPokemonCard(card));
-        const [pokemonCard] = player.deck.splice(pokemonIndex, 1);
-
-        pokemonCard.faceUp = player.id === 'player';
-
-        if (replacementIndex === -1) {
-            player.hand.push(pokemonCard);
-            return;
-        }
-
-        const [replacedCard] = player.hand.splice(replacementIndex, 1, pokemonCard);
-        replacedCard.faceUp = false;
-        player.deck = shuffle([replacedCard, ...player.deck]);
-    }
-
-    /**
      * Small Promise-based delay helper used by controller animations.
      */
     function sleep(milliseconds) {
@@ -1239,9 +1367,9 @@
         clearSavedBattleState,
         createPlayer,
         drawCard,
-        drawOpeningHands,
+        drawCardsUpToHandSize,
+        drawPokemonToBoard,
         findHandCard,
-        flipOpeningCards,
         applyStatChange,
         formatStatusName,
         formatStatStage,
@@ -1263,6 +1391,7 @@
         getPokemonStatusEntry,
         getPokemonStatuses,
         getPokemonStatusMultiplier,
+        getPlayerHandSize,
         getPortraitHue,
         getPortraitInitials,
         getPortraitUrl,
@@ -1277,9 +1406,10 @@
         isBattleStatus,
         isItemCard,
         isPokemonCard,
-        placeOpeningCard,
+        playOpeningPokemon,
         playerHasCardInHand,
         pokemonCanUseAttack,
+        putPokemonOnBottomOfDeck,
         recycleDiscardIntoDeck,
         removeCardFromHand,
         removeCardFromBoard,
@@ -1290,6 +1420,7 @@
         shuffleCardIntoDeck,
         targetOptionsIncludeCard,
         targetOptionsIncludeGroup,
+        updatePokemonLeft,
         sleep
     };
 })(window.CardArena = window.CardArena || {});

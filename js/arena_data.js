@@ -12,21 +12,32 @@
     'use strict';
 
     arena.Constants = Object.freeze({
-        ATTACK_CARDS_PER_DECK: 12,
+        ATTACK_COPIES_PER_MAIN_DECK: 2,
         BOARD_SLOT_COUNT: 2,
         BURN_DAMAGE_PERCENT: 0.05,
         CONFUSION_DAMAGE_PERCENT: 0.1,
         CONFUSION_RECOVERY_CHANCE: 0.5,
         CONFUSION_SELF_DAMAGE_CHANCE: 0.5,
         DAMAGE_PERCENT: 0.2,
-        ITEM_CARDS_PER_DECK: 4,
+        DEFAULT_BATTLE_DECK: {
+            items: ['Sitrus Berry', 'Withdraw Wand', 'Withdraw Wand', 'Salac Berry'],
+            pokemon: [
+                { name: 'Blastoise', attacks: ['Angered Roar', 'Crunch'] },
+                { name: 'Poliwrath', attacks: ['Hydro Pump', 'Soaking Smash'] },
+                { name: 'Machamp', attacks: ['Mega Punch', 'Karate Smash'] },
+                { name: 'Gengar', attacks: ['Jumpscare', 'Ghastly Grip'] },
+                { name: 'Feraligatr', attacks: ['Murky Water', 'Waterfall'] },
+                { name: 'Suicune', attacks: ['Rain Dance', 'Great Flood'] }
+            ]
+        },
+        HAND_SIZE: 6,
+        ITEM_CARDS_PER_MAIN_DECK: 4,
+        KNOCKOUT_LIMIT: 4,
         MULTI_ATTACK_MAX_HITS: 6,
         MULTI_ATTACK_MIN_HITS: 2,
         MULTI_ATTACK_STAT_CHANGE_TRIGGER_CHANCE: 0.2,
-        OPENING_HAND_SIZE: 3,
         PARALYSIS_SKIP_CHANCE: 1 / 3,
         POISON_DAMAGE_PERCENT: 0.1,
-        POKEMON_CARDS_PER_DECK: 4,
         SECOND_SLOT_INDEX: 1,
         SLEEP_GUARANTEED_WAKE_ATTEMPT: 4,
         SLEEP_WAKE_CHANCE: 0.5,
@@ -42,30 +53,207 @@
                 type2: 'MONSTER',
                 type3: 'NONE',
                 id: '0009',
-                baseHealth: 79,
-                baseAttack: 85,
-                baseDefense: 105,
-                baseSpeed: 78
+                baseHealth: 80,
+                baseAttack: 90,
+                baseDefense: 100,
+                baseSpeed: 80
+            },
+            {
+                name: 'Poliwrath',
+                type1: 'WATER',
+                type2: 'FIGHTING',
+                type3: 'NONE',
+                id: '0041',
+                baseHealth: 90,
+                baseAttack: 90,
+                baseDefense: 90,
+                baseSpeed: 70
+            },
+            {
+                name: 'Machamp',
+                type1: 'FIGHTING',
+                type2: 'HUMAN',
+                type3: 'NONE',
+                id: '0068',
+                baseHealth: 90,
+                baseAttack: 130,
+                baseDefense: 80,
+                baseSpeed: 55
+            },
+            {
+                name: 'Gengar',
+                type1: 'GHOST',
+                type2: 'HUMAN',
+                type3: 'NONE',
+                id: '0094',
+                baseHealth: 60,
+                baseAttack: 130,
+                baseDefense: 60,
+                baseSpeed: 110
+            },
+            {
+                name: 'Feraligatr',
+                type1: 'WATER',
+                type2: 'DARK',
+                type3: 'NONE',
+                id: '0160',
+                baseHealth: 90,
+                baseAttack: 100,
+                baseDefense: 80,
+                baseSpeed: 80
+            },
+            {
+                name: 'Suicune',
+                type1: 'WATER',
+                type2: 'LEGENDARY',
+                type3: 'NONE',
+                id: '0245',
+                baseHealth: 115,
+                baseAttack: 90,
+                baseDefense: 115,
+                baseSpeed: 75
             }
         ],
         attacks: [
             {
-                name: 'Surf',
+                name: 'Angered Roar',
+                type1: 'MONSTER',
+                type2: 'NONE',
+                basePower: 0,
+                status: 'NONE',
+                statChanges: ['ATTACK_UP', 'ATTACK_UP', 'DEFENSE_DOWN', 'DEFENSE_DOWN'],
+                target: 'SELF',
+                full_type_requirements: false
+            },
+            {
+                name: 'Crunch',
+                type1: 'MONSTER',
+                type2: 'DARK',
+                basePower: 55,
+                status: 'FLINCH',
+                statChanges: ['DEFENSE_DOWN'],
+                target: 'OPPONENT',
+                full_type_requirements: false
+            },
+            {
+                name: 'Hydro Pump',
                 type1: 'WATER',
                 type2: 'NONE',
-                basePower: 90,
+                basePower: 80,
+                status: 'HEAL_BURN',
+                statChanges: [],
+                target: 'OPPONENT',
+                full_type_requirements: false
+            },
+            {
+                name: 'Soaking Smash',
+                type1: 'WATER',
+                type2: 'FIGHTING',
+                basePower: 85,
+                status: 'HEAL_STATUS',
+                statChanges: ['DEFENSE_DOWN'],
+                target: 'OPPONENT',
+                full_type_requirements: true
+            },
+            {
+                name: 'Mega Punch',
+                type1: 'FIGHTING',
+                type2: 'HUMAN',
+                basePower: 70,
                 status: 'NONE',
+                statChanges: [],
+                target: 'OPPONENT',
+                full_type_requirements: false
+            },
+            {
+                name: 'Karate Smash',
+                type1: 'FIGHTING',
+                type2: 'NONE',
+                basePower: 55,
+                status: 'NONE',
+                statChanges: ['DEFENSE_DOWN', 'DEFENSE_DOWN'],
+                target: 'OPPONENT',
+                full_type_requirements: false
+            },
+            {
+                name: 'Jumpscare',
+                type1: 'GHOST',
+                type2: 'NONE',
+                basePower: 0,
+                status: 'FLINCH',
                 statChanges: [],
                 target: 'ALL_OPPONENTS',
                 full_type_requirements: false
+            },
+            {
+                name: 'Ghastly Grip',
+                type1: 'HUMAN',
+                type2: 'GHOST',
+                basePower: 55,
+                status: 'FATIGUE',
+                statChanges: ['SPEED_DOWN'],
+                target: 'OPPONENT',
+                full_type_requirements: true
+            },
+            {
+                name: 'Murky Water',
+                type1: 'WATER',
+                type2: 'DARK',
+                basePower: 55,
+                status: 'FLINCH',
+                statChanges: ['SPEED_DOWN'],
+                target: 'ALL_OPPONENTS',
+                full_type_requirements: true
+            },
+            {
+                name: 'Waterfall',
+                type1: 'WATER',
+                type2: 'NONE',
+                basePower: 70,
+                status: 'FLINCH',
+                statChanges: [],
+                target: 'OPPONENT',
+                full_type_requirements: false
+            },
+            {
+                name: 'Rain Dance',
+                type1: 'WATER',
+                type2: 'NONE',
+                basePower: 0,
+                status: 'HEAL_STATUS',
+                statChanges: ['DEFENSE_UP'],
+                target: 'ALL_ALLIES',
+                full_type_requirements: false
+            },
+            {
+                name: 'Great Flood',
+                type1: 'WATER',
+                type2: 'LEGENDARY',
+                basePower: 85,
+                status: 'HEAL_BURN',
+                statChanges: [],
+                target: 'ALL_OPPONENTS',
+                full_type_requirements: true
             }
         ],
         items: [
             {
-                name: 'Potion',
+                name: 'Sitrus Berry',
                 target: 'ALLY',
                 status: ['HEAL'],
                 statChanges: []
+            },
+            {
+                name: 'Withdraw Wand',
+                target: 'ALLY',
+                status: ['SWITCH'],
+                statChanges: []
+            },
+            {
+                name: 'Salac Berry',
+                target: 'ALLY',
+                status: [],
+                statChanges: ['SPEED_UP']
             }
         ]
     });

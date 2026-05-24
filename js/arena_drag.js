@@ -5,7 +5,9 @@
  * temporary drag state and visual affordances only; Controller owns every rule
  * decision. On pointerup, finishDrag() passes the semantic drop candidate to
  * Controller.handleCardDrop(), which routes it through the same battle flow as
- * clicks.
+ * clicks. Hand attacks can be dragged either to an eligible user first or
+ * directly to a legal target; controller chooses the first eligible user for
+ * direct target drops.
  */
 
 (function attachArenaDrag(arena) {
@@ -173,6 +175,12 @@
             }
         }
 
+        const pileElement = element.closest('[data-pile-type="discard"]');
+
+        if (pileElement && arena.Controller.canDropCardOnDiscard(drag.cardId, pileElement.dataset.pileOwner)) {
+            return { element: pileElement, kind: 'discard' };
+        }
+
         const boardCardElement = element.closest('[data-board-card-id]');
 
         if (boardCardElement) {
@@ -246,8 +254,8 @@
     }
 
     /**
-     * Highlights every legal board-card or group action for the card currently
-     * being dragged, based entirely on Controller drop checks.
+     * Highlights every legal board-card, group action, or discard pile for the
+     * card currently being dragged, based entirely on Controller drop checks.
      */
     function showDragActionHighlights(cardId) {
         document.querySelectorAll('[data-board-card-id]').forEach(element => {
@@ -289,6 +297,12 @@
                 groupElement.dataset.dragAddedGroupOwner = 'true';
             }
         });
+
+        const discardPile = document.querySelector('.side-panel--player [data-pile-type="discard"]');
+
+        if (discardPile && arena.Controller.canDropCardOnDiscard(cardId, 'player')) {
+            discardPile.classList.add('is-drag-discard-preview');
+        }
     }
 
     /**
@@ -312,6 +326,10 @@
                 element.removeAttribute('data-target-group-owner');
                 element.removeAttribute('data-drag-added-group-owner');
             }
+        });
+
+        document.querySelectorAll('.is-drag-discard-preview').forEach(element => {
+            element.classList.remove('is-drag-discard-preview');
         });
     }
 

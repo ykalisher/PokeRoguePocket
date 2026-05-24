@@ -299,7 +299,9 @@
     "type2": "GHOST",
     "basePower": 55,
     "status": "FATIGUE",
-    "statChanges": [],
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
     "target": "OPPONENT",
     "full_type_requirements": true
   },

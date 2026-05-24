@@ -11,6 +11,7 @@
     'use strict';
 
     const state = arena.state;
+    const { KNOCKOUT_LIMIT } = arena.Constants;
     const ACTION_STATUS_ICON_ALIASES = Object.freeze({
         FULL_HEAL: ['HEAL', 'HEAL_STATUS']
     });
@@ -47,7 +48,7 @@
         { type: 'HUMAN', text: 'Doubles the net stat-stage delta received from each action.' },
         { type: 'ICE', text: 'ICE attacks calculate damage from base Attack and base Defense only, ignoring stat stages and status multipliers.' },
         { type: 'STEEL', text: 'STEEL attacks use the attacker\'s Defense instead of Attack as the damage stat.' },
-        { type: 'FOSSIL', text: 'A Fossil already in the knockout pile can revive once when another allied Pokemon is knocked out, returning with 60% max HP and Fatigue.' }
+        { type: 'FOSSIL', text: 'A Fossil already in the knockout pile can revive once at end of turn after another allied Pokemon is knocked out, returning with 60% max HP and Fatigue instead of drawing a replacement.' }
     ]);
     const PERSISTENT_STATUS_REFERENCE = Object.freeze([
         { status: 'BURN', text: 'End of turn: 5% max HP damage. While active: Attack is halved unless the Pokemon is FIGHTING. Protect blocks burn damage.' },
@@ -66,7 +67,7 @@
         { status: 'HEAL_STATUS', text: 'Clears the target\'s persistent status.' },
         { status: 'MULTI_ATTACK', text: 'Damaging attack hits 2-6 times. Its stat-change effect uses a 20% activation chance.' },
         { status: 'SELF_INFLICT', text: 'Stat changes apply to the attacking Pokemon instead of the selected targets.' },
-        { status: 'SWITCH', text: 'Removes the target from the board, clears stat stages, and shuffles it into its owner\'s deck.' }
+        { status: 'SWITCH', text: 'Removes the target from the board, clears stat stages, puts it on the bottom of its Pokemon deck, and draws a replacement.' }
     ]);
     const STAGE_REFERENCE = Object.freeze([
         [-6, '0.1x'],
@@ -111,18 +112,20 @@
                     <h2 class="side-title">${player.name}</h2>
                     <div class="side-stats">
                         <span class="stat-pill">Pokemon left ${player.pokemonLeft}</span>
-                        <span class="stat-pill">Deck ${player.deck.length}</span>
-                        <span class="stat-pill">Hand ${player.hand.length}</span>
+                        <span class="stat-pill">Pkmn deck ${player.pokemonDeck.length}</span>
+                        <span class="stat-pill">Main ${player.deck.length}</span>
+                        <span class="stat-pill">Hand ${player.hand.length}/${arena.Model.getPlayerHandSize(player)}</span>
                         <span class="stat-pill">Discard ${player.discard.length}</span>
-                        <span class="stat-pill">KO ${player.knockout.length}</span>
+                        <span class="stat-pill">KO ${player.knockoutCount}/${KNOCKOUT_LIMIT}</span>
                     </div>
                 </header>
                 ${handFirst}
                 <div class="battle-row">
-                    ${renderPile('Deck', player.deck.length, 'deck')}
+                    ${renderPile('Pkmn', player.pokemonDeck.length, 'pokemon-deck', player.id)}
+                    ${renderPile('Main', player.deck.length, 'deck', player.id)}
                     ${renderPlayedSlots(player)}
-                    ${renderPile('Discard', player.discard.length, 'discard')}
-                    ${renderPile('KO', player.knockout.length, 'knockout')}
+                    ${renderPile('Discard', player.discard.length, 'discard', player.id)}
+                    ${renderPile('KO', player.knockout.length, 'knockout', player.id)}
                 </div>
                 ${handLast}
             </section>
@@ -142,11 +145,11 @@
         `;
     }
 
-    function renderPile(label, count, type) {
+    function renderPile(label, count, type, ownerId) {
         const isEmpty = count === 0 ? ' is-empty' : '';
 
         return `
-            <div class="pile pile--${type}">
+            <div class="pile pile--${type}" data-pile-owner="${ownerId}" data-pile-type="${type}">
                 <div class="pile-card${isEmpty}" aria-label="${label} pile, ${count} cards">${count}</div>
                 <div class="pile-label">${label}</div>
             </div>
@@ -623,11 +626,8 @@
         const pendingActionCard = player.hand.find(card => card.id === state.pendingActionCardId);
         const selectedCard = player.hand.find(card => card.id === state.selectedCardId);
         const selectedText = renderSelectedText(pendingActionCard, selectedCard);
-        const isOpeningPlacement = state.phase === 'opening-place';
-        const canPlace = isOpeningPlacement
-            ? Boolean(selectedCard) && arena.Model.isPokemonCard(selectedCard) && !player.board[0] && arena.Controller.canPlayerSelectCard()
-            : arena.Controller.canPlaceSelectedCard();
         const canEnd = arena.Controller.canPlayerEndTurn();
+        const canDiscard = arena.Controller.canDiscardSelectedCard();
 
         return `
             <section class="arena-status" aria-label="Turn controls">
@@ -637,7 +637,7 @@
                 </div>
                 <span class="selected-pill">${selectedText}</span>
                 <div class="action-bar">
-                    ${renderActionButtons(canPlace, canEnd)}
+                    ${renderActionButtons(canEnd, canDiscard)}
                 </div>
                 <ul class="event-log" aria-label="Recent events">
                     ${state.log.map(entry => `<li>${entry}</li>`).join('')}
@@ -648,7 +648,7 @@
 
     function renderTurnLabel() {
         if (state.finished) return 'Finished';
-        if (state.phase === 'opening-place') return 'Opening';
+        if (state.phase === 'setup') return 'Setup';
         if (state.phase === 'selecting-attack-user') return 'User';
         if (state.phase === 'selecting-attack-target' || state.phase === 'selecting-item-target') return 'Target';
         if (state.phase === 'opponent-planning') return 'Rival';
@@ -658,9 +658,7 @@
 
     function renderTurnMessage() {
         if (state.finished) return 'Match finished.';
-        if (state.phase === 'opening-place') {
-            return state.isResolving ? 'Rival is placing an opening card.' : 'Choose your opening card.';
-        }
+        if (state.phase === 'setup') return 'Opening Pokemon are entering the arena.';
         if (state.phase === 'selecting-attack-user') return 'Choose which Pokemon will use this attack.';
         if (state.phase === 'selecting-attack-target') return 'Drag the attack to a target or click a target.';
         if (state.phase === 'selecting-item-target') return 'Choose the item target.';
@@ -668,10 +666,10 @@
         if (state.phase === 'resolving') return 'Attacks resolve by speed.';
         if (state.currentPlayer === 'opponent') return state.isResolving ? 'Rival is choosing.' : 'Rival turn.';
         if (state.isResolving) return 'Resolving action.';
-        return 'Place Pokemon, use one item, and ready attacks.';
+        return 'Use one item, ready attacks, or discard cards.';
     }
 
-    function renderActionButtons(canPlace, canEnd) {
+    function renderActionButtons(canEnd, canDiscard) {
         const rulesButton = renderRulesButton();
 
         if (state.finished) {
@@ -681,30 +679,24 @@
             `;
         }
 
-        if (state.phase === 'opening-place') {
-            return `
-                <button class="arena-button" type="button" data-action="place" ${canPlace ? '' : 'disabled'}>Place Active</button>
-                ${rulesButton}
-            `;
-        }
-
         if (['selecting-attack-user', 'selecting-attack-target', 'selecting-item-target'].includes(state.phase)) {
             return `
                 <button class="arena-button" type="button" data-action="cancel-action">Cancel</button>
+                <button class="arena-button arena-button--discard" type="button" data-action="discard-selected" ${canDiscard ? '' : 'disabled'}>Discard</button>
                 ${rulesButton}
             `;
         }
 
         if (state.currentPlayer !== 'player') {
             return `
-                <button class="arena-button" type="button" disabled>Place</button>
+                <button class="arena-button arena-button--discard" type="button" disabled>Discard</button>
                 <button class="arena-button arena-button--danger" type="button" disabled>End Turn</button>
                 ${rulesButton}
             `;
         }
 
         return `
-            <button class="arena-button" type="button" data-action="place" ${canPlace ? '' : 'disabled'}>Place</button>
+            <button class="arena-button arena-button--discard" type="button" data-action="discard-selected" ${canDiscard ? '' : 'disabled'}>Discard</button>
             <button class="arena-button arena-button--danger" type="button" data-action="end-turn" ${canEnd ? '' : 'disabled'}>End Turn</button>
             ${rulesButton}
         `;
