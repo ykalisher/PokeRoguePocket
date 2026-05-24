@@ -14,6 +14,75 @@
     const ACTION_STATUS_ICON_ALIASES = Object.freeze({
         FULL_HEAL: ['HEAL', 'HEAL_STATUS']
     });
+    const REFERENCE_TYPES = Object.freeze([
+        'ARTIFICIAL',
+        'BABY',
+        'BUG',
+        'DARK',
+        'DRAGON',
+        'ELECTRIC',
+        'FAIRY',
+        'FIGHTING',
+        'FIRE',
+        'FLYING',
+        'FOSSIL',
+        'GHOST',
+        'GOURMET',
+        'GRASS',
+        'GROUND',
+        'HUMAN',
+        'ICE',
+        'LEGENDARY',
+        'MONSTER',
+        'NORMAL',
+        'POISON',
+        'PSYCHIC',
+        'ROCK',
+        'STEEL',
+        'WATER'
+    ]);
+    const SPECIAL_TYPE_RULES = Object.freeze([
+        { type: 'FIGHTING', text: 'While affected by any persistent status, gains 1.5x Attack and ignores Burn\'s Attack penalty.' },
+        { type: 'NORMAL', text: 'A single action can only move each stat by a net +1 or -1 stage after other type modifiers.' },
+        { type: 'HUMAN', text: 'Doubles the net stat-stage delta received from each action.' },
+        { type: 'ICE', text: 'ICE attacks calculate damage from base Attack and base Defense only, ignoring stat stages and status multipliers.' },
+        { type: 'STEEL', text: 'STEEL attacks use the attacker\'s Defense instead of Attack as the damage stat.' },
+        { type: 'FOSSIL', text: 'A Fossil already in the knockout pile can revive once when another allied Pokemon is knocked out, returning with 60% max HP and Fatigue.' }
+    ]);
+    const PERSISTENT_STATUS_REFERENCE = Object.freeze([
+        { status: 'BURN', text: 'End of turn: 5% max HP damage. While active: Attack is halved unless the Pokemon is FIGHTING. Protect blocks burn damage.' },
+        { status: 'CONFUSION', text: 'Before attacking: 50% chance to recover. If still confused, 50% chance to take 10% max HP self-damage and lose the attack. Protect blocks that damage.' },
+        { status: 'FATIGUE', text: 'Lasts 3 end-of-turn cleanup ticks. While active: Defense and Speed are multiplied by 0.75.' },
+        { status: 'FLINCH', text: 'Prevents the next attack and expires at end of turn.' },
+        { status: 'PARALYSIS', text: 'While active: Speed is halved. Before attacking: 1-in-3 chance to lose the attack.' },
+        { status: 'POISON', text: 'End of turn: 10% max HP damage. Protect blocks poison damage.' },
+        { status: 'PROTECT', text: 'Gives the action priority, blocks incoming attack and status damage, and expires at end of turn.' },
+        { status: 'SLEEP', text: 'Prevents attacks until wake-up. First wake attempt fails, attempts 2 and 3 have a 50% wake chance, and attempt 4 always wakes.' }
+    ]);
+    const ACTION_EFFECT_REFERENCE = Object.freeze([
+        { status: 'FULL_HEAL', text: 'Restores 20% max HP and clears the target\'s persistent status.' },
+        { status: 'HEAL', text: 'Restores 20% max HP.' },
+        { status: 'HEAL_BURN', text: 'Clears Burn only.' },
+        { status: 'HEAL_STATUS', text: 'Clears the target\'s persistent status.' },
+        { status: 'MULTI_ATTACK', text: 'Damaging attack hits 2-6 times. Its stat-change effect uses a 20% activation chance.' },
+        { status: 'SELF_INFLICT', text: 'Stat changes apply to the attacking Pokemon instead of the selected targets.' },
+        { status: 'SWITCH', text: 'Removes the target from the board, clears stat stages, and shuffles it into its owner\'s deck.' }
+    ]);
+    const STAGE_REFERENCE = Object.freeze([
+        [-6, '0.1x'],
+        [-5, '0.2x'],
+        [-4, '0.35x'],
+        [-3, '0.5x'],
+        [-2, '0.67x'],
+        [-1, '0.8x'],
+        [0, '1x'],
+        [1, '1.5x'],
+        [2, '2x'],
+        [3, '2.5x'],
+        [4, '3x'],
+        [5, '3.5x'],
+        [6, '4x']
+    ]);
 
     /**
      * Public full-board render called after meaningful state changes.
@@ -23,6 +92,7 @@
             ${renderSide('opponent')}
             ${renderStatus()}
             ${renderSide('player')}
+            ${state.rulesWindowOpen ? renderRulesReferenceWindow() : ''}
         `;
     }
 
@@ -602,19 +672,26 @@
     }
 
     function renderActionButtons(canPlace, canEnd) {
+        const rulesButton = renderRulesButton();
+
         if (state.finished) {
-            return '<button class="arena-button" type="button" data-action="reset">Restart</button>';
+            return `
+                <button class="arena-button" type="button" data-action="reset">Restart</button>
+                ${rulesButton}
+            `;
         }
 
         if (state.phase === 'opening-place') {
             return `
                 <button class="arena-button" type="button" data-action="place" ${canPlace ? '' : 'disabled'}>Place Active</button>
+                ${rulesButton}
             `;
         }
 
         if (['selecting-attack-user', 'selecting-attack-target', 'selecting-item-target'].includes(state.phase)) {
             return `
                 <button class="arena-button" type="button" data-action="cancel-action">Cancel</button>
+                ${rulesButton}
             `;
         }
 
@@ -622,12 +699,25 @@
             return `
                 <button class="arena-button" type="button" disabled>Place</button>
                 <button class="arena-button arena-button--danger" type="button" disabled>End Turn</button>
+                ${rulesButton}
             `;
         }
 
         return `
             <button class="arena-button" type="button" data-action="place" ${canPlace ? '' : 'disabled'}>Place</button>
             <button class="arena-button arena-button--danger" type="button" data-action="end-turn" ${canEnd ? '' : 'disabled'}>End Turn</button>
+            ${rulesButton}
+        `;
+    }
+
+    function renderRulesButton() {
+        const pressed = state.rulesWindowOpen ? 'true' : 'false';
+
+        return `
+            <button class="arena-button arena-button--reference" type="button" data-action="toggle-rules" aria-pressed="${pressed}">
+                <span aria-hidden="true">?</span>
+                <span>Rules</span>
+            </button>
         `;
     }
 
@@ -660,6 +750,126 @@
 
     function isTargetingPhase() {
         return state.phase === 'selecting-attack-target' || state.phase === 'selecting-item-target';
+    }
+
+    function renderRulesReferenceWindow() {
+        return `
+            <div class="rules-reference-overlay" role="presentation">
+                <section class="rules-reference-window" role="dialog" aria-modal="false" aria-labelledby="rules-reference-title">
+                    <header class="rules-reference-header">
+                        <div>
+                            <h2 id="rules-reference-title">Battle Reference</h2>
+                            <p>Types, statuses, and stat stages.</p>
+                        </div>
+                        <button class="rules-reference-close" type="button" data-action="close-rules" aria-label="Close battle reference" title="Close">x</button>
+                    </header>
+                    <div class="rules-reference-body">
+                        ${renderTypeReferenceSection()}
+                        ${renderStatusReferenceSection()}
+                        ${renderStageReferenceSection()}
+                    </div>
+                </section>
+            </div>
+        `;
+    }
+
+    function renderTypeReferenceSection() {
+        return `
+            <section class="rules-reference-section">
+                <h3>Types</h3>
+                <div class="rules-reference-copy">
+                    <p>Pokemon can use an attack when they share at least one of the attack's listed types.</p>
+                    <p>Attacks marked as all required need the Pokemon to have every listed attack type.</p>
+                    <p>There is no type matchup damage chart; type rules are requirements and special battle abilities.</p>
+                </div>
+                <div class="reference-type-grid" aria-label="Available types">
+                    ${REFERENCE_TYPES.map(renderReferenceTypeChip).join('')}
+                </div>
+                <div class="reference-rule-list">
+                    ${SPECIAL_TYPE_RULES.map(rule => `
+                        <article class="reference-rule-row">
+                            ${renderReferenceTypeChip(rule.type)}
+                            <p>${rule.text}</p>
+                        </article>
+                    `).join('')}
+                </div>
+            </section>
+        `;
+    }
+
+    function renderStatusReferenceSection() {
+        return `
+            <section class="rules-reference-section">
+                <h3>Statuses</h3>
+                <p class="rules-reference-lede">Only one persistent status can be active on a Pokemon at a time. A new persistent status is blocked while another one is active.</p>
+                <h4>Persistent Statuses</h4>
+                <div class="reference-rule-list">
+                    ${PERSISTENT_STATUS_REFERENCE.map(renderReferenceStatusRow).join('')}
+                </div>
+                <h4>Action Effects</h4>
+                <div class="reference-rule-list">
+                    ${ACTION_EFFECT_REFERENCE.map(renderReferenceStatusRow).join('')}
+                </div>
+            </section>
+        `;
+    }
+
+    function renderStageReferenceSection() {
+        return `
+            <section class="rules-reference-section">
+                <h3>Stat Stages</h3>
+                <div class="rules-reference-copy">
+                    <p>Attack, Defense, and Speed each track stages from -6 to +6.</p>
+                    <p>Each *_UP adds one stage. Each *_DOWN removes one stage. Effective stats are rounded after stage and status/type multipliers, with a minimum of 1.</p>
+                    <p>Damaging attacks roll a 1-in-3 stat-change activation chance. MULTI_ATTACK uses 20%. Non-damaging attacks and items apply stat changes immediately.</p>
+                </div>
+                <div class="stage-reference-table" role="table" aria-label="Stat stage multipliers">
+                    <div class="stage-reference-row stage-reference-row--header" role="row">
+                        <span role="columnheader">Stage</span>
+                        <span role="columnheader">Multiplier</span>
+                    </div>
+                    ${STAGE_REFERENCE.map(([stage, multiplier]) => `
+                        <div class="stage-reference-row" role="row">
+                            <span class="${stage > 0 ? 'stage-up' : stage < 0 ? 'stage-down' : ''}" role="cell">${stage > 0 ? `+${stage}` : stage}</span>
+                            <span role="cell">${multiplier}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </section>
+        `;
+    }
+
+    function renderReferenceTypeChip(type) {
+        return `
+            <span class="reference-type-chip">
+                <img class="type-icon" src="assets/types-svgs/${type}.svg" alt="">
+                <span>${formatTypeName(type)}</span>
+            </span>
+        `;
+    }
+
+    function renderReferenceStatusRow(entry) {
+        return `
+            <article class="reference-rule-row">
+                ${renderReferenceStatusChip(entry.status)}
+                <p>${entry.text}</p>
+            </article>
+        `;
+    }
+
+    function renderReferenceStatusChip(status) {
+        const label = arena.Model.formatStatusName(status);
+        const iconPath = arena.Model.getStatusIconPath(status);
+
+        return `
+            <span class="reference-status-chip">
+                ${iconPath
+                    ? `<img class="action-status-token" src="${iconPath}" alt="">`
+                    : `<span class="action-status-token action-status-token--text" aria-hidden="true">${getStatusInitials(label)}</span>`
+                }
+                <span>${label}</span>
+            </span>
+        `;
     }
 
     function formatTarget(target) {

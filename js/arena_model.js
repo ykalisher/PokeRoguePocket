@@ -93,6 +93,7 @@
         plannedActions: { opponent: [], player: [] },
         players: {},
         popupTimer: null,
+        rulesWindowOpen: false,
         selectedCardId: null,
         suppressNextClick: false,
         turnNumber: 0
@@ -163,6 +164,7 @@
             player: normalizeSavedPlayer(savedBattle.players && savedBattle.players.player, 'player', 'You')
         };
         state.popupTimer = null;
+        state.rulesWindowOpen = false;
         state.selectedCardId = savedBattle.selectedCardId || null;
         state.suppressNextClick = false;
         state.turnNumber = Number.isFinite(savedBattle.turnNumber) ? savedBattle.turnNumber : 0;

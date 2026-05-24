@@ -96,6 +96,7 @@
             opponent: model.createPlayer('opponent', 'Rival'),
             player: model.createPlayer('player', 'You')
         };
+        state.rulesWindowOpen = false;
         state.selectedCardId = null;
         state.turnNumber = 0;
 
@@ -212,6 +213,8 @@
 
         if (action === 'cancel-action') {
             cancelActionSelection();
+        } else if (action === 'close-rules') {
+            closeRulesWindow();
         } else if (action === 'end-turn') {
             endPlayerTurn();
         } else if (action === 'place') {
@@ -222,7 +225,27 @@
             }
         } else if (action === 'reset') {
             resetPrototype();
+        } else if (action === 'toggle-rules') {
+            toggleRulesWindow();
         }
+    }
+
+    /**
+     * Opens or closes the battle reference window without changing turn state.
+     */
+    function toggleRulesWindow() {
+        state.rulesWindowOpen = !state.rulesWindowOpen;
+        render();
+    }
+
+    /**
+     * Closes the battle reference window from the floating window close button.
+     */
+    function closeRulesWindow() {
+        if (!state.rulesWindowOpen) return;
+
+        state.rulesWindowOpen = false;
+        render();
     }
 
     /**
