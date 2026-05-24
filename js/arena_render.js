@@ -1,5 +1,10 @@
 /**
  * Squish - card arena rendering
+ *
+ * Render flow: controller mutates arena.state, then calls arena.Render.render()
+ * through its render/save wrapper. This module redraws the board from state and
+ * emits data-* attributes that controller and drag handlers use as their event
+ * routing surface. It does not mutate battle rules or advance phases.
  */
 
 (function attachArenaRender(arena) {
@@ -10,6 +15,9 @@
         FULL_HEAL: ['HEAL', 'HEAL_STATUS']
     });
 
+    /**
+     * Public full-board render called after meaningful state changes.
+     */
     function render() {
         state.elements.board.innerHTML = `
             ${renderSide('opponent')}
@@ -18,6 +26,9 @@
         `;
     }
 
+    /**
+     * Renders one player's hand, board slots, piles, and counters.
+     */
     function renderSide(playerId) {
         const player = state.players[playerId];
         const isOpponent = playerId === 'opponent';
@@ -72,6 +83,10 @@
         `;
     }
 
+    /**
+     * Renders a board slot with targeting/user/queued state derived from the
+     * current controller phase.
+     */
     function renderBoardSlot(player, slotIndex) {
         const card = player.board[slotIndex];
         const flags = getBoardCardFlags(player.id, card);
@@ -87,6 +102,10 @@
         `;
     }
 
+    /**
+     * During attack target selection, renders the pending attack card floating
+     * over its selected user so it can be dragged to a target.
+     */
     function renderPendingAttackHover(playerId, card) {
         if (
             state.phase !== 'selecting-attack-target' ||
@@ -107,6 +126,10 @@
         `;
     }
 
+    /**
+     * Computes UI flags for board cards based on pending action state and model
+     * target options. These flags become classes and clickable attributes.
+     */
     function getBoardCardFlags(playerId, card) {
         if (!card) {
             return {
@@ -140,6 +163,10 @@
         };
     }
 
+    /**
+     * Renders player or opponent hand. Opponent cards stay face down; the
+     * player's cards expose data-card-id for click and drag input.
+     */
     function renderHand(player) {
         const isOpponent = player.id === 'opponent';
         const cards = player.hand.map(card => {
@@ -176,6 +203,10 @@
         );
     }
 
+    /**
+     * Renders a card shell for hand/board contexts, including data attributes
+     * that controller click handling and drag/drop consume.
+     */
     function renderCard(card, options) {
         const reveal = options.reveal;
         const backClass = reveal ? '' : ' card-back';
@@ -197,6 +228,9 @@
         `;
     }
 
+    /**
+     * Chooses card face rendering or card back rendering based on visibility.
+     */
     function renderCardContent(card, reveal, options = {}) {
         if (!reveal) {
             return `
@@ -217,6 +251,10 @@
         return renderActionCardContent(card, options);
     }
 
+    /**
+     * Public helper used by controller animation code to create temporary card
+     * markup without redrawing the arena.
+     */
     function renderCardForAnimation(card, animationClass = 'attack-animation-card', reveal = true) {
         return `
             <div class="playing-card hand-card card-kind-${card.kind} ${animationClass}" aria-hidden="true">
@@ -225,6 +263,10 @@
         `;
     }
 
+    /**
+     * Renders Pokemon-specific content: portrait, status tokens, types, health,
+     * and effective stats.
+     */
     function renderPokemonCardContent(card, options = {}) {
         const healthPercent = arena.Model.getHealthPercent(card);
         const species = card.pokemon;
@@ -272,6 +314,9 @@
         `;
     }
 
+    /**
+     * Renders one effective stat cell with its current stage indicator.
+     */
     function renderStatCell(card, stat) {
         const labels = {
             attack: 'ATK',
@@ -291,6 +336,10 @@
         return `<span class="stat-cell${stageClass}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}${stageLabel ? ` ${stageLabel}` : ''}</span>`;
     }
 
+    /**
+     * Renders attack/item-specific content, including requirements, base power,
+     * statuses, stat changes, and target text.
+     */
     function renderActionCardContent(card, options = {}) {
         const isAttack = arena.Model.isAttackCard(card);
         const types = arena.Model.getCardTypes(card);
@@ -331,6 +380,10 @@
         return item.imagePath || item.picturePath || item.image || `assets/items/${formatAssetName(item.name)}.png`;
     }
 
+    /**
+     * Renders compact attack/item effect badges from model-provided statuses and
+     * stat changes.
+     */
     function renderActionDetails(card) {
         const parts = [];
         const basePower = arena.Model.isAttackCard(card) ? Number(card.attack.basePower) || 0 : 0;
@@ -385,6 +438,9 @@
             .toUpperCase();
     }
 
+    /**
+     * Groups repeated stat changes into one visual badge per stat.
+     */
     function renderActionStatChanges(statChanges) {
         const groups = statChanges.reduce((changesByStat, statChange) => {
             const detail = getStatChangeDetail(statChange);
@@ -459,6 +515,9 @@
         return notes.length > 0 ? notes.join(' | ') : 'No effect';
     }
 
+    /**
+     * Renders type icons, optionally as filter buttons for overview contexts.
+     */
     function renderTypeIcons(types, className, options = {}) {
         return types.slice(0, 3).map(type => `
             ${options.typeButtons
@@ -468,6 +527,10 @@
         `).join('');
     }
 
+    /**
+     * Public card preview renderer used outside the battle board, such as card
+     * overview screens.
+     */
     function renderCardPreview(card, options = {}) {
         const className = options.className ? ` ${options.className}` : '';
         const attributes = options.attributes || '';
@@ -481,6 +544,10 @@
         `;
     }
 
+    /**
+     * Renders the central turn/status controls. Buttons expose data-action
+     * values that Controller.handleArenaClick() routes.
+     */
     function renderStatus() {
         const player = state.players.player;
         const pendingActionCard = player.hand.find(card => card.id === state.pendingActionCardId);
@@ -576,6 +643,10 @@
         return 'No card selected';
     }
 
+    /**
+     * Checks whether the side panel should become a group target during an
+     * attack/item target phase.
+     */
     function isGroupTargetOption(playerId) {
         if (!isTargetingPhase()) return false;
 

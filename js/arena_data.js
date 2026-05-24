@@ -1,5 +1,11 @@
 /**
  * Squish - card arena data loading and test deck constants
+ *
+ * Data flow: game.js calls loadGameData() during page boot. JSON records are
+ * loaded from pokemon.json, attacks.json, and items.json, normalized into the
+ * shape expected by arena_model.js, then stored on arena.GameData before a
+ * battle is restored or reset. The fallbackRecords below keep the arena usable
+ * when fetch fails, such as when opening the file directly in some browsers.
  */
 
 (function attachArenaData(arena) {
@@ -64,10 +70,17 @@
         ]
     });
 
+    /**
+     * Removes NONE/empty type slots when building normalized type arrays.
+     */
     function compactTypes(types) {
         return types.filter(type => type && type !== 'NONE');
     }
 
+    /**
+     * Normalizes raw Pokemon JSON before decks are created. Called by
+     * normalizeGameData() for each species during loadGameData().
+     */
     function normalizePokemon(record) {
         const species = {
             baseAttack: Number(record.baseAttack) || 0,
@@ -87,6 +100,10 @@
         return species;
     }
 
+    /**
+     * Normalizes raw attack JSON, including cached attack types and the
+     * full_type_requirements flag used by Model.pokemonCanUseAttack().
+     */
     function normalizeAttack(record) {
         const attack = {
             basePower: Number(record.basePower) || 0,
@@ -104,6 +121,10 @@
         return attack;
     }
 
+    /**
+     * Normalizes raw item JSON. Legacy non-stat entries in statChanges are moved
+     * into status so the controller can resolve them as action effects.
+     */
     function normalizeItem(record) {
         const rawStatuses = Array.isArray(record.status) ? record.status : compactTypes([record.status]);
         const rawStatChanges = Array.isArray(record.statChanges) ? record.statChanges : [];
@@ -118,6 +139,9 @@
         };
     }
 
+    /**
+     * Converts item names into the default uppercase asset filename format.
+     */
     function formatAssetName(name) {
         return String(name || 'item')
             .trim()
@@ -126,6 +150,9 @@
             .replace(/^_+|_+$/g, '');
     }
 
+    /**
+     * Applies record-level normalization to all loaded game data at boot.
+     */
     function normalizeGameData(records) {
         return {
             attacks: records.attacks.map(normalizeAttack),
@@ -134,6 +161,10 @@
         };
     }
 
+    /**
+     * Fetches a JSON data file for boot. On any load/parse/HTTP failure, it logs
+     * the problem and returns the built-in fallback data for that file.
+     */
     async function loadJson(path, fallback) {
         try {
             const response = await fetch(path, { cache: 'no-store' });
@@ -147,6 +178,10 @@
         }
     }
 
+    /**
+     * Public data-loading function called by game.js before battle creation.
+     * It loads and normalizes all card data, then replaces arena.GameData.
+     */
     async function loadGameData() {
         const [pokemon, attacks, items] = await Promise.all([
             loadJson('pokemon.json', fallbackRecords.pokemon),

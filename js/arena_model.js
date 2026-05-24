@@ -1,5 +1,11 @@
 /**
  * Squish - state and model helpers for the card arena prototype
+ *
+ * Model responsibilities: own the shared arena.state object, create decks and
+ * cards from arena.GameData, persist/restore safe battle states, normalize card
+ * data during old-save recovery, answer targeting/type questions, and apply
+ * status/stat state changes requested by arena_controller.js. The model does
+ * not animate, log battle events, or decide whose turn advances.
  */
 
 (function attachArenaModel(arena) {
@@ -92,6 +98,10 @@
         turnNumber: 0
     };
 
+    /**
+     * Creates a player object with a freshly shuffled deck. Called by
+     * Controller.resetPrototype() when starting a new battle.
+     */
     function createPlayer(id, name) {
         const deck = createDeck(id);
 
@@ -107,6 +117,10 @@
         };
     }
 
+    /**
+     * Persists the current battle after render-visible player-safe states.
+     * Controller's render() wrapper calls this after most state changes.
+     */
     function saveBattleState() {
         if (!canUseStorage() || !shouldSaveBattleState()) return false;
 
@@ -124,6 +138,10 @@
         }
     }
 
+    /**
+     * Restores a saved battle during game.js boot. Unsafe transient phases like
+     * resolving/opponent-planning are rolled back to the player's turn.
+     */
     function restoreSavedBattleState() {
         const savedBattle = loadSavedBattleState();
 
@@ -158,6 +176,10 @@
         return true;
     }
 
+    /**
+     * Removes the persisted battle, used when resetting or when saved data is
+     * invalid for the current storage version.
+     */
     function clearSavedBattleState() {
         if (!canUseStorage()) return false;
 
@@ -201,6 +223,10 @@
         return typeof localStorage !== 'undefined';
     }
 
+    /**
+     * Prevents saving during setup, animations, and resolver phases where a
+     * reload would resume in the middle of an effect sequence.
+     */
     function shouldSaveBattleState() {
         if (!state.players || !state.players.player || !state.players.opponent) return false;
         if (state.phase === 'setup') return false;
@@ -210,6 +236,9 @@
         return true;
     }
 
+    /**
+     * Picks the state fields that are stable enough to store in localStorage.
+     */
     function serializeBattleState() {
         return {
             currentPlayer: state.currentPlayer,
@@ -240,6 +269,10 @@
         };
     }
 
+    /**
+     * Rehydrates a saved player defensively so old or partial saves still have
+     * the arrays and counters the controller/render code expects.
+     */
     function normalizeSavedPlayer(player, id, name) {
         const normalizedPlayer = player && typeof player === 'object' ? player : {};
         const board = Array.isArray(normalizedPlayer.board) ? normalizedPlayer.board : [];
@@ -271,6 +304,10 @@
         ].filter(isPokemonCard).length;
     }
 
+    /**
+     * Builds a small demo deck from normalized arena.GameData. Called only while
+     * creating a fresh player for resetPrototype().
+     */
     function createDeck(playerId) {
         const prefix = playerId === 'player' ? 'YOU' : 'OPP';
         const data = arena.GameData || { attacks: [], items: [], pokemon: [] };
@@ -301,6 +338,10 @@
         return types.filter(type => type && type !== 'NONE');
     }
 
+    /**
+     * Limits generated deck attacks to attacks whose listed types are all
+     * present among that deck's Pokemon species.
+     */
     function getDemoAttacksForPokemon(attacks, pokemonRecords) {
         const deckTypes = new Set(pokemonRecords.flatMap(pokemon => pokemon.types || compactTypes([
             pokemon.type1,
@@ -361,6 +402,10 @@
         return shuffled;
     }
 
+    /**
+     * Draws both players' opening hands during resetPrototype() and guarantees
+     * each opening hand has at least one Pokemon when possible.
+     */
     function drawOpeningHands() {
         Object.values(state.players).forEach(player => {
             for (let count = 0; count < OPENING_HAND_SIZE; count += 1) {
@@ -371,6 +416,10 @@
         });
     }
 
+    /**
+     * Opponent setup helper: moves the first Pokemon in hand to board slot 0
+     * face down. Player opening placement is handled by the controller.
+     */
     function placeOpeningCard(player) {
         const card = player.hand.find(isPokemonCard);
 
@@ -381,6 +430,9 @@
         player.board[0] = card;
     }
 
+    /**
+     * Reveals both opening Pokemon after the player has chosen their opener.
+     */
     function flipOpeningCards() {
         Object.values(state.players).forEach(player => {
             player.board.forEach(card => {
@@ -389,6 +441,10 @@
         });
     }
 
+    /**
+     * Draws one card for a turn or opening hand, recycling discard into deck
+     * first if the deck is empty.
+     */
     function drawCard(player) {
         if (player.deck.length === 0) {
             recycleDiscardIntoDeck(player);
@@ -403,6 +459,9 @@
         return card;
     }
 
+    /**
+     * Removes a specific hand card when a card is placed, queued, or used.
+     */
     function removeCardFromHand(player, cardId) {
         const cardIndex = player.hand.findIndex(card => card.id === cardId);
 
@@ -456,6 +515,10 @@
         return 'Unknown card';
     }
 
+    /**
+     * Returns compact type arrays for Pokemon and attacks. Controller uses this
+     * for attack eligibility and special type rules.
+     */
     function getCardTypes(card) {
         if (isPokemonCard(card)) {
             return card.pokemon.types || compactTypes([
@@ -482,6 +545,9 @@
         return null;
     }
 
+    /**
+     * Returns non-NONE statuses/action effects listed on an attack or item card.
+     */
     function getActionStatuses(card) {
         const statuses = isAttackCard(card)
             ? card.attack.status
@@ -493,6 +559,10 @@
             .filter(status => status && status !== 'NONE');
     }
 
+    /**
+     * Adds one persistent battle status to a Pokemon. Called by controller when
+     * status effects activate; returns a result object for battle log wording.
+     */
     function applyStatus(card, status) {
         const normalizedStatus = normalizeStatus(status);
 
@@ -517,6 +587,10 @@
         return createStatusResult(statusEntry, { added: true });
     }
 
+    /**
+     * Normalizes currentStatus so each Pokemon has at most one valid persistent
+     * status entry, including duration or initial status state.
+     */
     function ensurePokemonStatuses(card) {
         if (!isPokemonCard(card)) return [];
 
@@ -563,6 +637,10 @@
         return ensurePokemonStatuses(card).some(statusEntry => statusEntry.status === normalizedStatus);
     }
 
+    /**
+     * Removes a specific persistent status, used by recovery effects and wake /
+     * confusion recovery checks.
+     */
     function removePokemonStatus(card, status) {
         const normalizedStatus = normalizeStatus(status);
 
@@ -579,6 +657,10 @@
         return createStatusResult(removedStatus, { removed: true });
     }
 
+    /**
+     * Clears all persistent statuses from a Pokemon, used by HEAL_STATUS,
+     * FULL_HEAL, and Fossil revival.
+     */
     function clearPokemonStatuses(card) {
         if (!isPokemonCard(card)) return [];
 
@@ -590,6 +672,9 @@
         return removedStatuses;
     }
 
+    /**
+     * Advances and clears statuses that expire during end-of-turn cleanup.
+     */
     function clearTurnStatuses(card) {
         if (!isPokemonCard(card)) return [];
 
@@ -672,6 +757,10 @@
         return definition ? definition.iconPath : '';
     }
 
+    /**
+     * Calculates the status/type multiplier for an effective stat. Controller
+     * uses this for damage and speed ordering; render uses it for displayed stats.
+     */
     function getPokemonStatusMultiplier(card, stat) {
         if (!isPokemonCard(card) || !STAT_LABELS[stat]) return 1;
 
@@ -726,6 +815,9 @@
         return null;
     }
 
+    /**
+     * Returns valid stat-stage changes listed on an attack or item card.
+     */
     function getActionStatChanges(card) {
         const statChanges = isAttackCard(card)
             ? card.attack.statChanges
@@ -737,6 +829,11 @@
             .filter(statChange => Boolean(STAT_CHANGE_DELTAS[statChange]));
     }
 
+    /**
+     * Applies type-specific stat-change rules before the controller mutates
+     * stages: HUMAN doubles each net stat delta; NORMAL clamps each net stat
+     * delta to +/-1.
+     */
     function getStatChangesForPokemon(card, statChanges) {
         const validStatChanges = (Array.isArray(statChanges) ? statChanges : [])
             .filter(statChange => Boolean(STAT_CHANGE_DELTAS[statChange]));
@@ -796,6 +893,10 @@
         };
     }
 
+    /**
+     * Ensures a Pokemon has finite attack/defense/speed stages and clamps them
+     * before any display, damage, speed, or mutation code reads them.
+     */
     function ensureStatStages(card) {
         if (!isPokemonCard(card)) return createDefaultStatStages();
 
@@ -824,6 +925,10 @@
         return STAT_STAGE_MULTIPLIERS[getPokemonStatStage(card, stat)] || 1;
     }
 
+    /**
+     * Returns the displayed/effective battle stat after stage, status, and type
+     * multipliers. Used by render, damage math, and speed ordering.
+     */
     function getPokemonEffectiveStat(card, stat) {
         if (!isPokemonCard(card) || !STAT_LABELS[stat]) return 0;
 
@@ -833,6 +938,10 @@
         return Math.max(1, Math.round(stagedStat * getPokemonStatusMultiplier(card, stat)));
     }
 
+    /**
+     * Mutates one stat stage by one step and reports whether the clamped stage
+     * actually changed for logging/animation.
+     */
     function applyStatChange(card, statChange) {
         if (!isPokemonCard(card)) return null;
 
@@ -857,6 +966,10 @@
         };
     }
 
+    /**
+     * Resets all stat stages to zero. Called when cards switch out and when
+     * Fossil revival returns a card to the board.
+     */
     function clearPokemonStatChanges(card) {
         if (!isPokemonCard(card)) return false;
 
@@ -915,6 +1028,10 @@
         return Object.values(state.players).find(player => getBoardCardById(player.id, cardId)) || null;
     }
 
+    /**
+     * Removes a board card from its slot without deciding where it goes next.
+     * Controller uses this for switch, knockout, and Fossil revival.
+     */
     function removeCardFromBoard(player, cardId) {
         const slotIndex = player.board.findIndex(card => card && card.id === cardId);
 
@@ -925,6 +1042,9 @@
         return card;
     }
 
+    /**
+     * Places a card face down into a newly shuffled deck, used by SWITCH.
+     */
     function shuffleCardIntoDeck(player, card) {
         card.faceUp = false;
         player.deck = shuffle([...player.deck, card]);
@@ -934,6 +1054,10 @@
         return state.plannedActions[playerId].some(action => action.userCardId === pokemonCardId);
     }
 
+    /**
+     * Checks attack type requirements. Most attacks need any shared type; attacks
+     * marked full_type_requirements require every listed attack type.
+     */
     function pokemonCanUseAttack(pokemonCard, attackCard) {
         if (!isPokemonCard(pokemonCard) || !isAttackCard(attackCard)) return false;
 
@@ -949,6 +1073,10 @@
         return requiredTypes.some(type => pokemonTypes.includes(type));
     }
 
+    /**
+     * Used by turn-ending rules and UI affordances to know whether a Pokemon
+     * still has a legal attack in hand that can target something.
+     */
     function hasUsableAttackInHand(player, pokemonCard) {
         return player.hand.some(card => (
             isAttackCard(card) &&
@@ -957,6 +1085,11 @@
         ));
     }
 
+    /**
+     * Converts an attack/item target enum into legal target selections for the
+     * current board. Controller and Drag use these options for clicks, drops,
+     * opponent AI, and retargeting.
+     */
     function getTargetOptionsForAction(actionCard, actorId, userCardId) {
         const target = getActionTarget(actionCard);
         const opponentId = actorId === 'player' ? 'opponent' : 'player';
@@ -1026,6 +1159,9 @@
         return options.some(option => option.kind === 'group' && option.owner === owner);
     }
 
+    /**
+     * Resolves a stored target selection into live board cards at effect time.
+     */
     function getCardsForTargetSelection(selection) {
         if (!selection) return [];
 
@@ -1041,6 +1177,10 @@
         return [];
     }
 
+    /**
+     * When a player must draw from an empty deck, turns the discard pile face
+     * down, shuffles it, and makes it the new deck.
+     */
     function recycleDiscardIntoDeck(player) {
         if (player.deck.length > 0 || player.discard.length === 0) return false;
 
@@ -1053,6 +1193,10 @@
         return true;
     }
 
+    /**
+     * Opening-hand safety net called after opening draws so setup can always
+     * place a Pokemon if one exists in the deck.
+     */
     function ensureOpeningHandHasPokemon(player) {
         if (player.hand.some(isPokemonCard)) return;
 
@@ -1075,6 +1219,9 @@
         player.deck = shuffle([replacedCard, ...player.deck]);
     }
 
+    /**
+     * Small Promise-based delay helper used by controller animations.
+     */
     function sleep(milliseconds) {
         return new Promise(resolve => {
             setTimeout(resolve, milliseconds);

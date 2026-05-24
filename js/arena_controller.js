@@ -1,5 +1,47 @@
 /**
  * Squish - game flow and player actions for the arena prototype
+ *
+ * Battle flow:
+ * 1. game.js calls arena.Data.loadGameData(), then either restores a saved
+ *    battle through Model.restoreSavedBattleState() or starts fresh through
+ *    Controller.resetPrototype().
+ * 2. resetPrototype() builds both players, draws opening hands, enters
+ *    opening-place, renders, then schedules runOpponentOpeningPlacement().
+ * 3. runOpponentOpeningPlacement() animates the rival's first Pokemon into the
+ *    board, places it face down, and releases control to the player.
+ * 4. The player chooses an opening Pokemon through handleArenaClick() or
+ *    Drag.handlePointerUp() -> handleCardDrop() -> placeSelectedOpeningCard().
+ *    placeSelectedOpeningCard() places the card, flips both opening Pokemon,
+ *    checks game over, then starts turn 1 with startPlayerTurn().
+ * 5. startPlayerTurn() increments turnNumber, resets one-item-per-turn and
+ *    pending action state, draws a card, renders/saves, then allows input.
+ * 6. During the player turn, handleArenaClick() and handleCardDrop() route hand
+ *    cards into three paths:
+ *    - Pokemon cards can be placed in open player board slots.
+ *    - Attack cards select a valid allied Pokemon user, then select/drag to a
+ *      legal target, then queue through queuePlayerAttack().
+ *    - Item cards select/drag to a legal target and resolve immediately through
+ *      usePendingItem() -> applyItemCard().
+ * 7. endPlayerTurn() locks input, asks the opponent to act with runOpponentTurn(),
+ *    then resolves all queued attacks with resolveQueuedAttacks().
+ * 8. runOpponentTurn() may place Pokemon, queue attacks through
+ *    chooseOpponentAttacks(), and use one item immediately through
+ *    useOpponentItem() -> applyItemCard().
+ * 9. resolveQueuedAttacks() creates one action per queued attack, sorts them by
+ *    priority, effective Speed, then random tie breaker, and resolves each live
+ *    action with resolveQueuedAttack().
+ * 10. resolveQueuedAttack() checks pre-attack blockers in order: Flinch, Sleep,
+ *     Confusion, then Paralysis. If not blocked, targets are retargeted if
+ *     needed, Switch/heal/status-heal/damage/stat-change/status effects are
+ *     applied, and the attack card is discarded.
+ * 11. resolveEndOfTurnStatuses() applies Poison/Burn damage, ticks Sleep for
+ *     sleeping Pokemon that did not already attempt to wake this turn, clears
+ *     end-of-turn statuses such as Flinch/Protect/Fatigue, then checks game over.
+ * 12. If the battle is still active, startPlayerTurn() begins the next turn.
+ *
+ * Render/save boundary: call the local render() wrapper after state mutations
+ * that should be visible and persisted. Animation helpers usually call
+ * arena.Render directly only to create temporary card markup.
  */
 
 (function attachArenaController(arena) {
@@ -30,6 +72,11 @@
         model.saveBattleState();
     };
 
+    /**
+     * Starts a brand-new battle after the page decides not to restore saved state.
+     * This is the only fresh-game entry point: it resets phase, hands, queues,
+     * timers, logs, players, then schedules the opponent's opening placement.
+     */
     function resetPrototype() {
         clearTimeout(state.flowTimer);
         clearTimeout(state.popupTimer);
@@ -59,6 +106,11 @@
         state.flowTimer = setTimeout(runOpponentOpeningPlacement, 300);
     }
 
+    /**
+     * Runs after resetPrototype() gives the rival a short animation delay.
+     * It places the rival's opening Pokemon face down and then unlocks the
+     * player so they can choose their own opening card.
+     */
     async function runOpponentOpeningPlacement() {
         if (state.finished || state.phase !== 'opening-place') return;
 
@@ -73,6 +125,11 @@
         render();
     }
 
+    /**
+     * Begins each player-controlled turn after setup or end-of-turn cleanup.
+     * It advances turnNumber, clears pending/queued turn state, draws one card,
+     * renders the draw, then releases input unless the game has ended.
+     */
     async function startPlayerTurn() {
         if (checkGameOver()) return;
 
@@ -107,6 +164,11 @@
         checkGameOver();
     }
 
+    /**
+     * Central click router for the rendered arena. The render layer exposes
+     * data-* attributes, and this function translates those clicks into setup
+     * placement, action selection, targeting, command buttons, or cancellation.
+     */
     function handleArenaClick(event) {
         if (state.suppressNextClick) {
             state.suppressNextClick = false;
@@ -163,6 +225,11 @@
         }
     }
 
+    /**
+     * Handles hand-card selection during setup and player turns. Pokemon cards
+     * toggle selection for placement, attacks move into user selection, and
+     * items move directly into target selection.
+     */
     function selectPlayerCard(cardId) {
         if (!canPlayerSelectCard()) return;
 
@@ -198,6 +265,10 @@
         }
     }
 
+    /**
+     * Completes the player's opening placement. Once both opening cards are on
+     * the board, it flips them after a short delay and starts the first turn.
+     */
     function placeSelectedOpeningCard() {
         if (!canPlayerSelectCard() || !state.selectedCardId) return;
 
@@ -229,6 +300,11 @@
         }, 700);
     }
 
+    /**
+     * Starts the attack flow for a selected hand attack. This validates that at
+     * least one active player Pokemon can use the attack before asking which
+     * Pokemon should perform it.
+     */
     function beginAttackUserSelection(cardId) {
         if (!canPlayerAct()) return;
 
@@ -252,6 +328,10 @@
         render();
     }
 
+    /**
+     * Stores the Pokemon that will use the pending attack. Self-targeting
+     * attacks can queue immediately; other attacks advance to target selection.
+     */
     function chooseAttackUser(userCardId) {
         if (state.phase !== 'selecting-attack-user' || !state.pendingActionCardId) return;
 
@@ -282,6 +362,10 @@
         render();
     }
 
+    /**
+     * Starts the item flow for a selected hand item. Items resolve immediately
+     * after target selection and are limited to one use per player turn.
+     */
     function beginItemTargeting(cardId) {
         if (!canPlayerAct()) return;
 
@@ -310,6 +394,10 @@
         render();
     }
 
+    /**
+     * Routes board-card clicks according to the current selection phase:
+     * choose an attack user, choose an action target, or cancel stray clicks.
+     */
     function handleBoardCardClick(owner, cardId) {
         if (state.phase === 'selecting-attack-user') {
             if (owner === 'player') chooseAttackUser(cardId);
@@ -321,6 +409,10 @@
         }
     }
 
+    /**
+     * Validates a clicked board card against the pending action's legal targets.
+     * Group-target actions can be committed by clicking any card in that group.
+     */
     function chooseTargetCard(owner, cardId) {
         if (!isTargetingPhase()) return;
 
@@ -336,6 +428,10 @@
         }
     }
 
+    /**
+     * Commits an all-allies or all-opponents target selected through a group
+     * target affordance rendered on the side panel.
+     */
     function chooseTargetGroup(owner) {
         if (!isTargetingPhase()) return;
 
@@ -346,6 +442,10 @@
         commitPendingTarget({ kind: 'group', owner });
     }
 
+    /**
+     * Final target-selection switch: attacks are queued for end-of-turn
+     * resolution, while items resolve immediately during the player turn.
+     */
     function commitPendingTarget(selection) {
         if (state.phase === 'selecting-attack-target') {
             queuePlayerAttack(selection);
@@ -357,6 +457,10 @@
         }
     }
 
+    /**
+     * Removes the pending attack from the player's hand and stores a planned
+     * action. Queued attacks do not affect the board until resolveQueuedAttacks().
+     */
     function queuePlayerAttack(selection) {
         const player = state.players.player;
         const attackCard = model.removeCardFromHand(player, state.pendingActionCardId);
@@ -392,6 +496,10 @@
         );
     }
 
+    /**
+     * Resolves a player item after target selection. Items animate, apply their
+     * effects immediately, move to discard, and mark the player's item use spent.
+     */
     async function usePendingItem(selection) {
         const player = state.players.player;
         const sourceCenter = getHandCardCenter('player', state.pendingActionCardId);
@@ -423,6 +531,10 @@
         render();
     }
 
+    /**
+     * Leaves any attack-user, attack-target, or item-target phase and returns to
+     * the normal player turn without moving cards.
+     */
     function cancelActionSelection() {
         if (!['selecting-attack-user', 'selecting-attack-target', 'selecting-item-target'].includes(state.phase)) return;
 
@@ -437,6 +549,10 @@
         state.selectedCardId = null;
     }
 
+    /**
+     * Places a selected Pokemon from hand onto an open player board slot during
+     * the normal turn. Opening placement uses placeSelectedOpeningCard() instead.
+     */
     function placeSelectedCard(slotIndex = getFirstOpenSlot(state.players.player)) {
         if (!canPlayerAct() || !state.selectedCardId) return;
 
@@ -458,15 +574,27 @@
         render();
     }
 
+    /**
+     * True only during the player's unlocked main-turn phase. Most mutating
+     * player actions use this as their first guard.
+     */
     function canPlayerAct() {
         return state.currentPlayer === 'player' && state.phase === 'turn' && !state.finished && !state.isResolving;
     }
 
+    /**
+     * True when the player can select cards in hand: opening placement or a
+     * normal unlocked turn.
+     */
     function canPlayerSelectCard() {
         const selectablePhase = state.phase === 'opening-place' || state.phase === 'turn';
         return state.currentPlayer === 'player' && selectablePhase && !state.finished && !state.isResolving;
     }
 
+    /**
+     * Used by render and click handling to decide whether the selected hand card
+     * can be placed as a Pokemon in an open board slot.
+     */
     function canPlaceSelectedCard() {
         if (!state.selectedCardId) return false;
 
@@ -476,10 +604,18 @@
         return canPlayerAct() && model.isPokemonCard(selectedCard) && getFirstOpenSlot(player) !== -1;
     }
 
+    /**
+     * Prevents ending the turn while an active Pokemon still has a usable attack
+     * in hand that has not been queued.
+     */
     function canPlayerEndTurn() {
         return canPlayerAct() && getBlockingAttackers('player').length === 0;
     }
 
+    /**
+     * Allows the floating selected attack card to be dragged only while choosing
+     * that attack's target.
+     */
     function canDragPendingActionCard(cardId) {
         return (
             state.currentPlayer === 'player' &&
@@ -491,6 +627,10 @@
         );
     }
 
+    /**
+     * Finds active Pokemon that still need an attack queued before that player
+     * can finish planning.
+     */
     function getBlockingAttackers(playerId) {
         const player = state.players[playerId];
 
@@ -500,6 +640,10 @@
         ));
     }
 
+    /**
+     * Drag guard for dropping a hand Pokemon into a board slot, with stricter
+     * rules for the opening slot during setup.
+     */
     function canDropCardOnSlot(cardId, slotOwner, slotIndex) {
         if (slotOwner !== 'player' || !model.playerHasCardInHand(cardId)) return false;
 
@@ -515,6 +659,10 @@
         return canPlayerAct() && slotIndex >= 0 && slotIndex < BOARD_SLOT_COUNT && !player.board[slotIndex];
     }
 
+    /**
+     * Converts a hand-card drag over a board card into a semantic action:
+     * choose attack user, target a card/group, or use an item on that card/group.
+     */
     function getDropActionForBoardCard(cardId, boardOwner, boardCardId) {
         if (canDragPendingActionCard(cardId)) {
             const options = getPendingTargetOptions();
@@ -561,6 +709,10 @@
         return null;
     }
 
+    /**
+     * Converts a drag over a side-level group target into a semantic target
+     * action for pending attack cards or item cards.
+     */
     function getDropActionForTargetGroup(cardId, groupOwner) {
         if (canDragPendingActionCard(cardId)) {
             const options = getPendingTargetOptions();
@@ -583,6 +735,10 @@
         return { kind: 'target-group', owner: groupOwner };
     }
 
+    /**
+     * Receives the semantic drop candidate from arena_drag.js and forwards it
+     * into the same placement/selection functions used by click handling.
+     */
     function handleCardDrop(cardId, candidate) {
         if (!candidate) return;
 
@@ -625,6 +781,11 @@
         }
     }
 
+    /**
+     * Opponent planning phase called after the player ends their turn. The rival
+     * draws, fills board slots, may use one item immediately, queues attacks,
+     * then schedules attack resolution.
+     */
     async function runOpponentTurn() {
         if (state.finished || state.currentPlayer !== 'opponent') return;
 
@@ -656,6 +817,10 @@
         state.flowTimer = setTimeout(resolveQueuedAttacks, 720);
     }
 
+    /**
+     * Simple opponent placement AI: fill empty board slots with Pokemon from
+     * hand before choosing attacks.
+     */
     async function placeOpponentPokemon() {
         const opponent = state.players.opponent;
 
@@ -679,6 +844,10 @@
         }
     }
 
+    /**
+     * Queues one legal attack for each opponent Pokemon that can attack with a
+     * card in hand. The attack will resolve later with the player's queued moves.
+     */
     function chooseOpponentAttacks() {
         const opponent = state.players.opponent;
         const attackers = model.getBoardCards('opponent');
@@ -715,6 +884,10 @@
         }
     }
 
+    /**
+     * Uses at most one opponent item during the opponent planning phase. Like
+     * player items, these resolve immediately instead of being queued.
+     */
     async function useOpponentItem() {
         if (state.itemUsed.opponent) return false;
 
@@ -748,6 +921,9 @@
         return true;
     }
 
+    /**
+     * Scans opponent item cards and returns the first item with a useful target.
+     */
     function chooseOpponentItem() {
         const opponent = state.players.opponent;
 
@@ -760,6 +936,10 @@
         return null;
     }
 
+    /**
+     * Chooses an item target based on the item effect: healing/status recovery
+     * favors allies, stat-up favors allies, stat-down/status favors the player.
+     */
     function chooseOpponentItemTarget(itemCard) {
         const options = model.getTargetOptionsForAction(itemCard, 'opponent', null);
 
@@ -799,6 +979,10 @@
         return null;
     }
 
+    /**
+     * Opponent helper for healing items: choose the most damaged eligible ally,
+     * falling back to a group target only when the group has damaged Pokemon.
+     */
     function chooseDamagedAllyTarget(options, ownerId) {
         const damagedTargets = options
             .filter(option => option.kind === 'single' && option.owner === ownerId)
@@ -820,6 +1004,10 @@
         return groupTarget || null;
     }
 
+    /**
+     * Opponent helper for full recovery effects: prefer allies missing HP or
+     * carrying a status, weighted by missing HP plus status presence.
+     */
     function chooseRecoverableAllyTarget(options, ownerId) {
         const recoverableTargets = options
             .filter(option => option.kind === 'single' && option.owner === ownerId)
@@ -854,6 +1042,10 @@
         return missingHealth + hasStatus;
     }
 
+    /**
+     * Opponent helper for status-clearing items: choose an ally with any status,
+     * or with a specific status when one is supplied.
+     */
     function chooseStatusedAllyTarget(options, ownerId, status = null) {
         const hasStatus = card => status
             ? model.hasPokemonStatus(card, status)
@@ -881,6 +1073,10 @@
         return options.find(option => option.owner === ownerId) || null;
     }
 
+    /**
+     * Chooses attack targets for opponent queued attacks, preferring player
+     * group targets, then player single targets, then the first legal fallback.
+     */
     function chooseOpponentTarget(attackCard, userCard) {
         const options = model.getTargetOptionsForAction(attackCard, 'opponent', userCard.id);
         const preferredGroup = options.find(option => option.kind === 'group' && option.owner === 'player');
@@ -924,6 +1120,10 @@
         ghost.remove();
     }
 
+    /**
+     * Locks player input and hands control to the opponent. This is triggered by
+     * the End Turn button after all required player attacks have been queued.
+     */
     function endPlayerTurn() {
         if (!canPlayerEndTurn()) return;
 
@@ -948,6 +1148,11 @@
         state.flowTimer = setTimeout(runOpponentTurn, 650);
     }
 
+    /**
+     * Resolves all player and opponent queued attacks after opponent planning.
+     * Actions are re-sorted before each attack because Speed/status can change
+     * during resolution. End-of-turn statuses run after the queue empties.
+     */
     async function resolveQueuedAttacks() {
         if (checkGameOver()) return;
 
@@ -989,6 +1194,10 @@
         state.flowTimer = setTimeout(startPlayerTurn, 620);
     }
 
+    /**
+     * Builds the mutable resolution queue from both players' plannedActions and
+     * adds priority, current Speed, and a random tie breaker.
+     */
     function createResolutionActions() {
         return [
             ...state.plannedActions.player,
@@ -1001,6 +1210,10 @@
         }));
     }
 
+    /**
+     * Recomputes priority and Speed for unresolved actions, then orders highest
+     * priority first, highest Speed second, random tie breaker last.
+     */
     function sortResolutionActions(actions) {
         actions.forEach(action => {
             action.priority = getActionPriority(action);
@@ -1028,6 +1241,10 @@
         return model.getActionStatuses(action.card).includes('PROTECT') ? 1 : 0;
     }
 
+    /**
+     * Runs before an attack can fire. Blocking checks happen in this order:
+     * Flinch, Sleep, Confusion, then Paralysis.
+     */
     async function resolvePreAttackStatuses(action, attacker) {
         const flinchReason = getFlinchBlockReason(attacker);
 
@@ -1072,6 +1289,10 @@
         return null;
     }
 
+    /**
+     * Handles a sleeping attacker's wake attempt. The first attempt fails,
+     * attempts 2-3 can wake, and attempt 4 always wakes.
+     */
     function resolveSleepAttempt(attacker) {
         const sleepStatus = model.getPokemonStatusEntry(attacker, 'SLEEP');
 
@@ -1099,6 +1320,10 @@
         return { blocked: true, changed: true };
     }
 
+    /**
+     * Runs during end-of-turn cleanup for sleeping Pokemon that did not try to
+     * attack this turn, so Sleep still progresses even without a queued action.
+     */
     function tickSleepTimersWithoutAttack() {
         const results = [];
 
@@ -1132,6 +1357,10 @@
         return results;
     }
 
+    /**
+     * Handles confusion before an attack: first try to recover, otherwise either
+     * fight through or take self-damage and lose the queued attack.
+     */
     async function resolveConfusionAttempt(ownerId, attacker) {
         if (!model.hasPokemonStatus(attacker, 'CONFUSION')) return { blocked: false };
 
@@ -1173,6 +1402,10 @@
         return { blocked: true, changed: true };
     }
 
+    /**
+     * Converts a queued target selection into live card targets. If a single
+     * target disappeared, it tries one legal single-target fallback.
+     */
     function resolveActionTargets(action, attacker) {
         const currentTargets = model.getCardsForTargetSelection(action.selection);
 
@@ -1199,6 +1432,10 @@
         };
     }
 
+    /**
+     * Resolves one queued attack from pre-attack checks through effects and
+     * discard. This is the main combat effect pipeline for attack cards.
+     */
     async function resolveQueuedAttack(action) {
         const attacker = model.getBoardCardById(action.owner, action.userCardId);
 
@@ -1373,6 +1610,11 @@
         return targetCenter;
     }
 
+    /**
+     * Applies an item's actual effects after the player/opponent item animation.
+     * Items share the same healing, status, stat, switch, and targeting helpers
+     * as attacks, but they are never placed in the queued attack resolver.
+     */
     function applyItemCard(itemCard, selection, actorId) {
         const targets = model.getCardsForTargetSelection(selection);
         const statuses = model.getActionStatuses(itemCard);
@@ -1407,6 +1649,11 @@
         );
     }
 
+    /**
+     * Applies direct attack damage. It checks Protect first, chooses the damage
+     * stat based on attack type rules, applies stat/status multipliers unless
+     * the attack is ICE, then knocks out the target at 0 HP.
+     */
     function damagePokemon(ownerId, pokemonCard, attackerCard, actionCard) {
         if (isProtectedFromDamage(pokemonCard)) {
             logEvent(`${model.getCardName(pokemonCard)} was protected from damage.`);
@@ -1487,6 +1734,10 @@
         return model.hasPokemonStatus(pokemonCard, 'PROTECT');
     }
 
+    /**
+     * Applies fixed-percent status damage from Poison, Burn, or Confusion. This
+     * damage is also blocked by Protect.
+     */
     function damagePokemonByStatus(ownerId, pokemonCard, damagePercent, damageLabel) {
         if (!pokemonCard || pokemonCard.currentHealth <= 0) return null;
 
@@ -1516,6 +1767,10 @@
         };
     }
 
+    /**
+     * Resolves MULTI_ATTACK damage, rolling one hit count and applying normal
+     * attack damage repeatedly to targets that remain active and alive.
+     */
     async function resolveMultiAttackDamage(actionCard, targets, attacker) {
         const hitCount = getRandomMultiAttackHitCount();
 
@@ -1542,6 +1797,10 @@
         return MULTI_ATTACK_MIN_HITS + Math.floor(Math.random() * hitRange);
     }
 
+    /**
+     * Final cleanup after all queued attacks resolve. Poison/Burn damage happens
+     * first, then non-attacking Sleep ticks, then expiring turn statuses clear.
+     */
     async function resolveEndOfTurnStatuses() {
         const damageResults = applyEndOfTurnStatusDamage();
 
@@ -1571,6 +1830,9 @@
         return checkGameOver();
     }
 
+    /**
+     * Applies Poison and Burn damage to every active Pokemon at end of turn.
+     */
     function applyEndOfTurnStatusDamage() {
         const results = [];
         const damageStatuses = [
@@ -1593,6 +1855,10 @@
         return results;
     }
 
+    /**
+     * Clears statuses whose duration expires at end of turn, such as Protect,
+     * Flinch, and limited-duration Fatigue.
+     */
     function clearTurnStatuses() {
         const removedStatuses = [];
 
@@ -1614,6 +1880,10 @@
         return removedStatuses;
     }
 
+    /**
+     * Applies persistent battle statuses from an attack. Damaging attacks roll
+     * the global status trigger chance; non-damaging attacks always apply.
+     */
     function maybeApplyAttackStatuses(actionCard, targets, isDamaging) {
         const statuses = getBattleStatuses(actionCard);
 
@@ -1631,6 +1901,10 @@
         return model.getActionStatuses(actionCard).filter(model.isBattleStatus);
     }
 
+    /**
+     * Attempts to add persistent statuses to live target cards and logs whether
+     * each status was added or blocked by an existing status.
+     */
     function applyStatusesToTargets(statuses, targets) {
         let appliedAny = false;
 
@@ -1683,6 +1957,10 @@
         logEvent(`${model.getCardName(pokemonCard)} already has ${statusNames}.`);
     }
 
+    /**
+     * Applies action effects that remove statuses. FULL_HEAL and HEAL_STATUS
+     * clear the current persistent status; HEAL_BURN only clears Burn.
+     */
     function applyStatusHealingEffects(statuses, targets) {
         let didSomething = false;
 
@@ -1743,6 +2021,10 @@
         logEvent(`${model.getCardName(pokemonCard)} recovered from ${statusNames}.`);
     }
 
+    /**
+     * Applies attack stat changes after damage. Damaging attacks roll the given
+     * trigger chance; non-damaging attacks always apply their listed changes.
+     */
     function maybeApplyAttackStatChanges(actionCard, targets, isDamaging, triggerChance = STAT_CHANGE_TRIGGER_CHANCE) {
         const statChanges = model.getActionStatChanges(actionCard);
 
@@ -1756,12 +2038,20 @@
         return applyStatChangesToTargets(statChanges, targets);
     }
 
+    /**
+     * Redirects stat changes to the attacker for SELF_INFLICT actions; otherwise
+     * stat changes affect the selected targets.
+     */
     function getStatChangeTargets(action, attacker, targets) {
         if (!model.getActionStatuses(action.card).includes('SELF_INFLICT')) return targets;
 
         return [{ owner: action.owner, card: attacker }];
     }
 
+    /**
+     * Applies stat stages to live targets after model-level type adjustments
+     * such as NORMAL limiting and HUMAN doubling.
+     */
     function applyStatChangesToTargets(statChanges, targets) {
         let appliedAny = false;
 
@@ -1822,6 +2112,9 @@
         });
     }
 
+    /**
+     * Restores the standard healing amount to a Pokemon without exceeding max HP.
+     */
     function healPokemon(pokemonCard) {
         const healing = Math.ceil(pokemonCard.pokemon.baseHealth * DAMAGE_PERCENT);
 
@@ -1829,6 +2122,10 @@
         logEvent(`${model.getCardName(pokemonCard)} healed ${healing} HP.`);
     }
 
+    /**
+     * Resolves SWITCH by removing the target from the board, clearing stat
+     * stages, and shuffling the card back into its owner's deck.
+     */
     function switchPokemon(ownerId, pokemonCard) {
         const owner = state.players[ownerId];
         const removedCard = model.removeCardFromBoard(owner, pokemonCard.id);
@@ -1840,6 +2137,10 @@
         logEvent(`${model.getCardName(removedCard)} was shuffled into ${owner.name}'s deck.`);
     }
 
+    /**
+     * Removes a Pokemon at 0 HP, moves it to the knockout pile, decrements the
+     * owner's remaining Pokemon count, then checks for FOSSIL revival.
+     */
     function knockOutPokemon(ownerId, pokemonCard) {
         const owner = state.players[ownerId];
         const slotIndex = owner.board.findIndex(card => card && card.id === pokemonCard.id);
@@ -1855,6 +2156,10 @@
         reviveFossilPokemonFromKnockout(owner, slotIndex);
     }
 
+    /**
+     * FOSSIL special rule: when another ally is knocked out, a once-per-card
+     * Fossil already in the knockout pile can return to the vacated slot.
+     */
     function reviveFossilPokemonFromKnockout(owner, slotIndex) {
         if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT || owner.board[slotIndex]) return null;
 
@@ -1883,6 +2188,10 @@
         return fossilCard;
     }
 
+    /**
+     * Moves a resolved, blocked, or failed queued attack to its owner's discard
+     * pile after the discard animation.
+     */
     async function discardActionCard(action, startCenter = null) {
         const owner = state.players[action.owner];
 
@@ -1891,6 +2200,10 @@
         owner.discard.unshift(action.card);
     }
 
+    /**
+     * Called after major state changes and during resolution loops. It ends the
+     * battle when either player has no active/remaining Pokemon.
+     */
     function checkGameOver() {
         if (state.finished) return true;
 

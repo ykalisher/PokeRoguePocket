@@ -7,6 +7,11 @@
 
     document.addEventListener('DOMContentLoaded', initGame);
 
+    /**
+     * Page-level arena entry point. It wires DOM events to Controller/Drag,
+     * loads card data, then either restores a saved battle or starts the opening
+     * placement flow through Controller.resetPrototype().
+     */
     async function initGame() {
         const state = arena.state;
 
