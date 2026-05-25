@@ -774,5 +774,293 @@
     ],
     "target": "ALL_ALLIES",
     "full_type_requirements": true
+  },
+  {
+    "name": "Slush Rush",
+    "type1": "ICE",
+    "type2": "NONE",
+    "basePower": 60,
+    "status": "SELF_INFLICT",
+    "statChanges": [
+      "SPEED_UP"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Earth Power",
+    "type1": "GROUND",
+    "type2": "GRASS",
+    "basePower": 60,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Bulldoze",
+    "type1": "GROUND",
+    "type2": "NONE",
+    "basePower": 55,
+    "status": "NONE",
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Magnetize",
+    "type1": "ELECTRIC",
+    "type2": "STEEL",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "DEFENSE_UP",
+      "SPEED_UP"
+    ],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Flash Cannon",
+    "type1": "STEEL",
+    "type2": "ELECTRIC",
+    "basePower": 60,
+    "status": "NONE",
+    "statChanges": [
+      "ATTACK_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Espresso Shot",
+    "type1": "GOURMET",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "ATTACK_UP",
+      "SPEED_UP",
+      "SPEED_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Chomp",
+    "type1": "GOURMET",
+    "type2": "NONE",
+    "basePower": 50,
+    "status": "SELF_INFLICT",
+    "statChanges": [
+      "ATTACK_UP"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Burp",
+    "type1": "GOURMET",
+    "type2": "NONE",
+    "basePower": 40,
+    "status": "FLINCH",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Earthquake",
+    "type1": "GROUND",
+    "type2": "NONE",
+    "basePower": 70,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Thunder Wave",
+    "type1": "ELECTRIC",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "PARALYSIS",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Power-up Punch",
+    "type1": "HUMAN",
+    "type2": "NONE",
+    "basePower": 35,
+    "status": "SELF_INFLICT",
+    "statChanges": [
+      "ATTACK_UP"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Fire Spin",
+    "type1": "FIRE",
+    "type2": "NONE",
+    "basePower": 50,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Moon Blast",
+    "type1": "FAIRY",
+    "type2": "NONE",
+    "basePower": 60,
+    "status": "NONE",
+    "statChanges": [
+      "DEFENSE_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Helping Hand",
+    "type1": "FAIRY",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "ATTACK_UP"
+    ],
+    "target": "ALLY",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Bug Buzz",
+    "type1": "BUG",
+    "type2": "NONE",
+    "basePower": 20,
+    "status": "MULTI_ATTACK",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Ancient Power",
+    "type1": "FOSSIL",
+    "type2": "LEGENDARY",
+    "basePower": 50,
+    "status": "SELF_INFLICT",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP",
+      "SPEED_UP"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Expanding Force",
+    "type1": "PSYCHIC",
+    "type2": "NONE",
+    "basePower": 55,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Kick in the Face",
+    "type1": "FIGHTING",
+    "type2": "NONE",
+    "basePower": 55,
+    "status": "NONE",
+    "statChanges": [
+      "ATTACK_DOWN",
+      "ATTACK_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Lovecraftian Horror",
+    "type1": "GHOST",
+    "type2": "LEGENDARY",
+    "basePower": 0,
+    "status": "FATIGUE",
+    "statChanges": [
+      "ATTACK_DOWN",
+      "DEFENSE_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Violent Smash",
+    "type1": "MONSTER",
+    "type2": "NONE",
+    "basePower": 60,
+    "status": "FLINCH",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Curse",
+    "type1": "GHOST",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "FATIGUE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Hyper Beam",
+    "type1": "DRAGON",
+    "type2": "LEGENDARY",
+    "basePower": 90,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Divine Power",
+    "type1": "LEGENDARY",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "HEAL_STATUS",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP",
+      "SPEED_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Nightmare",
+    "type1": "GHOST",
+    "type2": "MONSTER",
+    "basePower": 50,
+    "status": "SELF_INFLICT",
+    "statChanges": [
+      "ATTACK_UP",
+      "SPEED_UP"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Divine Wrath",
+    "type1": "LEGENDARY",
+    "type2": "NONE",
+    "basePower": 150,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
   }
 ]

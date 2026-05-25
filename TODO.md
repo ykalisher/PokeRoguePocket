@@ -27,8 +27,8 @@ This file is for humans only! Agents should not act on this file unless explicit
 	ROCK: increasing defense
 	STEEL: uses defense instead of attack
 	WATER: neutralizing/healing off effects
-- [ ] Redo pokemon given the new type specializations
-	- [ ] Add 3 pokemon for each type, and add 2 move for each type that pokemon has that synergize with it (If I add water/monster, that counts as 1 water, then need to add 3 more monster still)
+- [x] Redo pokemon given the new type specializations
+	- [x] Add 3 pokemon for each type, and add 2 move for each type that pokemon has that synergize with it (If I add water/monster, that counts as 1 water, then need to add 3 more monster still)
 	- Currently on Mamoswine
 - [ ] Add more pokemon with better overlapping types
 - [ ] Add more items

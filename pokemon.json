@@ -100,8 +100,8 @@
   },
   {
     "name": "Snorlax",
-    "type1": "NORMAL",
-    "type2": "GOURMET",
+    "type1": "GOURMET",
+    "type2": "NONE",
     "type3": "NONE",
     "id": "0143",
     "baseHealth": 160,
@@ -331,8 +331,8 @@
   },
   {
     "name": "Lickilicky",
-    "type1": "NORMAL",
-    "type2": "GOURMET",
+    "type1": "GOURMET",
+    "type2": "NONE",
     "type3": "NONE",
     "id": "0463",
     "baseHealth": 110,
