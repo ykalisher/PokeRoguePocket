@@ -172,6 +172,8 @@ h1 {
     --card-h: calc(var(--card-w) * 1.52);
     --hand-card-w: clamp(56px, 4.6vw, 66px);
     --hand-card-h: calc(var(--hand-card-w) * 1.52);
+    --opponent-hand-card-w: clamp(24px, 2.7vw, 34px);
+    --opponent-hand-card-h: calc(var(--opponent-hand-card-w) * 1.38);
     --pile-card-w: clamp(50px, 4vw, 60px);
     --pile-card-h: calc(var(--pile-card-w) * 1.38);
     --panel-gap: clamp(4px, 0.8vw, 8px);
@@ -272,11 +274,12 @@ h1 {
     white-space: nowrap;
 }
 
-/* Board row inside each side panel: deck, active slots, discard, and knockout pile. */
+/* Board row inside each side panel: left and right pile pairs flank active slots. */
 .battle-row {
     min-height: 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(52px, 0.24fr)) minmax(160px, 1fr) repeat(2, minmax(52px, 0.24fr));
+    grid-template-columns: minmax(var(--pile-card-w), 0.28fr) minmax(160px, 1fr) minmax(var(--pile-card-w), 0.28fr);
+    grid-template-rows: repeat(2, minmax(0, auto));
     align-items: center;
     gap: var(--panel-gap);
 }
@@ -287,6 +290,34 @@ h1 {
     display: grid;
     justify-items: center;
     gap: 4px;
+}
+
+/* Pokemon and main decks stack together on the left side of the board row. */
+.pile--pokemon-deck,
+.pile--deck {
+    grid-column: 1;
+}
+
+.pile--pokemon-deck {
+    grid-row: 1;
+}
+
+.pile--deck {
+    grid-row: 2;
+}
+
+/* Discard and knockout piles stack together on the right side of the board row. */
+.pile--discard,
+.pile--knockout {
+    grid-column: 3;
+}
+
+.pile--discard {
+    grid-row: 1;
+}
+
+.pile--knockout {
+    grid-row: 2;
 }
 
 /* Visual card block used for deck, discard, and knockout pile counts. */
@@ -361,6 +392,8 @@ h1 {
 .played-slots {
     position: relative;
     min-width: 0;
+    grid-column: 2;
+    grid-row: 1 / 3;
     display: grid;
     grid-template-columns: repeat(2, minmax(var(--card-w), 1fr));
     align-items: center;
@@ -1400,6 +1433,11 @@ button.playing-card:focus-visible {
     overflow: hidden;
 }
 
+/* Opponent hand uses tiny backs so the hand count remains readable. */
+.hand-row--opponent {
+    min-height: calc(var(--opponent-hand-card-h) + 10px);
+}
+
 /* Prevents hand labels from shrinking into card rows. */
 .hand-label {
     flex: 0 0 auto;
@@ -1416,9 +1454,37 @@ button.playing-card:focus-visible {
     overflow-x: auto;
 }
 
+/* Tight spacing for the opponent's hidden hand strip. */
+.hand-row--opponent .hand-cards {
+    gap: 4px;
+    padding: 3px 2px 4px;
+}
+
 /* Keeps hand cards at fixed card widths inside the scroll strip. */
 .hand-cards .playing-card {
     flex: 0 0 auto;
+}
+
+/* Miniature face-down opponent hand cards; content is decorative only. */
+.hand-row--opponent .hand-card {
+    --card-w: var(--opponent-hand-card-w);
+
+    width: var(--opponent-hand-card-w);
+    height: var(--opponent-hand-card-h);
+    padding: 2px;
+    border-width: 1px;
+    border-radius: 5px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.22);
+}
+
+.hand-row--opponent .hand-card .card-topline,
+.hand-row--opponent .hand-card .card-footer {
+    display: none;
+}
+
+.hand-row--opponent .hand-card .card-body {
+    border: 0;
+    color: transparent;
 }
 
 /* Empty hand/slot placeholder text. */
@@ -1798,6 +1864,7 @@ button.playing-card:focus-visible {
     .game-page {
         --card-w: clamp(96px, 7.6vw, 128px);
         --hand-card-w: clamp(84px, 6.4vw, 108px);
+        --opponent-hand-card-w: clamp(26px, 2.2vw, 36px);
         --pile-card-w: clamp(70px, 5.3vw, 92px);
         --panel-gap: clamp(8px, 1vw, 14px);
     }
@@ -1980,6 +2047,7 @@ button.playing-card:focus-visible {
     .game-page {
         --card-w: clamp(60px, 16vw, 68px);
         --hand-card-w: clamp(54px, 15vw, 62px);
+        --opponent-hand-card-w: clamp(22px, 6vw, 28px);
         --pile-card-w: clamp(44px, 12vw, 52px);
         --panel-gap: 8px;
     }
@@ -2016,9 +2084,9 @@ button.playing-card:focus-visible {
         font-size: 0.68rem;
     }
 
-    /* Mobile board row with smaller pile columns. */
+    /* Mobile board row with stacked pile columns. */
     .battle-row {
-        grid-template-columns: repeat(2, minmax(34px, 0.2fr)) minmax(116px, 1fr) repeat(2, minmax(34px, 0.2fr));
+        grid-template-columns: minmax(var(--pile-card-w), 0.24fr) minmax(116px, 1fr) minmax(var(--pile-card-w), 0.24fr);
         gap: 6px;
     }
 

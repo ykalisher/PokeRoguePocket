@@ -250,9 +250,10 @@
             }
 
             const selectedClass = state.selectedCardId === card.id || state.pendingActionCardId === card.id ? ' is-selected' : '';
+            const arrivalClass = isCardArriving(card) ? ' is-arriving-card' : '';
 
             return `
-                <button class="playing-card hand-card card-kind-${card.kind}${selectedClass}" type="button" data-card-id="${card.id}" data-hand-card-id="${card.id}" aria-label="Select ${arena.Model.getCardName(card)}">
+                <button class="playing-card hand-card card-kind-${card.kind}${selectedClass}${arrivalClass}" type="button" data-card-id="${card.id}" data-hand-card-id="${card.id}" aria-label="Select ${arena.Model.getCardName(card)}">
                     ${renderCardContent(card, true)}
                 </button>
             `;
@@ -287,6 +288,7 @@
         const actionTargetClass = options.actionTarget ? ' is-action-target' : '';
         const userOptionClass = options.userOption ? ' is-user-option' : '';
         const userActiveClass = options.userActive ? ' is-user-active' : '';
+        const arrivalClass = isCardArriving(card) ? ' is-arriving-card' : '';
         const kindClass = ` card-kind-${card.kind}`;
         const tagName = options.singleTarget || options.userOption ? 'button' : 'div';
         const targetAttributes = options.singleTarget ? `type="button" data-target-card-id="${card.id}" data-target-owner="${options.owner}"` : options.userOption ? 'type="button"' : '';
@@ -295,10 +297,14 @@
         const ariaLabel = options.singleTarget ? `Target ${arena.Model.getCardName(card)}` : `${reveal ? arena.Model.getCardName(card) : 'Face down card'}`;
 
         return `
-            <${tagName} class="playing-card ${options.context}-card${kindClass}${backClass}${targetClass}${actionTargetClass}${userOptionClass}${userActiveClass}" ${targetAttributes} ${boardAttributes} ${handAttributes} aria-label="${ariaLabel}">
+            <${tagName} class="playing-card ${options.context}-card${kindClass}${backClass}${targetClass}${actionTargetClass}${userOptionClass}${userActiveClass}${arrivalClass}" ${targetAttributes} ${boardAttributes} ${handAttributes} aria-label="${ariaLabel}">
                 ${renderCardContent(card, reveal)}
             </${tagName}>
         `;
+    }
+
+    function isCardArriving(card) {
+        return Boolean(card && Array.isArray(state.arrivingCardIds) && state.arrivingCardIds.includes(card.id));
     }
 
     /**

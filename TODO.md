@@ -29,10 +29,12 @@ This file is for humans only! Agents should not act on this file unless explicit
 	WATER: neutralizing/healing off effects
 - [ ] Redo pokemon given the new type specializations
 	- [ ] Add 3 pokemon for each type, and add 2 move for each type that pokemon has that synergize with it (If I add water/monster, that counts as 1 water, then need to add 3 more monster still)
-	- Currently on Typhlosion
-- [x] Add more items
+	- Currently on Mamoswine
+- [ ] Add more pokemon with better overlapping types
+- [ ] Add more items
 ## Overworld Mechanics
 - [ ] Decide on how you capture more pokemon.
+- [ ] Decide on how you get more attacks
 - [ ] Come up with algorithm for locations and selection.
 - [ ] Come up with algorithm or presets for opposing trainers.
 - [ ] Create system for shopkeeper and costs.
@@ -41,7 +43,7 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [x] Implement statuses and stat changes in battles.
 - [x] Implement new statuses or effects from types (~healing status away~, ~multi-attack moves~, ~fighting types~, ~fossil types~, ~normal types~, ~human type~, ~ice types~, ~steel types~)
 - [ ] Implement dragon types
-- [ ] Reorganize decks
+- [x] Reorganize decks
 	- two decks, one for pokemon and one for moves/items. 
 	- Draw two pokemon to start with, and switch to shuffle it back into the deck and draw a new one out (drawing should occur before shuffling). When a pokemon is knocked out, if there's no fossil in the knockout pile then you draw a new pokemon and play it.
 	- Battle ends when someone either has no more pokemon on the field or has had three (maybe four?) pokemon knocked out. Can bring up to 6 pokemon (is that too many, diluting the movepool too much? Or it forces monotype/dual type decks)

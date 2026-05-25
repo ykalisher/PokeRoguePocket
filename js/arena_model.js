@@ -80,6 +80,7 @@
 
     const state = {
         currentPlayer: null,
+        arrivingCardIds: [],
         elements: {},
         finished: false,
         isResolving: true,
@@ -154,6 +155,7 @@
         if (!savedBattle) return false;
 
         state.currentPlayer = savedBattle.currentPlayer || 'player';
+        state.arrivingCardIds = [];
         state.finished = Boolean(savedBattle.finished);
         state.isResolving = false;
         state.log = Array.isArray(savedBattle.log) ? savedBattle.log.slice(0, 3) : [];

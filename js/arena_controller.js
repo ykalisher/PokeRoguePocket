@@ -81,6 +81,7 @@
         state.elements.popup.hidden = true;
 
         state.currentPlayer = 'player';
+        state.arrivingCardIds = [];
         state.finished = false;
         state.isResolving = true;
         state.log = [];
@@ -99,6 +100,8 @@
         state.turnNumber = 0;
 
         const openingPlacements = model.playOpeningPokemon();
+
+        markCardsArriving(openingPlacements.map(placement => placement.card));
         logEvent('Both sides drew their opening Pokemon.');
         render();
 
@@ -137,6 +140,8 @@
         state.turnNumber += 1;
 
         const drawnCards = model.drawCardsUpToHandSize(player);
+
+        markCardsArriving(drawnCards);
 
         if (drawnCards.length > 0) {
             logEvent(`${player.name} drew ${drawnCards.length} ${drawnCards.length === 1 ? 'card' : 'cards'}.`);
@@ -899,6 +904,8 @@
 
         const opponent = state.players.opponent;
         const drawnCards = model.drawCardsUpToHandSize(opponent);
+
+        markCardsArriving(drawnCards);
 
         if (drawnCards.length > 0) {
             logEvent(`${opponent.name} drew ${drawnCards.length} ${drawnCards.length === 1 ? 'card' : 'cards'}.`);
@@ -2286,6 +2293,7 @@
         const replacementCard = model.drawPokemonToBoard(owner, slotIndex);
 
         if (replacementCard) {
+            markCardArriving(replacementCard);
             logEvent(`${owner.name} drew ${model.getCardName(replacementCard)} into the open slot.`);
             render();
             await animatePokemonEnterBoard(ownerId, replacementCard, 'pokemon-deck');
@@ -2350,12 +2358,17 @@
             const fossilCard = reviveFossilPokemonFromKnockout(owner, replacement.slotIndex);
 
             if (fossilCard) {
+                markCardArriving(fossilCard);
                 render();
                 await animatePokemonEnterBoard(owner.id, fossilCard, 'knockout');
                 continue;
             }
 
             const replacementCard = drawReplacementPokemon(owner, replacement.slotIndex);
+
+            if (replacementCard) {
+                markCardArriving(replacementCard);
+            }
 
             render();
 
@@ -2486,6 +2499,34 @@
         state.log = state.log.slice(0, 3);
     }
 
+    function markCardsArriving(cards) {
+        cards.filter(Boolean).forEach(markCardArriving);
+    }
+
+    function markCardArriving(card) {
+        if (!card || !card.id) return;
+        if (!Array.isArray(state.arrivingCardIds)) state.arrivingCardIds = [];
+        if (!state.arrivingCardIds.includes(card.id)) state.arrivingCardIds.push(card.id);
+    }
+
+    function clearCardArriving(card) {
+        if (!card || !Array.isArray(state.arrivingCardIds)) return;
+
+        state.arrivingCardIds = state.arrivingCardIds.filter(cardId => cardId !== card.id);
+    }
+
+    function releaseArrivingCard(card, getElement) {
+        clearCardArriving(card);
+
+        const element = getElement ? getElement() : null;
+
+        if (element) {
+            element.classList.remove('is-arriving-card');
+        } else {
+            arena.Render.render();
+        }
+    }
+
     function showDamageNumbers(damageResults) {
         damageResults.forEach(result => {
             if (!result || result.damage <= 0) return;
@@ -2512,6 +2553,7 @@
         const handElement = getHandCardElement(playerId, card.id);
 
         if (!deckElement || !handElement) {
+            releaseArrivingCard(card, () => getHandCardElement(playerId, card.id));
             await model.sleep(240);
             return;
         }
@@ -2519,6 +2561,7 @@
         const ghost = createCardAnimationElement(card, 'draw-animation-card', playerId === 'player');
 
         if (!ghost) {
+            releaseArrivingCard(card, () => getHandCardElement(playerId, card.id));
             await model.sleep(240);
             return;
         }
@@ -2535,7 +2578,7 @@
         placeAnimationElement(ghost, targetCenter);
 
         await model.sleep(430);
-        handElement.classList.remove('is-arriving-card');
+        releaseArrivingCard(card, () => getHandCardElement(playerId, card.id));
         ghost.remove();
     }
 
@@ -2544,6 +2587,7 @@
         const boardElement = getBoardCardElement(playerId, card.id);
 
         if (!sourceElement || !boardElement) {
+            releaseArrivingCard(card, () => getBoardCardElement(playerId, card.id));
             await model.sleep(260);
             return;
         }
@@ -2551,6 +2595,7 @@
         const ghost = createCardAnimationElement(card, 'draw-animation-card pokemon-draw-animation-card', true);
 
         if (!ghost) {
+            releaseArrivingCard(card, () => getBoardCardElement(playerId, card.id));
             await model.sleep(260);
             return;
         }
@@ -2567,7 +2612,7 @@
         placeAnimationElement(ghost, targetCenter);
 
         await model.sleep(430);
-        boardElement.classList.remove('is-arriving-card');
+        releaseArrivingCard(card, () => getBoardCardElement(playerId, card.id));
         ghost.remove();
     }
 
