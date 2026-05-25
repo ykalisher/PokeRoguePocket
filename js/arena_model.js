@@ -168,7 +168,7 @@
         state.arrivingCardIds = [];
         state.finished = Boolean(savedBattle.finished);
         state.isResolving = false;
-        state.log = Array.isArray(savedBattle.log) ? savedBattle.log.slice(0, 3) : [];
+        state.log = normalizeSavedLog(savedBattle.log);
         state.phase = savedBattle.phase || 'turn';
         state.flowTimer = null;
         state.drag = null;
@@ -273,6 +273,12 @@
             selectedCardId: state.selectedCardId,
             turnNumber: state.turnNumber
         };
+    }
+
+    function normalizeSavedLog(log) {
+        return Array.isArray(log)
+            ? log.filter(entry => typeof entry === 'string')
+            : [];
     }
 
     function normalizeItemUsed(itemUsed) {

@@ -2027,7 +2027,7 @@
     }
 
     function getDamageVarianceMultiplier() {
-        return 0.95 + (Math.random() * 0.1);
+        return 0.35 + (Math.random() * 0.1);
     }
 
     function attackUsesBaseStatsOnly(actionCard) {
@@ -2670,8 +2670,13 @@
     }
 
     function logEvent(message) {
-        state.log.unshift(message);
-        state.log = state.log.slice(0, 3);
+        state.log.unshift(formatLogEvent(message));
+    }
+
+    function formatLogEvent(message) {
+        const turnLabel = state.turnNumber > 0 ? `Turn ${state.turnNumber}` : 'Setup';
+
+        return `${turnLabel}: ${message}`;
     }
 
     function markCardsArriving(cards) {

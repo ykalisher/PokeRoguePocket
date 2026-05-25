@@ -664,7 +664,7 @@
                 <div class="action-bar">
                     ${renderActionButtons(canEnd, canDiscard)}
                 </div>
-                <ul class="event-log" aria-label="Recent events">
+                <ul class="event-log" aria-label="Battle log">
                     ${state.log.map(entry => `<li>${entry}</li>`).join('')}
                 </ul>
             </section>

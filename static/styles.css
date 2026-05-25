@@ -166,15 +166,15 @@ h1 {
 
 /* --- Arena Prototype --- */
 
-/* Game page shell and responsive card sizing tokens. */
+/* Game page shell and responsive card sizing tokens. Cards respond to both viewport width and height. */
 .game-page {
-    --card-w: clamp(64px, 5.3vw, 78px);
+    --card-w: clamp(56px, min(5.3vw, 9.6dvh), 78px);
     --card-h: calc(var(--card-w) * 1.52);
-    --hand-card-w: clamp(56px, 4.6vw, 66px);
+    --hand-card-w: clamp(50px, min(4.6vw, 8.2dvh), 66px);
     --hand-card-h: calc(var(--hand-card-w) * 1.52);
-    --opponent-hand-card-w: clamp(24px, 2.7vw, 34px);
+    --opponent-hand-card-w: clamp(22px, min(2.7vw, 4.3dvh), 34px);
     --opponent-hand-card-h: calc(var(--opponent-hand-card-w) * 1.38);
-    --pile-card-w: clamp(50px, 4vw, 60px);
+    --pile-card-w: clamp(44px, min(4vw, 7.2dvh), 60px);
     --pile-card-h: calc(var(--pile-card-w) * 1.38);
     --panel-gap: clamp(4px, 0.8vw, 8px);
     --felt-dark: #0f2f2d;
@@ -829,8 +829,7 @@ button.playing-card:focus-visible {
 .card-footer,
 .action-card-name,
 .action-card-meta,
-.action-card-note,
-.event-log li {
+.action-card-note {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -1630,13 +1629,16 @@ button.playing-card:focus-visible {
     line-height: 1;
 }
 
-/* Recent battle log list in the turn-control box. */
+/* Scrollable battle log list in the turn-control box. */
 .event-log {
     width: min(28vw, 360px);
+    max-height: min(24dvh, 180px);
     margin: 0;
-    padding: 0;
+    padding: 0 4px 0 0;
     display: grid;
     gap: 4px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     color: rgba(251, 246, 232, 0.66);
     font-size: 0.76rem;
     line-height: 1.25;
@@ -1645,7 +1647,8 @@ button.playing-card:focus-visible {
 
 /* Single battle log entry. */
 .event-log li {
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 /* Temporary popup toast shown for action feedback. */
@@ -1905,10 +1908,10 @@ button.playing-card:focus-visible {
 @media (min-width: 700px) {
     /* Desktop card/pile sizing tokens. */
     .game-page {
-        --card-w: clamp(96px, 7.6vw, 128px);
-        --hand-card-w: clamp(84px, 6.4vw, 108px);
-        --opponent-hand-card-w: clamp(26px, 2.2vw, 36px);
-        --pile-card-w: clamp(70px, 5.3vw, 92px);
+        --card-w: clamp(64px, min(7.6vw, 15.2dvh), 128px);
+        --hand-card-w: clamp(58px, min(6.4vw, 12.4dvh), 108px);
+        --opponent-hand-card-w: clamp(22px, min(2.2vw, 4.2dvh), 36px);
+        --pile-card-w: clamp(48px, min(5.3vw, 10.2dvh), 92px);
         --panel-gap: clamp(8px, 1vw, 14px);
     }
 
@@ -2002,6 +2005,7 @@ button.playing-card:focus-visible {
     .event-log {
         grid-column: 1 / -1;
         width: 100%;
+        max-height: min(30dvh, 260px);
         font-size: 0.86rem;
     }
 
@@ -2088,10 +2092,10 @@ button.playing-card:focus-visible {
 @media (max-width: 699px) {
     /* Mobile card/pile sizing tokens. */
     .game-page {
-        --card-w: clamp(60px, 16vw, 68px);
-        --hand-card-w: clamp(54px, 15vw, 62px);
-        --opponent-hand-card-w: clamp(22px, 6vw, 28px);
-        --pile-card-w: clamp(44px, 12vw, 52px);
+        --card-w: clamp(46px, min(16vw, 9.4dvh), 68px);
+        --hand-card-w: clamp(42px, min(15vw, 8.7dvh), 62px);
+        --opponent-hand-card-w: clamp(20px, min(6vw, 4.6dvh), 28px);
+        --pile-card-w: clamp(38px, min(12vw, 7.4dvh), 52px);
         --panel-gap: 8px;
     }
 
@@ -2190,6 +2194,13 @@ button.playing-card:focus-visible {
         font-size: 0.78rem;
     }
 
+    /* Mobile log uses the full control width with a shorter scroll window. */
+    .event-log {
+        width: 100%;
+        max-height: min(18dvh, 120px);
+        font-size: 0.72rem;
+    }
+
     /* Mobile reference overlay safe padding. */
     .rules-reference-overlay {
         padding: 8px;
@@ -2227,11 +2238,6 @@ button.playing-card:focus-visible {
     .reference-type-chip {
         padding: 4px 7px;
         font-size: 0.72rem;
-    }
-
-    /* Mobile hides the event log to keep controls compact. */
-    .event-log {
-        display: none;
     }
 
     /* Mobile Pokemon stat text sizing. */
