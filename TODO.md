@@ -30,8 +30,8 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [x] Redo pokemon given the new type specializations
 	- [x] Add 3 pokemon for each type, and add 2 move for each type that pokemon has that synergize with it (If I add water/monster, that counts as 1 water, then need to add 3 more monster still)
 	- Currently on Mamoswine
-- [ ] Add more pokemon with better overlapping types
-- [ ] Add more items
+- [x] Add more pokemon with better overlapping types
+- [x] Add more items
 ## Overworld Mechanics
 - [ ] Decide on how you capture more pokemon.
 - [ ] Decide on how you get more attacks
@@ -42,7 +42,7 @@ This file is for humans only! Agents should not act on this file unless explicit
 ## Battle Mechanics
 - [x] Implement statuses and stat changes in battles.
 - [x] Implement new statuses or effects from types (~healing status away~, ~multi-attack moves~, ~fighting types~, ~fossil types~, ~normal types~, ~human type~, ~ice types~, ~steel types~)
-- [ ] Implement dragon types
+- [x] Implement dragon types
 - [x] Reorganize decks
 	- two decks, one for pokemon and one for moves/items. 
 	- Draw two pokemon to start with, and switch to shuffle it back into the deck and draw a new one out (drawing should occur before shuffling). When a pokemon is knocked out, if there's no fossil in the knockout pile then you draw a new pokemon and play it.

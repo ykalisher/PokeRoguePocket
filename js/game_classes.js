@@ -70,6 +70,8 @@ const PokeType = Object.freeze({
  *   turn at end of turn.
  *
  * One-shot action effects:
+ * - DRAGON_GEM: Played as a side effect. While active for that player, damaging
+ *   DRAGON attacks can apply the gem's paired persistent status.
  * - FULL_HEAL: Heals HP and clears the target's persistent battle status.
  * - HEAL: Restores 20% max HP.
  * - HEAL_BURN: Clears Burn only.
@@ -86,6 +88,7 @@ const Status = Object.freeze({
     NONE: 'NONE',
     BURN: 'BURN',
     CONFUSION: 'CONFUSION',
+    DRAGON_GEM: 'DRAGON_GEM',
     FATIGUE: 'FATIGUE',
     FLINCH: 'FLINCH',
     FULL_HEAL: 'FULL_HEAL',
@@ -129,6 +132,7 @@ const StatChange = Object.freeze({
 
 const Target = Object.freeze({
     SELF: 'SELF',
+    SIDE: 'SIDE',
     ALLY: 'ALLY',
     ALL_ALLIES: 'ALL_ALLIES',
     OPPONENT: 'OPPONENT',

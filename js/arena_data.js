@@ -20,10 +20,21 @@
         CONFUSION_SELF_DAMAGE_CHANCE: 0.5,
         DAMAGE_PERCENT: 0.2,
         DEFAULT_BATTLE_DECK: {
-            items: ['Sitrus Berry', 'Withdraw Wand', 'Withdraw Wand', 'Salac Berry'],
+            items: [
+                'Sitrus Berry',
+                'Withdraw Wand',
+                'Withdraw Wand',
+                'Salac Berry',
+                'Fire Gem',
+                'Electric Gem',
+                'Psychic Gem',
+                'Dark Gem',
+                'Grass Gem',
+                'Poison Gem'
+            ],
             pokemon: [
                 { name: 'Blastoise', attacks: ['Angered Roar', 'Crunch'] },
-                { name: 'Poliwrath', attacks: ['Hydro Pump', 'Soaking Smash'] },
+                { name: 'Gyarados', attacks: ['Hydro Pump', 'Dragon Claw'] },
                 { name: 'Machamp', attacks: ['Mega Punch', 'Karate Smash'] },
                 { name: 'Gengar', attacks: ['Jumpscare', 'Ghastly Grip'] },
                 { name: 'Feraligatr', attacks: ['Murky Water', 'Waterfall'] },
@@ -31,7 +42,7 @@
             ]
         },
         HAND_SIZE: 6,
-        ITEM_CARDS_PER_MAIN_DECK: 4,
+        ITEM_CARDS_PER_MAIN_DECK: 10,
         KNOCKOUT_LIMIT: 4,
         MULTI_ATTACK_MAX_HITS: 6,
         MULTI_ATTACK_MIN_HITS: 2,
@@ -59,15 +70,15 @@
                 baseSpeed: 80
             },
             {
-                name: 'Poliwrath',
+                name: 'Gyarados',
                 type1: 'WATER',
-                type2: 'FIGHTING',
+                type2: 'DRAGON',
                 type3: 'NONE',
-                id: '0041',
-                baseHealth: 90,
-                baseAttack: 90,
-                baseDefense: 90,
-                baseSpeed: 70
+                id: '0130',
+                baseHealth: 95,
+                baseAttack: 125,
+                baseDefense: 85,
+                baseSpeed: 80
             },
             {
                 name: 'Machamp',
@@ -146,14 +157,14 @@
                 full_type_requirements: false
             },
             {
-                name: 'Soaking Smash',
-                type1: 'WATER',
-                type2: 'FIGHTING',
-                basePower: 85,
-                status: 'HEAL_STATUS',
-                statChanges: ['DEFENSE_DOWN'],
+                name: 'Dragon Claw',
+                type1: 'DRAGON',
+                type2: 'NONE',
+                basePower: 65,
+                status: 'NONE',
+                statChanges: [],
                 target: 'OPPONENT',
-                full_type_requirements: true
+                full_type_requirements: false
             },
             {
                 name: 'Mega Punch',
@@ -254,6 +265,42 @@
                 target: 'ALLY',
                 status: [],
                 statChanges: ['SPEED_UP']
+            },
+            {
+                name: 'Fire Gem',
+                target: 'SIDE',
+                status: ['DRAGON_GEM', 'BURN'],
+                statChanges: []
+            },
+            {
+                name: 'Electric Gem',
+                target: 'SIDE',
+                status: ['DRAGON_GEM', 'PARALYSIS'],
+                statChanges: []
+            },
+            {
+                name: 'Psychic Gem',
+                target: 'SIDE',
+                status: ['DRAGON_GEM', 'CONFUSION'],
+                statChanges: []
+            },
+            {
+                name: 'Dark Gem',
+                target: 'SIDE',
+                status: ['DRAGON_GEM', 'FLINCH'],
+                statChanges: []
+            },
+            {
+                name: 'Grass Gem',
+                target: 'SIDE',
+                status: ['DRAGON_GEM', 'SLEEP'],
+                statChanges: []
+            },
+            {
+                name: 'Poison Gem',
+                target: 'SIDE',
+                status: ['DRAGON_GEM', 'POISON'],
+                statChanges: []
             }
         ]
     });

@@ -54,5 +54,59 @@
       "BURN"
     ],
     "statChanges": []
+  },
+  {
+    "name": "Fire Gem",
+    "target": "SIDE",
+    "status": [
+      "DRAGON_GEM",
+      "BURN"
+    ],
+    "statChanges": []
+  },
+  {
+    "name": "Electric Gem",
+    "target": "SIDE",
+    "status": [
+      "DRAGON_GEM",
+      "PARALYSIS"
+    ],
+    "statChanges": []
+  },
+  {
+    "name": "Psychic Gem",
+    "target": "SIDE",
+    "status": [
+      "DRAGON_GEM",
+      "CONFUSION"
+    ],
+    "statChanges": []
+  },
+  {
+    "name": "Dark Gem",
+    "target": "SIDE",
+    "status": [
+      "DRAGON_GEM",
+      "FLINCH"
+    ],
+    "statChanges": []
+  },
+  {
+    "name": "Grass Gem",
+    "target": "SIDE",
+    "status": [
+      "DRAGON_GEM",
+      "SLEEP"
+    ],
+    "statChanges": []
+  },
+  {
+    "name": "Poison Gem",
+    "target": "SIDE",
+    "status": [
+      "DRAGON_GEM",
+      "POISON"
+    ],
+    "statChanges": []
   }
 ]

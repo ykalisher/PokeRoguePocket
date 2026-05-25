@@ -7,6 +7,7 @@ const JSON_FILE = 'items.json';
 const Status = Object.freeze({
     BURN: 'BURN',
     CONFUSION: 'CONFUSION',
+    DRAGON_GEM: 'DRAGON_GEM',
     FATIGUE: 'FATIGUE',
     FLINCH: 'FLINCH',
     FULL_HEAL: 'FULL_HEAL',
@@ -34,6 +35,7 @@ const StatChange = Object.freeze({
 
 const Target = Object.freeze({
     SELF: 'SELF',
+    SIDE: 'SIDE',
     ALLY: 'ALLY',
     ALL_ALLIES: 'ALL_ALLIES',
     OPPONENT: 'OPPONENT',

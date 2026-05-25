@@ -58,14 +58,14 @@ When a Switch effect is played on a Pokemon:
 ## Main Deck Construction
 
 Each Pokemon in a battle deck has two selected attacks it can learn. The main
-deck gets two copies of each selected attack, plus up to four item cards.
+deck gets two copies of each selected attack, plus up to ten item cards.
 
 The current fallback/default arena deck uses these Pokemon and attacks:
 
 | Pokemon | Attacks |
 | --- | --- |
 | Blastoise | Angered Roar, Crunch |
-| Poliwrath | Hydro Pump, Soaking Smash |
+| Gyarados | Hydro Pump, Dragon Claw |
 | Machamp | Mega Punch, Karate Smash |
 | Gengar | Jumpscare, Ghastly Grip |
 | Feraligatr | Murky Water, Waterfall |
@@ -77,6 +77,12 @@ Default items:
 - Withdraw Wand
 - Withdraw Wand
 - Salac Berry
+- Fire Gem
+- Electric Gem
+- Psychic Gem
+- Dark Gem
+- Grass Gem
+- Poison Gem
 
 ## Player Discarding
 
@@ -86,6 +92,14 @@ discard pile.
 
 Attacking and item usage otherwise work through the same targeting and
 resolution flow as before.
+
+## Dragon Gems
+
+Dragon Gem item cards are played to a player's side instead of targeting a
+Pokemon. A side can have one active Dragon Gem at a time. The active gem lasts
+until the battle ends or another Dragon Gem replaces it, and that player's
+damaging Dragon attacks can apply the active gem's paired status using the
+normal status activation chance.
 
 ## Rival AI Discarding
 

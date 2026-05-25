@@ -13,8 +13,9 @@
  *    cards into attack, item, and discard paths:
  *    - Attack cards select a valid allied Pokemon user, then select/drag to a
  *      legal target, then queue through queuePlayerAttack().
- *    - Item cards select/drag to a legal target and resolve immediately through
- *      usePendingItem() -> applyItemCard().
+ *    - Dragon Gem items resolve as side effects immediately; other item cards
+ *      select/drag to a legal target and resolve through usePendingItem() ->
+ *      applyItemCard().
  *    - Unused hand cards can be discarded by button or by dragging to discard.
  * 5. endPlayerTurn() locks input, asks the opponent to act with runOpponentTurn(),
  *    then resolves all queued attacks with resolveQueuedAttacks().
@@ -353,6 +354,20 @@
             return;
         }
 
+        if (model.isDragonGemItemCard(itemCard)) {
+            if (!canUseDragonGemItem('player', itemCard)) {
+                const effect = model.getDragonGemEffectForItem(itemCard);
+
+                showPopup(effect ? `${effect.label} is already active.` : `${model.getCardName(itemCard)} cannot be used.`);
+                state.selectedCardId = cardId;
+                render();
+                return;
+            }
+
+            useDragonGemItemFromHand('player', cardId);
+            return;
+        }
+
         const targets = model.getTargetOptionsForAction(itemCard, 'player', null);
 
         if (targets.length === 0) {
@@ -531,6 +546,55 @@
         player.discard.unshift(itemCard);
         state.isResolving = false;
         render();
+    }
+
+    async function useDragonGemItemFromHand(ownerId, cardId) {
+        const owner = state.players[ownerId];
+
+        if (!owner) return false;
+
+        const itemCard = model.findHandCard(owner, cardId);
+
+        if (!model.isDragonGemItemCard(itemCard) || !canUseDragonGemItem(ownerId, itemCard)) return false;
+
+        const sourceCenter = getHandCardCenter(ownerId, cardId);
+        const removedCard = model.removeCardFromHand(owner, cardId);
+
+        if (!removedCard) return false;
+
+        removedCard.faceUp = true;
+        state.itemUsed[ownerId] = true;
+
+        if (ownerId === 'player') {
+            clearPendingAction();
+            state.phase = 'turn';
+            state.isResolving = true;
+        }
+
+        render();
+
+        const impactCenter = await animateDragonGemCard(removedCard, sourceCenter, ownerId);
+
+        applyDragonGemItemEffect(removedCard, ownerId);
+        render();
+        await model.sleep(180);
+
+        await animateDiscardCard(ownerId, removedCard, impactCenter || sourceCenter);
+
+        owner.discard.unshift(removedCard);
+
+        if (ownerId === 'player') {
+            state.isResolving = false;
+        }
+
+        render();
+        return true;
+    }
+
+    function canUseDragonGemItem(ownerId, itemCard) {
+        const effect = model.getDragonGemEffectForItem(itemCard);
+
+        return Boolean(effect);
     }
 
     function discardSelectedPlayerCard() {
@@ -763,6 +827,10 @@
         }
 
         if (model.isItemCard(card) && !state.itemUsed.player) {
+            if (model.isDragonGemItemCard(card) && boardOwner === 'player' && canUseDragonGemItem('player', card)) {
+                return { kind: 'dragon-gem' };
+            }
+
             const options = model.getTargetOptionsForAction(card, 'player', null);
 
             if (model.targetOptionsIncludeCard(options, boardOwner, boardCardId)) {
@@ -799,6 +867,12 @@
         }
 
         if (!model.isItemCard(card) || state.itemUsed.player) return null;
+
+        if (model.isDragonGemItemCard(card)) {
+            return groupOwner === 'player' && canUseDragonGemItem('player', card)
+                ? { kind: 'dragon-gem' }
+                : null;
+        }
 
         const options = model.getTargetOptionsForAction(card, 'player', null);
 
@@ -890,6 +964,11 @@
 
             beginItemTargeting(cardId);
             chooseTargetGroup(candidate.owner);
+            return;
+        }
+
+        if (candidate.kind === 'dragon-gem') {
+            useDragonGemItemFromHand('player', cardId);
         }
     }
 
@@ -1016,13 +1095,21 @@
                 return;
             }
 
-            if (!hasPlayableItem && model.isItemCard(card) && model.getTargetOptionsForAction(card, playerId, null).length > 0) {
+            if (!hasPlayableItem && model.isItemCard(card) && canUseItemNextTurn(playerId, card)) {
                 hasPlayableItem = true;
                 playableCards.push(card);
             }
         });
 
         return playableCards.slice(0, 3);
+    }
+
+    function canUseItemNextTurn(playerId, itemCard) {
+        if (model.isDragonGemItemCard(itemCard)) {
+            return canUseDragonGemItem(playerId, itemCard);
+        }
+
+        return model.getTargetOptionsForAction(itemCard, playerId, null).length > 0;
     }
 
     /**
@@ -1036,6 +1123,10 @@
         const itemPlan = chooseOpponentItem();
 
         if (!itemPlan) return false;
+
+        if (itemPlan.dragonGem) {
+            return useDragonGemItemFromHand('opponent', itemPlan.card.id);
+        }
 
         const sourceCenter = getHandCardCenter('opponent', itemPlan.card.id);
         const targets = model.getCardsForTargetSelection(itemPlan.selection);
@@ -1069,6 +1160,11 @@
         const opponent = state.players.opponent;
 
         for (const itemCard of opponent.hand.filter(model.isItemCard)) {
+            if (model.isDragonGemItemCard(itemCard)) {
+                if (canUseDragonGemItem('opponent', itemCard)) return { card: itemCard, dragonGem: true, selection: null };
+                continue;
+            }
+
             const selection = chooseOpponentItemTarget(itemCard);
 
             if (selection) return { card: itemCard, selection };
@@ -1618,6 +1714,7 @@
         const statChanges = model.getActionStatChanges(action.card);
         const isDamaging = isDamagingAttack(action.card);
         const isMultiAttack = statuses.includes('MULTI_ATTACK');
+        const dragonGemStatuses = getDragonGemStatusesForAttack(action.owner, action.card, isDamaging);
         let handledEffect = false;
 
         showPopup(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}.`);
@@ -1656,7 +1753,7 @@
                 isDamaging,
                 isMultiAttack ? MULTI_ATTACK_STAT_CHANGE_TRIGGER_CHANCE : STAT_CHANGE_TRIGGER_CHANCE
             ) || handledEffect;
-            handledEffect = maybeApplyAttackStatuses(action.card, targets, isDamaging) || handledEffect;
+            handledEffect = maybeApplyAttackStatuses(action.card, targets, isDamaging, dragonGemStatuses) || handledEffect;
         }
 
         if (!handledEffect && statChanges.length === 0) {
@@ -1759,12 +1856,51 @@
         return targetCenter;
     }
 
+    async function animateDragonGemCard(itemCard, sourceCenter, ownerId) {
+        if (!sourceCenter) {
+            await model.sleep(280);
+            return null;
+        }
+
+        const ghost = createCardAnimationElement(itemCard, 'attack-animation-card item-animation-card', true);
+
+        if (!ghost) {
+            await model.sleep(280);
+            return null;
+        }
+
+        document.body.appendChild(ghost);
+
+        const middleCenter = getArenaCenter();
+        const targetCenter = getDragonGemAnchorCenter(ownerId) || middleCenter;
+
+        placeAnimationElement(ghost, sourceCenter);
+        ghost.classList.add('is-attack-windup');
+
+        await model.sleep(40);
+        ghost.classList.add('is-attack-moving');
+        placeAnimationElement(ghost, middleCenter);
+
+        await model.sleep(300);
+        ghost.classList.add('is-attack-impact');
+        placeAnimationElement(ghost, targetCenter);
+
+        await model.sleep(360);
+        ghost.remove();
+
+        return targetCenter;
+    }
+
     /**
      * Applies an item's actual effects after the player/opponent item animation.
      * Items share the same healing, status, stat, switch, and targeting helpers
      * as attacks, but they are never placed in the queued attack resolver.
      */
     async function applyItemCard(itemCard, selection, actorId) {
+        if (model.isDragonGemItemCard(itemCard)) {
+            return applyDragonGemItemEffect(itemCard, actorId);
+        }
+
         const targets = model.getCardsForTargetSelection(selection);
         const statuses = model.getActionStatuses(itemCard);
         const statChanges = model.getActionStatChanges(itemCard);
@@ -1798,6 +1934,27 @@
             ? `${model.getCardName(itemCard)} took effect.`
             : `${model.getCardName(itemCard)} had no immediate effect.`
         );
+    }
+
+    function applyDragonGemItemEffect(itemCard, actorId) {
+        const result = model.addDragonGemEffect(actorId, itemCard);
+        const actor = state.players[actorId];
+
+        if (!result.effect || !actor) {
+            logEvent(`${model.getCardName(itemCard)} had no immediate effect.`);
+            showPopup(`${model.getCardName(itemCard)} had no immediate effect.`);
+            return false;
+        }
+
+        logEvent(`${actor.name} used ${result.effect.label}.`);
+
+        if (result.replaced) {
+            logEvent(`${result.effect.label} replaced ${result.replacedEffect.label}.`);
+        }
+
+        logEvent(`${actor.name}'s Dragon attacks can now apply ${result.effect.statusLabel}.`);
+        showPopup(`${result.effect.label}: Dragon attacks may apply ${result.effect.statusLabel}.`);
+        return true;
     }
 
     /**
@@ -2036,8 +2193,8 @@
      * Applies persistent battle statuses from an attack. Damaging attacks roll
      * the global status trigger chance; non-damaging attacks always apply.
      */
-    function maybeApplyAttackStatuses(actionCard, targets, isDamaging) {
-        const statuses = getBattleStatuses(actionCard);
+    function maybeApplyAttackStatuses(actionCard, targets, isDamaging, extraStatuses = []) {
+        const statuses = getBattleStatuses(actionCard, extraStatuses);
 
         if (statuses.length === 0) return false;
 
@@ -2049,8 +2206,26 @@
         return applyStatusesToTargets(statuses, targets);
     }
 
-    function getBattleStatuses(actionCard) {
-        return model.getActionStatuses(actionCard).filter(model.isBattleStatus);
+    function getDragonGemStatusesForAttack(ownerId, actionCard, isDamaging) {
+        if (!isDamaging || !model.isAttackCard(actionCard) || !model.getCardTypes(actionCard).includes('DRAGON')) {
+            return [];
+        }
+
+        return model.getDragonGemEffects(ownerId)
+            .map(effect => effect.status)
+            .filter(model.isBattleStatus);
+    }
+
+    function getBattleStatuses(actionCard, extraStatuses = []) {
+        const seen = new Set();
+
+        return [...model.getActionStatuses(actionCard), ...extraStatuses]
+            .filter(status => {
+                if (!model.isBattleStatus(status) || seen.has(status)) return false;
+
+                seen.add(status);
+                return true;
+            });
     }
 
     /**
@@ -2679,6 +2854,24 @@
 
     function getPileCardElement(ownerId, pileType) {
         return document.querySelector(`.side-panel--${ownerId} .pile--${pileType} .pile-card`);
+    }
+
+    function getDragonGemAnchorCenter(ownerId) {
+        const trayElement = document.querySelector(`.side-panel--${ownerId} .dragon-gem-tray`);
+
+        if (trayElement) return getElementCenter(trayElement);
+
+        const rowElement = document.querySelector(`.side-panel--${ownerId} .battle-row`);
+
+        if (!rowElement) return null;
+
+        const rect = rowElement.getBoundingClientRect();
+        const x = rect.left + 20;
+        const y = ownerId === 'opponent'
+            ? rect.bottom - 20
+            : rect.top + 20;
+
+        return { x, y };
     }
 
     function getElementCenter(element) {

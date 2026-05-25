@@ -20,7 +20,7 @@
     } = arena.Constants;
 
     const BATTLE_STORAGE_KEY = 'card-arena-current-battle';
-    const BATTLE_STORAGE_VERSION = 2;
+    const BATTLE_STORAGE_VERSION = 3;
     const STAT_STAGE_MIN = -6;
     const STAT_STAGE_MAX = 6;
     const STAT_STAGE_MULTIPLIERS = Object.freeze({
@@ -57,6 +57,7 @@
     const STATUS_DEFINITIONS = Object.freeze({
         BURN: { iconPath: 'assets/status-icons/BURN.svg', label: 'Burn', showsToken: true, statMultipliers: { attack: 0.5 } },
         CONFUSION: { iconPath: 'assets/status-icons/CONFUSION.svg', label: 'Confusion', showsToken: true },
+        DRAGON_GEM: { iconPath: 'assets/status-icons/DRAGON_GEM.svg', label: 'Dragon Gem', showsToken: false },
         FATIGUE: {
             durationTurns: 3,
             iconPath: 'assets/status-icons/FATIGUE.png',
@@ -76,6 +77,14 @@
         SELF_INFLICT: { iconPath: 'assets/status-icons/SELF_INFLICT.png', label: 'Self-Inflict', showsToken: false },
         SLEEP: { iconPath: 'assets/status-icons/SLEEP.svg', initialState: () => ({ lastWakeAttemptTurn: null, wakeAttempts: 0 }), label: 'Sleep', showsToken: true },
         SWITCH: { iconPath: 'assets/status-icons/SWITCH.png', label: 'Switch', showsToken: false }
+    });
+    const DRAGON_GEM_EFFECTS_BY_STATUS = Object.freeze({
+        BURN: { iconPath: 'assets/items/FIRE_GEM.png', itemName: 'Fire Gem' },
+        CONFUSION: { iconPath: 'assets/items/PSYCHIC_GEM.png', itemName: 'Psychic Gem' },
+        FLINCH: { iconPath: 'assets/items/DARK_GEM.png', itemName: 'Dark Gem' },
+        PARALYSIS: { iconPath: 'assets/items/ELECTRIC_GEM.png', itemName: 'Electric Gem' },
+        POISON: { iconPath: 'assets/items/POISON_GEM.png', itemName: 'Poison Gem' },
+        SLEEP: { iconPath: 'assets/items/GRASS_GEM.png', itemName: 'Grass Gem' }
     });
 
     const state = {
@@ -112,6 +121,7 @@
             board: Array.from({ length: BOARD_SLOT_COUNT }, () => null),
             deck: decks.mainDeck,
             discard: [],
+            dragonGems: [],
             hand: [],
             handSize: HAND_SIZE,
             id,
@@ -306,6 +316,7 @@
             board: normalizedBoard,
             deck,
             discard,
+            dragonGems: normalizeDragonGemEffects(normalizedPlayer.dragonGems),
             hand,
             handSize: Number.isFinite(normalizedPlayer.handSize) ? normalizedPlayer.handSize : HAND_SIZE,
             id,
@@ -714,6 +725,100 @@
 
         return (Array.isArray(statuses) ? statuses : [statuses])
             .filter(status => status && status !== 'NONE');
+    }
+
+    function isDragonGemItemCard(card) {
+        return Boolean(getDragonGemEffectForItem(card));
+    }
+
+    function getDragonGemEffectForItem(card) {
+        if (!isItemCard(card)) return null;
+
+        const statuses = getActionStatuses(card);
+
+        if (!statuses.includes('DRAGON_GEM')) return null;
+
+        const effectStatus = statuses.find(status => status !== 'DRAGON_GEM' && isDragonGemEffectStatus(status));
+
+        if (!effectStatus) return null;
+
+        return createDragonGemEffect(effectStatus, card.item);
+    }
+
+    function addDragonGemEffect(playerId, itemCard) {
+        const player = state.players[playerId];
+        const effect = getDragonGemEffectForItem(itemCard);
+
+        if (!player || !effect) {
+            return { effect: null, replaced: false, replacedEffect: null };
+        }
+
+        const dragonGems = ensurePlayerDragonGems(player);
+        const replacedEffect = dragonGems[0] || null;
+
+        player.dragonGems = [effect];
+
+        return {
+            effect,
+            replaced: Boolean(replacedEffect && replacedEffect.status !== effect.status),
+            replacedEffect
+        };
+    }
+
+    function getDragonGemEffects(playerId) {
+        const player = state.players[playerId];
+
+        return player ? ensurePlayerDragonGems(player).slice() : [];
+    }
+
+    function ensurePlayerDragonGems(player) {
+        if (!player) return [];
+
+        player.dragonGems = normalizeDragonGemEffects(player.dragonGems);
+
+        return player.dragonGems;
+    }
+
+    function normalizeDragonGemEffects(effects) {
+        if (!Array.isArray(effects)) return [];
+
+        let normalizedEffect = null;
+
+        effects.forEach(effect => {
+            const status = normalizeStatus(effect);
+
+            if (!isDragonGemEffectStatus(status)) return;
+
+            const source = effect && typeof effect === 'object'
+                ? { imagePath: effect.iconPath, name: effect.itemName || effect.label }
+                : {};
+            const nextEffect = createDragonGemEffect(status, source);
+
+            if (nextEffect) normalizedEffect = nextEffect;
+        });
+
+        return normalizedEffect ? [normalizedEffect] : [];
+    }
+
+    function createDragonGemEffect(status, item = {}) {
+        const normalizedStatus = normalizeStatus(status);
+        const definition = DRAGON_GEM_EFFECTS_BY_STATUS[normalizedStatus];
+
+        if (!definition) return null;
+
+        const itemName = item.name || definition.itemName;
+
+        return {
+            iconPath: item.imagePath || definition.iconPath,
+            itemName,
+            label: itemName,
+            status: normalizedStatus,
+            statusLabel: formatStatusName(normalizedStatus)
+        };
+    }
+
+    function isDragonGemEffectStatus(status) {
+        return Boolean(DRAGON_GEM_EFFECTS_BY_STATUS[status] && isBattleStatus(status));
     }
 
     /**
@@ -1373,6 +1478,7 @@
         drawPokemonToBoard,
         findHandCard,
         applyStatChange,
+        addDragonGemEffect,
         formatStatusName,
         formatStatStage,
         getActionStatuses,
@@ -1384,6 +1490,8 @@
         getCardName,
         getCardTypes,
         getCardsForTargetSelection,
+        getDragonGemEffectForItem,
+        getDragonGemEffects,
         getHealthPercent,
         getPokemonEffectiveStat,
         getPokemonStatMultiplier,
@@ -1406,6 +1514,7 @@
         hasUsableAttackInHand,
         isAttackCard,
         isBattleStatus,
+        isDragonGemItemCard,
         isItemCard,
         isPokemonCard,
         playOpeningPokemon,

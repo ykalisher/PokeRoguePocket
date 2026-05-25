@@ -48,6 +48,7 @@
         { type: 'HUMAN', text: 'Doubles the net stat-stage delta received from each action.' },
         { type: 'ICE', text: 'ICE attacks calculate damage from base Attack and base Defense only, ignoring stat stages and status multipliers.' },
         { type: 'STEEL', text: 'STEEL attacks use the attacker\'s Defense instead of Attack as the damage stat.' },
+        { type: 'DRAGON', text: 'A played Dragon Gem marks that side. Its damaging DRAGON attacks can apply the active gem\'s paired status using the normal status chance. Playing another Dragon Gem replaces the current one.' },
         { type: 'FOSSIL', text: 'A Fossil already in the knockout pile can revive once at end of turn after another allied Pokemon is knocked out, returning with 60% max HP and Fatigue instead of drawing a replacement.' }
     ]);
     const PERSISTENT_STATUS_REFERENCE = Object.freeze([
@@ -66,6 +67,7 @@
         { status: 'HEAL_BURN', text: 'Clears Burn only.' },
         { status: 'HEAL_STATUS', text: 'Clears the target\'s persistent status.' },
         { status: 'MULTI_ATTACK', text: 'Damaging attack hits 2-6 times. Its stat-change effect uses a 20% activation chance.' },
+        { status: 'DRAGON_GEM', text: 'Adds or replaces a side marker. Damaging DRAGON attacks from that side can apply this gem\'s paired status.' },
         { status: 'SELF_INFLICT', text: 'Stat changes apply to the attacking Pokemon instead of the selected targets.' },
         { status: 'SWITCH', text: 'Removes the target from the board, clears stat stages, puts it on the bottom of its Pokemon deck, and draws a replacement.' }
     ]);
@@ -121,6 +123,7 @@
                 </header>
                 ${handFirst}
                 <div class="battle-row">
+                    ${renderDragonGemTray(player)}
                     ${renderPile('Pkmn', player.pokemonDeck.length, 'pokemon-deck', player.id)}
                     ${renderPile('Main', player.deck.length, 'deck', player.id)}
                     ${renderPlayedSlots(player)}
@@ -129,6 +132,22 @@
                 </div>
                 ${handLast}
             </section>
+        `;
+    }
+
+    function renderDragonGemTray(player) {
+        const effects = arena.Model.getDragonGemEffects(player.id);
+
+        if (effects.length === 0) return '';
+
+        return `
+            <div class="dragon-gem-tray dragon-gem-tray--${player.id}" aria-label="${player.name} Dragon Gems">
+                ${effects.map(effect => `
+                    <span class="dragon-gem-token" title="${effect.label}: Dragon attacks may apply ${effect.statusLabel}">
+                        <img src="${effect.iconPath}" alt="${effect.label}">
+                    </span>
+                `).join('')}
+            </div>
         `;
     }
 
@@ -876,7 +895,8 @@
             ALL_OPPONENTS: 'All Opponents',
             ALLY: 'One Ally',
             OPPONENT: 'One Opponent',
-            SELF: 'Self'
+            SELF: 'Self',
+            SIDE: 'Your Side'
         };
 
         return labels[target] || 'No target';
