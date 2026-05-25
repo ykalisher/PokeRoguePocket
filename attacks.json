@@ -518,7 +518,7 @@
     "basePower": 65,
     "status": "BURN",
     "statChanges": [],
-    "target": "OPPONENT",
+    "target": "ALL_OPPONENTS",
     "full_type_requirements": true
   },
   {
@@ -1061,6 +1061,170 @@
     "status": "NONE",
     "statChanges": [],
     "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Swords Dance",
+    "type1": "STEEL",
+    "type2": "FIGHTING",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "ATTACK_UP",
+      "ATTACK_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Inspiring Noise",
+    "type1": "NORMAL",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "ATTACK_UP",
+      "ATTACK_UP",
+      "DEFENSE_UP",
+      "DEFENSE_UP"
+    ],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Surf",
+    "type1": "WATER",
+    "type2": "NONE",
+    "basePower": 60,
+    "status": "HEAL_BURN",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Rock Polish",
+    "type1": "ROCK",
+    "type2": "STEEL",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "SPEED_DOWN",
+      "SPEED_DOWN"
+    ],
+    "target": "SELF",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Ancient Energy",
+    "type1": "FOSSIL",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "HEAL",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP",
+      "SPEED_DOWN"
+    ],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Ancient Force",
+    "type1": "FOSSIL",
+    "type2": "LEGENDARY",
+    "basePower": 75,
+    "status": "SELF_INFLICT",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Muddy Water",
+    "type1": "WATER",
+    "type2": "GROUND",
+    "basePower": 70,
+    "status": "POISON",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Sacred Sword",
+    "type1": "FIGHTING",
+    "type2": "LEGENDARY",
+    "basePower": 95,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Vine Whip",
+    "type1": "GRASS",
+    "type2": "FIGHTING",
+    "basePower": 80,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Raging River",
+    "type1": "WATER",
+    "type2": "MONSTER",
+    "basePower": 55,
+    "status": "FLINCH",
+    "statChanges": [
+      "DEFENSE_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Dazzling Aura",
+    "type1": "FAIRY",
+    "type2": "LEGENDARY",
+    "basePower": 0,
+    "status": "FULL_HEAL",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP",
+      "SPEED_UP"
+    ],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Dreadful Atmosphere",
+    "type1": "DARK",
+    "type2": "LEGENDARY",
+    "basePower": 80,
+    "status": "FLINCH",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Ice Hammer",
+    "type1": "ICE",
+    "type2": "FIGHTING",
+    "basePower": 80,
+    "status": "FLINCH",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Sludge Strike",
+    "type1": "POISON",
+    "type2": "NONE",
+    "basePower": 70,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
     "full_type_requirements": false
   }
 ]

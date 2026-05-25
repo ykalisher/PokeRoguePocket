@@ -39,7 +39,6 @@
       "DEFENSE_UP"
     ]
   },
-  
   {
     "name": "Salac Berry",
     "target": "ALLY",
@@ -47,5 +46,13 @@
     "statChanges": [
       "SPEED_UP"
     ]
+  },
+  {
+    "name": "Flame Orb",
+    "target": "ALLY",
+    "status": [
+      "BURN"
+    ],
+    "statChanges": []
   }
 ]
