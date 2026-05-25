@@ -1,5 +1,5 @@
 /**
- * Squish - pointer drag/drop behavior for player hand cards
+ * Pokemon Rogue Pocket - pointer drag/drop behavior for player hand cards
  *
  * Drag flow: game.js sends pointerdown/move/up/cancel here. This module creates
  * temporary drag state and visual affordances only; Controller owns every rule
@@ -156,24 +156,13 @@
 
     /**
      * Converts the element under the pointer into a semantic drop candidate by
-     * asking Controller whether slots, board cards, or target groups are legal.
+     * asking Controller whether board cards, target groups, or discard are legal.
      */
     function getDropCandidate(clientX, clientY) {
         const drag = state.drag;
         const element = document.elementFromPoint(clientX, clientY);
 
         if (!drag || !element) return null;
-
-        const slotElement = element.closest('[data-slot-owner]');
-
-        if (slotElement) {
-            const slotIndex = Number(slotElement.dataset.slotIndex);
-            const slotOwner = slotElement.dataset.slotOwner;
-
-            if (arena.Controller.canDropCardOnSlot(drag.cardId, slotOwner, slotIndex)) {
-                return { element: slotElement, kind: 'slot', slotIndex };
-            }
-        }
 
         const pileElement = element.closest('[data-pile-type="discard"]');
 
@@ -208,7 +197,7 @@
 
     /**
      * Clears drag UI and forwards the resolved candidate to the controller so it
-     * can place Pokemon, choose attack users, target actions, or use items.
+     * can discard cards, choose attack users, target actions, or use items.
      */
     function finishDrag(candidate) {
         const draggedCardId = state.drag.cardId;

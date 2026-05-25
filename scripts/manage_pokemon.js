@@ -1,37 +1,9 @@
 const fs = require('fs');
 const readline = require('readline/promises');
 const { stdin: input, stdout: output } = require('process');
+const { PokeType } = require('./data_options');
 
 const JSON_FILE = 'pokemon.json';
-
-const PokeType = Object.freeze({
-    ARTIFICIAL: 'ARTIFICIAL',
-    BABY: 'BABY',
-    BUG: 'BUG',
-    DARK: 'DARK',
-    DRAGON: 'DRAGON',
-    ELECTRIC: 'ELECTRIC',
-    FAIRY: 'FAIRY',
-    FIGHTING: 'FIGHTING',
-    FIRE: 'FIRE',
-    FLYING: 'FLYING',
-    FOSSIL: 'FOSSIL',
-    GHOST: 'GHOST',
-    GOURMET: 'GOURMET',
-    GRASS: 'GRASS',
-    GROUND: 'GROUND',
-    HUMAN: 'HUMAN',
-    ICE: 'ICE',
-    LEGENDARY: 'LEGENDARY',
-    MONSTER: 'MONSTER',
-    NORMAL: 'NORMAL',
-    POISON: 'POISON',
-    PSYCHIC: 'PSYCHIC',
-    ROCK: 'ROCK',
-    STEEL: 'STEEL',
-    WATER: 'WATER',
-    NONE: 'NONE'
-});
 
 async function main() {
     const rl = readline.createInterface({ input, output });

@@ -1,5 +1,5 @@
 /**
- * Squish - card arena rendering
+ * Pokemon Rogue Pocket - card arena rendering
  *
  * Render flow: controller mutates arena.state, then calls arena.Render.render()
  * through its render/save wrapper. This module redraws the board from state and
@@ -332,9 +332,9 @@
     function renderCardContent(card, reveal, options = {}) {
         if (!reveal) {
             return `
-                <div class="card-topline">Squish</div>
+                <div class="card-topline">Rogue</div>
                 <div class="card-body">?</div>
-                <div class="card-footer">Back</div>
+                <div class="card-footer">Pocket</div>
             `;
         }
 
@@ -413,7 +413,8 @@
     }
 
     /**
-     * Renders one effective stat cell with its current stage indicator.
+     * Renders one effective stat cell. Positive/negative stages are shown by
+     * color only so compact cards do not need extra +/- text.
      */
     function renderStatCell(card, stat) {
         const labels = {
@@ -427,11 +428,7 @@
             : stage < 0
                 ? ' stat-cell--down'
                 : '';
-        const stageLabel = stage === 0
-            ? ''
-            : `<small class="${stage > 0 ? 'stage-up' : 'stage-down'}">${arena.Model.formatStatStage(stage)}</small>`;
-
-        return `<span class="stat-cell${stageClass}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}${stageLabel ? ` ${stageLabel}` : ''}</span>`;
+        return `<span class="stat-cell${stageClass}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}</span>`;
     }
 
     /**
@@ -600,17 +597,6 @@
 
     function formatStageWord(count) {
         return count === 1 ? 'stage' : 'stages';
-    }
-
-    function formatActionNote(card) {
-        const notes = [];
-        const effects = formatEffects(card);
-
-        if (effects !== 'No effect') {
-            notes.push(effects);
-        }
-
-        return notes.length > 0 ? notes.join(' | ') : 'No effect';
     }
 
     /**
@@ -916,39 +902,6 @@
             .toUpperCase()
             .replace(/[^A-Z0-9]+/g, '_')
             .replace(/^_+|_+$/g, '');
-    }
-
-    function formatStatuses(statuses) {
-        if (!statuses.length) return 'No effect';
-
-        return statuses
-            .map(arena.Model.formatStatusName)
-            .join(', ');
-    }
-
-    function formatEffects(card) {
-        const parts = [];
-        const statuses = formatStatuses(arena.Model.getActionStatuses(card));
-        const statChanges = formatStatChanges(arena.Model.getActionStatChanges(card));
-
-        if (statuses !== 'No effect') parts.push(statuses);
-        if (statChanges !== 'No effect') parts.push(statChanges);
-
-        return parts.length > 0 ? parts.join(', ') : 'No effect';
-    }
-
-    function formatStatChanges(statChanges) {
-        const labels = {
-            ATTACK_DOWN: 'ATK -1',
-            ATTACK_UP: 'ATK +1',
-            DEFENSE_DOWN: 'DEF -1',
-            DEFENSE_UP: 'DEF +1',
-            SPEED_DOWN: 'SPD -1',
-            SPEED_UP: 'SPD +1'
-        };
-        const formatted = statChanges.map(statChange => labels[statChange]).filter(Boolean);
-
-        return formatted.length > 0 ? formatted.join(', ') : 'No effect';
     }
 
     arena.Render = {

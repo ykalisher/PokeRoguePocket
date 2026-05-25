@@ -1,5 +1,5 @@
 /**
- * Squish - state and model helpers for the card arena prototype
+ * Pokemon Rogue Pocket - state and model helpers for the card arena prototype
  *
  * Model responsibilities: own the shared arena.state object, create decks and
  * cards from arena.GameData, persist/restore safe battle states, normalize card
@@ -210,10 +210,6 @@
             console.warn('Could not clear battle state.', error);
             return false;
         }
-    }
-
-    function hasSavedBattleState() {
-        return Boolean(loadSavedBattleState());
     }
 
     function loadSavedBattleState() {
@@ -1280,10 +1276,6 @@
         return Boolean(card && card.kind === 'item');
     }
 
-    function hasOpponentBoardTarget() {
-        return state.players.opponent.board.some(Boolean);
-    }
-
     function getBoardCards(playerId) {
         return state.players[playerId].board.filter(isPokemonCard);
     }
@@ -1308,15 +1300,6 @@
         const card = player.board[slotIndex];
         player.board[slotIndex] = null;
         return card;
-    }
-
-    /**
-     * Places a card face down into the main deck and shuffles it. Kept for
-     * older deck effects that may still target the main deck.
-     */
-    function shuffleCardIntoDeck(player, card) {
-        card.faceUp = false;
-        player.deck = shuffle([...player.deck, card]);
     }
 
     function hasQueuedAttack(playerId, pokemonCardId) {
@@ -1513,9 +1496,7 @@
         getPortraitUrl,
         getStatusIconPath,
         getTargetOptionsForAction,
-        hasOpponentBoardTarget,
         hasPokemonStatus,
-        hasSavedBattleState,
         hasQueuedAttack,
         hasUsableAttackInHand,
         isAttackCard,
@@ -1534,7 +1515,6 @@
         restoreSavedBattleState,
         saveBattleState,
         shuffle,
-        shuffleCardIntoDeck,
         targetOptionsIncludeCard,
         targetOptionsIncludeGroup,
         updatePokemonLeft,

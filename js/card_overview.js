@@ -1,5 +1,5 @@
 /**
- * Squish - card overview page
+ * Pokemon Rogue Pocket - card overview page
  */
 
 (function bootCardOverview(arena) {

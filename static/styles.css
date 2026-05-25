@@ -569,6 +569,7 @@ button.playing-card:focus-visible {
 
     width: var(--hand-card-w);
     height: var(--hand-card-h);
+    padding: 3px;
     touch-action: none;
 }
 
@@ -579,7 +580,6 @@ button.playing-card:focus-visible {
 
 /* Shared fixed positioning for transient drag, animation, damage, and stat markers. */
 .drag-ghost,
-.opponent-ghost,
 .attack-animation-card,
 .draw-animation-card,
 .discard-animation-card,
@@ -626,23 +626,6 @@ button.playing-card:focus-visible {
     cursor: grabbing;
     animation: none;
     transform: rotate(2deg) scale(1.04);
-}
-
-/* Opponent placement/attack animation clone. */
-.opponent-ghost {
-    z-index: 1000;
-    transform: rotate(-2deg) scale(1.04);
-    transition: left 0.48s ease, top 0.48s ease, transform 0.48s ease, opacity 0.48s ease;
-}
-
-/* Opponent attack animation accent. */
-.opponent-attack {
-    box-shadow: 0 0 0 3px rgba(216, 95, 79, 0.58), 0 16px 28px rgba(0, 0, 0, 0.36);
-}
-
-/* Opponent Pokemon placement animation accent. */
-.opponent-place {
-    box-shadow: 0 0 0 3px rgba(224, 184, 79, 0.5), 0 16px 28px rgba(0, 0, 0, 0.34);
 }
 
 /* Attack and item animation clone moving from user/hand toward targets. */
@@ -828,8 +811,7 @@ button.playing-card:focus-visible {
 .card-topline,
 .card-footer,
 .action-card-name,
-.action-card-meta,
-.action-card-note {
+.action-card-meta {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -840,7 +822,7 @@ button.playing-card:focus-visible {
     min-width: 0;
     text-align: center;
     white-space: nowrap;
-    font-size: clamp(0.46rem, 0.66vw, 0.62rem);
+    font-size: 0.54rem;
     font-weight: 850;
     line-height: 1;
 }
@@ -858,8 +840,8 @@ button.playing-card:focus-visible {
 
 /* Shared type icon sizing used on cards, filters, and reference chips. */
 .type-icon {
-    width: clamp(10px, 1vw, 14px);
-    height: clamp(10px, 1vw, 14px);
+    width: clamp(10px, calc(var(--card-w) * 0.16), 18px);
+    height: clamp(10px, calc(var(--card-w) * 0.16), 18px);
     padding: 1px;
     border-radius: 999px;
     background-color: rgba(255, 255, 255, 0.72);
@@ -950,7 +932,7 @@ button.playing-card:focus-visible {
     gap: 3px;
     align-items: center;
     color: rgba(37, 27, 24, 0.7);
-    font-size: clamp(0.42rem, 0.58vw, 0.54rem);
+    font-size: 0.46rem;
     font-weight: 850;
 }
 
@@ -976,7 +958,7 @@ button.playing-card:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1px 2px;
     color: rgba(37, 27, 24, 0.74);
-    font-size: clamp(0.42rem, 0.62vw, 0.62rem);
+    font-size: 0.46rem;
     font-weight: 850;
     line-height: 1.05;
 }
@@ -1000,19 +982,12 @@ button.playing-card:focus-visible {
     color: #b04332;
 }
 
-/* Small stage suffix next to effective stats. */
-.stat-grid small {
-    margin-left: 2px;
-    font-size: 0.82em;
-    font-weight: 900;
-}
-
 /* Card back top/footer labels. */
 .card-topline,
 .card-footer {
     min-width: 0;
     white-space: nowrap;
-    font-size: clamp(0.58rem, 1vw, 0.74rem);
+    font-size: 0.62rem;
     font-weight: 800;
 }
 
@@ -1068,17 +1043,8 @@ button.playing-card:focus-visible {
     min-width: 0;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto auto;
-    gap: 3px;
+    gap: 2px;
     text-align: center;
-}
-
-/* Small action-card category label, kept for compatibility with older markup. */
-.action-card-kind {
-    color: rgba(37, 27, 24, 0.58);
-    font-size: clamp(0.42rem, 0.62vw, 0.58rem);
-    font-weight: 900;
-    letter-spacing: 0;
-    text-transform: uppercase;
 }
 
 /* Attack/item card name. */
@@ -1086,7 +1052,7 @@ button.playing-card:focus-visible {
     align-self: center;
     min-width: 0;
     color: rgba(37, 27, 24, 0.9);
-    font-size: clamp(0.58rem, 0.92vw, 0.78rem);
+    font-size: 0.48rem;
     font-weight: 900;
     line-height: 1.05;
 }
@@ -1116,8 +1082,8 @@ button.playing-card:focus-visible {
 
 /* Larger type icons for action cards. */
 .action-type-row .type-icon {
-    width: clamp(20px, 2vw, 28px);
-    height: clamp(20px, 2vw, 28px);
+    width: clamp(13px, calc(var(--card-w) * 0.3), 30px);
+    height: clamp(13px, calc(var(--card-w) * 0.3), 30px);
 }
 
 /* Visual marker for attacks that require all listed types. */
@@ -1126,7 +1092,7 @@ button.playing-card:focus-visible {
     align-self: center;
     justify-self: center;
     align-items: center;
-    padding: 3px 7px;
+    padding: 2px 4px;
     border: 1px solid rgba(52, 152, 219, 0.74);
     border-radius: 999px;
     background-color: rgba(52, 152, 219, 0.18);
@@ -1136,14 +1102,14 @@ button.playing-card:focus-visible {
 /* Placeholder for attacks with no listed type. */
 .action-type-row--empty {
     color: rgba(37, 27, 24, 0.48);
-    font-size: clamp(0.42rem, 0.62vw, 0.56rem);
+    font-size: 0.44rem;
     font-weight: 800;
 }
 
 /* Effect badge row for power, statuses, and stat changes on action cards. */
 .action-card-effects {
     min-width: 0;
-    min-height: clamp(14px, calc(var(--card-w) * 0.21), 22px);
+    min-height: clamp(12px, calc(var(--card-w) * 0.18), 20px);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1162,14 +1128,14 @@ button.playing-card:focus-visible {
     border-radius: 999px;
     background-color: rgba(255, 255, 255, 0.46);
     color: rgba(37, 27, 24, 0.78);
-    font-size: clamp(0.42rem, 0.6vw, 0.58rem);
+    font-size: 0.38rem;
     font-weight: 900;
     line-height: 1;
 }
 
 /* Base-power badge on attack cards. */
 .attack-power {
-    padding: 2px 4px;
+    padding: 1px 3px;
     white-space: nowrap;
 }
 
@@ -1186,8 +1152,8 @@ button.playing-card:focus-visible {
 
 /* Action-card status/effect token. */
 .action-status-token {
-    width: clamp(13px, calc(var(--card-w) * 0.2), 22px);
-    height: clamp(13px, calc(var(--card-w) * 0.2), 22px);
+    width: clamp(12px, calc(var(--card-w) * 0.18), 20px);
+    height: clamp(12px, calc(var(--card-w) * 0.18), 20px);
     display: inline-grid;
     flex: 0 0 auto;
     border: 1px solid rgba(37, 27, 24, 0.32);
@@ -1198,14 +1164,14 @@ button.playing-card:focus-visible {
 /* Text fallback token when a status/effect has no image. */
 .action-status-token--text {
     color: rgba(37, 27, 24, 0.72);
-    font-size: clamp(0.34rem, 0.5vw, 0.48rem);
+    font-size: 0.34rem;
     font-weight: 900;
 }
 
 /* Compact stat-change badge inside an action card. */
 .action-stat-change {
     gap: 2px;
-    padding: 2px 3px;
+    padding: 1px 2px;
 }
 
 /* Stat abbreviation in stat-change badges. */
@@ -1241,19 +1207,13 @@ button.playing-card:focus-visible {
     border-top: var(--stat-arrow-h) solid #b04332;
 }
 
-/* Target/effect note text at the bottom of action cards. */
-.action-card-meta,
-.action-card-note {
+/* Target text at the bottom of action cards. */
+.action-card-meta {
     min-width: 0;
     white-space: nowrap;
     color: rgba(37, 27, 24, 0.68);
-    font-size: clamp(0.38rem, 0.56vw, 0.54rem);
+    font-size: 0.32rem;
     font-weight: 800;
-}
-
-/* Secondary action-card note style, kept for overview/detail contexts. */
-.action-card-note {
-    color: rgba(37, 27, 24, 0.52);
 }
 
 /* --- Card Overview --- */
@@ -1904,9 +1864,9 @@ button.playing-card:focus-visible {
     font-weight: 850;
 }
 
-/* Desktop/tablet arena layout and larger card sizing. */
-@media (min-width: 700px) {
-    /* Desktop card/pile sizing tokens. */
+/* Wide arena layout and larger card sizing. */
+@media (min-width: 1100px) {
+    /* Wide card/pile sizing tokens. */
     .game-page {
         --card-w: clamp(64px, min(7.6vw, 15.2dvh), 128px);
         --hand-card-w: clamp(58px, min(6.4vw, 12.4dvh), 108px);
@@ -1915,7 +1875,7 @@ button.playing-card:focus-visible {
         --panel-gap: clamp(8px, 1vw, 14px);
     }
 
-    /* Desktop arena grid: opponent/player board plus right-side controls. */
+    /* Wide arena grid: opponent/player board plus right-side controls. */
     .game-board {
         position: relative;
         height: 100dvh;
@@ -1925,26 +1885,26 @@ button.playing-card:focus-visible {
         padding: 12px 16px 16px;
     }
 
-    /* Desktop side-panel spacing and clipping. */
+    /* Wide side-panel spacing and clipping. */
     .side-panel {
         gap: clamp(8px, 1vw, 12px);
         padding: clamp(10px, 1.1vw, 16px);
         overflow: hidden;
     }
 
-    /* Desktop placement for opponent panel. */
+    /* Wide placement for opponent panel. */
     .side-panel--opponent {
         grid-column: 1;
         grid-row: 1;
     }
 
-    /* Desktop placement for player panel spanning the full width. */
+    /* Wide placement for player panel spanning the full width. */
     .side-panel--player {
         grid-column: 1 / -1;
         grid-row: 2;
     }
 
-    /* Desktop turn-control box positioned in the right column. */
+    /* Wide turn-control box positioned in the right column. */
     .arena-status {
         position: static;
         grid-column: 2;
@@ -1968,17 +1928,17 @@ button.playing-card:focus-visible {
         box-shadow: 0 18px 38px rgba(0, 0, 0, 0.34);
     }
 
-    /* Allows desktop turn text to shrink inside the control box. */
+    /* Allows wide turn text to shrink inside the control box. */
     .turn-copy {
         min-width: 0;
     }
 
-    /* Desktop turn instruction size. */
+    /* Wide turn instruction size. */
     .turn-copy p {
         font-size: clamp(0.84rem, 1vw, 1rem);
     }
 
-    /* Desktop selected-card pill spans the control box. */
+    /* Wide selected-card pill spans the control box. */
     .selected-pill {
         grid-column: 1 / -1;
         width: 100%;
@@ -1988,20 +1948,20 @@ button.playing-card:focus-visible {
         text-overflow: ellipsis;
     }
 
-    /* Desktop action buttons stretch evenly. */
+    /* Wide action buttons stretch evenly. */
     .action-bar {
         grid-column: 1 / -1;
         justify-content: stretch;
     }
 
-    /* Desktop action button sizing. */
+    /* Wide action button sizing. */
     .arena-button {
         flex: 1 1 0;
         min-width: 0;
         font-size: clamp(0.9rem, 0.95vw, 1rem);
     }
 
-    /* Desktop event log fills the control box width. */
+    /* Wide event log fills the control box width. */
     .event-log {
         grid-column: 1 / -1;
         width: 100%;
@@ -2009,20 +1969,20 @@ button.playing-card:focus-visible {
         font-size: 0.86rem;
     }
 
-    /* Desktop card interior spacing. */
+    /* Wide card interior spacing. */
     .playing-card {
         gap: 3px;
         padding: clamp(5px, 0.58vw, 8px);
     }
 
-    /* Desktop board slot sizing around larger active cards. */
+    /* Wide board slot sizing around larger active cards. */
     .board-slot {
         min-width: calc(var(--card-w) + 18px);
         min-height: calc(var(--card-h) + 16px);
         padding: 8px;
     }
 
-    /* Desktop ready badge sizing. */
+    /* Wide ready badge sizing. */
     .slot-badge {
         right: 4px;
         top: 4px;
@@ -2030,67 +1990,61 @@ button.playing-card:focus-visible {
         font-size: 0.7rem;
     }
 
-    /* Desktop pile/hand label sizing. */
+    /* Wide pile/hand label sizing. */
     .pile-label,
     .hand-label {
         font-size: 0.84rem;
     }
 
-    /* Desktop Pokemon name sizing. */
+    /* Wide Pokemon name sizing. */
     .card-name {
-        font-size: clamp(0.74rem, 0.86vw, 0.94rem);
+        font-size: 0.68rem;
     }
 
-    /* Desktop Pokemon health/stat text sizing. */
+    /* Wide Pokemon health/stat text sizing. */
     .health-row,
     .stat-grid {
-        font-size: clamp(0.62rem, 0.72vw, 0.78rem);
+        font-size: 0.58rem;
     }
 
-    /* Desktop card-back label sizing. */
+    /* Wide card-back label sizing. */
     .card-topline,
     .card-footer {
-        font-size: clamp(0.7rem, 1vw, 0.88rem);
+        font-size: 0.72rem;
     }
 
-    /* Desktop base type icon sizing. */
+    /* Wide base type icon sizing. */
     .type-icon {
-        width: clamp(14px, 1.15vw, 20px);
-        height: clamp(14px, 1.15vw, 20px);
+        width: clamp(14px, calc(var(--card-w) * 0.16), 22px);
+        height: clamp(14px, calc(var(--card-w) * 0.16), 22px);
     }
 
-    /* Desktop action-card type icon sizing. */
+    /* Wide action-card type icon sizing. */
     .action-type-row .type-icon {
-        width: clamp(28px, 2.3vw, 40px);
-        height: clamp(28px, 2.3vw, 40px);
+        width: clamp(20px, calc(var(--card-w) * 0.3), 38px);
+        height: clamp(20px, calc(var(--card-w) * 0.3), 38px);
     }
 
-    /* Desktop persistent status token sizing. */
+    /* Wide persistent status token sizing. */
     .status-token {
-        width: clamp(18px, 1.35vw, 24px);
-        height: clamp(18px, 1.35vw, 24px);
+        width: clamp(18px, calc(var(--card-w) * 0.18), 24px);
+        height: clamp(18px, calc(var(--card-w) * 0.18), 24px);
     }
 
-    /* Desktop action-card category sizing. */
-    .action-card-kind {
-        font-size: clamp(0.52rem, 0.68vw, 0.66rem);
-    }
-
-    /* Desktop action-card name sizing. */
+    /* Wide action-card name sizing. */
     .action-card-name {
-        font-size: clamp(0.72rem, 0.98vw, 0.92rem);
+        font-size: 0.58rem;
     }
 
-    /* Desktop action-card target/note sizing. */
-    .action-card-meta,
-    .action-card-note {
-        font-size: clamp(0.48rem, 0.64vw, 0.64rem);
+    /* Wide action-card target sizing. */
+    .action-card-meta {
+        font-size: 0.38rem;
     }
 }
 
-/* Mobile arena layout and compact card sizing. */
-@media (max-width: 699px) {
-    /* Mobile card/pile sizing tokens. */
+/* Stacked arena layout and compact card sizing for phones and tablets. */
+@media (max-width: 1099px) {
+    /* Compact card/pile sizing tokens. */
     .game-page {
         --card-w: clamp(46px, min(16vw, 9.4dvh), 68px);
         --hand-card-w: clamp(42px, min(15vw, 8.7dvh), 62px);
@@ -2099,30 +2053,30 @@ button.playing-card:focus-visible {
         --panel-gap: 8px;
     }
 
-    /* Mobile arena stacks opponent, controls, and player vertically. */
+    /* Compact arena stacks opponent, controls, and player vertically. */
     .game-board {
         padding: 62px 8px 10px;
         grid-template-rows: auto auto auto;
     }
 
-    /* Mobile side-panel spacing. */
+    /* Compact side-panel spacing. */
     .side-panel {
         padding: 8px;
         gap: 7px;
     }
 
-    /* Mobile side-header alignment for wrapped counters. */
+    /* Compact side-header alignment for wrapped counters. */
     .side-status {
         align-items: flex-start;
         gap: 6px;
     }
 
-    /* Mobile counter spacing. */
+    /* Compact counter spacing. */
     .side-stats {
         gap: 4px;
     }
 
-    /* Mobile pill sizing for counters, turn, and selection text. */
+    /* Compact pill sizing for counters, turn, and selection text. */
     .stat-pill,
     .turn-pill,
     .selected-pill {
@@ -2131,43 +2085,43 @@ button.playing-card:focus-visible {
         font-size: 0.68rem;
     }
 
-    /* Mobile board row with stacked pile columns. */
+    /* Compact board row with stacked pile columns. */
     .battle-row {
         grid-template-columns: minmax(var(--pile-card-w), 0.24fr) minmax(116px, 1fr) minmax(var(--pile-card-w), 0.24fr);
         gap: 6px;
     }
 
-    /* Mobile active-slot spacing. */
+    /* Compact active-slot spacing. */
     .played-slots {
         gap: 6px;
     }
 
-    /* Mobile board slot sizing around compact cards. */
+    /* Compact board slot sizing around small cards. */
     .board-slot {
         min-width: calc(var(--card-w) + 8px);
         min-height: calc(var(--card-h) + 10px);
         padding: 4px;
     }
 
-    /* Mobile pile/hand label sizing. */
+    /* Compact pile/hand label sizing. */
     .pile-label,
     .hand-label {
         font-size: 0.62rem;
     }
 
-    /* Mobile hand row spacing. */
+    /* Compact hand row spacing. */
     .hand-row {
         min-height: calc(var(--hand-card-h) + 12px);
         gap: 6px;
     }
 
-    /* Mobile hand card strip spacing. */
+    /* Compact hand card strip spacing. */
     .hand-cards {
         gap: 6px;
         padding: 5px 3px;
     }
 
-    /* Mobile turn-control box stacked into one column. */
+    /* Compact turn-control box stacked into one column. */
     .arena-status {
         min-height: 0;
         display: grid;
@@ -2176,97 +2130,114 @@ button.playing-card:focus-visible {
         padding: 9px;
     }
 
-    /* Mobile turn text centered under the turn pill. */
+    /* Compact turn text centered under the turn pill. */
     .turn-copy {
         min-width: 0;
         text-align: center;
     }
 
-    /* Mobile action buttons centered. */
+    /* Compact action buttons centered. */
     .action-bar {
         justify-content: center;
     }
 
-    /* Mobile action button sizing. */
+    /* Compact action button sizing. */
     .arena-button {
         min-height: 34px;
         padding: 7px 9px;
         font-size: 0.78rem;
     }
 
-    /* Mobile log uses the full control width with a shorter scroll window. */
+    /* Compact log uses the full control width with a shorter scroll window. */
     .event-log {
         width: 100%;
         max-height: min(18dvh, 120px);
         font-size: 0.72rem;
     }
 
-    /* Mobile reference overlay safe padding. */
+    /* Compact reference overlay safe padding. */
     .rules-reference-overlay {
         padding: 8px;
     }
 
-    /* Mobile reference window fills available viewport width/height. */
+    /* Compact reference window fills available viewport width/height. */
     .rules-reference-window {
         width: calc(100vw - 16px);
         max-height: calc(100dvh - 16px);
     }
 
-    /* Mobile reference header spacing. */
+    /* Compact reference header spacing. */
     .rules-reference-header {
         align-items: center;
         padding: 12px;
     }
 
-    /* Mobile reference content spacing. */
+    /* Compact reference content spacing. */
     .rules-reference-body {
         padding: 12px;
     }
 
-    /* Mobile reference rule rows stack label above description. */
+    /* Compact reference rule rows stack label above description. */
     .reference-rule-row {
         grid-template-columns: 1fr;
         gap: 6px;
     }
 
-    /* Mobile type-chip grid spacing. */
+    /* Compact type-chip grid spacing. */
     .reference-type-grid {
         gap: 6px;
     }
 
-    /* Mobile reference type chip sizing. */
+    /* Compact reference type chip sizing. */
     .reference-type-chip {
         padding: 4px 7px;
         font-size: 0.72rem;
     }
 
-    /* Mobile Pokemon stat text sizing. */
+    /* Compact Pokemon stat text sizing. */
     .stat-grid {
-        font-size: clamp(0.34rem, 1.35vw, 0.42rem);
+        font-size: 0.4rem;
     }
 
-    /* Mobile type icon sizing. */
+    /* Compact type icon sizing. */
     .type-icon {
-        width: clamp(10px, 2.8vw, 12px);
-        height: clamp(10px, 2.8vw, 12px);
+        width: 10px;
+        height: 10px;
     }
 
-    /* Mobile overview page spacing. */
+    /* Compact overview page spacing. */
     .card-overview {
         padding: 68px 10px 28px;
     }
 
-    /* Mobile overview header stacks title and filters. */
+    /* Compact overview header stacks title and filters. */
     .overview-header {
         align-items: flex-start;
         flex-direction: column;
         gap: 12px;
     }
 
-    /* Mobile overview card grid uses three columns. */
+    /* Compact overview card grid uses three columns. */
     .overview-card-grid {
         grid-template-columns: repeat(3, var(--card-w));
         gap: 10px;
+    }
+}
+
+/* Roomier compact cards once the viewport has moved past narrow phone widths. */
+@media (min-width: 501px) and (max-width: 1099px) {
+    .game-page {
+        --card-w: clamp(68px, min(13vw, 10.5dvh), 78px);
+        --hand-card-w: clamp(62px, min(12vw, 9.3dvh), 70px);
+        --opponent-hand-card-w: clamp(22px, min(5vw, 4.8dvh), 32px);
+        --pile-card-w: clamp(52px, min(9vw, 7.8dvh), 58px);
+        --panel-gap: clamp(8px, 1vw, 12px);
+    }
+
+    .board-slot {
+        min-width: calc(var(--card-w) + 12px);
+        min-height: calc(var(--card-h) + 12px);
+        padding: 5px;
     }
 }
 
@@ -2275,6 +2246,68 @@ button.playing-card:focus-visible {
     /* Keeps overview cards readable on very narrow screens. */
     .overview-card-grid {
         grid-template-columns: repeat(2, var(--card-w));
+    }
+}
+
+/* Extra-tight card internals for narrow phones. */
+@media (max-width: 380px) {
+    .playing-card {
+        padding: 3px;
+    }
+
+    .board-card {
+        border-width: 1px;
+    }
+
+    .card-name {
+        font-size: 0.48rem;
+    }
+
+    .health-row,
+    .stat-grid {
+        font-size: 0.32rem;
+    }
+
+    .stat-grid {
+        gap: 1px;
+    }
+
+    .action-card-shell {
+        gap: 1px;
+    }
+
+    .action-card-name {
+        font-size: 0.44rem;
+    }
+
+    .item-picture-row {
+        min-height: 22px;
+    }
+
+    .item-picture {
+        width: 23px;
+        height: 23px;
+    }
+
+    .action-type-row .type-icon {
+        width: 12px;
+        height: 12px;
+    }
+
+    .action-card-effects {
+        min-height: 10px;
+        gap: 1px;
+    }
+
+    .attack-power,
+    .action-stat-change,
+    .action-card-meta {
+        font-size: 0.3rem;
+    }
+
+    .action-status-token {
+        width: 10px;
+        height: 10px;
     }
 }
 

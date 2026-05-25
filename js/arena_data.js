@@ -1,5 +1,5 @@
 /**
- * Squish - card arena data loading and test deck constants
+ * Pokemon Rogue Pocket - card arena data loading and test deck constants
  *
  * Data flow: game.js calls loadGameData() during page boot. JSON records are
  * loaded from pokemon.json, attacks.json, and items.json, normalized into the

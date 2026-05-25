@@ -1,46 +1,9 @@
 const fs = require('fs');
 const readline = require('readline/promises');
 const { stdin: input, stdout: output } = require('process');
+const { ItemTarget, StatChange, Status } = require('./data_options');
 
 const JSON_FILE = 'items.json';
-
-const Status = Object.freeze({
-    BURN: 'BURN',
-    CONFUSION: 'CONFUSION',
-    DRAGON_GEM: 'DRAGON_GEM',
-    FATIGUE: 'FATIGUE',
-    FLINCH: 'FLINCH',
-    FULL_HEAL: 'FULL_HEAL',
-    HEAL: 'HEAL',
-    HEAL_BURN: 'HEAL_BURN',
-    HEAL_STATUS: 'HEAL_STATUS',
-    MULTI_ATTACK: 'MULTI_ATTACK',
-    PARALYSIS: 'PARALYSIS',
-    POISON: 'POISON',
-    PROTECT: 'PROTECT',
-    SELF_INFLICT: 'SELF_INFLICT',
-    SLEEP: 'SLEEP',
-    SWITCH: 'SWITCH',
-    NONE: 'NONE'
-});
-
-const StatChange = Object.freeze({
-    ATTACK_UP: 'ATTACK_UP',
-    DEFENSE_UP: 'DEFENSE_UP',
-    SPEED_UP: 'SPEED_UP',
-    ATTACK_DOWN: 'ATTACK_DOWN',
-    DEFENSE_DOWN: 'DEFENSE_DOWN',
-    SPEED_DOWN: 'SPEED_DOWN'
-});
-
-const Target = Object.freeze({
-    SELF: 'SELF',
-    SIDE: 'SIDE',
-    ALLY: 'ALLY',
-    ALL_ALLIES: 'ALL_ALLIES',
-    OPPONENT: 'OPPONENT',
-    ALL_OPPONENTS: 'ALL_OPPONENTS'
-});
 
 async function main() {
     const rl = readline.createInterface({ input, output });
@@ -93,7 +56,7 @@ async function handleAddItem(rl) {
     const item = {};
 
     item.name = await askString(rl, 'Enter Item Name: ');
-    item.target = await askEnum(rl, 'Select Target', Target);
+    item.target = await askEnum(rl, 'Select Target', ItemTarget);
     item.status = await askEnumArray(rl, 'Status Effects', Status);
     item.statChanges = await askEnumArray(rl, 'Stat Changes', StatChange);
 
@@ -122,15 +85,6 @@ async function askString(rl, prompt) {
         const input = (await rl.question(prompt)).trim();
         if (input.length > 0) return input;
         console.log('Input cannot be empty.');
-    }
-}
-
-async function askInt(rl, prompt) {
-    while (true) {
-        const input = (await rl.question(prompt)).trim();
-        const val = parseInt(input, 10);
-        if (!isNaN(val) && val > 0) return val;
-        console.log('Please enter a valid integer greater than 0.');
     }
 }
 

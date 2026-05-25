@@ -1,5 +1,5 @@
 /**
- * Squish - Main Menu Logic
+ * Pokemon Rogue Pocket - main menu logic
  */
 
 const CURRENT_BATTLE_STORAGE_KEY = 'card-arena-current-battle';
@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function init() {
     document.getElementById('btn-new-game').addEventListener('click', handleNewGame);
     document.getElementById('btn-load-game').addEventListener('click', handleLoadGame);
-    document.getElementById('btn-settings').addEventListener('click', handleSettings);
 
     updateLoadButtonState();
 }
@@ -37,14 +36,6 @@ function handleLoadGame() {
 }
 
 /**
- * Handles the "Settings" button click.
- */
-function handleSettings() {
-    alert('Opening Settings menu...');
-    // TODO: Implement settings overlay or page
-}
-
-/**
  * Checks if there are any saved games and updates the Load Game button state.
  */
 function updateLoadButtonState() {
@@ -54,10 +45,6 @@ function updateLoadButtonState() {
     loadBtn.disabled = !hasSavedGames;
 }
 
-/**
- * Mock function to simulate checking for saved games.
- * @returns {boolean} True if saved games exist, false otherwise.
- */
 function checkForSavedGames() {
     return Boolean(localStorage.getItem(CURRENT_BATTLE_STORAGE_KEY));
 }

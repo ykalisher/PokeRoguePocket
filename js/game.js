@@ -1,5 +1,5 @@
 /**
- * Squish - Card Arena Prototype
+ * Pokemon Rogue Pocket - card arena prototype
  */
 
 (function bootCardArena(arena) {

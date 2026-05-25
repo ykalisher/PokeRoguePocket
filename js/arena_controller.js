@@ -1,5 +1,5 @@
 /**
- * Squish - game flow and player actions for the arena prototype
+ * Pokemon Rogue Pocket - game flow and player actions for the arena prototype
  *
  * Battle flow:
  * 1. game.js calls arena.Data.loadGameData(), then either restores a saved
@@ -216,8 +216,6 @@
             discardSelectedPlayerCard();
         } else if (action === 'end-turn') {
             endPlayerTurn();
-        } else if (action === 'place') {
-            placeSelectedCard();
         } else if (action === 'reset') {
             resetPrototype();
         } else if (action === 'toggle-rules') {
@@ -594,7 +592,9 @@
     function canUseDragonGemItem(ownerId, itemCard) {
         const effect = model.getDragonGemEffectForItem(itemCard);
 
-        return Boolean(effect);
+        if (!effect) return false;
+
+        return !model.getDragonGemEffects(ownerId).some(activeEffect => activeEffect.status === effect.status);
     }
 
     function discardSelectedPlayerCard() {
@@ -680,31 +680,6 @@
     }
 
     /**
-     * Legacy manual Pokemon placement path. Main battle flow now plays and
-     * replaces Pokemon from the Pokemon deck automatically.
-     */
-    function placeSelectedCard(slotIndex = getFirstOpenSlot(state.players.player)) {
-        if (!canPlayerAct() || !state.selectedCardId) return;
-
-        const player = state.players.player;
-        const selectedCard = model.findHandCard(player, state.selectedCardId);
-
-        if (!model.isPokemonCard(selectedCard)) return;
-        if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT || player.board[slotIndex]) return;
-
-        const card = model.removeCardFromHand(player, state.selectedCardId);
-
-        if (!card) return;
-
-        card.faceUp = true;
-        player.board[slotIndex] = card;
-        state.selectedCardId = null;
-
-        logEvent(`${player.name} placed ${model.getCardName(card)}.`);
-        render();
-    }
-
-    /**
      * True only during the player's unlocked main-turn phase. Most mutating
      * player actions use this as their first guard.
      */
@@ -718,19 +693,6 @@
     function canPlayerSelectCard() {
         const selectablePhase = state.phase === 'turn';
         return state.currentPlayer === 'player' && selectablePhase && !state.finished && !state.isResolving;
-    }
-
-    /**
-     * Legacy manual-placement affordance. Pokemon no longer enter the main hand,
-     * so this normally returns false in the two-deck arena flow.
-     */
-    function canPlaceSelectedCard() {
-        if (!state.selectedCardId) return false;
-
-        const player = state.players.player;
-        const selectedCard = model.findHandCard(player, state.selectedCardId);
-
-        return canPlayerAct() && model.isPokemonCard(selectedCard) && getFirstOpenSlot(player) !== -1;
     }
 
     /**
@@ -767,20 +729,6 @@
             !model.hasQueuedAttack(playerId, card.id) &&
             model.hasUsableAttackInHand(player, card)
         ));
-    }
-
-    /**
-     * Legacy drag guard for dropping a hand Pokemon into a board slot.
-     */
-    function canDropCardOnSlot(cardId, slotOwner, slotIndex) {
-        if (slotOwner !== 'player' || !model.playerHasCardInHand(cardId)) return false;
-
-        const player = state.players.player;
-        const card = model.findHandCard(player, cardId);
-
-        if (!model.isPokemonCard(card)) return false;
-
-        return canPlayerAct() && slotIndex >= 0 && slotIndex < BOARD_SLOT_COUNT && !player.board[slotIndex];
     }
 
     function canDropCardOnDiscard(cardId, pileOwner) {
@@ -922,12 +870,6 @@
      */
     function handleCardDrop(cardId, candidate) {
         if (!candidate) return;
-
-        if (candidate.kind === 'slot') {
-            state.selectedCardId = cardId;
-            placeSelectedCard(candidate.slotIndex);
-            return;
-        }
 
         if (candidate.kind === 'discard') {
             discardPlayerHandCard(cardId);
@@ -1321,40 +1263,6 @@
         const fallback = options[0];
 
         return preferredGroup || preferredSingle || fallback || null;
-    }
-
-    async function animateOpponentMoveToSlot(slotIndex) {
-        const sourceElement = document.querySelector('.hand-row--opponent .playing-card');
-        const targetElement = document.querySelector(`.side-panel--opponent [data-slot-index="${slotIndex}"]`);
-
-        await animateOpponentCardMotion(sourceElement, targetElement, 'opponent-place');
-    }
-
-    async function animateOpponentCardMotion(sourceElement, targetElement, animationClass) {
-        if (!sourceElement || !targetElement) {
-            await model.sleep(260);
-            return;
-        }
-
-        const sourceRect = sourceElement.getBoundingClientRect();
-        const targetRect = targetElement.getBoundingClientRect();
-        const ghost = sourceElement.cloneNode(true);
-        const targetX = targetRect.left + (targetRect.width - sourceRect.width) / 2;
-        const targetY = targetRect.top + (targetRect.height - sourceRect.height) / 2;
-
-        ghost.classList.add('opponent-ghost', animationClass);
-        ghost.style.width = `${sourceRect.width}px`;
-        ghost.style.height = `${sourceRect.height}px`;
-        ghost.style.left = `${sourceRect.left}px`;
-        ghost.style.top = `${sourceRect.top}px`;
-        document.body.appendChild(ghost);
-
-        await model.sleep(30);
-        ghost.style.left = `${targetX}px`;
-        ghost.style.top = `${targetY}px`;
-
-        await model.sleep(520);
-        ghost.remove();
     }
 
     /**
@@ -2944,20 +2852,14 @@
         return model.getTargetOptionsForAction(pendingCard, 'player', state.pendingUserCardId);
     }
 
-    function getFirstOpenSlot(player) {
-        return player.board.findIndex(card => !card);
-    }
-
     function isTargetingPhase() {
         return state.phase === 'selecting-attack-target' || state.phase === 'selecting-item-target';
     }
 
     arena.Controller = {
-        canDropCardOnSlot,
         canPlayerAct,
         canPlayerEndTurn,
         canPlayerSelectCard,
-        canPlaceSelectedCard,
         canDragPendingActionCard,
         canDiscardSelectedCard,
         canDropCardOnDiscard,
@@ -2966,7 +2868,6 @@
         getDropActionForTargetGroup,
         handleCardDrop,
         handleArenaClick,
-        placeSelectedCard,
         resetPrototype
     };
 })(window.CardArena = window.CardArena || {});

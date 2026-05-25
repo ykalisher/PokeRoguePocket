@@ -91,7 +91,7 @@
     "name": "Gyarados",
     "type1": "WATER",
     "type2": "DRAGON",
-    "type3": "NONE",
+    "type3": "MONSTER",
     "id": "0130",
     "baseHealth": 95,
     "baseAttack": 125,
