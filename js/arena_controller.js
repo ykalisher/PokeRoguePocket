@@ -91,6 +91,7 @@
         state.pendingActionCardId = null;
         state.pendingUserCardId = null;
         state.pendingPokemonReplacements = [];
+        state.pileWindow = null;
         state.plannedActions = { opponent: [], player: [] };
         state.players = {
             opponent: model.createPlayer('opponent', 'Rival'),
@@ -181,6 +182,13 @@
             return;
         }
 
+        const pileButton = event.target.closest('[data-pile-view-owner][data-pile-view-type]');
+
+        if (pileButton) {
+            openPileWindow(pileButton.dataset.pileViewOwner, pileButton.dataset.pileViewType);
+            return;
+        }
+
         const boardCard = event.target.closest('[data-board-card-id]');
 
         if (boardCard) {
@@ -210,6 +218,8 @@
 
         if (action === 'cancel-action') {
             cancelActionSelection();
+        } else if (action === 'close-pile-window') {
+            closePileWindow();
         } else if (action === 'close-rules') {
             closeRulesWindow();
         } else if (action === 'discard-selected') {
@@ -228,6 +238,22 @@
      */
     function toggleRulesWindow() {
         state.rulesWindowOpen = !state.rulesWindowOpen;
+        render();
+    }
+
+    function openPileWindow(ownerId, pileType) {
+        if (!state.players[ownerId]) return;
+        if (!['deck', 'discard', 'pokemon-deck'].includes(pileType)) return;
+
+        state.pileWindow = {
+            ownerId,
+            type: pileType
+        };
+        render();
+    }
+
+    function closePileWindow() {
+        state.pileWindow = null;
         render();
     }
 
@@ -2659,13 +2685,11 @@
 
         handElement.classList.add('is-arriving-card');
         document.body.appendChild(ghost);
-        placeAnimationElement(ghost, sourceCenter);
-
-        await model.sleep(40);
-        ghost.classList.add('is-card-moving');
-        placeAnimationElement(ghost, targetCenter);
-
-        await model.sleep(430);
+        await animateCardFlight(ghost, sourceCenter, targetCenter, {
+            duration: playerId === 'player' ? 560 : 520,
+            endRotate: playerId === 'player' ? 1 : -1,
+            endScale: playerId === 'player' ? 1 : 0.92
+        });
         releaseArrivingCard(card, () => getHandCardElement(playerId, card.id));
         ghost.remove();
     }
@@ -2693,13 +2717,11 @@
 
         boardElement.classList.add('is-arriving-card');
         document.body.appendChild(ghost);
-        placeAnimationElement(ghost, sourceCenter);
-
-        await model.sleep(40);
-        ghost.classList.add('is-card-moving');
-        placeAnimationElement(ghost, targetCenter);
-
-        await model.sleep(430);
+        await animateCardFlight(ghost, sourceCenter, targetCenter, {
+            duration: 560,
+            endRotate: 0,
+            endScale: 1
+        });
         releaseArrivingCard(card, () => getBoardCardElement(playerId, card.id));
         ghost.remove();
     }
@@ -2723,14 +2745,53 @@
         const targetCenter = getElementCenter(discardElement);
 
         document.body.appendChild(ghost);
+        await animateCardFlight(ghost, sourceCenter, targetCenter, {
+            duration: 500,
+            endOpacity: 0.78,
+            endRotate: 4,
+            endScale: 0.88
+        });
+        ghost.remove();
+    }
+
+    async function animateCardFlight(ghost, sourceCenter, targetCenter, options = {}) {
         placeAnimationElement(ghost, sourceCenter);
 
-        await model.sleep(30);
-        ghost.classList.add('is-card-moving');
-        placeAnimationElement(ghost, targetCenter);
+        await waitForNextFrame();
 
-        await model.sleep(420);
-        ghost.remove();
+        const deltaX = targetCenter.x - sourceCenter.x;
+        const deltaY = targetCenter.y - sourceCenter.y;
+        const distance = Math.hypot(deltaX, deltaY);
+        const arc = Math.min(86, Math.max(24, distance * 0.16));
+        const direction = deltaX >= 0 ? 1 : -1;
+        const animation = ghost.animate([
+            {
+                opacity: 1,
+                transform: 'translate3d(0, 0, 0) rotate(-2deg) scale(0.96)'
+            },
+            {
+                opacity: 1,
+                transform: `translate3d(${deltaX * 0.45}px, ${(deltaY * 0.45) - arc}px, 0) rotate(${3 * direction}deg) scale(1.04)`
+            },
+            {
+                opacity: options.endOpacity === undefined ? 1 : options.endOpacity,
+                transform: `translate3d(${deltaX}px, ${deltaY}px, 0) rotate(${options.endRotate === undefined ? 1 : options.endRotate}deg) scale(${options.endScale === undefined ? 1 : options.endScale})`
+            }
+        ], {
+            duration: options.duration || 540,
+            easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+            fill: 'forwards'
+        });
+
+        try {
+            await animation.finished;
+        } catch (error) {
+            // Animation cancellation is harmless because the ghost is temporary.
+        }
+    }
+
+    function waitForNextFrame() {
+        return new Promise(resolve => requestAnimationFrame(resolve));
     }
 
     function createCardAnimationElement(card, animationClass, reveal) {

@@ -101,6 +101,7 @@
         pendingActionCardId: null,
         pendingUserCardId: null,
         pendingPokemonReplacements: [],
+        pileWindow: null,
         plannedActions: { opponent: [], player: [] },
         players: {},
         popupTimer: null,
@@ -176,6 +177,7 @@
         state.pendingActionCardId = savedBattle.pendingActionCardId || null;
         state.pendingUserCardId = savedBattle.pendingUserCardId || null;
         state.pendingPokemonReplacements = [];
+        state.pileWindow = null;
         state.plannedActions = normalizePlannedActions(savedBattle.plannedActions);
         state.players = {
             opponent: normalizeSavedPlayer(savedBattle.players && savedBattle.players.opponent, 'opponent', 'Rival'),

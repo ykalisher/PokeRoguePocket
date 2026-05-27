@@ -86,6 +86,11 @@
         [5, '3.5x'],
         [6, '4x']
     ]);
+    const CARD_BACK_PATHS = Object.freeze({
+        deck: 'assets/card-backs/ACTION_CARD_BACK.png',
+        'pokemon-deck': 'assets/card-backs/POKEMON_CARD_BACK.png'
+    });
+    const VIEWABLE_PILE_TYPES = Object.freeze(['deck', 'discard', 'pokemon-deck']);
 
     /**
      * Public full-board render called after meaningful state changes.
@@ -96,6 +101,7 @@
             ${renderStatus()}
             ${renderSide('player')}
             ${state.rulesWindowOpen ? renderRulesReferenceWindow() : ''}
+            ${state.pileWindow ? renderPileWindow() : ''}
         `;
     }
 
@@ -115,7 +121,7 @@
                     <div class="side-stats">
                         <span class="stat-pill">Pokemon left ${player.pokemonLeft}</span>
                         <span class="stat-pill">Pkmn deck ${player.pokemonDeck.length}</span>
-                        <span class="stat-pill">Main ${player.deck.length}</span>
+                        <span class="stat-pill">Action deck ${player.deck.length}</span>
                         <span class="stat-pill">Hand ${player.hand.length}/${arena.Model.getPlayerHandSize(player)}</span>
                         <span class="stat-pill">Discard ${player.discard.length}</span>
                         <span class="stat-pill">KO ${player.knockoutCount}/${KNOCKOUT_LIMIT}</span>
@@ -125,7 +131,7 @@
                 <div class="battle-row">
                     ${renderDragonGemTray(player)}
                     ${renderPile('Pkmn', player.pokemonDeck.length, 'pokemon-deck', player.id)}
-                    ${renderPile('Main', player.deck.length, 'deck', player.id)}
+                    ${renderPile('Action', player.deck.length, 'deck', player.id)}
                     ${renderPlayedSlots(player)}
                     ${renderPile('Discard', player.discard.length, 'discard', player.id)}
                     ${renderPile('KO', player.knockout.length, 'knockout', player.id)}
@@ -165,14 +171,153 @@
     }
 
     function renderPile(label, count, type, ownerId) {
+        const player = state.players[ownerId];
+        const cards = getPileCards(player, type);
         const isEmpty = count === 0 ? ' is-empty' : '';
+        const canOpen = ownerId === 'player' && VIEWABLE_PILE_TYPES.includes(type);
+        const tagName = canOpen ? 'button' : 'div';
+        const buttonAttributes = canOpen
+            ? `type="button" data-pile-view-owner="${ownerId}" data-pile-view-type="${type}" aria-haspopup="dialog"`
+            : '';
+        const title = `${getPileTitle(type)} pile, ${count} ${count === 1 ? 'card' : 'cards'}`;
+        const labelMarkup = isDeckPile(type) ? '' : `<div class="pile-label">${label}</div>`;
 
         return `
             <div class="pile pile--${type}" data-pile-owner="${ownerId}" data-pile-type="${type}">
-                <div class="pile-card${isEmpty}" aria-label="${label} pile, ${count} cards">${count}</div>
-                <div class="pile-label">${label}</div>
+                <${tagName} class="pile-card ${getPileCardClass(type, cards)}${isEmpty}" ${buttonAttributes} aria-label="${title}">
+                    ${renderPileCardContent(type, cards, count)}
+                </${tagName}>
+                ${labelMarkup}
             </div>
         `;
+    }
+
+    function getPileCards(player, type) {
+        if (!player) return [];
+
+        if (type === 'pokemon-deck') return player.pokemonDeck || [];
+        if (type === 'deck') return player.deck || [];
+        if (type === 'discard') return player.discard || [];
+        if (type === 'knockout') return player.knockout || [];
+
+        return [];
+    }
+
+    function getPileCardClass(type, cards) {
+        if ((type === 'pokemon-deck' || type === 'deck') && cards.length > 0) return 'pile-card--card-back';
+        if (type === 'discard' && cards.length > 0) return 'pile-card--discard-preview';
+
+        return '';
+    }
+
+    function renderPileCardContent(type, cards, count) {
+        if ((type === 'pokemon-deck' || type === 'deck') && cards.length > 0) {
+            return `
+                <img class="pile-card-back-image" src="${CARD_BACK_PATHS[type]}" alt="">
+                <span class="pile-count-badge">${count}</span>
+            `;
+        }
+
+        if (type === 'discard' && cards.length > 0) {
+            const topCard = cards[0];
+
+            return `
+                <span class="pile-card-kind">${getPileCardKindLabel(topCard)}</span>
+                <span class="pile-card-name">${arena.Model.getCardName(topCard)}</span>
+                <span class="pile-count-badge">${count}</span>
+            `;
+        }
+
+        return `<span class="pile-empty-count">${count}</span>`;
+    }
+
+    function renderPileWindow() {
+        const windowState = state.pileWindow || {};
+        const player = state.players[windowState.ownerId];
+        const type = windowState.type;
+        const rawCards = getPileCards(player, type);
+        const cards = shouldSortPileWindow(type) ? rawCards.slice().sort(compareCardsByName) : rawCards;
+        const title = `${player ? player.name : ''} ${getPileTitle(type)}`.trim();
+        const count = rawCards.length;
+
+        return `
+            <section class="pile-window" role="dialog" aria-modal="false" aria-label="${title}">
+                <header class="pile-window-header">
+                    <div>
+                        <h3 class="pile-window-title">${title}</h3>
+                        <span class="pile-window-count">${count} ${count === 1 ? 'card' : 'cards'}</span>
+                    </div>
+                    <button class="pile-window-close" type="button" data-action="close-pile-window" aria-label="Close pile window">&times;</button>
+                </header>
+                <div class="pile-window-cards">
+                    ${cards.length > 0 ? cards.map(renderPileWindowCard).join('') : '<span class="empty-hand">Empty</span>'}
+                </div>
+            </section>
+        `;
+    }
+
+    function renderPileWindowCard(card, index) {
+        return `
+            <article class="pile-window-entry">
+                <span class="pile-window-index">${index + 1}</span>
+                <span class="pile-window-thumb pile-window-thumb--${card.kind}" aria-hidden="true">
+                    ${renderPileWindowThumb(card)}
+                </span>
+                <div class="pile-window-card-summary">
+                    <strong>${arena.Model.getCardName(card)}</strong>
+                    <span>${getPileCardKindLabel(card)}</span>
+                </div>
+            </article>
+        `;
+    }
+
+    function renderPileWindowThumb(card) {
+        if (arena.Model.isPokemonCard(card)) {
+            return `<img src="${arena.Model.getPortraitUrl(card)}" alt="">`;
+        }
+
+        if (arena.Model.isItemCard(card)) {
+            return `<img src="${getItemPictureUrl(card)}" alt="">`;
+        }
+
+        const types = arena.Model.getCardTypes(card);
+
+        return types.length > 0
+            ? renderTypeIcons(types, 'pile-window-thumb-type')
+            : `<span>${getPileCardKindLabel(card).slice(0, 1)}</span>`;
+    }
+
+    function shouldSortPileWindow(type) {
+        return type === 'deck' || type === 'pokemon-deck';
+    }
+
+    function isDeckPile(type) {
+        return type === 'deck' || type === 'pokemon-deck';
+    }
+
+    function compareCardsByName(leftCard, rightCard) {
+        const nameComparison = arena.Model.getCardName(leftCard).localeCompare(arena.Model.getCardName(rightCard));
+
+        if (nameComparison !== 0) return nameComparison;
+
+        return getPileCardKindLabel(leftCard).localeCompare(getPileCardKindLabel(rightCard));
+    }
+
+    function getPileTitle(type) {
+        if (type === 'pokemon-deck') return 'Pokemon Deck';
+        if (type === 'deck') return 'Action Deck';
+        if (type === 'discard') return 'Discard';
+        if (type === 'knockout') return 'KO';
+
+        return 'Pile';
+    }
+
+    function getPileCardKindLabel(card) {
+        if (arena.Model.isPokemonCard(card)) return 'Pokemon';
+        if (arena.Model.isAttackCard(card)) return 'Attack';
+        if (arena.Model.isItemCard(card)) return 'Item';
+
+        return 'Card';
     }
 
     /**
@@ -354,8 +499,10 @@
      * markup without redrawing the arena.
      */
     function renderCardForAnimation(card, animationClass = 'attack-animation-card', reveal = true) {
+        const backClass = reveal ? '' : ' card-back';
+
         return `
-            <div class="playing-card hand-card card-kind-${card.kind} ${animationClass}" aria-hidden="true">
+            <div class="playing-card hand-card card-kind-${card.kind}${backClass} ${animationClass}" aria-hidden="true">
                 ${renderCardContent(card, reveal)}
             </div>
         `;
