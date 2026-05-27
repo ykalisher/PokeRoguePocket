@@ -180,14 +180,12 @@
             ? `type="button" data-pile-view-owner="${ownerId}" data-pile-view-type="${type}" aria-haspopup="dialog"`
             : '';
         const title = `${getPileTitle(type)} pile, ${count} ${count === 1 ? 'card' : 'cards'}`;
-        const labelMarkup = isDeckPile(type) ? '' : `<div class="pile-label">${label}</div>`;
 
         return `
             <div class="pile pile--${type}" data-pile-owner="${ownerId}" data-pile-type="${type}">
                 <${tagName} class="pile-card ${getPileCardClass(type, cards)}${isEmpty}" ${buttonAttributes} aria-label="${title}">
                     ${renderPileCardContent(type, cards, count)}
                 </${tagName}>
-                ${labelMarkup}
             </div>
         `;
     }
@@ -288,10 +286,6 @@
     }
 
     function shouldSortPileWindow(type) {
-        return type === 'deck' || type === 'pokemon-deck';
-    }
-
-    function isDeckPile(type) {
         return type === 'deck' || type === 'pokemon-deck';
     }
 
