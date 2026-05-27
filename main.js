@@ -23,7 +23,7 @@ function init() {
  */
 function handleNewGame() {
     localStorage.removeItem(CURRENT_BATTLE_STORAGE_KEY);
-    window.location.href = 'game.html';
+    window.location.href = 'area.html';
 }
 
 /**

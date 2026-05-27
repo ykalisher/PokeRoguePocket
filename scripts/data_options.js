@@ -73,10 +73,21 @@ const ItemTarget = Object.freeze({
     ALL_OPPONENTS: 'ALL_OPPONENTS'
 });
 
+class Rank {
+    static STANDARD = 'Standard';
+    static ACE = 'Ace';
+    static SPECIAL = 'Special';
+    static BOSS = 'Boss';
+    static ELITE = 'Elite';
+}
+
+Object.freeze(Rank);
+
 module.exports = {
     AttackTarget,
     ItemTarget,
     PokeType,
+    Rank,
     StatChange,
     Status
 };
