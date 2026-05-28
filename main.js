@@ -3,6 +3,7 @@
  */
 
 const CURRENT_BATTLE_STORAGE_KEY = 'card-arena-current-battle';
+const RUN_STORAGE_KEY = 'pokemon-rogue-pocket-run';
 
 document.addEventListener('DOMContentLoaded', () => {
     init();
@@ -23,6 +24,7 @@ function init() {
  */
 function handleNewGame() {
     localStorage.removeItem(CURRENT_BATTLE_STORAGE_KEY);
+    localStorage.removeItem(RUN_STORAGE_KEY);
     window.location.href = 'area.html';
 }
 
@@ -32,7 +34,7 @@ function handleNewGame() {
 function handleLoadGame() {
     if (!checkForSavedGames()) return;
 
-    window.location.href = 'game.html';
+    window.location.href = getSavedRunRoute() || 'game.html';
 }
 
 /**
@@ -46,5 +48,33 @@ function updateLoadButtonState() {
 }
 
 function checkForSavedGames() {
-    return Boolean(localStorage.getItem(CURRENT_BATTLE_STORAGE_KEY));
+    return Boolean(getSavedRunRoute() || localStorage.getItem(CURRENT_BATTLE_STORAGE_KEY));
+}
+
+function getSavedRunRoute() {
+    const run = loadSavedRunState();
+
+    if (!run || !run.area) return null;
+
+    return hasActiveCaptureEncounter(run) ? 'capture.html' : 'area.html';
+}
+
+function loadSavedRunState() {
+    try {
+        const rawRun = localStorage.getItem(RUN_STORAGE_KEY);
+
+        return rawRun ? JSON.parse(rawRun) : null;
+    } catch (error) {
+        console.warn('Could not load saved run.', error);
+        return null;
+    }
+}
+
+function hasActiveCaptureEncounter(run) {
+    const activeCaptureNodeId = run.area.activeCaptureNodeId;
+    const encounter = activeCaptureNodeId && run.captureEncounters
+        ? run.captureEncounters[activeCaptureNodeId]
+        : null;
+
+    return Boolean(encounter && !encounter.completed);
 }

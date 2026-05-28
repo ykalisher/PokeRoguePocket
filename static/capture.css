@@ -1,0 +1,381 @@
+/* --- Capture Encounter --- */
+
+.capture-page {
+    --capture-bg:
+        radial-gradient(circle at 18% 22%, rgba(224, 184, 79, 0.17), transparent 25%),
+        radial-gradient(circle at 78% 78%, rgba(216, 95, 79, 0.14), transparent 28%),
+        linear-gradient(145deg, #102f35, #0f2a2a 54%, #2d2520);
+    --capture-panel:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(0, 0, 0, 0.16)),
+        #173f38;
+    --capture-panel-deep: #0c2427;
+    --felt: #17483d;
+    --ink: #251b18;
+    --gold: #e0b84f;
+    --aqua: #4ab0a5;
+    --coral: #d85f4f;
+    --muted: rgba(250, 246, 230, 0.72);
+    --paper: #f2f4f5;
+    --card-w: clamp(92px, 13vw, 140px);
+    --card-h: calc(var(--card-w) * 1.52);
+
+    min-height: 100dvh;
+    height: auto;
+    display: block;
+    overflow: auto;
+    background: var(--capture-bg);
+    color: #fbf6e8;
+}
+
+.capture-page .btn-back {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 40;
+    width: auto;
+    padding: 9px 14px;
+    border: 1px solid rgba(251, 246, 232, 0.22);
+    background-color: rgba(22, 34, 35, 0.9);
+    font-size: 0.95rem;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
+.capture-shell {
+    width: min(100%, 1180px);
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: 14px 18px 20px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 14px;
+}
+
+.capture-loading {
+    align-self: center;
+    justify-self: center;
+    padding: 14px 18px;
+    border: 1px solid rgba(251, 246, 232, 0.18);
+    border-radius: 8px;
+    background-color: rgba(5, 13, 16, 0.36);
+    color: var(--muted);
+    font-weight: 760;
+}
+
+.capture-topbar {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px 12px 104px;
+    border: 1px solid rgba(251, 246, 232, 0.16);
+    border-radius: 8px;
+    background: var(--capture-panel);
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.12), 0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
+.capture-title-group {
+    min-width: 0;
+    display: grid;
+    gap: 7px;
+}
+
+.capture-kicker {
+    color: var(--gold);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.capture-title-group h1 {
+    margin: 0;
+    color: #fbf6e8;
+    font-size: clamp(1.5rem, 4vw, 2.15rem);
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.capture-hud {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.capture-deck-counter {
+    position: relative;
+    width: 54px;
+    height: 74px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(251, 246, 232, 0.2);
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.22);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.26);
+}
+
+.capture-deck-counter img {
+    width: 100%;
+    height: 100%;
+    border-radius: 7px;
+    object-fit: fill;
+}
+
+.capture-deck-counter span {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    min-width: 24px;
+    min-height: 24px;
+    display: grid;
+    place-items: center;
+    padding: 2px 6px;
+    border: 1px solid rgba(251, 246, 232, 0.7);
+    border-radius: 999px;
+    background-color: rgba(5, 13, 16, 0.92);
+    color: #fbf6e8;
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.capture-stage {
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(var(--card-h), 1fr) auto;
+    align-items: center;
+    gap: 20px;
+    padding: clamp(18px, 4vw, 36px);
+    border: 1px solid rgba(251, 246, 232, 0.16);
+    border-radius: 8px;
+    background:
+        linear-gradient(90deg, rgba(251, 246, 232, 0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(251, 246, 232, 0.035) 1px, transparent 1px),
+        var(--capture-panel-deep);
+    background-size: 42px 42px, 42px 42px, auto;
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.14), 0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
+.capture-options {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, var(--card-w));
+    justify-content: center;
+    align-items: center;
+    gap: clamp(16px, 4vw, 34px);
+    perspective: 1000px;
+}
+
+.capture-option {
+    width: var(--card-w);
+    height: var(--card-h);
+    display: grid;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.capture-option .playing-card,
+.capture-reward-card .playing-card {
+    width: 100%;
+    height: 100%;
+}
+
+.capture-option:not(:disabled):hover .playing-card,
+.capture-option:not(:disabled):focus-visible .playing-card {
+    transform: translateY(-7px);
+    outline: 3px solid rgba(224, 184, 79, 0.82);
+    outline-offset: 3px;
+    box-shadow: 0 15px 28px rgba(0, 0, 0, 0.38);
+}
+
+.capture-option:disabled {
+    cursor: default;
+}
+
+.capture-option.is-selected .playing-card {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+}
+
+.capture-option.is-catching .playing-card {
+    animation: capture-pokemon-to-list 0.9s cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
+    transform-style: preserve-3d;
+}
+
+.capture-option.is-dimmed .playing-card {
+    opacity: 0.26;
+    transform: scale(0.92);
+    filter: saturate(0.72);
+}
+
+.capture-rewards {
+    min-height: calc(var(--card-h) + 86px);
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 14px;
+}
+
+.capture-rewards[hidden] {
+    display: none;
+}
+
+.capture-reward-cards {
+    display: flex;
+    justify-content: center;
+    gap: clamp(10px, 2vw, 18px);
+    perspective: 900px;
+}
+
+.capture-reward-card {
+    width: calc(var(--card-w) * 0.86);
+    height: calc(var(--card-h) * 0.86);
+    opacity: 0;
+    transform: translateY(18px) scale(0.88);
+}
+
+.capture-rewards.is-revealed .capture-reward-card {
+    animation: capture-reward-appear 0.46s ease-out forwards;
+    animation-delay: calc(var(--reward-index) * 90ms);
+}
+
+.capture-rewards.is-decking .capture-reward-card {
+    opacity: 1;
+    animation: capture-reward-to-deck 0.72s cubic-bezier(0.34, 0.92, 0.3, 1) forwards;
+    animation-delay: calc(var(--reward-index) * 80ms);
+}
+
+.capture-deck-target {
+    min-height: 54px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid rgba(251, 246, 232, 0.18);
+    border-radius: 999px;
+    background-color: rgba(0, 0, 0, 0.22);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.capture-deck-target img {
+    width: 34px;
+    height: 48px;
+    border-radius: 5px;
+    object-fit: fill;
+}
+
+.capture-rewards.is-decking .capture-deck-target {
+    animation: capture-deck-pulse 0.72s ease-out 0.2s both;
+}
+
+@keyframes capture-pokemon-to-list {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotateY(0deg) scale(1);
+    }
+
+    40% {
+        opacity: 1;
+        transform: translate3d(0, -10px, 0) rotateY(180deg) scale(1.08);
+    }
+
+    72% {
+        opacity: 1;
+        transform: translate3d(0, -24px, 0) rotateY(300deg) scale(0.9);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(0, -38vh, 0) rotateY(360deg) scale(0.48);
+    }
+}
+
+@keyframes capture-reward-appear {
+    0% {
+        opacity: 0;
+        transform: translateY(22px) rotateX(18deg) scale(0.82);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg) scale(1);
+    }
+}
+
+@keyframes capture-reward-to-deck {
+    0% {
+        opacity: 1;
+        transform: translateY(0) rotateZ(0deg) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(94px) rotateZ(8deg) scale(0.36);
+    }
+}
+
+@keyframes capture-deck-pulse {
+    0%,
+    100% {
+        box-shadow: none;
+    }
+
+    42% {
+        box-shadow: 0 0 0 8px rgba(224, 184, 79, 0.16), 0 0 22px rgba(224, 184, 79, 0.34);
+    }
+}
+
+@media (max-width: 760px) {
+    .capture-page {
+        --card-w: clamp(82px, 26vw, 112px);
+    }
+
+    .capture-shell {
+        padding: 66px 10px 14px;
+    }
+
+    .capture-topbar {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 12px 14px;
+    }
+
+    .capture-hud {
+        justify-content: flex-start;
+    }
+
+    .capture-stage {
+        grid-template-rows: auto auto;
+        align-content: center;
+        min-height: 620px;
+        padding: 16px 10px;
+    }
+
+    .capture-options {
+        gap: 14px;
+    }
+
+    .capture-reward-card {
+        width: calc(var(--card-w) * 0.92);
+        height: calc(var(--card-h) * 0.92);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .capture-option.is-catching .playing-card,
+    .capture-rewards.is-revealed .capture-reward-card,
+    .capture-rewards.is-decking .capture-reward-card,
+    .capture-rewards.is-decking .capture-deck-target {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+    }
+}

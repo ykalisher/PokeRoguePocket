@@ -2,7 +2,7 @@
  * Pokemon Rogue Pocket - overworld area map prototype
  */
 
-(function bootAreaMap(arena, area) {
+(function bootAreaMap(arena, area, runStore) {
     'use strict';
 
     const AREA_NODE_COUNT = 12;
@@ -45,6 +45,7 @@
         currentNodeId: START_NODE_ID,
         elements: {},
         popupTimer: null,
+        run: null,
         traveledPathKeys: new Set(),
         visitedNodeIds: new Set([START_NODE_ID])
     };
@@ -60,8 +61,10 @@
 
         await arena.Data.loadGameData();
 
-        state.collections = createCardCollections();
-        state.area = createAreaGraph();
+        restoreOrCreateRunState();
+
+        if (redirectToActiveCapture()) return;
+
         render();
     }
 
@@ -121,6 +124,14 @@
         state.visitedNodeIds.add(node.id);
         state.traveledPathKeys.add(getPathKey(previousNodeId, node.id));
 
+        if (node.type === 'capture') {
+            getOrCreateCaptureEncounter(node);
+            saveRunState();
+            window.location.href = 'capture.html';
+            return;
+        }
+
+        saveRunState();
         render();
         showPopup(`You entered ${getEnteredLocationText(node)}.`);
     }
@@ -342,6 +353,166 @@
         state.popupTimer = window.setTimeout(() => {
             state.elements.popup.hidden = true;
         }, 1600);
+    }
+
+    function restoreOrCreateRunState() {
+        const savedRun = runStore.loadRunState();
+
+        if (savedRun) {
+            applyRunState(savedRun);
+            if (sanitizeCaptureEncounters()) saveRunState();
+            return;
+        }
+
+        applyRunState(runStore.createRunState({
+            area: createAreaGraph(),
+            collections: createCardCollections()
+        }));
+        saveRunState();
+    }
+
+    function applyRunState(run) {
+        state.run = run;
+        state.area = run.area.graph;
+        state.collections = run.collections;
+        state.currentNodeId = run.area.currentNodeId || START_NODE_ID;
+        state.traveledPathKeys = new Set(run.area.traveledPathKeys || []);
+        state.visitedNodeIds = new Set(run.area.visitedNodeIds || [START_NODE_ID]);
+    }
+
+    function saveRunState() {
+        syncRunState();
+        runStore.saveRunState(state.run);
+    }
+
+    function syncRunState() {
+        if (!state.run) return;
+
+        state.run.area.graph = state.area;
+        state.run.area.currentNodeId = state.currentNodeId;
+        state.run.area.traveledPathKeys = Array.from(state.traveledPathKeys);
+        state.run.area.visitedNodeIds = Array.from(state.visitedNodeIds);
+        state.run.collections = state.collections;
+    }
+
+    function redirectToActiveCapture() {
+        if (!runStore.getActiveCaptureEncounter(state.run)) return false;
+
+        window.location.href = 'capture.html';
+        return true;
+    }
+
+    function getOrCreateCaptureEncounter(node) {
+        const existingEncounter = state.run.captureEncounters[node.id];
+
+        if (existingEncounter && !existingEncounter.completed) {
+            state.run.area.activeCaptureNodeId = node.id;
+            sanitizeCaptureEncounter(existingEncounter);
+            return existingEncounter;
+        }
+
+        const pokemonOptions = chooseCapturePokemonOptions();
+        const encounter = {
+            completed: false,
+            createdAt: new Date().toISOString(),
+            nodeId: node.id,
+            options: pokemonOptions.map(pokemon => pokemon.name),
+            rewardAttackName: null,
+            selectedPokemonName: null,
+            terrain: AREA_THEME.terrain
+        };
+
+        state.run.captureEncounters[node.id] = encounter;
+        state.run.area.activeCaptureNodeId = node.id;
+
+        return encounter;
+    }
+
+    function chooseCapturePokemonOptions() {
+        const availablePokemon = getAvailablePokemonForCurrentTerrain();
+
+        if (availablePokemon.length === 0) return [];
+
+        const optionCount = randomInt(1, Math.min(3, availablePokemon.length));
+
+        return shuffleRecords(availablePokemon).slice(0, optionCount);
+    }
+
+    function getAvailablePokemonForCurrentTerrain() {
+        const pokemonRecords = arena.GameData && Array.isArray(arena.GameData.pokemon)
+            ? arena.GameData.pokemon
+            : [];
+        const uniquePokemon = getUniqueRecordsByName(pokemonRecords);
+        const nonLegendaryPokemon = uniquePokemon.filter(pokemon => !isLegendaryPokemon(pokemon));
+        // TODO: Replace this WATER placeholder with terrain-specific encounter tables.
+        const waterPokemon = nonLegendaryPokemon.filter(pokemon => getRecordTypes(pokemon).includes('WATER'));
+
+        return waterPokemon.length > 0 ? waterPokemon : nonLegendaryPokemon;
+    }
+
+    function sanitizeCaptureEncounters() {
+        if (!state.run || !state.run.captureEncounters) return false;
+
+        return Object.values(state.run.captureEncounters).reduce((changed, encounter) => {
+            if (!encounter || encounter.completed) return changed;
+
+            return sanitizeCaptureEncounter(encounter) || changed;
+        }, false);
+    }
+
+    function sanitizeCaptureEncounter(encounter) {
+        const originalOptions = Array.isArray(encounter.options) ? encounter.options : [];
+        const availablePokemonNames = new Set(getAvailablePokemonForCurrentTerrain().map(pokemon => pokemon.name));
+        const seenNames = new Set();
+        let nextOptions = originalOptions.filter(name => {
+            if (!availablePokemonNames.has(name) || seenNames.has(name)) return false;
+
+            seenNames.add(name);
+            return true;
+        });
+
+        if (nextOptions.length === 0) {
+            nextOptions = chooseCapturePokemonOptions().map(pokemon => pokemon.name);
+        }
+
+        const changed = nextOptions.length !== originalOptions.length ||
+            nextOptions.some((name, index) => name !== originalOptions[index]);
+
+        encounter.options = nextOptions;
+
+        return changed;
+    }
+
+    function getUniqueRecordsByName(records) {
+        const seenNames = new Set();
+
+        return records.filter(record => {
+            if (!record || !record.name || seenNames.has(record.name)) return false;
+
+            seenNames.add(record.name);
+            return true;
+        });
+    }
+
+    function getRecordTypes(record) {
+        return [record.type1, record.type2, record.type3]
+            .filter(type => type && type !== 'NONE');
+    }
+
+    function isLegendaryPokemon(pokemon) {
+        return getRecordTypes(pokemon).includes('LEGENDARY');
+    }
+
+    function shuffleRecords(records) {
+        const shuffled = records.slice();
+
+        for (let index = shuffled.length - 1; index > 0; index -= 1) {
+            const swapIndex = randomInt(0, index);
+
+            [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+        }
+
+        return shuffled;
     }
 
     function createAreaGraph() {
@@ -696,4 +867,4 @@
             .replace(/[^A-Z0-9]+/g, '_')
             .replace(/^_+|_+$/g, '');
     }
-})(window.CardArena = window.CardArena || {}, window.AreaMap = window.AreaMap || {});
+})(window.CardArena = window.CardArena || {}, window.AreaMap = window.AreaMap || {}, window.PokeRun);
