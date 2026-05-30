@@ -1236,5 +1236,15 @@
     "statChanges": [],
     "target": "OPPONENT",
     "full_type_requirements": false
+  },
+  {
+    "name": "Haze",
+    "type1": "FAIRY",
+    "type2": "WATER",
+    "basePower": 0,
+    "status": "REVERT_STATS",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
   }
 ]
