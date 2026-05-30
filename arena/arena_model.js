@@ -74,6 +74,7 @@
         PARALYSIS: { iconPath: 'assets/status-icons/PARALYSIS.svg', label: 'Paralysis', showsToken: true, statMultipliers: { speed: 0.5 } },
         POISON: { iconPath: 'assets/status-icons/POISON.svg', label: 'Poison', showsToken: true },
         PROTECT: { expires: 'turn', iconPath: 'assets/status-icons/PROTECT.png', label: 'Protect', showsToken: true },
+        REVERT_STATS: { iconPath: 'assets/status-icons/REVERT_STATS.png', label: 'Revert Stats', showsToken: false },
         SELF_INFLICT: { iconPath: 'assets/status-icons/SELF_INFLICT.png', label: 'Self-Inflict', showsToken: false },
         SLEEP: { iconPath: 'assets/status-icons/SLEEP.svg', initialState: () => ({ lastWakeAttemptTurn: null, wakeAttempts: 0 }), label: 'Sleep', showsToken: true },
         SWITCH: { iconPath: 'assets/status-icons/SWITCH.png', label: 'Switch', showsToken: false }

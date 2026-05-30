@@ -67,6 +67,7 @@
         { status: 'HEAL_BURN', text: 'Clears Burn only.' },
         { status: 'HEAL_STATUS', text: 'Clears the target\'s persistent status.' },
         { status: 'MULTI_ATTACK', text: 'Damaging attack hits 2-6 times. Its stat-change effect uses a 20% activation chance.' },
+        { status: 'REVERT_STATS', text: 'Sets the target\'s Attack, Defense, and Speed stat stages to 0.' },
         { status: 'DRAGON_GEM', text: 'Adds or replaces a side marker. Damaging DRAGON attacks from that side can apply this gem\'s paired status.' },
         { status: 'SELF_INFLICT', text: 'Stat changes apply to the attacking Pokemon instead of the selected targets.' },
         { status: 'SWITCH', text: 'Removes the target from the board, clears stat stages, puts it on the bottom of its Pokemon deck, and draws a replacement.' }

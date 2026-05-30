@@ -41,6 +41,7 @@ const Status = Object.freeze({
     PARALYSIS: 'PARALYSIS',
     POISON: 'POISON',
     PROTECT: 'PROTECT',
+    REVERT_STATS: 'REVERT_STATS',
     SELF_INFLICT: 'SELF_INFLICT',
     SLEEP: 'SLEEP',
     SWITCH: 'SWITCH',

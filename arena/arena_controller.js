@@ -1143,7 +1143,8 @@
 
     /**
      * Chooses an item target based on the item effect: healing/status recovery
-     * favors allies, stat-up favors allies, stat-down/status favors the player.
+     * favors allies, stat-up favors allies, stat-down/status favors the player,
+     * and stat reverts favor useful stage resets.
      */
     function chooseOpponentItemTarget(itemCard) {
         const options = model.getTargetOptionsForAction(itemCard, 'opponent', null);
@@ -1167,6 +1168,10 @@
 
         if (statuses.includes('HEAL_BURN')) {
             return chooseStatusedAllyTarget(options, 'opponent', 'BURN');
+        }
+
+        if (statuses.includes('REVERT_STATS')) {
+            return chooseStatRevertTarget(options);
         }
 
         if (statChanges.some(statChange => statChange.endsWith('_UP'))) {
@@ -1272,6 +1277,35 @@
         ));
 
         return groupTarget || null;
+    }
+
+    function chooseStatRevertTarget(options) {
+        return chooseTargetWithStatStage(options, 'player', stage => stage > 0)
+            || chooseTargetWithStatStage(options, 'opponent', stage => stage < 0);
+    }
+
+    function chooseTargetWithStatStage(options, ownerId, predicate) {
+        const targets = options
+            .filter(option => option.kind === 'single' && option.owner === ownerId)
+            .map(option => ({
+                option,
+                card: model.getBoardCardById(option.owner, option.cardId)
+            }))
+            .filter(target => target.card && hasMatchingStatStage(target.card, predicate));
+
+        if (targets.length > 0) return targets[0].option;
+
+        const groupTarget = options.find(option => (
+            option.kind === 'group' &&
+            option.owner === ownerId &&
+            model.getBoardCards(ownerId).some(card => hasMatchingStatStage(card, predicate))
+        ));
+
+        return groupTarget || null;
+    }
+
+    function hasMatchingStatStage(card, predicate) {
+        return ['attack', 'defense', 'speed'].some(stat => predicate(model.getPokemonStatStage(card, stat)));
     }
 
     function chooseTargetOwnedBy(options, ownerId) {
@@ -1687,6 +1721,7 @@
                 isDamaging,
                 isMultiAttack ? MULTI_ATTACK_STAT_CHANGE_TRIGGER_CHANCE : STAT_CHANGE_TRIGGER_CHANCE
             ) || handledEffect;
+            handledEffect = applyStatRevertEffects(statuses, targets) || handledEffect;
             handledEffect = maybeApplyAttackStatuses(action.card, targets, isDamaging, dragonGemStatuses) || handledEffect;
         }
 
@@ -1858,6 +1893,8 @@
             applyStatChangesToTargets(statChanges, targets);
             didSomething = true;
         }
+
+        didSomething = applyStatRevertEffects(statuses, targets) || didSomething;
 
         if (applyStatusesToTargets(getBattleStatuses(itemCard), targets)) {
             didSomething = true;
@@ -2242,6 +2279,25 @@
 
     function hasStatusHealing(statuses) {
         return statuses.includes('HEAL_STATUS') || statuses.includes('FULL_HEAL');
+    }
+
+    /**
+     * Applies REVERT_STATS by resetting all target stat stages to neutral.
+     */
+    function applyStatRevertEffects(statuses, targets) {
+        if (!statuses.includes('REVERT_STATS')) return false;
+
+        let revertedAny = false;
+
+        targets.forEach(target => {
+            if (model.getBoardCardById(target.owner, target.card.id) !== target.card) return;
+            if (!model.clearPokemonStatChanges(target.card)) return;
+
+            revertedAny = true;
+            logEvent(`${model.getCardName(target.card)}'s stat changes were reverted.`);
+        });
+
+        return revertedAny;
     }
 
     function clearStatusesFromTargets(targets) {
