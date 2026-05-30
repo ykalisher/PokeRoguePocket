@@ -42,7 +42,7 @@
   {
     "name": "Flame Thrower",
     "type1": "FIRE",
-    "type2": "DRAGON",
+    "type2": "NONE",
     "basePower": 55,
     "status": "BURN",
     "statChanges": [],
@@ -1222,6 +1222,16 @@
     "type1": "POISON",
     "type2": "NONE",
     "basePower": 70,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Dragon's Breath",
+    "type1": "DRAGON",
+    "type2": "NONE",
+    "basePower": 55,
     "status": "NONE",
     "statChanges": [],
     "target": "OPPONENT",

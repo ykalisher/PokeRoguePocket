@@ -362,6 +362,15 @@
         const prefix = playerId === 'player' ? 'YOU' : 'OPP';
         const data = arena.GameData || { attacks: [], items: [], pokemon: [] };
         const definition = getBattleDeckDefinition(playerId);
+        const exactDecks = createExactDecks(data, definition, playerId, prefix);
+
+        if (exactDecks) {
+            return {
+                mainDeck: shuffle(exactDecks.mainDeck),
+                pokemonDeck: shuffle(exactDecks.pokemonDeck)
+            };
+        }
+
         const pokemonDeck = createPokemonDeck(data.pokemon, definition, playerId, prefix);
         const mainDeck = createMainDeck(data, definition, pokemonDeck.map(card => card.pokemon), playerId, prefix);
 
@@ -378,14 +387,68 @@
     }
 
     function normalizeBattleDeckDefinition(definition) {
-        if (!definition || typeof definition !== 'object' || !Array.isArray(definition.pokemon)) return null;
+        if (!definition || typeof definition !== 'object') return null;
+
+        const hasPokemonDefinitions = Array.isArray(definition.pokemon);
+        const hasExactPokemonCards = definition.exactCards && Array.isArray(definition.pokemonCards);
+
+        if (!hasPokemonDefinitions && !hasExactPokemonCards) return null;
 
         return {
+            actionCards: Array.isArray(definition.actionCards) ? definition.actionCards : [],
+            exactCards: Boolean(definition.exactCards),
             items: Array.isArray(definition.items) ? definition.items.slice(0, ITEM_CARDS_PER_MAIN_DECK) : [],
-            pokemon: definition.pokemon
+            pokemonCards: Array.isArray(definition.pokemonCards) ? definition.pokemonCards : [],
+            pokemon: (hasPokemonDefinitions ? definition.pokemon : [])
                 .map(entry => typeof entry === 'string' ? { name: entry, attacks: [] } : entry)
                 .filter(entry => entry && entry.name)
         };
+    }
+
+    function createExactDecks(data, definition, playerId, prefix) {
+        if (!definition.exactCards) return null;
+
+        const pokemonDeck = createExactPokemonDeck(data.pokemon, definition.pokemonCards, playerId, prefix);
+
+        if (pokemonDeck.length === 0) return null;
+
+        return {
+            mainDeck: createExactMainDeck(data, definition.actionCards, playerId, prefix),
+            pokemonDeck
+        };
+    }
+
+    function createExactPokemonDeck(pokemonRecords, sourceCards, playerId, prefix) {
+        return sourceCards
+            .map((card, index) => {
+                const speciesName = card && card.pokemon ? card.pokemon.name : card && card.name;
+                const species = findRecordByName(pokemonRecords, speciesName) || (card && card.pokemon);
+
+                return species ? createPokemonCard(species, playerId, `${prefix}-PKM-${index + 1}`) : null;
+            })
+            .filter(Boolean);
+    }
+
+    function createExactMainDeck(data, sourceCards, playerId, prefix) {
+        return sourceCards
+            .map((card, index) => {
+                if (isAttackCard(card) || card.attack) {
+                    const attackName = card.attack ? card.attack.name : card.name;
+                    const attack = findRecordByName(data.attacks, attackName) || card.attack;
+
+                    return attack ? createAttackCard(attack, playerId, `${prefix}-ACT-${index + 1}`) : null;
+                }
+
+                if (isItemCard(card) || card.item) {
+                    const itemName = card.item ? card.item.name : card.name;
+                    const item = findRecordByName(data.items, itemName) || card.item;
+
+                    return item ? createItemCard(item, playerId, `${prefix}-ACT-${index + 1}`) : null;
+                }
+
+                return null;
+            })
+            .filter(Boolean);
     }
 
     function createPokemonDeck(pokemonRecords, definition, playerId, prefix) {

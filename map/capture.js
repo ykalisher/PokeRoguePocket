@@ -104,11 +104,17 @@
             'player',
             runStore.allocateCardId(state.run, 'attack', attack.name)
         ));
+        const dragonGemReward = chooseDragonGemReward(attack);
+
+        if (dragonGemReward) {
+            rewardCards.push(dragonGemReward);
+        }
 
         state.run.collections.pokemon.push(pokemonCard);
         state.run.collections.actions.push(...rewardCards);
         state.encounter.completed = true;
         state.encounter.rewardAttackName = attack.name;
+        state.encounter.rewardDragonGemName = dragonGemReward ? dragonGemReward.item.name : null;
         state.encounter.selectedPokemonName = pokemon.name;
         state.run.area.activeCaptureNodeId = null;
         runStore.saveRunState(state.run);
@@ -182,7 +188,7 @@
         ].filter(Boolean).join(' ');
 
         return `
-            <div class="${className}" ${showRewards ? '' : 'hidden'} aria-label="Attack reward">
+            <div class="${className}" ${showRewards ? '' : 'hidden'} aria-label="Action rewards">
                 <div class="capture-reward-cards">
                     ${state.rewardCards.map((card, index) => `
                         <div class="capture-reward-card" style="--reward-index: ${index};">
@@ -200,16 +206,23 @@
 
     function getPhaseTitle(selectedPokemon) {
         if (state.phase === 'pokemon' && selectedPokemon) return `${selectedPokemon} joined`;
-        if (state.phase === 'attacks' || state.phase === 'deck') return `Added ${getRewardAttackName()}`;
+        if (state.phase === 'attacks' || state.phase === 'deck') return `Added ${getRewardText()}`;
         if (state.phase === 'complete') return 'Returning to map';
 
         return 'Choose one Pokemon';
     }
 
-    function getRewardAttackName() {
-        return state.rewardCards[0]
-            ? arena.Model.getCardName(state.rewardCards[0])
-            : 'an attack';
+    function getRewardText() {
+        const rewardNames = state.rewardCards.map(card => arena.Model.getCardName(card));
+
+        if (rewardNames.length === 0) return 'an attack';
+
+        const uniqueNames = [...new Set(rewardNames)];
+
+        if (uniqueNames.length === 1) return uniqueNames[0];
+        if (uniqueNames.length === 2) return `${uniqueNames[0]} and ${uniqueNames[1]}`;
+
+        return `${uniqueNames.slice(0, -1).join(', ')}, and ${uniqueNames[uniqueNames.length - 1]}`;
     }
 
     function getPokemonOptions() {
@@ -304,6 +317,50 @@
         }
 
         return createFallbackAttack();
+    }
+
+    function chooseDragonGemReward(attack) {
+        if (!getRecordTypes(attack, ['type1', 'type2']).includes('DRAGON')) return null;
+        if (actionDeckHasDragonGem()) return null;
+
+        const dragonGems = getDragonGemItems();
+
+        if (dragonGems.length === 0) return null;
+
+        const item = dragonGems[randomInt(0, dragonGems.length - 1)];
+
+        return runStore.createItemCard(
+            item,
+            'player',
+            runStore.allocateCardId(state.run, 'item', item.name)
+        );
+    }
+
+    function actionDeckHasDragonGem() {
+        return state.run.collections.actions.some(card => (
+            card && card.kind === 'item' && itemIsDragonGem(card.item)
+        ));
+    }
+
+    function getDragonGemItems() {
+        const items = arena.GameData && Array.isArray(arena.GameData.items)
+            ? arena.GameData.items
+            : [];
+
+        return items.filter(itemIsDragonGem);
+    }
+
+    function itemIsDragonGem(item) {
+        return getItemStatuses(item).includes('DRAGON_GEM');
+    }
+
+    function getItemStatuses(item) {
+        if (!item) return [];
+
+        const status = Array.isArray(item.status) ? item.status : [item.status];
+        const statChanges = Array.isArray(item.statChanges) ? item.statChanges : [];
+
+        return [...status, ...statChanges].filter(value => value && value !== 'NONE');
     }
 
     function pokemonCanLearnCaptureAttack(pokemon, attack) {

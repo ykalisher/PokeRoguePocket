@@ -2,7 +2,8 @@
  * Pokemon Rogue Pocket - card arena data loading and test deck constants
  *
  * Data flow: game.js calls loadGameData() during page boot. JSON records are
- * loaded from pokemon.json, attacks.json, and items.json, normalized into the
+ * loaded from pokemon.json, attacks.json, items.json, and trainers.json,
+ * normalized into the
  * shape expected by arena_model.js, then stored on arena.GameData before a
  * battle is restored or reset. The fallbackRecords below keep the arena usable
  * when fetch fails, such as when opening the file directly in some browsers.
@@ -302,7 +303,8 @@
                 status: ['DRAGON_GEM', 'POISON'],
                 statChanges: []
             }
-        ]
+        ],
+        trainers: []
     });
 
     /**
@@ -374,6 +376,24 @@
         };
     }
 
+    function normalizeTrainer(record) {
+        const sprite = record.sprite || record.name;
+
+        return {
+            attacks: Array.isArray(record.attacks)
+                ? record.attacks.map(attacks => Array.isArray(attacks) ? attacks.filter(Boolean) : [])
+                : [],
+            cash: Number(record.cash) || 0,
+            items: Array.isArray(record.items) ? record.items.filter(Boolean) : [],
+            name: record.name,
+            pokemon: Array.isArray(record.pokemon) ? record.pokemon.filter(Boolean) : [],
+            rank: record.rank || 'Standard',
+            sprite,
+            spritePath: `assets/sprites/${encodeURIComponent(sprite)}.png`,
+            typeSpecialization: record.typeSpecialization || null
+        };
+    }
+
     /**
      * Converts item names into the default uppercase asset filename format.
      */
@@ -392,7 +412,8 @@
         return {
             attacks: records.attacks.map(normalizeAttack),
             items: records.items.map(normalizeItem),
-            pokemon: records.pokemon.map(normalizePokemon)
+            pokemon: records.pokemon.map(normalizePokemon),
+            trainers: (records.trainers || []).map(normalizeTrainer).filter(trainer => trainer.name)
         };
     }
 
@@ -418,13 +439,14 @@
      * It loads and normalizes all card data, then replaces arena.GameData.
      */
     async function loadGameData() {
-        const [pokemon, attacks, items] = await Promise.all([
+        const [pokemon, attacks, items, trainers] = await Promise.all([
             loadJson('pokemon.json', fallbackRecords.pokemon),
             loadJson('attacks.json', fallbackRecords.attacks),
-            loadJson('items.json', fallbackRecords.items)
+            loadJson('items.json', fallbackRecords.items),
+            loadJson('trainers.json', fallbackRecords.trainers)
         ]);
 
-        arena.GameData = normalizeGameData({ pokemon, attacks, items });
+        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers });
         return arena.GameData;
     }
 

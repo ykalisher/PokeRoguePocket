@@ -1978,6 +1978,88 @@ button.playing-card:focus-visible {
     background-color: rgba(216, 95, 79, 0.38);
 }
 
+/* Run trainer intro and battle-result floating windows. */
+.battle-flow-screen {
+    grid-row: 1 / -1;
+    min-height: calc(100dvh - 20px);
+    display: grid;
+    place-items: center;
+    padding: 18px;
+}
+
+.battle-flow-card,
+.battle-result-window {
+    width: min(360px, calc(100vw - 28px));
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid rgba(251, 246, 232, 0.22);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(251, 246, 232, 0.08), rgba(0, 0, 0, 0.16)),
+        #102f2d;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+    text-align: center;
+}
+
+.battle-flow-sprite {
+    width: 112px;
+    height: 112px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.battle-flow-copy {
+    display: grid;
+    gap: 5px;
+}
+
+.battle-flow-kicker {
+    color: var(--gold);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.battle-flow-card h1,
+.battle-result-window h1 {
+    margin: 0;
+    color: #fbf6e8;
+    font-size: 1.85rem;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.battle-flow-card p,
+.battle-result-window p {
+    margin: 0;
+    color: rgba(251, 246, 232, 0.74);
+    line-height: 1.4;
+}
+
+.battle-flow-primary {
+    min-width: 160px;
+}
+
+.battle-flow-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2300;
+    display: grid;
+    place-items: center;
+    padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    background-color: rgba(5, 13, 16, 0.62);
+}
+
+.battle-flow-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
 /* Scrollable content area inside the reference window. */
 .rules-reference-body {
     min-height: 0;

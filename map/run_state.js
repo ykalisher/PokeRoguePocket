@@ -7,16 +7,20 @@
 
     const STORAGE_KEY = 'pokemon-rogue-pocket-run';
     const STORAGE_VERSION = 1;
+    const STARTING_CASH = 100;
 
     function createRunState({ area, collections }) {
         return {
             area: {
+                activeBattleNodeId: null,
                 activeCaptureNodeId: null,
                 currentNodeId: 'start',
                 graph: area,
                 traveledPathKeys: [],
                 visitedNodeIds: ['start']
             },
+            battleEncounters: {},
+            cash: STARTING_CASH,
             captureEncounters: {},
             collections: normalizeCollections(collections),
             nextCardId: 1,
@@ -93,6 +97,16 @@
         return encounter && !encounter.completed ? encounter : null;
     }
 
+    function getActiveBattleEncounter(run) {
+        const nodeId = run && run.area ? run.area.activeBattleNodeId : null;
+
+        if (!nodeId || !run.battleEncounters) return null;
+
+        const encounter = run.battleEncounters[nodeId];
+
+        return encounter && !encounter.completed ? encounter : null;
+    }
+
     function createPokemonCard(pokemon, owner, id) {
         return {
             currentHealth: pokemon.baseHealth,
@@ -122,6 +136,16 @@
         };
     }
 
+    function createItemCard(item, owner, id) {
+        return {
+            faceUp: true,
+            id,
+            item,
+            kind: 'item',
+            owner
+        };
+    }
+
     function allocateCardId(run, kind, name) {
         const nextCardId = Number.isFinite(run.nextCardId) ? run.nextCardId : 1;
 
@@ -139,6 +163,8 @@
 
         return {
             area,
+            battleEncounters: normalizeBattleEncounters(run.battleEncounters),
+            cash: Number.isFinite(run.cash) ? run.cash : STARTING_CASH,
             captureEncounters: normalizeCaptureEncounters(run.captureEncounters),
             collections: normalizeCollections(run.collections),
             nextCardId: Number.isFinite(run.nextCardId) ? run.nextCardId : 1,
@@ -152,6 +178,7 @@
         if (!area.graph || !Array.isArray(area.graph.nodes) || !Array.isArray(area.graph.edges)) return null;
 
         return {
+            activeBattleNodeId: area.activeBattleNodeId || null,
             activeCaptureNodeId: area.activeCaptureNodeId || null,
             currentNodeId: area.currentNodeId || 'start',
             graph: area.graph,
@@ -160,6 +187,26 @@
                 ? area.visitedNodeIds
                 : ['start']
         };
+    }
+
+    function normalizeBattleEncounters(battleEncounters) {
+        if (!battleEncounters || typeof battleEncounters !== 'object') return {};
+
+        return Object.fromEntries(Object.entries(battleEncounters)
+            .filter(([, encounter]) => encounter && typeof encounter === 'object')
+            .map(([nodeId, encounter]) => [nodeId, {
+                completed: Boolean(encounter.completed),
+                completedAt: encounter.completedAt || null,
+                createdAt: encounter.createdAt || null,
+                finishedAt: encounter.finishedAt || null,
+                nodeId: encounter.nodeId || nodeId,
+                outcome: encounter.outcome || null,
+                rank: encounter.rank || 'Standard',
+                rewardCash: Number.isFinite(encounter.rewardCash) ? encounter.rewardCash : 0,
+                rewardCollected: Boolean(encounter.rewardCollected),
+                startedAt: encounter.startedAt || null,
+                trainerName: encounter.trainerName || null
+            }]));
     }
 
     function normalizeCaptureEncounters(captureEncounters) {
@@ -173,6 +220,7 @@
                 nodeId: encounter.nodeId || nodeId,
                 options: Array.isArray(encounter.options) ? encounter.options.filter(Boolean) : [],
                 rewardAttackName: encounter.rewardAttackName || null,
+                rewardDragonGemName: encounter.rewardDragonGemName || null,
                 selectedPokemonName: encounter.selectedPokemonName || null,
                 terrain: encounter.terrain || null
             }]));
@@ -204,8 +252,10 @@
         allocateCardId,
         clearRunState,
         createAttackCard,
+        createItemCard,
         createPokemonCard,
         createRunState,
+        getActiveBattleEncounter,
         getActiveCaptureEncounter,
         hasSavedRun,
         loadRunState,

@@ -10,7 +10,6 @@
     const OPENING_LINEAR_STEPS = 3;
     const START_NODE_ID = 'start';
     const BOSS_NODE_ID = 'boss-12';
-    const PLAYER_MONEY = 100;
     const AREA_THEME = Object.freeze({
         areaNumber: 1,
         name: 'Coastal Trail',
@@ -124,6 +123,24 @@
         state.visitedNodeIds.add(node.id);
         state.traveledPathKeys.add(getPathKey(previousNodeId, node.id));
 
+        if (node.type === 'battle') {
+            const encounter = getOrCreateBattleEncounter(node);
+
+            if (!encounter) {
+                state.currentNodeId = previousNodeId;
+                state.visitedNodeIds.delete(node.id);
+                state.traveledPathKeys.delete(getPathKey(previousNodeId, node.id));
+                render();
+                showPopup('No Standard trainers are available.');
+                return;
+            }
+
+            saveRunState();
+            arena.Model.clearSavedBattleState();
+            window.location.href = 'game.html';
+            return;
+        }
+
         if (node.type === 'capture') {
             getOrCreateCaptureEncounter(node);
             saveRunState();
@@ -172,10 +189,12 @@
     }
 
     function renderMoney() {
+        const cash = Number.isFinite(state.run && state.run.cash) ? state.run.cash : 0;
+
         return `
-            <span class="area-money" aria-label="${PLAYER_MONEY} coins">
+            <span class="area-money" aria-label="${cash} coins">
                 <span class="area-money-icon" aria-hidden="true">C</span>
-                <span>${PLAYER_MONEY}</span>
+                <span>${cash}</span>
             </span>
         `;
     }
@@ -356,19 +375,39 @@
     }
 
     function restoreOrCreateRunState() {
+        if (consumeNewRunRequest()) {
+            runStore.clearRunState();
+            arena.Model.clearSavedBattleState();
+            createFreshRunState();
+            return;
+        }
+
         const savedRun = runStore.loadRunState();
 
         if (savedRun) {
             applyRunState(savedRun);
-            if (sanitizeCaptureEncounters()) saveRunState();
+            if (sanitizeCaptureEncounters() || sanitizeBattleEncounters()) saveRunState();
             return;
         }
 
+        createFreshRunState();
+    }
+
+    function createFreshRunState() {
         applyRunState(runStore.createRunState({
             area: createAreaGraph(),
             collections: createCardCollections()
         }));
         saveRunState();
+    }
+
+    function consumeNewRunRequest() {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.get('newRun') !== '1') return false;
+
+        window.history.replaceState(null, '', 'area.html');
+        return true;
     }
 
     function applyRunState(run) {
@@ -396,6 +435,11 @@
     }
 
     function redirectToActiveCapture() {
+        if (runStore.getActiveBattleEncounter(state.run)) {
+            window.location.href = 'game.html';
+            return true;
+        }
+
         if (!runStore.getActiveCaptureEncounter(state.run)) return false;
 
         window.location.href = 'capture.html';
@@ -407,6 +451,7 @@
 
         if (existingEncounter && !existingEncounter.completed) {
             state.run.area.activeCaptureNodeId = node.id;
+            state.run.area.activeBattleNodeId = null;
             sanitizeCaptureEncounter(existingEncounter);
             return existingEncounter;
         }
@@ -424,6 +469,42 @@
 
         state.run.captureEncounters[node.id] = encounter;
         state.run.area.activeCaptureNodeId = node.id;
+        state.run.area.activeBattleNodeId = null;
+
+        return encounter;
+    }
+
+    function getOrCreateBattleEncounter(node) {
+        const existingEncounter = state.run.battleEncounters[node.id];
+
+        if (existingEncounter && !existingEncounter.completed) {
+            state.run.area.activeBattleNodeId = node.id;
+            state.run.area.activeCaptureNodeId = null;
+            sanitizeBattleEncounter(existingEncounter);
+            return existingEncounter;
+        }
+
+        const trainer = chooseStandardTrainer();
+
+        if (!trainer) return null;
+
+        const encounter = {
+            completed: false,
+            completedAt: null,
+            createdAt: new Date().toISOString(),
+            finishedAt: null,
+            nodeId: node.id,
+            outcome: null,
+            rank: trainer.rank,
+            rewardCash: trainer.cash,
+            rewardCollected: false,
+            startedAt: null,
+            trainerName: trainer.name
+        };
+
+        state.run.battleEncounters[node.id] = encounter;
+        state.run.area.activeBattleNodeId = node.id;
+        state.run.area.activeCaptureNodeId = null;
 
         return encounter;
     }
@@ -481,6 +562,51 @@
         encounter.options = nextOptions;
 
         return changed;
+    }
+
+    function sanitizeBattleEncounters() {
+        if (!state.run || !state.run.battleEncounters) return false;
+
+        return Object.values(state.run.battleEncounters).reduce((changed, encounter) => {
+            if (!encounter || encounter.completed) return changed;
+
+            return sanitizeBattleEncounter(encounter) || changed;
+        }, false);
+    }
+
+    function sanitizeBattleEncounter(encounter) {
+        if (encounter.trainerName && getTrainerByName(encounter.trainerName)) return false;
+
+        const trainer = chooseStandardTrainer();
+
+        if (!trainer) return false;
+
+        encounter.rank = trainer.rank;
+        encounter.rewardCash = trainer.cash;
+        encounter.trainerName = trainer.name;
+
+        return true;
+    }
+
+    function chooseStandardTrainer() {
+        const trainers = arena.GameData && Array.isArray(arena.GameData.trainers)
+            ? arena.GameData.trainers
+            : [];
+        const standardTrainers = trainers.filter(trainer => (
+            trainer && String(trainer.rank || '').toLowerCase() === 'standard'
+        ));
+
+        if (standardTrainers.length === 0) return null;
+
+        return standardTrainers[randomInt(0, standardTrainers.length - 1)];
+    }
+
+    function getTrainerByName(name) {
+        const trainers = arena.GameData && Array.isArray(arena.GameData.trainers)
+            ? arena.GameData.trainers
+            : [];
+
+        return trainers.find(trainer => trainer.name === name) || null;
     }
 
     function getUniqueRecordsByName(records) {

@@ -67,7 +67,8 @@ async function handleAddTrainer(rl, pokemonList, attackList, itemList) {
         prompt: 'Select Item',
         records: itemList,
         count: 5,
-        describe: describeItem
+        describe: describeItem,
+        allowRepeats: true
     });
     trainer.items = selectedItems.map(item => item.name);
 
@@ -89,14 +90,14 @@ function readJsonArray(filePath) {
 }
 
 function validateRequiredData(pokemonList, attackList, itemList) {
-    if (pokemonList.length < 3) {
-        throw new Error(`${POKEMON_FILE} must contain at least 3 Pokemon.`);
+    if (pokemonList.length < 1) {
+        throw new Error(`${POKEMON_FILE} must contain at least 1 Pokemon.`);
     }
-    if (attackList.length < 4) {
-        throw new Error(`${ATTACKS_FILE} must contain at least 4 attacks.`);
+    if (attackList.length < 1) {
+        throw new Error(`${ATTACKS_FILE} must contain at least 1 attack.`);
     }
-    if (itemList.length < 5) {
-        throw new Error(`${ITEMS_FILE} must contain at least 5 items.`);
+    if (itemList.length < 1) {
+        throw new Error(`${ITEMS_FILE} must contain at least 1 item.`);
     }
 }
 
@@ -108,8 +109,7 @@ async function askPokemonTeam(rl, pokemonList) {
             title: 'Pokemon',
             prompt: `Select Pokemon ${i + 1}`,
             records: pokemonList,
-            describe: describePokemon,
-            unavailableNames: selected.map(entry => entry.name)
+            describe: describePokemon
         });
         selected.push(pokemon);
     }
@@ -122,8 +122,7 @@ async function askPokemonTeam(rl, pokemonList) {
             title: 'Pokemon',
             prompt: `Select Pokemon ${selected.length + 1}`,
             records: pokemonList,
-            describe: describePokemon,
-            unavailableNames: selected.map(entry => entry.name)
+            describe: describePokemon
         });
         selected.push(pokemon);
     }
@@ -132,12 +131,19 @@ async function askPokemonTeam(rl, pokemonList) {
 }
 
 async function askAttacksForPokemon(rl, pokemon, attackList) {
+    const learnableAttacks = attackList.filter(attack => pokemonCanLearnAttack(pokemon, attack));
+
+    if (learnableAttacks.length === 0) {
+        throw new Error(`${pokemon.name} cannot learn any attacks from ${ATTACKS_FILE}.`);
+    }
+
     return askFixedSelections(rl, {
         title: `Attacks for ${pokemon.name}`,
         prompt: `Select Attack for ${pokemon.name}`,
-        records: attackList,
+        records: learnableAttacks,
         count: 4,
-        describe: describeAttack
+        describe: describeAttack,
+        allowRepeats: true
     });
 }
 
@@ -150,7 +156,7 @@ async function askFixedSelections(rl, options) {
             prompt: `${options.prompt} ${i + 1}`,
             records: options.records,
             describe: options.describe,
-            unavailableNames: selected.map(entry => entry.name)
+            unavailableNames: options.allowRepeats ? [] : selected.map(entry => entry.name)
         });
         selected.push(record);
     }
@@ -252,12 +258,34 @@ function describePokemon(pokemon) {
 }
 
 function describeAttack(attack) {
+    const types = getRecordTypes(attack, ['type1', 'type2']).join('/');
     const statChangeCount = Array.isArray(attack.statChanges) ? attack.statChanges.length : 0;
-    return `${attack.name} | Power ${Number(attack.basePower) || 0} | Status ${attack.status || 'NONE'} | Stat Changes ${statChangeCount}`;
+    return `${attack.name} | ${types || 'NONE'} | Power ${Number(attack.basePower) || 0} | Status ${attack.status || 'NONE'} | Stat Changes ${statChangeCount}`;
 }
 
 function describeItem(item) {
     return item.name;
+}
+
+function pokemonCanLearnAttack(pokemon, attack) {
+    const pokemonTypes = getRecordTypes(pokemon, ['type1', 'type2', 'type3']);
+    const requiredTypes = getRecordTypes(attack, ['type1', 'type2']);
+
+    if (requiredTypes.length === 0) return true;
+
+    if (attack.full_type_requirements) {
+        return requiredTypes.every(type => pokemonTypes.includes(type));
+    }
+
+    return requiredTypes.some(type => pokemonTypes.includes(type));
+}
+
+function getRecordTypes(record, typeKeys) {
+    const types = Array.isArray(record.types)
+        ? record.types
+        : typeKeys.map(key => record[key]);
+
+    return types.filter(type => type && type !== 'NONE');
 }
 
 main();

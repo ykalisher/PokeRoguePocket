@@ -94,8 +94,8 @@
         state.pileWindow = null;
         state.plannedActions = { opponent: [], player: [] };
         state.players = {
-            opponent: model.createPlayer('opponent', 'Rival'),
-            player: model.createPlayer('player', 'You')
+            opponent: model.createPlayer('opponent', getConfiguredPlayerName('opponent', 'Rival')),
+            player: model.createPlayer('player', getConfiguredPlayerName('player', 'You'))
         };
         state.rulesWindowOpen = false;
         state.selectedCardId = null;
@@ -2572,17 +2572,31 @@
         state.phase = 'finished';
         clearPendingAction();
 
+        const outcome = playerDefeated ? 'loss' : 'win';
         const message = playerDefeated && opponentDefeated
             ? 'Both sides are out of Pokemon.'
             : playerDefeated
-                ? 'Rival wins.'
+                ? `${state.players.opponent.name} wins.`
                 : 'You win.';
 
         logEvent(message);
         showPopup(message);
         render();
+        notifyBattleFinished(outcome);
 
         return true;
+    }
+
+    function getConfiguredPlayerName(playerId, fallbackName) {
+        const config = arena.BattleConfig && arena.BattleConfig[playerId];
+
+        return config && config.name ? config.name : fallbackName;
+    }
+
+    function notifyBattleFinished(outcome) {
+        if (!arena.BattleFlow || typeof arena.BattleFlow.handleBattleFinished !== 'function') return;
+
+        arena.BattleFlow.handleBattleFinished(outcome);
     }
 
     function isPlayerDefeated(player) {

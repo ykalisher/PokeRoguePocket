@@ -1,1 +1,48 @@
-[]
+[
+  {
+    "name": "Gamer",
+    "sprite": "Gamer",
+    "cash": 100,
+    "rank": "Standard",
+    "typeSpecialization": "HUMAN",
+    "pokemon": [
+      "Alakazam",
+      "Slaking",
+      "Gardevoir",
+      "Gengar"
+    ],
+    "attacks": [
+      [
+        "Mind Break",
+        "Mind Break",
+        "Trick",
+        "Future Sight"
+      ],
+      [
+        "Body Slam",
+        "Body Slam",
+        "Mega Punch",
+        "Mega Punch"
+      ],
+      [
+        "Expanding Force",
+        "Expanding Force",
+        "Meditate",
+        "Trick"
+      ],
+      [
+        "Shadow Ball",
+        "Jumpscare",
+        "Ghastly Grip",
+        "Curse"
+      ]
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Liechi Berry"
+    ]
+  }
+]
