@@ -7,6 +7,8 @@
 
     const STORAGE_KEY = 'pokemon-rogue-pocket-run';
     const STORAGE_VERSION = 1;
+    const PC_STORAGE_KEY = 'pokemon-rogue-pocket-pc';
+    const PC_STORAGE_VERSION = 1;
     const STARTING_CASH = 100;
 
     function createRunState({ area, collections }) {
@@ -14,6 +16,7 @@
             area: {
                 activeBattleNodeId: null,
                 activeCaptureNodeId: null,
+                activeMartNodeId: null,
                 currentNodeId: 'start',
                 graph: area,
                 traveledPathKeys: [],
@@ -23,6 +26,7 @@
             cash: STARTING_CASH,
             captureEncounters: {},
             collections: normalizeCollections(collections),
+            martEncounters: {},
             nextCardId: 1,
             savedAt: null,
             version: STORAGE_VERSION
@@ -87,6 +91,62 @@
         return Boolean(loadRunState());
     }
 
+    function loadPcPokemon() {
+        if (!canUseStorage()) return null;
+
+        try {
+            const rawState = localStorage.getItem(PC_STORAGE_KEY);
+
+            if (!rawState) return null;
+
+            const parsedState = JSON.parse(rawState);
+
+            if (!parsedState || parsedState.version !== PC_STORAGE_VERSION) {
+                clearPcPokemon();
+                return null;
+            }
+
+            return normalizePcPokemonCard(parsedState.card);
+        } catch (error) {
+            console.warn('Could not load PC Pokemon.', error);
+            clearPcPokemon();
+            return null;
+        }
+    }
+
+    function savePcPokemon(card) {
+        if (!canUseStorage()) return false;
+
+        try {
+            const normalizedCard = normalizePcPokemonCard(card);
+
+            if (!normalizedCard) return clearPcPokemon();
+
+            localStorage.setItem(PC_STORAGE_KEY, JSON.stringify({
+                card: normalizedCard,
+                savedAt: new Date().toISOString(),
+                version: PC_STORAGE_VERSION
+            }));
+
+            return true;
+        } catch (error) {
+            console.warn('Could not save PC Pokemon.', error);
+            return false;
+        }
+    }
+
+    function clearPcPokemon() {
+        if (!canUseStorage()) return false;
+
+        try {
+            localStorage.removeItem(PC_STORAGE_KEY);
+            return true;
+        } catch (error) {
+            console.warn('Could not clear PC Pokemon.', error);
+            return false;
+        }
+    }
+
     function getActiveCaptureEncounter(run) {
         const nodeId = run && run.area ? run.area.activeCaptureNodeId : null;
 
@@ -103,6 +163,16 @@
         if (!nodeId || !run.battleEncounters) return null;
 
         const encounter = run.battleEncounters[nodeId];
+
+        return encounter && !encounter.completed ? encounter : null;
+    }
+
+    function getActiveMartEncounter(run) {
+        const nodeId = run && run.area ? run.area.activeMartNodeId : null;
+
+        if (!nodeId || !run.martEncounters) return null;
+
+        const encounter = run.martEncounters[nodeId];
 
         return encounter && !encounter.completed ? encounter : null;
     }
@@ -167,6 +237,7 @@
             cash: Number.isFinite(run.cash) ? run.cash : STARTING_CASH,
             captureEncounters: normalizeCaptureEncounters(run.captureEncounters),
             collections: normalizeCollections(run.collections),
+            martEncounters: normalizeMartEncounters(run.martEncounters),
             nextCardId: Number.isFinite(run.nextCardId) ? run.nextCardId : 1,
             savedAt: run.savedAt || null,
             version: STORAGE_VERSION
@@ -180,6 +251,7 @@
         return {
             activeBattleNodeId: area.activeBattleNodeId || null,
             activeCaptureNodeId: area.activeCaptureNodeId || null,
+            activeMartNodeId: area.activeMartNodeId || null,
             currentNodeId: area.currentNodeId || 'start',
             graph: area.graph,
             traveledPathKeys: Array.isArray(area.traveledPathKeys) ? area.traveledPathKeys : [],
@@ -209,6 +281,23 @@
             }]));
     }
 
+    function normalizeMartEncounters(martEncounters) {
+        if (!martEncounters || typeof martEncounters !== 'object') return {};
+
+        return Object.fromEntries(Object.entries(martEncounters)
+            .filter(([, encounter]) => encounter && typeof encounter === 'object')
+            .map(([nodeId, encounter]) => [nodeId, {
+                attackNames: normalizeNameList(encounter.attackNames),
+                boughtAttackNames: normalizeNameList(encounter.boughtAttackNames),
+                boughtItemNames: normalizeNameList(encounter.boughtItemNames),
+                completed: Boolean(encounter.completed),
+                completedAt: encounter.completedAt || null,
+                createdAt: encounter.createdAt || null,
+                itemNames: normalizeNameList(encounter.itemNames),
+                nodeId: encounter.nodeId || nodeId
+            }]));
+    }
+
     function normalizeCaptureEncounters(captureEncounters) {
         if (!captureEncounters || typeof captureEncounters !== 'object') return {};
 
@@ -235,6 +324,25 @@
         };
     }
 
+    function normalizePcPokemonCard(card) {
+        if (!card || typeof card !== 'object' || card.kind !== 'pokemon' || !card.pokemon) return null;
+
+        return createPokemonCard(card.pokemon, 'player', 'pc-pokemon');
+    }
+
+    function normalizeNameList(names) {
+        if (!Array.isArray(names)) return [];
+
+        const seenNames = new Set();
+
+        return names.filter(name => {
+            if (!name || seenNames.has(name)) return false;
+
+            seenNames.add(name);
+            return true;
+        });
+    }
+
     function canUseStorage() {
         return typeof localStorage !== 'undefined';
     }
@@ -248,8 +356,10 @@
     }
 
     global.PokeRun = {
+        PC_STORAGE_KEY,
         STORAGE_KEY,
         allocateCardId,
+        clearPcPokemon,
         clearRunState,
         createAttackCard,
         createItemCard,
@@ -257,8 +367,11 @@
         createRunState,
         getActiveBattleEncounter,
         getActiveCaptureEncounter,
+        getActiveMartEncounter,
         hasSavedRun,
+        loadPcPokemon,
         loadRunState,
+        savePcPokemon,
         saveRunState
     };
 })(window);

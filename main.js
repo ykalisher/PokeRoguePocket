@@ -59,6 +59,7 @@ function getSavedRunRoute() {
 
     if (hasActiveBattleEncounter(run)) return 'game.html';
     if (hasActiveCaptureEncounter(run)) return 'capture.html';
+    if (hasActiveMartEncounter(run)) return 'mart.html';
 
     return 'area.html';
 }
@@ -87,6 +88,15 @@ function hasActiveBattleEncounter(run) {
     const activeBattleNodeId = run.area.activeBattleNodeId;
     const encounter = activeBattleNodeId && run.battleEncounters
         ? run.battleEncounters[activeBattleNodeId]
+        : null;
+
+    return Boolean(encounter && !encounter.completed);
+}
+
+function hasActiveMartEncounter(run) {
+    const activeMartNodeId = run.area.activeMartNodeId;
+    const encounter = activeMartNodeId && run.martEncounters
+        ? run.martEncounters[activeMartNodeId]
         : null;
 
     return Boolean(encounter && !encounter.completed);

@@ -62,7 +62,7 @@
 
         restoreOrCreateRunState();
 
-        if (redirectToActiveCapture()) return;
+        if (redirectToActiveEncounter()) return;
 
         render();
     }
@@ -145,6 +145,13 @@
             getOrCreateCaptureEncounter(node);
             saveRunState();
             window.location.href = 'capture.html';
+            return;
+        }
+
+        if (node.type === 'shop') {
+            getOrCreateMartEncounter(node);
+            saveRunState();
+            window.location.href = 'mart.html';
             return;
         }
 
@@ -434,15 +441,20 @@
         state.run.collections = state.collections;
     }
 
-    function redirectToActiveCapture() {
+    function redirectToActiveEncounter() {
         if (runStore.getActiveBattleEncounter(state.run)) {
             window.location.href = 'game.html';
             return true;
         }
 
-        if (!runStore.getActiveCaptureEncounter(state.run)) return false;
+        if (runStore.getActiveCaptureEncounter(state.run)) {
+            window.location.href = 'capture.html';
+            return true;
+        }
 
-        window.location.href = 'capture.html';
+        if (!runStore.getActiveMartEncounter(state.run)) return false;
+
+        window.location.href = 'mart.html';
         return true;
     }
 
@@ -452,6 +464,7 @@
         if (existingEncounter && !existingEncounter.completed) {
             state.run.area.activeCaptureNodeId = node.id;
             state.run.area.activeBattleNodeId = null;
+            state.run.area.activeMartNodeId = null;
             sanitizeCaptureEncounter(existingEncounter);
             return existingEncounter;
         }
@@ -470,6 +483,7 @@
         state.run.captureEncounters[node.id] = encounter;
         state.run.area.activeCaptureNodeId = node.id;
         state.run.area.activeBattleNodeId = null;
+        state.run.area.activeMartNodeId = null;
 
         return encounter;
     }
@@ -480,6 +494,7 @@
         if (existingEncounter && !existingEncounter.completed) {
             state.run.area.activeBattleNodeId = node.id;
             state.run.area.activeCaptureNodeId = null;
+            state.run.area.activeMartNodeId = null;
             sanitizeBattleEncounter(existingEncounter);
             return existingEncounter;
         }
@@ -505,8 +520,108 @@
         state.run.battleEncounters[node.id] = encounter;
         state.run.area.activeBattleNodeId = node.id;
         state.run.area.activeCaptureNodeId = null;
+        state.run.area.activeMartNodeId = null;
 
         return encounter;
+    }
+
+    function getOrCreateMartEncounter(node) {
+        const existingEncounter = state.run.martEncounters[node.id];
+
+        if (existingEncounter && !existingEncounter.completed) {
+            state.run.area.activeMartNodeId = node.id;
+            state.run.area.activeBattleNodeId = null;
+            state.run.area.activeCaptureNodeId = null;
+            sanitizeMartEncounter(existingEncounter);
+            return existingEncounter;
+        }
+
+        const encounter = {
+            attackNames: chooseMartCardNames('attacks', 8),
+            boughtAttackNames: [],
+            boughtItemNames: [],
+            completed: false,
+            completedAt: null,
+            createdAt: new Date().toISOString(),
+            itemNames: chooseMartCardNames('items', 4),
+            nodeId: node.id
+        };
+
+        state.run.martEncounters[node.id] = encounter;
+        state.run.area.activeMartNodeId = node.id;
+        state.run.area.activeBattleNodeId = null;
+        state.run.area.activeCaptureNodeId = null;
+
+        return encounter;
+    }
+
+    function sanitizeMartEncounter(encounter) {
+        const attackNames = sanitizeMartCardNames('attacks', encounter.attackNames, 8);
+        const itemNames = sanitizeMartCardNames('items', encounter.itemNames, 4);
+        const changed = didNameListChange(encounter.attackNames, attackNames) ||
+            didNameListChange(encounter.itemNames, itemNames);
+
+        encounter.attackNames = attackNames;
+        encounter.itemNames = itemNames;
+        encounter.boughtAttackNames = sanitizeBoughtNames(encounter.boughtAttackNames, attackNames);
+        encounter.boughtItemNames = sanitizeBoughtNames(encounter.boughtItemNames, itemNames);
+
+        return changed;
+    }
+
+    function sanitizeMartCardNames(collectionKey, names, count) {
+        const availableNames = new Set(getUniqueGameRecords(collectionKey).map(record => record.name));
+        const seenNames = new Set();
+        const validNames = Array.isArray(names)
+            ? names.filter(name => {
+                if (!availableNames.has(name) || seenNames.has(name)) return false;
+
+                seenNames.add(name);
+                return true;
+            })
+            : [];
+        const missingCount = Math.max(0, count - validNames.length);
+
+        if (missingCount === 0) return validNames;
+
+        const replacementNames = chooseMartCardNames(collectionKey, count)
+            .filter(name => !seenNames.has(name))
+            .slice(0, missingCount);
+
+        return [...validNames, ...replacementNames];
+    }
+
+    function sanitizeBoughtNames(names, inventoryNames) {
+        const inventorySet = new Set(inventoryNames);
+        const seenNames = new Set();
+
+        return (Array.isArray(names) ? names : []).filter(name => {
+            if (!inventorySet.has(name) || seenNames.has(name)) return false;
+
+            seenNames.add(name);
+            return true;
+        });
+    }
+
+    function didNameListChange(previousNames, nextNames) {
+        const names = Array.isArray(previousNames) ? previousNames : [];
+
+        return names.length !== nextNames.length ||
+            nextNames.some((name, index) => name !== names[index]);
+    }
+
+    function chooseMartCardNames(collectionKey, count) {
+        return shuffleRecords(getUniqueGameRecords(collectionKey))
+            .slice(0, count)
+            .map(record => record.name);
+    }
+
+    function getUniqueGameRecords(collectionKey) {
+        const records = arena.GameData && Array.isArray(arena.GameData[collectionKey])
+            ? arena.GameData[collectionKey]
+            : [];
+
+        return getUniqueRecordsByName(records);
     }
 
     function chooseCapturePokemonOptions() {
