@@ -17,6 +17,7 @@
     });
 
     const state = {
+        cardWindow: null,
         elements: {},
         encounter: null,
         phase: 'choosing',
@@ -31,6 +32,7 @@
     async function init() {
         state.elements.root = document.getElementById('capture-root');
         state.elements.root.addEventListener('click', handleCaptureClick);
+        window.addEventListener('keydown', handleKeyDown);
 
         await arena.Data.loadGameData();
 
@@ -55,11 +57,48 @@
     }
 
     function handleCaptureClick(event) {
+        const closeButton = event.target.closest('[data-close-card-window]');
+
+        if (closeButton) {
+            closeCardWindow();
+            return;
+        }
+
+        if (event.target.matches('[data-card-window-overlay]')) {
+            closeCardWindow();
+            return;
+        }
+
+        const cardWindowButton = event.target.closest('[data-card-window]');
+
+        if (cardWindowButton) {
+            openCardWindow(cardWindowButton.dataset.cardWindow);
+            return;
+        }
+
         const optionButton = event.target.closest('[data-capture-option]');
 
         if (!optionButton || state.phase !== 'choosing') return;
 
         claimPokemon(Number(optionButton.dataset.captureOption));
+    }
+
+    function handleKeyDown(event) {
+        if (event.key === 'Escape' && state.cardWindow) {
+            closeCardWindow();
+        }
+    }
+
+    function openCardWindow(collectionKey) {
+        if (!state.run || !state.run.collections || !Array.isArray(state.run.collections[collectionKey])) return;
+
+        state.cardWindow = collectionKey;
+        render();
+    }
+
+    function closeCardWindow() {
+        state.cardWindow = null;
+        render();
     }
 
     async function claimPokemon(optionIndex) {
@@ -139,7 +178,7 @@
                     <h1>${getPhaseTitle(selectedPokemon)}</h1>
                 </div>
                 <div class="capture-hud" aria-label="Run cards">
-                    ${renderDeckCounter('pokemon', 'Pokemon list', state.run.collections.pokemon.length)}
+                    ${renderDeckCounter('pokemon', 'Pokemon cards', state.run.collections.pokemon.length)}
                     ${renderDeckCounter('actions', 'Action deck', state.run.collections.actions.length)}
                 </div>
             </header>
@@ -149,16 +188,77 @@
                 </div>
                 ${renderRewardTray()}
             </section>
+            ${state.cardWindow ? renderCardWindow() : ''}
         `;
     }
 
     function renderDeckCounter(collectionKey, label, count) {
         return `
-            <span class="capture-deck-counter" aria-label="${label}: ${count} cards">
+            <button class="capture-deck-counter" type="button" data-card-window="${collectionKey}" aria-label="Open ${label}" title="${label}">
                 <img src="${CARD_BACKS[collectionKey]}" alt="">
                 <span>${count}</span>
-            </span>
+            </button>
         `;
+    }
+
+    function renderCardWindow() {
+        const cards = getCardWindowCards();
+        const title = state.cardWindow === 'pokemon' ? 'Pokemon Cards' : 'Action Deck';
+        const countText = `${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`;
+        const content = state.cardWindow === 'actions'
+            ? renderActionCardSections(cards)
+            : renderCardGrid(cards);
+
+        return `
+            <div class="area-overlay" data-card-window-overlay>
+                <section class="area-card-window" role="dialog" aria-modal="true" aria-labelledby="area-card-window-title">
+                    <header class="area-card-window-header">
+                        <div>
+                            <h2 class="area-card-window-title" id="area-card-window-title">${title}</h2>
+                            <span class="area-card-window-count">${countText}</span>
+                        </div>
+                        <button class="area-card-window-close" type="button" data-close-card-window aria-label="Close card window">x</button>
+                    </header>
+                    <div class="area-card-window-body">${content}</div>
+                </section>
+            </div>
+        `;
+    }
+
+    function renderActionCardSections(cards) {
+        const attacks = cards.filter(arena.Model.isAttackCard).sort(compareCardsByName);
+        const items = cards.filter(arena.Model.isItemCard).sort(compareCardsByName);
+
+        return [
+            renderCardSection('Attacks', attacks),
+            renderCardSection('Items', items)
+        ].join('');
+    }
+
+    function renderCardSection(title, cards) {
+        return `
+            <section class="area-card-section">
+                <header class="area-card-section-header">
+                    <h3>${title}</h3>
+                    <span>${cards.length} ${cards.length === 1 ? 'card' : 'cards'}</span>
+                </header>
+                ${renderCardGrid(cards)}
+            </section>
+        `;
+    }
+
+    function renderCardGrid(cards) {
+        return `
+            <div class="area-card-grid">
+                ${cards.map(card => arena.Render.renderCardPreview(card, { className: 'area-card-preview' })).join('')}
+            </div>
+        `;
+    }
+
+    function getCardWindowCards() {
+        return state.run.collections[state.cardWindow]
+            .slice()
+            .sort(compareCardsByName);
     }
 
     function renderPokemonOption(pokemon, index) {
@@ -416,5 +516,13 @@
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '');
+    }
+
+    function compareCardsByName(leftCard, rightCard) {
+        const nameComparison = arena.Model.getCardName(leftCard).localeCompare(arena.Model.getCardName(rightCard));
+
+        if (nameComparison !== 0) return nameComparison;
+
+        return leftCard.id.localeCompare(rightCard.id);
     }
 })(window.CardArena = window.CardArena || {}, window.PokeRun);
