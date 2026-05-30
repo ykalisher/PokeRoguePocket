@@ -29,9 +29,9 @@ This file is for humans only! Agents should not act on this file unless explicit
 	WATER: neutralizing/healing off effects
 - [x] Redo pokemon given the new type specializations
 	- [x] Add 3 pokemon for each type, and add 2 move for each type that pokemon has that synergize with it (If I add water/monster, that counts as 1 water, then need to add 3 more monster still)
-	- Currently on Mamoswine
 - [x] Add more pokemon with better overlapping types
 - [x] Add more items
+- [ ] Rebalance stats (human type is super broken)
 ## Overworld Mechanics
 - [ ] Decide on how you capture more pokemon.
 - [ ] Decide on how you get more attacks
@@ -47,12 +47,12 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [x] Add capture spot encounter data and wire capture nodes to a Pokemon selection/add-to-deck flow.
 - [ ] Add shop contents, prices, and buying UI for item and attack cards.
 - [ ] Add starter deck selection before entering the first area.
-- [ ] Connect regular battle nodes to the arena screen and return to the map after a win.
+- [x] Connect regular battle nodes to the arena screen and return to the map after a win.
 - [ ] Connect boss nodes to boss battles and gate area completion behind winning them.
 - [ ] Add four terrain-themed areas with terrain-specific Pokemon, trainers, shops, and events.
 - [ ] Add the final boss gauntlet after the fourth area.
-- [ ] Persist run state across screens, including current location, visited paths, money, Pokemon cards, and action cards.
-- [ ] Enforce run loss when the player loses a battle, then reset to a new run.
+- [x] Persist run state across screens, including current location, visited paths, money, Pokemon cards, and action cards.
+- [x] Enforce run loss when the player loses a battle, then reset to a new run.
 - [ ] Refine map generation bounds for branch density, node spacing, terrain weighting, and guaranteed boss placement.
 ## Battle Mechanics
 - [x] Implement statuses and stat changes in battles.
