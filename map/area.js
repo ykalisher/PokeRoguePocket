@@ -29,6 +29,7 @@
         { type: 'event', weight: 21 },
         { type: 'shop', weight: 15 }
     ]);
+    const LEGENDARY_CAPTURE_CHANCE = 0.3;
     const CARD_BACKS = Object.freeze({
         actions: 'assets/card-backs/ACTION_CARD_BACK.png',
         pokemon: 'assets/card-backs/POKEMON_CARD_BACK.png'
@@ -36,15 +37,23 @@
 
     const state = {
         area: null,
+        benchSummary: null,
+        benchWindowOpen: false,
         cardWindow: null,
         collections: {
             actions: [],
+            bench: {
+                actions: [],
+                pokemon: []
+            },
             pokemon: []
         },
         currentNodeId: START_NODE_ID,
         elements: {},
         popupTimer: null,
         run: null,
+        selectedActivePokemonId: null,
+        selectedBenchPokemonId: null,
         traveledPathKeys: new Set(),
         visitedNodeIds: new Set([START_NODE_ID])
     };
@@ -80,10 +89,58 @@
             return;
         }
 
+        const closeBenchButton = event.target.closest('[data-close-bench-window]');
+
+        if (closeBenchButton) {
+            closeBenchWindow();
+            return;
+        }
+
+        if (event.target.matches('[data-bench-window-overlay]')) {
+            closeBenchWindow();
+            return;
+        }
+
         const cardWindowButton = event.target.closest('[data-card-window]');
 
         if (cardWindowButton) {
             openCardWindow(cardWindowButton.dataset.cardWindow);
+            return;
+        }
+
+        const benchWindowButton = event.target.closest('[data-bench-window]');
+
+        if (benchWindowButton) {
+            openBenchWindow();
+            return;
+        }
+
+        const summaryDoneButton = event.target.closest('[data-bench-summary-done]');
+
+        if (summaryDoneButton) {
+            state.benchSummary = null;
+            render();
+            return;
+        }
+
+        const activePokemonButton = event.target.closest('[data-active-pokemon-id]');
+
+        if (activePokemonButton) {
+            selectActivePokemon(activePokemonButton.dataset.activePokemonId);
+            return;
+        }
+
+        const benchPokemonButton = event.target.closest('[data-bench-pokemon-id]');
+
+        if (benchPokemonButton) {
+            selectBenchPokemon(benchPokemonButton.dataset.benchPokemonId);
+            return;
+        }
+
+        const swapButton = event.target.closest('[data-bench-swap]');
+
+        if (swapButton) {
+            swapSelectedBenchPokemon();
             return;
         }
 
@@ -97,6 +154,8 @@
     function handleKeyDown(event) {
         if (event.key === 'Escape' && state.cardWindow) {
             closeCardWindow();
+        } else if (event.key === 'Escape' && state.benchWindowOpen) {
+            closeBenchWindow();
         }
     }
 
@@ -104,11 +163,56 @@
         if (!state.collections[collectionKey]) return;
 
         state.cardWindow = collectionKey;
+        state.benchWindowOpen = false;
         render();
     }
 
     function closeCardWindow() {
         state.cardWindow = null;
+        render();
+    }
+
+    function openBenchWindow() {
+        state.cardWindow = null;
+        state.benchWindowOpen = true;
+        state.benchSummary = null;
+        render();
+    }
+
+    function closeBenchWindow() {
+        state.benchWindowOpen = false;
+        state.benchSummary = null;
+        state.selectedActivePokemonId = null;
+        state.selectedBenchPokemonId = null;
+        render();
+    }
+
+    function selectActivePokemon(cardId) {
+        state.selectedActivePokemonId = state.selectedActivePokemonId === cardId ? null : cardId;
+        state.benchSummary = null;
+        render();
+    }
+
+    function selectBenchPokemon(cardId) {
+        state.selectedBenchPokemonId = state.selectedBenchPokemonId === cardId ? null : cardId;
+        state.benchSummary = null;
+        render();
+    }
+
+    function swapSelectedBenchPokemon() {
+        const result = runStore.swapBenchPokemon(
+            state.run,
+            state.selectedActivePokemonId,
+            state.selectedBenchPokemonId
+        );
+
+        if (!result) return;
+
+        state.collections = state.run.collections;
+        state.selectedActivePokemonId = null;
+        state.selectedBenchPokemonId = null;
+        state.benchSummary = result;
+        saveRunState();
         render();
     }
 
@@ -177,6 +281,7 @@
                     ${renderMoney()}
                     ${renderDeckButton('actions', 'Action deck', state.collections.actions.length)}
                     ${renderDeckButton('pokemon', 'Pokemon cards', state.collections.pokemon.length)}
+                    ${renderBenchButton()}
                 </div>
             </header>
             <section class="area-map-panel" aria-label="Area route">
@@ -192,6 +297,7 @@
                 </footer>
             </section>
             ${state.cardWindow ? renderCardWindow() : ''}
+            ${state.benchWindowOpen ? renderBenchWindow() : ''}
         `;
     }
 
@@ -211,6 +317,18 @@
             <button class="area-deck-button" type="button" data-card-window="${collectionKey}" aria-label="Open ${label}" title="${label}">
                 <img src="${CARD_BACKS[collectionKey]}" alt="">
                 <span class="area-deck-count">${count}</span>
+            </button>
+        `;
+    }
+
+    function renderBenchButton() {
+        const benchCount = getBenchPokemon().length;
+
+        return `
+            <button class="area-bench-button" type="button" data-bench-window aria-label="Open Pokemon bench" title="Pokemon bench">
+                <span class="area-bench-icon" aria-hidden="true">B</span>
+                <span class="area-bench-text">Bench</span>
+                <span class="area-bench-count">${benchCount}</span>
             </button>
         `;
     }
@@ -335,6 +453,132 @@
         `;
     }
 
+    function renderBenchWindow() {
+        return `
+            <div class="area-overlay" data-bench-window-overlay>
+                <section class="area-card-window area-bench-window" role="dialog" aria-modal="true" aria-labelledby="area-bench-window-title">
+                    <header class="area-card-window-header">
+                        <div>
+                            <h2 class="area-card-window-title" id="area-bench-window-title">${state.benchSummary ? 'Swap Summary' : 'Pokemon Bench'}</h2>
+                            <span class="area-card-window-count">${renderBenchWindowCount()}</span>
+                        </div>
+                        <button class="area-card-window-close" type="button" data-close-bench-window aria-label="Close bench window">x</button>
+                    </header>
+                    <div class="area-card-window-body">
+                        ${state.benchSummary ? renderBenchSummary() : renderBenchManager()}
+                    </div>
+                </section>
+            </div>
+        `;
+    }
+
+    function renderBenchWindowCount() {
+        return `${state.collections.pokemon.length}/${runStore.ACTIVE_POKEMON_LIMIT} active, ${getBenchPokemon().length} benched`;
+    }
+
+    function renderBenchManager() {
+        const activePokemon = state.collections.pokemon;
+        const benchPokemon = getBenchPokemon();
+        const canSwap = state.selectedActivePokemonId && state.selectedBenchPokemonId;
+
+        return `
+            <div class="area-bench-layout">
+                <section class="area-bench-section">
+                    <header class="area-card-section-header">
+                        <h3>Active Pokemon</h3>
+                        <span>${activePokemon.length}/${runStore.ACTIVE_POKEMON_LIMIT}</span>
+                    </header>
+                    <div class="area-bench-card-grid">
+                        ${activePokemon.map(card => renderBenchPokemonButton(card, 'active')).join('')}
+                    </div>
+                </section>
+                <section class="area-bench-section">
+                    <header class="area-card-section-header">
+                        <h3>Bench Pokemon</h3>
+                        <span>${benchPokemon.length}</span>
+                    </header>
+                    ${benchPokemon.length > 0
+                        ? `<div class="area-bench-card-grid">${benchPokemon.map(card => renderBenchPokemonButton(card, 'bench')).join('')}</div>`
+                        : '<div class="area-bench-empty">No benched Pokemon</div>'
+                    }
+                </section>
+            </div>
+            <footer class="area-bench-footer">
+                <span>${renderSelectedSwapText()}</span>
+                <button class="area-bench-swap-button" type="button" data-bench-swap ${canSwap ? '' : 'disabled'}>Swap</button>
+            </footer>
+        `;
+    }
+
+    function renderBenchPokemonButton(card, zone) {
+        const selected = zone === 'active'
+            ? state.selectedActivePokemonId === card.id
+            : state.selectedBenchPokemonId === card.id;
+        const dataAttribute = zone === 'active'
+            ? `data-active-pokemon-id="${card.id}"`
+            : `data-bench-pokemon-id="${card.id}"`;
+
+        return `
+            <button class="area-bench-card-button ${selected ? 'is-selected' : ''}" type="button" ${dataAttribute} aria-pressed="${selected ? 'true' : 'false'}" aria-label="Select ${arena.Model.getCardName(card)}">
+                ${arena.Render.renderCardPreview(card, { className: 'area-bench-card-preview' })}
+            </button>
+        `;
+    }
+
+    function renderSelectedSwapText() {
+        const activePokemon = state.collections.pokemon.find(card => card.id === state.selectedActivePokemonId);
+        const benchPokemon = getBenchPokemon().find(card => card.id === state.selectedBenchPokemonId);
+
+        if (activePokemon && benchPokemon) {
+            return `${arena.Model.getCardName(benchPokemon)} replaces ${arena.Model.getCardName(activePokemon)}`;
+        }
+
+        return 'Select one active Pokemon and one bench Pokemon';
+    }
+
+    function renderBenchSummary() {
+        const summary = state.benchSummary;
+
+        return `
+            <section class="area-bench-summary">
+                <p>${arena.Model.getCardName(summary.activePokemon)} moved into the active deck. ${arena.Model.getCardName(summary.benchedPokemon)} moved to the bench.</p>
+                ${renderAttackChangeSection('Added to Action Deck', summary.actionChanges.addedToDeck, 'No attacks were added.')}
+                ${renderAttackChangeSection('Moved to Attack Bench', summary.actionChanges.movedToBench, 'No attacks were moved.')}
+                <button class="area-bench-swap-button" type="button" data-bench-summary-done>Done</button>
+            </section>
+        `;
+    }
+
+    function renderAttackChangeSection(title, cards, emptyText) {
+        const entries = summarizeCardsByName(cards);
+
+        return `
+            <section class="area-bench-change-section">
+                <header class="area-card-section-header">
+                    <h3>${title}</h3>
+                    <span>${cards.length}</span>
+                </header>
+                ${entries.length > 0
+                    ? `<ul class="area-bench-change-list">${entries.map(entry => `<li>${entry}</li>`).join('')}</ul>`
+                    : `<div class="area-bench-empty">${emptyText}</div>`
+                }
+            </section>
+        `;
+    }
+
+    function summarizeCardsByName(cards) {
+        const countsByName = cards.reduce((counts, card) => {
+            const name = arena.Model.getCardName(card);
+
+            counts.set(name, (counts.get(name) || 0) + 1);
+            return counts;
+        }, new Map());
+
+        return Array.from(countsByName.entries())
+            .sort(([leftName], [rightName]) => leftName.localeCompare(rightName))
+            .map(([name, count]) => count > 1 ? `${name} x${count}` : name);
+    }
+
     function renderActionCardSections(cards) {
         const attacks = cards.filter(arena.Model.isAttackCard).sort(compareCardsByName);
         const items = cards.filter(arena.Model.isItemCard).sort(compareCardsByName);
@@ -371,6 +615,12 @@
             .sort(compareCardsByName);
     }
 
+    function getBenchPokemon() {
+        return state.collections.bench && Array.isArray(state.collections.bench.pokemon)
+            ? state.collections.bench.pokemon
+            : [];
+    }
+
     function showPopup(message) {
         window.clearTimeout(state.popupTimer);
 
@@ -393,7 +643,7 @@
 
         if (savedRun) {
             applyRunState(savedRun);
-            if (sanitizeCaptureEncounters() || sanitizeBattleEncounters()) saveRunState();
+            if (repairRunCollections() || sanitizeCaptureEncounters() || sanitizeBattleEncounters()) saveRunState();
             return;
         }
 
@@ -441,6 +691,17 @@
         state.run.collections = state.collections;
     }
 
+    function repairRunCollections() {
+        const balanceResult = runStore.balancePokemonCollections(state.run);
+        const actionChanges = runStore.rebuildActionDeckForActivePokemon(state.run);
+
+        state.collections = state.run.collections;
+
+        return Boolean(balanceResult.changed) ||
+            actionChanges.addedToDeck.length > 0 ||
+            actionChanges.movedToBench.length > 0;
+    }
+
     function redirectToActiveEncounter() {
         if (runStore.getActiveBattleEncounter(state.run)) {
             window.location.href = 'game.html';
@@ -469,7 +730,7 @@
             return existingEncounter;
         }
 
-        const pokemonOptions = chooseCapturePokemonOptions();
+        const pokemonOptions = chooseCapturePokemonOptions(node);
         const encounter = {
             completed: false,
             createdAt: new Date().toISOString(),
@@ -624,7 +885,13 @@
         return getUniqueRecordsByName(records);
     }
 
-    function chooseCapturePokemonOptions() {
+    function chooseCapturePokemonOptions(node = null) {
+        if (shouldChooseLegendaryCaptureEncounter(node)) {
+            const legendaryPokemon = chooseLegendaryPokemon();
+
+            if (legendaryPokemon) return [legendaryPokemon];
+        }
+
         const availablePokemon = getAvailablePokemonForCurrentTerrain();
 
         if (availablePokemon.length === 0) return [];
@@ -646,6 +913,26 @@
         return waterPokemon.length > 0 ? waterPokemon : nonLegendaryPokemon;
     }
 
+    function shouldChooseLegendaryCaptureEncounter(node) {
+        return isLastThirdMapNode(node) && Math.random() < LEGENDARY_CAPTURE_CHANCE;
+    }
+
+    function isLastThirdMapNode(node) {
+        return Boolean(node && Number(node.step) > (AREA_NODE_COUNT * 2 / 3));
+    }
+
+    function chooseLegendaryPokemon() {
+        const legendaryPokemon = getAvailableLegendaryPokemon();
+
+        if (legendaryPokemon.length === 0) return null;
+
+        return legendaryPokemon[randomInt(0, legendaryPokemon.length - 1)];
+    }
+
+    function getAvailableLegendaryPokemon() {
+        return getUniqueGameRecords('pokemon').filter(isLegendaryPokemon);
+    }
+
     function sanitizeCaptureEncounters() {
         if (!state.run || !state.run.captureEncounters) return false;
 
@@ -658,17 +945,26 @@
 
     function sanitizeCaptureEncounter(encounter) {
         const originalOptions = Array.isArray(encounter.options) ? encounter.options : [];
-        const availablePokemonNames = new Set(getAvailablePokemonForCurrentTerrain().map(pokemon => pokemon.name));
-        const seenNames = new Set();
-        let nextOptions = originalOptions.filter(name => {
-            if (!availablePokemonNames.has(name) || seenNames.has(name)) return false;
+        const node = getNodeById(encounter.nodeId);
+        const legendaryOptionName = getFirstValidLegendaryOptionName(originalOptions, node);
+        let nextOptions = [];
 
-            seenNames.add(name);
-            return true;
-        });
+        if (legendaryOptionName) {
+            nextOptions = [legendaryOptionName];
+        } else {
+            const availablePokemonNames = new Set(getAvailablePokemonForCurrentTerrain().map(pokemon => pokemon.name));
+            const seenNames = new Set();
+
+            nextOptions = originalOptions.filter(name => {
+                if (!availablePokemonNames.has(name) || seenNames.has(name)) return false;
+
+                seenNames.add(name);
+                return true;
+            });
+        }
 
         if (nextOptions.length === 0) {
-            nextOptions = chooseCapturePokemonOptions().map(pokemon => pokemon.name);
+            nextOptions = chooseCapturePokemonOptions(node).map(pokemon => pokemon.name);
         }
 
         const changed = nextOptions.length !== originalOptions.length ||
@@ -677,6 +973,16 @@
         encounter.options = nextOptions;
 
         return changed;
+    }
+
+    function getFirstValidLegendaryOptionName(optionNames, node) {
+        if (!isLastThirdMapNode(node)) return null;
+
+        return optionNames.find(name => {
+            const pokemon = findGameRecord('pokemon', name);
+
+            return pokemon && isLegendaryPokemon(pokemon);
+        }) || null;
     }
 
     function sanitizeBattleEncounters() {

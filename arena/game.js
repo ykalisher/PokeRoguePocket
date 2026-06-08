@@ -84,6 +84,10 @@
     function configureRunBattle() {
         if (!activeRun || !activeBattleEncounter || !activeTrainer) return;
 
+        runStore.balancePokemonCollections(activeRun);
+        runStore.rebuildActionDeckForActivePokemon(activeRun);
+        runStore.saveRunState(activeRun);
+
         arena.BattleConfig = {
             opponent: { name: activeTrainer.name },
             player: { name: 'You' }

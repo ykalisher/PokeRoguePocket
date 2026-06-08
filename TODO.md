@@ -33,7 +33,7 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [x] Add more items
 - [ ] Rebalance stats (human type is super broken)
 ## Overworld Mechanics
-- [ ] Decide on how you capture more pokemon.
+- [x] Decide on how you capture more pokemon.
 - [ ] Decide on how you get more attacks
 - [ ] Come up with algorithm for locations and selection.
 - [ ] Come up with algorithm or presets for opposing trainers.

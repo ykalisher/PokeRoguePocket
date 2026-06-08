@@ -15,6 +15,7 @@
         deck: 920,
         complete: 180
     });
+    const LEGENDARY_CAPTURE_CHANCE = 0.3;
 
     const state = {
         cardWindow: null,
@@ -149,8 +150,8 @@
             rewardCards.push(dragonGemReward);
         }
 
-        state.run.collections.pokemon.push(pokemonCard);
-        state.run.collections.actions.push(...rewardCards);
+        runStore.addPokemonCard(state.run, pokemonCard);
+        rewardCards.forEach(card => runStore.addActionCard(state.run, card));
         state.encounter.completed = true;
         state.encounter.rewardAttackName = attack.name;
         state.encounter.rewardDragonGemName = dragonGemReward ? dragonGemReward.item.name : null;
@@ -328,23 +329,31 @@
     function getPokemonOptions() {
         return state.encounter.options
             .map(name => findGameRecord('pokemon', name))
-            .filter(pokemon => pokemon && !isLegendaryPokemon(pokemon))
             .filter(Boolean);
     }
 
     function repairEncounterOptions() {
         const originalOptions = Array.isArray(state.encounter.options) ? state.encounter.options : [];
-        const availablePokemonNames = new Set(getAvailablePokemonForCurrentTerrain().map(pokemon => pokemon.name));
-        const seenNames = new Set();
-        let nextOptions = originalOptions.filter(name => {
-            if (!availablePokemonNames.has(name) || seenNames.has(name)) return false;
+        const node = getEncounterNode(state.encounter);
+        const legendaryOptionName = getFirstValidLegendaryOptionName(originalOptions, node);
+        let nextOptions = [];
 
-            seenNames.add(name);
-            return true;
-        });
+        if (legendaryOptionName) {
+            nextOptions = [legendaryOptionName];
+        } else {
+            const availablePokemonNames = new Set(getAvailablePokemonForCurrentTerrain().map(pokemon => pokemon.name));
+            const seenNames = new Set();
+
+            nextOptions = originalOptions.filter(name => {
+                if (!availablePokemonNames.has(name) || seenNames.has(name)) return false;
+
+                seenNames.add(name);
+                return true;
+            });
+        }
 
         if (nextOptions.length === 0) {
-            nextOptions = chooseCapturePokemonOptions().map(pokemon => pokemon.name);
+            nextOptions = chooseCapturePokemonOptions(state.encounter).map(pokemon => pokemon.name);
         }
 
         const changed = nextOptions.length !== originalOptions.length ||
@@ -355,7 +364,15 @@
         return changed;
     }
 
-    function chooseCapturePokemonOptions() {
+    function chooseCapturePokemonOptions(encounter = null) {
+        const node = getEncounterNode(encounter);
+
+        if (shouldChooseLegendaryCaptureEncounter(node)) {
+            const legendaryPokemon = chooseLegendaryPokemon();
+
+            if (legendaryPokemon) return [legendaryPokemon];
+        }
+
         const availablePokemon = getAvailablePokemonForCurrentTerrain();
 
         if (availablePokemon.length === 0) return [];
@@ -375,6 +392,67 @@
         const waterPokemon = nonLegendaryPokemon.filter(pokemon => getRecordTypes(pokemon).includes('WATER'));
 
         return waterPokemon.length > 0 ? waterPokemon : nonLegendaryPokemon;
+    }
+
+    function shouldChooseLegendaryCaptureEncounter(node) {
+        return isLastThirdMapNode(node) && Math.random() < LEGENDARY_CAPTURE_CHANCE;
+    }
+
+    function isLastThirdMapNode(node) {
+        const areaNodeCount = getAreaNodeCount();
+
+        return Boolean(node && areaNodeCount > 0 && Number(node.step) > (areaNodeCount * 2 / 3));
+    }
+
+    function getAreaNodeCount() {
+        return getAreaNodes().reduce((maxStep, node) => Math.max(maxStep, Number(node.step) || 0), 0);
+    }
+
+    function getEncounterNode(encounter) {
+        const nodeId = encounter && encounter.nodeId
+            ? encounter.nodeId
+            : state.run && state.run.area
+                ? state.run.area.activeCaptureNodeId
+                : null;
+
+        if (!nodeId) return null;
+
+        return getAreaNodes().find(node => node.id === nodeId) || null;
+    }
+
+    function getAreaNodes() {
+        return state.run &&
+            state.run.area &&
+            state.run.area.graph &&
+            Array.isArray(state.run.area.graph.nodes)
+            ? state.run.area.graph.nodes
+            : [];
+    }
+
+    function chooseLegendaryPokemon() {
+        const legendaryPokemon = getAvailableLegendaryPokemon();
+
+        if (legendaryPokemon.length === 0) return null;
+
+        return legendaryPokemon[randomInt(0, legendaryPokemon.length - 1)];
+    }
+
+    function getAvailableLegendaryPokemon() {
+        const records = arena.GameData && Array.isArray(arena.GameData.pokemon)
+            ? arena.GameData.pokemon
+            : [];
+
+        return getUniqueRecordsByName(records).filter(isLegendaryPokemon);
+    }
+
+    function getFirstValidLegendaryOptionName(optionNames, node) {
+        if (!isLastThirdMapNode(node)) return null;
+
+        return optionNames.find(name => {
+            const pokemon = findGameRecord('pokemon', name);
+
+            return pokemon && isLegendaryPokemon(pokemon);
+        }) || null;
     }
 
     function getUniqueRecordsByName(records) {

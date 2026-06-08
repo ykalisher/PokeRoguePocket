@@ -9,6 +9,7 @@
     const STORAGE_VERSION = 1;
     const PC_STORAGE_KEY = 'pokemon-rogue-pocket-pc';
     const PC_STORAGE_VERSION = 1;
+    const ACTIVE_POKEMON_LIMIT = 6;
     const STARTING_CASH = 100;
 
     function createRunState({ area, collections }) {
@@ -224,6 +225,120 @@
         return `run-${kind}-${formatId(name)}-${nextCardId}`;
     }
 
+    function addPokemonCard(run, card) {
+        if (!run || !isPokemonCard(card)) return { addedCard: null, zone: null };
+
+        ensureCollections(run);
+        balancePokemonCollections(run);
+
+        if (run.collections.pokemon.length < ACTIVE_POKEMON_LIMIT) {
+            run.collections.pokemon.push(card);
+            return { addedCard: card, zone: 'active' };
+        }
+
+        run.collections.bench.pokemon.push(card);
+        return { addedCard: card, zone: 'bench' };
+    }
+
+    function addActionCard(run, card) {
+        if (!run || !card) return { addedCard: null, zone: null };
+
+        ensureCollections(run);
+        balancePokemonCollections(run);
+
+        if (isAttackCard(card) && shouldBenchNewAttack(run, card)) {
+            run.collections.bench.actions.push(card);
+            return { addedCard: card, zone: 'bench' };
+        }
+
+        run.collections.actions.push(card);
+        return { addedCard: card, zone: 'active' };
+    }
+
+    function balancePokemonCollections(run) {
+        if (!run) return { changed: false };
+
+        ensureCollections(run);
+
+        const activePokemon = run.collections.pokemon;
+        const benchPokemon = run.collections.bench.pokemon;
+        let changed = false;
+
+        while (activePokemon.length > ACTIVE_POKEMON_LIMIT) {
+            benchPokemon.unshift(activePokemon.pop());
+            changed = true;
+        }
+
+        while (activePokemon.length < ACTIVE_POKEMON_LIMIT && benchPokemon.length > 0) {
+            activePokemon.push(benchPokemon.shift());
+            changed = true;
+        }
+
+        return { changed };
+    }
+
+    function rebuildActionDeckForActivePokemon(run) {
+        if (!run) {
+            return {
+                addedToDeck: [],
+                movedToBench: []
+            };
+        }
+
+        ensureCollections(run);
+        balancePokemonCollections(run);
+
+        const previousActiveAttackIds = new Set(run.collections.actions.filter(isAttackCard).map(card => card.id));
+        const previousBenchAttackIds = new Set(run.collections.bench.actions.filter(isAttackCard).map(card => card.id));
+        const allActions = [
+            ...run.collections.actions,
+            ...run.collections.bench.actions
+        ];
+        const nextActiveActions = [];
+        const nextBenchActions = [];
+
+        allActions.forEach(card => {
+            if (isAttackCard(card) && shouldBenchNewAttack(run, card)) {
+                nextBenchActions.push(card);
+                return;
+            }
+
+            nextActiveActions.push(card);
+        });
+
+        run.collections.actions = nextActiveActions;
+        run.collections.bench.actions = nextBenchActions;
+
+        return {
+            addedToDeck: nextActiveActions.filter(card => isAttackCard(card) && previousBenchAttackIds.has(card.id)),
+            movedToBench: nextBenchActions.filter(card => previousActiveAttackIds.has(card.id))
+        };
+    }
+
+    function swapBenchPokemon(run, activePokemonId, benchPokemonId) {
+        if (!run || !activePokemonId || !benchPokemonId) return null;
+
+        ensureCollections(run);
+        balancePokemonCollections(run);
+
+        const activeIndex = run.collections.pokemon.findIndex(card => card.id === activePokemonId);
+        const benchIndex = run.collections.bench.pokemon.findIndex(card => card.id === benchPokemonId);
+
+        if (activeIndex === -1 || benchIndex === -1) return null;
+
+        const activePokemon = run.collections.pokemon[activeIndex];
+        const benchPokemon = run.collections.bench.pokemon[benchIndex];
+
+        run.collections.pokemon[activeIndex] = benchPokemon;
+        run.collections.bench.pokemon[benchIndex] = activePokemon;
+
+        return {
+            activePokemon: benchPokemon,
+            benchedPokemon: activePokemon,
+            actionChanges: rebuildActionDeckForActivePokemon(run)
+        };
+    }
+
     function normalizeRunState(run) {
         if (!run || typeof run !== 'object' || run.version !== STORAGE_VERSION) return null;
 
@@ -317,11 +432,99 @@
 
     function normalizeCollections(collections) {
         const normalizedCollections = collections && typeof collections === 'object' ? collections : {};
+        const normalizedBench = normalizedCollections.bench && typeof normalizedCollections.bench === 'object'
+            ? normalizedCollections.bench
+            : {};
+        const activePokemon = Array.isArray(normalizedCollections.pokemon) ? normalizedCollections.pokemon : [];
+        const benchPokemon = Array.isArray(normalizedBench.pokemon) ? normalizedBench.pokemon : [];
+        const pokemonCollections = normalizePokemonCollections(activePokemon, benchPokemon);
+        const activeActions = Array.isArray(normalizedCollections.actions) ? normalizedCollections.actions : [];
+        const rawBenchActions = Array.isArray(normalizedBench.actions) ? normalizedBench.actions : [];
+        const benchActions = rawBenchActions.filter(isAttackCard);
+        const promotedActions = rawBenchActions.filter(card => !isAttackCard(card));
 
         return {
-            actions: Array.isArray(normalizedCollections.actions) ? normalizedCollections.actions : [],
-            pokemon: Array.isArray(normalizedCollections.pokemon) ? normalizedCollections.pokemon : []
+            actions: [...activeActions, ...promotedActions],
+            bench: {
+                actions: benchActions,
+                pokemon: pokemonCollections.bench
+            },
+            pokemon: pokemonCollections.active
         };
+    }
+
+    function normalizePokemonCollections(activePokemon, benchPokemon) {
+        const active = activePokemon.slice(0, ACTIVE_POKEMON_LIMIT);
+        const bench = [
+            ...activePokemon.slice(ACTIVE_POKEMON_LIMIT),
+            ...benchPokemon
+        ];
+
+        while (active.length < ACTIVE_POKEMON_LIMIT && bench.length > 0) {
+            active.push(bench.shift());
+        }
+
+        return { active, bench };
+    }
+
+    function ensureCollections(run) {
+        run.collections = normalizeCollections(run.collections);
+
+        return run.collections;
+    }
+
+    function shouldBenchNewAttack(run, card) {
+        return run.collections.pokemon.length >= ACTIVE_POKEMON_LIMIT &&
+            !activePokemonCanUseAttack(run, card);
+    }
+
+    function activePokemonCanUseAttack(run, attackCard) {
+        if (!isAttackCard(attackCard)) return false;
+
+        return run.collections.pokemon.some(pokemonCard => pokemonCanUseAttack(pokemonCard, attackCard));
+    }
+
+    function pokemonCanUseAttack(pokemonCard, attackCard) {
+        if (!isPokemonCard(pokemonCard) || !isAttackCard(attackCard)) return false;
+
+        const pokemonTypes = getPokemonTypes(pokemonCard.pokemon);
+        const requiredTypes = getAttackTypes(attackCard.attack);
+
+        if (requiredTypes.length === 0) return true;
+
+        if (attackCard.attack.full_type_requirements) {
+            return requiredTypes.every(type => pokemonTypes.includes(type));
+        }
+
+        return requiredTypes.some(type => pokemonTypes.includes(type));
+    }
+
+    function getPokemonTypes(pokemon) {
+        if (!pokemon) return [];
+
+        return Array.isArray(pokemon.types)
+            ? compactTypes(pokemon.types)
+            : compactTypes([pokemon.type1, pokemon.type2, pokemon.type3]);
+    }
+
+    function getAttackTypes(attack) {
+        if (!attack) return [];
+
+        return Array.isArray(attack.types)
+            ? compactTypes(attack.types)
+            : compactTypes([attack.type1, attack.type2]);
+    }
+
+    function compactTypes(types) {
+        return types.filter(type => type && type !== 'NONE');
+    }
+
+    function isPokemonCard(card) {
+        return Boolean(card && (card.kind === 'pokemon' || card.pokemon));
+    }
+
+    function isAttackCard(card) {
+        return Boolean(card && (card.kind === 'attack' || card.attack));
     }
 
     function normalizePcPokemonCard(card) {
@@ -356,9 +559,13 @@
     }
 
     global.PokeRun = {
+        ACTIVE_POKEMON_LIMIT,
         PC_STORAGE_KEY,
         STORAGE_KEY,
+        addActionCard,
+        addPokemonCard,
         allocateCardId,
+        balancePokemonCollections,
         clearPcPokemon,
         clearRunState,
         createAttackCard,
@@ -371,7 +578,9 @@
         hasSavedRun,
         loadPcPokemon,
         loadRunState,
+        rebuildActionDeckForActivePokemon,
         savePcPokemon,
-        saveRunState
+        saveRunState,
+        swapBenchPokemon
     };
 })(window);

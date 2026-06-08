@@ -41,7 +41,13 @@
             return;
         }
 
-        if (repairMartEncounter()) {
+        const actionChanges = runStore.rebuildActionDeckForActivePokemon(state.run);
+
+        if (
+            repairMartEncounter() ||
+            actionChanges.addedToDeck.length > 0 ||
+            actionChanges.movedToBench.length > 0
+        ) {
             runStore.saveRunState(state.run);
         }
 
@@ -132,10 +138,12 @@
             : runStore.createItemCard(record, 'player', runStore.allocateCardId(state.run, 'item', record.name));
 
         state.run.cash = getCash() - cost;
-        state.run.collections.actions.push(card);
+        const result = runStore.addActionCard(state.run, card);
         getBoughtNames(kind).push(record.name);
         runStore.saveRunState(state.run);
-        setMessage(`Bought ${record.name}.`);
+        setMessage(result.zone === 'bench'
+            ? `Bought ${record.name}. It went to the bench.`
+            : `Bought ${record.name}.`);
     }
 
     function selectPokemon(cardId) {
@@ -159,12 +167,15 @@
 
         const withdrawnCard = createRunPokemonCard(state.pcPokemon);
 
-        state.run.collections.pokemon.push(withdrawnCard);
+        const result = runStore.addPokemonCard(state.run, withdrawnCard);
         runStore.clearPcPokemon();
         state.selectedPokemonId = null;
         refreshPcPokemon();
+        runStore.rebuildActionDeckForActivePokemon(state.run);
         runStore.saveRunState(state.run);
-        setMessage(`Withdrew ${withdrawnCard.pokemon.name}.`);
+        setMessage(result.zone === 'bench'
+            ? `Withdrew ${withdrawnCard.pokemon.name} to the bench.`
+            : `Withdrew ${withdrawnCard.pokemon.name}.`);
     }
 
     function depositSelectedPokemon() {
@@ -185,12 +196,15 @@
             .filter(card => card.id !== selectedCard.id);
 
         if (hasPcPokemon) {
-            state.run.collections.pokemon.push(createRunPokemonCard(state.pcPokemon));
+            runStore.addPokemonCard(state.run, createRunPokemonCard(state.pcPokemon));
+        } else {
+            runStore.balancePokemonCollections(state.run);
         }
 
         runStore.savePcPokemon(selectedCard);
         refreshPcPokemon();
         state.selectedPokemonId = null;
+        runStore.rebuildActionDeckForActivePokemon(state.run);
         runStore.saveRunState(state.run);
         setMessage(pcName
             ? `Swapped ${selectedCard.pokemon.name} with ${pcName}.`
