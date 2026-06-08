@@ -2039,6 +2039,25 @@ button.playing-card:focus-visible {
     line-height: 1.4;
 }
 
+.battle-result-rewards {
+    width: 100%;
+    display: grid;
+    gap: 7px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.battle-result-rewards li {
+    padding: 8px 10px;
+    border: 1px solid rgba(251, 246, 232, 0.12);
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.16);
+    color: #fbf6e8;
+    font-size: 0.88rem;
+    font-weight: 760;
+}
+
 .battle-flow-primary {
     min-width: 160px;
 }

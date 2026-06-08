@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokemon Rogue Pocket</title>
+    <title>Pokemon Rogue Pocket - Event</title>
     <link rel="stylesheet" href="static/styles.css">
+    <link rel="stylesheet" href="static/area.css">
+    <link rel="stylesheet" href="static/event.css">
 </head>
-<body class="game-page">
-    <a href="index.html" class="btn btn-back">Back</a>
-    <main class="game-board" id="game-board" aria-label="Card arena prototype"></main>
-    <div id="arena-popup" class="arena-popup" role="status" aria-live="polite" hidden></div>
+<body class="event-page">
+    <a href="index.html" class="btn btn-back">Menu</a>
+    <main class="event-shell" id="event-root" aria-label="Event">
+        <section class="event-loading">Loading event...</section>
+    </main>
     <script src="arena/trainer_sprites.js"></script>
     <script src="arena/arena_data.js"></script>
     <script src="arena/arena_model.js"></script>
     <script src="arena/arena_render.js"></script>
-    <script src="arena/arena_controller.js"></script>
-    <script src="arena/arena_drag.js"></script>
     <script src="map/run_state.js"></script>
     <script src="map/event_effects.js"></script>
-    <script src="arena/game.js"></script>
+    <script src="map/event.js"></script>
 </body>
 </html>

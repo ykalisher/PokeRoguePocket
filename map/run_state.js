@@ -17,6 +17,7 @@
             area: {
                 activeBattleNodeId: null,
                 activeCaptureNodeId: null,
+                activeEventNodeId: null,
                 activeMartNodeId: null,
                 currentNodeId: 'start',
                 graph: area,
@@ -27,6 +28,7 @@
             cash: STARTING_CASH,
             captureEncounters: {},
             collections: normalizeCollections(collections),
+            eventEncounters: {},
             martEncounters: {},
             nextCardId: 1,
             savedAt: null,
@@ -174,6 +176,16 @@
         if (!nodeId || !run.martEncounters) return null;
 
         const encounter = run.martEncounters[nodeId];
+
+        return encounter && !encounter.completed ? encounter : null;
+    }
+
+    function getActiveEventEncounter(run) {
+        const nodeId = run && run.area ? run.area.activeEventNodeId : null;
+
+        if (!nodeId || !run.eventEncounters) return null;
+
+        const encounter = run.eventEncounters[nodeId];
 
         return encounter && !encounter.completed ? encounter : null;
     }
@@ -352,6 +364,7 @@
             cash: Number.isFinite(run.cash) ? run.cash : STARTING_CASH,
             captureEncounters: normalizeCaptureEncounters(run.captureEncounters),
             collections: normalizeCollections(run.collections),
+            eventEncounters: normalizeEventEncounters(run.eventEncounters),
             martEncounters: normalizeMartEncounters(run.martEncounters),
             nextCardId: Number.isFinite(run.nextCardId) ? run.nextCardId : 1,
             savedAt: run.savedAt || null,
@@ -366,6 +379,7 @@
         return {
             activeBattleNodeId: area.activeBattleNodeId || null,
             activeCaptureNodeId: area.activeCaptureNodeId || null,
+            activeEventNodeId: area.activeEventNodeId || null,
             activeMartNodeId: area.activeMartNodeId || null,
             currentNodeId: area.currentNodeId || 'start',
             graph: area.graph,
@@ -391,6 +405,10 @@
                 rank: encounter.rank || 'Standard',
                 rewardCash: Number.isFinite(encounter.rewardCash) ? encounter.rewardCash : 0,
                 rewardCollected: Boolean(encounter.rewardCollected),
+                rewardEffects: Array.isArray(encounter.rewardEffects) ? encounter.rewardEffects : [],
+                rewardSummary: Array.isArray(encounter.rewardSummary) ? encounter.rewardSummary : [],
+                sourceEventId: encounter.sourceEventId || null,
+                sourceEventNodeId: encounter.sourceEventNodeId || null,
                 startedAt: encounter.startedAt || null,
                 trainerName: encounter.trainerName || null
             }]));
@@ -427,6 +445,24 @@
                 rewardDragonGemName: encounter.rewardDragonGemName || null,
                 selectedPokemonName: encounter.selectedPokemonName || null,
                 terrain: encounter.terrain || null
+            }]));
+    }
+
+    function normalizeEventEncounters(eventEncounters) {
+        if (!eventEncounters || typeof eventEncounters !== 'object') return {};
+
+        return Object.fromEntries(Object.entries(eventEncounters)
+            .filter(([, encounter]) => encounter && typeof encounter === 'object')
+            .map(([nodeId, encounter]) => [nodeId, {
+                battleCompleted: Boolean(encounter.battleCompleted),
+                completed: Boolean(encounter.completed),
+                completedAt: encounter.completedAt || null,
+                createdAt: encounter.createdAt || null,
+                eventId: encounter.eventId || null,
+                nodeId: encounter.nodeId || nodeId,
+                resultSummary: Array.isArray(encounter.resultSummary) ? encounter.resultSummary : [],
+                selectedActionId: encounter.selectedActionId || null,
+                startedBattle: Boolean(encounter.startedBattle)
             }]));
     }
 
@@ -574,6 +610,7 @@
         createRunState,
         getActiveBattleEncounter,
         getActiveCaptureEncounter,
+        getActiveEventEncounter,
         getActiveMartEncounter,
         hasSavedRun,
         loadPcPokemon,

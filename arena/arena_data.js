@@ -2,7 +2,7 @@
  * Pokemon Rogue Pocket - card arena data loading and test deck constants
  *
  * Data flow: game.js calls loadGameData() during page boot. JSON records are
- * loaded from pokemon.json, attacks.json, items.json, and trainers.json,
+ * loaded from pokemon.json, attacks.json, items.json, trainers.json, and events.json,
  * normalized into the
  * shape expected by arena_model.js, then stored on arena.GameData before a
  * battle is restored or reset. The fallbackRecords below keep the arena usable
@@ -304,7 +304,8 @@
                 statChanges: []
             }
         ],
-        trainers: []
+        trainers: [],
+        events: []
     });
 
     /**
@@ -404,6 +405,10 @@
         };
     }
 
+    function normalizeEvent(record) {
+        return record && typeof record === 'object' ? record : null;
+    }
+
     function stripTerminalGender(name) {
         return String(name || '').trim().replace(/\s+/g, ' ').replace(/\s+[MF]$/u, '');
     }
@@ -425,6 +430,7 @@
     function normalizeGameData(records) {
         return {
             attacks: records.attacks.map(normalizeAttack),
+            events: (records.events || []).map(normalizeEvent).filter(Boolean),
             items: records.items.map(normalizeItem),
             pokemon: records.pokemon.map(normalizePokemon),
             trainers: (records.trainers || []).map(normalizeTrainer).filter(trainer => trainer.name)
@@ -453,14 +459,15 @@
      * It loads and normalizes all card data, then replaces arena.GameData.
      */
     async function loadGameData() {
-        const [pokemon, attacks, items, trainers] = await Promise.all([
+        const [pokemon, attacks, items, trainers, events] = await Promise.all([
             loadJson('pokemon.json', fallbackRecords.pokemon),
             loadJson('attacks.json', fallbackRecords.attacks),
             loadJson('items.json', fallbackRecords.items),
-            loadJson('trainers.json', fallbackRecords.trainers)
+            loadJson('trainers.json', fallbackRecords.trainers),
+            loadJson('events.json', fallbackRecords.events)
         ]);
 
-        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers });
+        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events });
         return arena.GameData;
     }
 

@@ -152,8 +152,11 @@
         activeBattleEncounter.finishedAt = activeBattleEncounter.finishedAt || new Date().toISOString();
 
         if (activeBattleEncounter.outcome === 'win' && !activeBattleEncounter.rewardCollected) {
-            activeRun.cash = (Number.isFinite(activeRun.cash) ? activeRun.cash : 0) + getBattleReward();
-            activeBattleEncounter.rewardCollected = true;
+            collectBattleRewards();
+        }
+
+        if (activeBattleEncounter.outcome === 'win') {
+            completeSourceEvent();
         }
 
         runStore.saveRunState(activeRun);
@@ -181,7 +184,7 @@
             <section class="battle-result-window" role="dialog" aria-modal="true" aria-labelledby="battle-result-title">
                 <span class="battle-flow-kicker">Battle Complete</span>
                 <h1 id="battle-result-title">You won</h1>
-                <p>You earned ${getBattleReward()} coins.</p>
+                ${renderWinRewardSummary()}
                 <button class="arena-button battle-flow-primary" type="button" data-battle-flow-action="continue">Continue</button>
             </section>
         `;
@@ -207,6 +210,9 @@
         activeBattleEncounter.completed = true;
         activeBattleEncounter.completedAt = new Date().toISOString();
         activeRun.area.activeBattleNodeId = null;
+        if (activeBattleEncounter.sourceEventNodeId) {
+            activeRun.area.activeEventNodeId = null;
+        }
         runStore.saveRunState(activeRun);
         arena.Model.clearSavedBattleState();
         window.location.href = 'area.html';
@@ -257,6 +263,76 @@
         }
 
         return activeTrainer && Number.isFinite(activeTrainer.cash) ? activeTrainer.cash : 0;
+    }
+
+    function collectBattleRewards() {
+        const rewardSummary = [];
+        const cashReward = getBattleReward();
+
+        if (cashReward > 0) {
+            activeRun.cash = (Number.isFinite(activeRun.cash) ? activeRun.cash : 0) + cashReward;
+            rewardSummary.push(`Gained ${cashReward} coins.`);
+        }
+
+        const rewardEffects = Array.isArray(activeBattleEncounter.rewardEffects)
+            ? activeBattleEncounter.rewardEffects
+            : [];
+
+        if (rewardEffects.length > 0 && window.PokeEvents && typeof window.PokeEvents.applyEffects === 'function') {
+            rewardSummary.push(...window.PokeEvents.applyEffects(activeRun, rewardEffects, {}, {
+                gameData: arena.GameData,
+                runStore
+            }));
+            runStore.balancePokemonCollections(activeRun);
+            runStore.rebuildActionDeckForActivePokemon(activeRun);
+        }
+
+        activeBattleEncounter.rewardSummary = rewardSummary;
+        activeBattleEncounter.rewardCollected = true;
+    }
+
+    function completeSourceEvent() {
+        const sourceEventNodeId = activeBattleEncounter.sourceEventNodeId;
+
+        if (!sourceEventNodeId || !activeRun.eventEncounters) return;
+
+        const eventEncounter = activeRun.eventEncounters[sourceEventNodeId];
+
+        if (!eventEncounter || eventEncounter.completed) return;
+
+        eventEncounter.battleCompleted = true;
+        eventEncounter.completed = true;
+        eventEncounter.completedAt = new Date().toISOString();
+        eventEncounter.resultSummary = Array.isArray(activeBattleEncounter.rewardSummary)
+            ? activeBattleEncounter.rewardSummary
+            : [];
+        eventEncounter.selectedActionId = 'battle';
+        activeRun.area.activeEventNodeId = null;
+    }
+
+    function renderWinRewardSummary() {
+        const rewardSummary = Array.isArray(activeBattleEncounter && activeBattleEncounter.rewardSummary)
+            ? activeBattleEncounter.rewardSummary
+            : [];
+
+        if (rewardSummary.length === 0) {
+            return '<p>The trainer stepped aside.</p>';
+        }
+
+        return `
+            <ul class="battle-result-rewards">
+                ${rewardSummary.map(entry => `<li>${escapeHtml(entry)}</li>`).join('')}
+            </ul>
+        `;
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     function getTrainerDisplayName(trainer) {

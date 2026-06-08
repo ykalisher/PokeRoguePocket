@@ -259,6 +259,23 @@
             return;
         }
 
+        if (node.type === 'event') {
+            const encounter = getOrCreateEventEncounter(node);
+
+            if (!encounter) {
+                state.currentNodeId = previousNodeId;
+                state.visitedNodeIds.delete(node.id);
+                state.traveledPathKeys.delete(getPathKey(previousNodeId, node.id));
+                render();
+                showPopup('No events are available.');
+                return;
+            }
+
+            saveRunState();
+            window.location.href = 'event.html';
+            return;
+        }
+
         saveRunState();
         render();
         showPopup(`You entered ${getEnteredLocationText(node)}.`);
@@ -658,6 +675,7 @@
             const changed = [
                 repairRunCollections(),
                 sanitizeCaptureEncounters(),
+                sanitizeEventEncounters(),
                 ensureBattleNodeEncounters(),
                 sanitizeBattleEncounters()
             ].some(Boolean);
@@ -733,9 +751,14 @@
             return true;
         }
 
-        if (!runStore.getActiveMartEncounter(state.run)) return false;
+        if (runStore.getActiveMartEncounter(state.run)) {
+            window.location.href = 'mart.html';
+            return true;
+        }
 
-        window.location.href = 'mart.html';
+        if (!runStore.getActiveEventEncounter(state.run)) return false;
+
+        window.location.href = 'event.html';
         return true;
     }
 
@@ -745,6 +768,7 @@
         if (existingEncounter && !existingEncounter.completed) {
             state.run.area.activeCaptureNodeId = node.id;
             state.run.area.activeBattleNodeId = null;
+            state.run.area.activeEventNodeId = null;
             state.run.area.activeMartNodeId = null;
             sanitizeCaptureEncounter(existingEncounter);
             return existingEncounter;
@@ -764,6 +788,7 @@
         state.run.captureEncounters[node.id] = encounter;
         state.run.area.activeCaptureNodeId = node.id;
         state.run.area.activeBattleNodeId = null;
+        state.run.area.activeEventNodeId = null;
         state.run.area.activeMartNodeId = null;
 
         return encounter;
@@ -775,6 +800,7 @@
         if (existingEncounter && !existingEncounter.completed) {
             state.run.area.activeBattleNodeId = node.id;
             state.run.area.activeCaptureNodeId = null;
+            state.run.area.activeEventNodeId = null;
             state.run.area.activeMartNodeId = null;
             sanitizeBattleEncounter(existingEncounter);
             return existingEncounter;
@@ -789,6 +815,7 @@
         state.run.battleEncounters[node.id] = encounter;
         state.run.area.activeBattleNodeId = node.id;
         state.run.area.activeCaptureNodeId = null;
+        state.run.area.activeEventNodeId = null;
         state.run.area.activeMartNodeId = null;
 
         return encounter;
@@ -817,6 +844,7 @@
             state.run.area.activeMartNodeId = node.id;
             state.run.area.activeBattleNodeId = null;
             state.run.area.activeCaptureNodeId = null;
+            state.run.area.activeEventNodeId = null;
             sanitizeMartEncounter(existingEncounter);
             return existingEncounter;
         }
@@ -836,6 +864,48 @@
         state.run.area.activeMartNodeId = node.id;
         state.run.area.activeBattleNodeId = null;
         state.run.area.activeCaptureNodeId = null;
+        state.run.area.activeEventNodeId = null;
+
+        return encounter;
+    }
+
+    function getOrCreateEventEncounter(node) {
+        state.run.eventEncounters = state.run.eventEncounters || {};
+
+        const existingEncounter = state.run.eventEncounters[node.id];
+
+        if (existingEncounter && !existingEncounter.completed) {
+            state.run.area.activeEventNodeId = node.id;
+            state.run.area.activeBattleNodeId = null;
+            state.run.area.activeCaptureNodeId = null;
+            state.run.area.activeMartNodeId = null;
+            sanitizeEventEncounter(existingEncounter);
+            return existingEncounter;
+        }
+
+        const eventRecord = window.PokeEvents && window.PokeEvents.chooseEvent
+            ? window.PokeEvents.chooseEvent(arena.GameData, state.run)
+            : null;
+
+        if (!eventRecord) return null;
+
+        const encounter = {
+            battleCompleted: false,
+            completed: false,
+            completedAt: null,
+            createdAt: new Date().toISOString(),
+            eventId: eventRecord.id,
+            nodeId: node.id,
+            resultSummary: [],
+            selectedActionId: null,
+            startedBattle: false
+        };
+
+        state.run.eventEncounters[node.id] = encounter;
+        state.run.area.activeEventNodeId = node.id;
+        state.run.area.activeBattleNodeId = null;
+        state.run.area.activeCaptureNodeId = null;
+        state.run.area.activeMartNodeId = null;
 
         return encounter;
     }
@@ -997,6 +1067,39 @@
         encounter.options = nextOptions;
 
         return changed;
+    }
+
+    function sanitizeEventEncounters() {
+        if (!state.run || !state.run.eventEncounters) return false;
+
+        return Object.values(state.run.eventEncounters).reduce((changed, encounter) => {
+            if (!encounter || encounter.completed) return changed;
+
+            return sanitizeEventEncounter(encounter) || changed;
+        }, false);
+    }
+
+    function sanitizeEventEncounter(encounter) {
+        if (
+            window.PokeEvents &&
+            typeof window.PokeEvents.getEventById === 'function' &&
+            window.PokeEvents.getEventById(arena.GameData, encounter.eventId)
+        ) {
+            return false;
+        }
+
+        const replacementEvent = window.PokeEvents && typeof window.PokeEvents.chooseEvent === 'function'
+            ? window.PokeEvents.chooseEvent(arena.GameData, state.run)
+            : null;
+
+        if (!replacementEvent) return false;
+
+        encounter.eventId = replacementEvent.id;
+        encounter.resultSummary = [];
+        encounter.selectedActionId = null;
+        encounter.startedBattle = false;
+
+        return true;
     }
 
     function getFirstValidLegendaryOptionName(optionNames, node) {
@@ -1432,16 +1535,33 @@
     }
 
     function pickRandomLocationType() {
-        const totalWeight = RANDOM_LOCATION_TYPES.reduce((total, entry) => total + entry.weight, 0);
+        const locationTypes = getRandomLocationTypes();
+        const totalWeight = locationTypes.reduce((total, entry) => total + entry.weight, 0);
         let roll = Math.random() * totalWeight;
 
-        for (const entry of RANDOM_LOCATION_TYPES) {
+        for (const entry of locationTypes) {
             roll -= entry.weight;
 
             if (roll <= 0) return entry.type;
         }
 
-        return RANDOM_LOCATION_TYPES[0].type;
+        return locationTypes[0].type;
+    }
+
+    function getRandomLocationTypes() {
+        if (hasAvailableEvents()) return RANDOM_LOCATION_TYPES;
+
+        const locationTypes = RANDOM_LOCATION_TYPES.filter(entry => entry.type !== 'event');
+
+        return locationTypes.length > 0 ? locationTypes : RANDOM_LOCATION_TYPES;
+    }
+
+    function hasAvailableEvents() {
+        return Boolean(
+            window.PokeEvents &&
+            typeof window.PokeEvents.getAvailableEvents === 'function' &&
+            window.PokeEvents.getAvailableEvents(arena.GameData).length > 0
+        );
     }
 
     function randomInt(min, max) {
