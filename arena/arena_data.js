@@ -9,7 +9,7 @@
  * when fetch fails, such as when opening the file directly in some browsers.
  */
 
-(function attachArenaData(arena) {
+(function attachArenaData(arena, rogue) {
     'use strict';
 
     arena.Constants = Object.freeze({
@@ -378,6 +378,13 @@
 
     function normalizeTrainer(record) {
         const sprite = record.sprite || record.name;
+        const trainerSprites = rogue && rogue.TrainerSprites;
+        const resolvedSprite = trainerSprites && typeof trainerSprites.resolveSprite === 'function'
+            ? trainerSprites.resolveSprite(record.name, sprite)
+            : null;
+        const displayName = trainerSprites && typeof trainerSprites.getDisplayName === 'function'
+            ? trainerSprites.getDisplayName(record.name)
+            : stripTerminalGender(record.name);
 
         return {
             attacks: Array.isArray(record.attacks)
@@ -385,13 +392,20 @@
                 : [],
             cash: Number(record.cash) || 0,
             items: Array.isArray(record.items) ? record.items.filter(Boolean) : [],
+            displayName,
             name: record.name,
             pokemon: Array.isArray(record.pokemon) ? record.pokemon.filter(Boolean) : [],
             rank: record.rank || 'Standard',
             sprite,
-            spritePath: `assets/sprites/${encodeURIComponent(sprite)}.png`,
+            spriteFile: resolvedSprite ? resolvedSprite.file : `${sprite}.png`,
+            spritePath: resolvedSprite ? resolvedSprite.path : `assets/sprites/${encodeURIComponent(sprite)}.png`,
+            spriteSource: resolvedSprite ? resolvedSprite.source : null,
             typeSpecialization: record.typeSpecialization || null
         };
+    }
+
+    function stripTerminalGender(name) {
+        return String(name || '').trim().replace(/\s+/g, ' ').replace(/\s+[MF]$/u, '');
     }
 
     /**
@@ -454,4 +468,4 @@
     arena.Data = {
         loadGameData
     };
-})(window.CardArena = window.CardArena || {});
+})(window.CardArena = window.CardArena || {}, window.PokeRogue = window.PokeRogue || {});

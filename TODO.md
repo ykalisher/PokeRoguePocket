@@ -42,10 +42,10 @@ This file is for humans only! Agents should not act on this file unless explicit
 ## Map UI
 - [ ] Replace the placeholder boss grey circle with shaded boss trainer sprite art.
 - [ ] Replace placeholder trainer, capture, shop, and event symbols with final map icon assets.
-- [ ] Add trainer encounter definitions and show trainer-specific battle nodes on the map.
+- [x] Add trainer encounter definitions and show trainer-specific battle nodes on the map.
 - [ ] Add event definitions and wire event nodes to a real event UI instead of only showing a popup.
 - [x] Add capture spot encounter data and wire capture nodes to a Pokemon selection/add-to-deck flow.
-- [ ] Add shop contents, prices, and buying UI for item and attack cards.
+- [x] Add shop contents, prices, and buying UI for item and attack cards.
 - [ ] Add starter deck selection before entering the first area.
 - [x] Connect regular battle nodes to the arena screen and return to the map after a win.
 - [ ] Connect boss nodes to boss battles and gate area completion behind winning them.

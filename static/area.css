@@ -294,11 +294,14 @@
 }
 
 .area-node {
+    --area-node-size: 64px;
+    --area-node-icon-size: 32px;
+
     position: absolute;
     left: var(--node-x);
     top: var(--node-y);
-    width: 64px;
-    height: 64px;
+    width: var(--area-node-size);
+    height: var(--area-node-size);
     display: grid;
     place-items: center;
     padding: 0;
@@ -363,8 +366,8 @@
 .area-node-icon,
 .area-legend-icon {
     position: relative;
-    width: 32px;
-    height: 32px;
+    width: var(--area-node-icon-size, 32px);
+    height: var(--area-node-icon-size, 32px);
     display: grid;
     place-items: center;
     flex: 0 0 auto;
@@ -410,6 +413,29 @@
 .area-icon--battle {
     border: 2px solid rgba(251, 246, 232, 0.82);
     border-radius: 999px;
+}
+
+.area-node-icon.area-icon--trainer-sprite {
+    width: calc(var(--area-node-size) - 8px);
+    height: calc(var(--area-node-size) - 8px);
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+}
+
+.area-icon--battle.area-icon--trainer-sprite::before,
+.area-icon--battle.area-icon--trainer-sprite::after {
+    content: none;
+}
+
+.area-node-trainer-sprite {
+    width: calc(var(--area-node-size) - 6px);
+    height: calc(var(--area-node-size) - 6px);
+    max-width: calc(var(--area-node-size) - 6px);
+    max-height: calc(var(--area-node-size) - 6px);
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.34));
 }
 
 .area-icon--battle::before {
@@ -829,13 +855,13 @@
     }
 
     .area-node {
-        width: 52px;
-        height: 52px;
+        --area-node-size: 52px;
+        --area-node-icon-size: 27px;
     }
 
     .area-node-icon {
-        width: 27px;
-        height: 27px;
+        width: var(--area-node-icon-size);
+        height: var(--area-node-icon-size);
     }
 
     .area-route-status {
@@ -890,13 +916,13 @@
     }
 
     .area-node {
-        width: 40px;
-        height: 40px;
+        --area-node-size: 40px;
+        --area-node-icon-size: 21px;
     }
 
     .area-node-icon {
-        width: 21px;
-        height: 21px;
+        width: var(--area-node-icon-size);
+        height: var(--area-node-icon-size);
     }
 
     .area-node-step {

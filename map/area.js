@@ -384,15 +384,27 @@
         const disabled = selectable ? '' : 'disabled';
         const stepText = node.step > 0 ? node.step : 'Start';
 
+        const trainer = node.type === 'battle' ? getBattleNodeTrainer(node) : null;
+
         return `
             <button class="${className}" type="button" style="--node-x: ${node.x}%; --node-y: ${node.y}%;" data-node-id="${node.id}" ${disabled} aria-label="${getNodeAriaLabel(node, current, selectable)}">
-                ${renderLocationIcon(node.type)}
+                ${renderLocationIcon(node, trainer)}
                 <span class="area-node-step">${stepText}</span>
             </button>
         `;
     }
 
-    function renderLocationIcon(type) {
+    function renderLocationIcon(node, trainer = null) {
+        const type = typeof node === 'string' ? node : node.type;
+
+        if (type === 'battle' && trainer) {
+            return `
+                <span class="area-node-icon area-icon--battle area-icon--trainer-sprite" aria-hidden="true">
+                    <img class="area-node-trainer-sprite" src="${trainer.spritePath}" alt="">
+                </span>
+            `;
+        }
+
         if (type === 'event') {
             return '<span class="area-node-icon area-icon--event" aria-hidden="true">!</span>';
         }
@@ -643,7 +655,14 @@
 
         if (savedRun) {
             applyRunState(savedRun);
-            if (repairRunCollections() || sanitizeCaptureEncounters() || sanitizeBattleEncounters()) saveRunState();
+            const changed = [
+                repairRunCollections(),
+                sanitizeCaptureEncounters(),
+                ensureBattleNodeEncounters(),
+                sanitizeBattleEncounters()
+            ].some(Boolean);
+
+            if (changed) saveRunState();
             return;
         }
 
@@ -655,6 +674,7 @@
             area: createAreaGraph(),
             collections: createCardCollections()
         }));
+        ensureBattleNodeEncounters();
         saveRunState();
     }
 
@@ -764,7 +784,18 @@
 
         if (!trainer) return null;
 
-        const encounter = {
+        const encounter = createBattleEncounter(node, trainer);
+
+        state.run.battleEncounters[node.id] = encounter;
+        state.run.area.activeBattleNodeId = node.id;
+        state.run.area.activeCaptureNodeId = null;
+        state.run.area.activeMartNodeId = null;
+
+        return encounter;
+    }
+
+    function createBattleEncounter(node, trainer) {
+        return {
             completed: false,
             completedAt: null,
             createdAt: new Date().toISOString(),
@@ -777,13 +808,6 @@
             startedAt: null,
             trainerName: trainer.name
         };
-
-        state.run.battleEncounters[node.id] = encounter;
-        state.run.area.activeBattleNodeId = node.id;
-        state.run.area.activeCaptureNodeId = null;
-        state.run.area.activeMartNodeId = null;
-
-        return encounter;
     }
 
     function getOrCreateMartEncounter(node) {
@@ -995,6 +1019,28 @@
         }, false);
     }
 
+    function ensureBattleNodeEncounters() {
+        if (!state.run || !state.area || !Array.isArray(state.area.nodes)) return false;
+
+        state.run.battleEncounters = state.run.battleEncounters || {};
+
+        return state.area.nodes.reduce((changed, node) => {
+            if (!node || node.type !== 'battle') return changed;
+
+            const existingEncounter = state.run.battleEncounters[node.id];
+
+            if (existingEncounter) return changed;
+
+            const trainer = chooseStandardTrainer();
+
+            if (!trainer) return changed;
+
+            state.run.battleEncounters[node.id] = createBattleEncounter(node, trainer);
+
+            return true;
+        }, false);
+    }
+
     function sanitizeBattleEncounter(encounter) {
         if (encounter.trainerName && getTrainerByName(encounter.trainerName)) return false;
 
@@ -1028,6 +1074,16 @@
             : [];
 
         return trainers.find(trainer => trainer.name === name) || null;
+    }
+
+    function getBattleNodeTrainer(node) {
+        const encounter = state.run && state.run.battleEncounters
+            ? state.run.battleEncounters[node.id]
+            : null;
+
+        return encounter && encounter.trainerName
+            ? getTrainerByName(encounter.trainerName)
+            : null;
     }
 
     function getUniqueRecordsByName(records) {
@@ -1346,13 +1402,18 @@
     }
 
     function getNodeAriaLabel(node, current, selectable) {
-        const parts = [LOCATION_LABELS[node.type]];
+        const trainer = node.type === 'battle' ? getBattleNodeTrainer(node) : null;
+        const parts = [trainer ? `${getTrainerDisplayName(trainer)} battle` : LOCATION_LABELS[node.type]];
 
         if (node.step > 0) parts.push(`location ${node.step}`);
         if (current) parts.push('current location');
         if (selectable) parts.push('available path');
 
         return parts.join(', ');
+    }
+
+    function getTrainerDisplayName(trainer) {
+        return trainer && trainer.displayName ? trainer.displayName : trainer.name;
     }
 
     function getEnteredLocationText(node) {

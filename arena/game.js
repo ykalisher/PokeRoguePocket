@@ -89,7 +89,7 @@
         runStore.saveRunState(activeRun);
 
         arena.BattleConfig = {
-            opponent: { name: activeTrainer.name },
+            opponent: { name: getTrainerDisplayName(activeTrainer) },
             player: { name: 'You' }
         };
         arena.BattleDecks = {
@@ -107,10 +107,10 @@
         arena.state.elements.board.innerHTML = `
             <section class="battle-flow-screen" aria-label="Trainer battle">
                 <div class="battle-flow-card">
-                    <img class="battle-flow-sprite" src="${activeTrainer.spritePath}" alt="${activeTrainer.name}">
+                    <img class="battle-flow-sprite" src="${activeTrainer.spritePath}" alt="${getTrainerDisplayName(activeTrainer)}">
                     <div class="battle-flow-copy">
                         <span class="battle-flow-kicker">Trainer Battle</span>
-                        <h1>${activeTrainer.name}</h1>
+                        <h1>${getTrainerDisplayName(activeTrainer)}</h1>
                         <p>${activeTrainer.rank} trainer</p>
                     </div>
                     <button class="arena-button battle-flow-primary" type="button" data-battle-flow-action="start">Start Battle</button>
@@ -257,6 +257,10 @@
         }
 
         return activeTrainer && Number.isFinite(activeTrainer.cash) ? activeTrainer.cash : 0;
+    }
+
+    function getTrainerDisplayName(trainer) {
+        return trainer && trainer.displayName ? trainer.displayName : trainer.name;
     }
 
     function getSavedBattleOutcome() {
