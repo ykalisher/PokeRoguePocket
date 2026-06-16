@@ -109,7 +109,7 @@
                 <div class="battle-flow-card">
                     <img class="battle-flow-sprite" src="${activeTrainer.spritePath}" alt="${getTrainerDisplayName(activeTrainer)}">
                     <div class="battle-flow-copy">
-                        <span class="battle-flow-kicker">Trainer Battle</span>
+                        <span class="battle-flow-kicker">${getBattleKicker()}</span>
                         <h1>${getTrainerDisplayName(activeTrainer)}</h1>
                         <p>${activeTrainer.rank} trainer</p>
                     </div>
@@ -183,7 +183,7 @@
         return `
             <section class="battle-result-window" role="dialog" aria-modal="true" aria-labelledby="battle-result-title">
                 <span class="battle-flow-kicker">Battle Complete</span>
-                <h1 id="battle-result-title">You won</h1>
+                <h1 id="battle-result-title">${isBossBattle() ? 'Area cleared' : 'You won'}</h1>
                 ${renderWinRewardSummary()}
                 <button class="arena-button battle-flow-primary" type="button" data-battle-flow-action="continue">Continue</button>
             </section>
@@ -209,6 +209,11 @@
 
         activeBattleEncounter.completed = true;
         activeBattleEncounter.completedAt = new Date().toISOString();
+        if (activeBattleEncounter.outcome === 'win' && isBossBattle()) {
+            activeRun.area.completed = true;
+            activeRun.area.completedAt = activeBattleEncounter.completedAt;
+            activeRun.area.completedBossNodeId = activeBattleEncounter.nodeId;
+        }
         activeRun.area.activeBattleNodeId = null;
         if (activeBattleEncounter.sourceEventNodeId) {
             activeRun.area.activeEventNodeId = null;
@@ -316,7 +321,9 @@
             : [];
 
         if (rewardSummary.length === 0) {
-            return '<p>The trainer stepped aside.</p>';
+            return isBossBattle()
+                ? '<p>The area boss stepped aside.</p>'
+                : '<p>The trainer stepped aside.</p>';
         }
 
         return `
@@ -337,6 +344,18 @@
 
     function getTrainerDisplayName(trainer) {
         return trainer && trainer.displayName ? trainer.displayName : trainer.name;
+    }
+
+    function getBattleKicker() {
+        return isBossBattle() ? 'Boss Battle' : 'Trainer Battle';
+    }
+
+    function isBossBattle() {
+        const rank = activeBattleEncounter && activeBattleEncounter.rank
+            ? activeBattleEncounter.rank
+            : activeTrainer && activeTrainer.rank;
+
+        return String(rank || '').toLowerCase() === 'boss';
     }
 
     function getSavedBattleOutcome() {

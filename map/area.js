@@ -227,15 +227,19 @@
         state.visitedNodeIds.add(node.id);
         state.traveledPathKeys.add(getPathKey(previousNodeId, node.id));
 
-        if (node.type === 'battle') {
-            const encounter = getOrCreateBattleEncounter(node);
+        if (node.type === 'battle' || node.type === 'boss') {
+            const encounter = node.type === 'boss'
+                ? getOrCreateBossEncounter(node)
+                : getOrCreateBattleEncounter(node);
 
             if (!encounter) {
                 state.currentNodeId = previousNodeId;
                 state.visitedNodeIds.delete(node.id);
                 state.traveledPathKeys.delete(getPathKey(previousNodeId, node.id));
                 render();
-                showPopup('No Standard trainers are available.');
+                showPopup(node.type === 'boss'
+                    ? 'No Boss trainers are available.'
+                    : 'No Standard trainers are available.');
                 return;
             }
 
@@ -292,6 +296,7 @@
                     <div class="area-subrow">
                         <span class="stat-pill">${AREA_THEME.terrain}</span>
                         <span class="stat-pill">${renderCurrentLocationText(currentNode)}</span>
+                        ${isAreaComplete() ? '<span class="stat-pill">Cleared</span>' : ''}
                     </div>
                 </div>
                 <div class="area-hud" aria-label="Run resources and decks">
@@ -360,6 +365,7 @@
         const currentNode = getCurrentNode();
         const nextNodes = getAvailableNextNodes();
 
+        if (isAreaComplete()) return 'Area complete';
         if (!currentNode || currentNode.id === BOSS_NODE_ID) return 'Area boss reached';
 
         return `${nextNodes.length} path${nextNodes.length === 1 ? '' : 's'} available`;
@@ -401,7 +407,7 @@
         const disabled = selectable ? '' : 'disabled';
         const stepText = node.step > 0 ? node.step : 'Start';
 
-        const trainer = node.type === 'battle' ? getBattleNodeTrainer(node) : null;
+        const trainer = isTrainerNodeType(node.type) ? getBattleNodeTrainer(node) : null;
 
         return `
             <button class="${className}" type="button" style="--node-x: ${node.x}%; --node-y: ${node.y}%;" data-node-id="${node.id}" ${disabled} aria-label="${getNodeAriaLabel(node, current, selectable)}">
@@ -414,9 +420,9 @@
     function renderLocationIcon(node, trainer = null) {
         const type = typeof node === 'string' ? node : node.type;
 
-        if (type === 'battle' && trainer) {
+        if (isTrainerNodeType(type) && trainer) {
             return `
-                <span class="area-node-icon area-icon--battle area-icon--trainer-sprite" aria-hidden="true">
+                <span class="area-node-icon area-icon--${type} area-icon--trainer-sprite" aria-hidden="true">
                     <img class="area-node-trainer-sprite" src="${trainer.spritePath}" alt="">
                 </span>
             `;
@@ -729,6 +735,10 @@
         state.run.collections = state.collections;
     }
 
+    function isAreaComplete() {
+        return Boolean(state.run && state.run.area && state.run.area.completed);
+    }
+
     function repairRunCollections() {
         const balanceResult = runStore.balancePokemonCollections(state.run);
         const actionChanges = runStore.rebuildActionDeckForActivePokemon(state.run);
@@ -795,6 +805,14 @@
     }
 
     function getOrCreateBattleEncounter(node) {
+        return getOrCreateTrainerEncounter(node, chooseStandardTrainer);
+    }
+
+    function getOrCreateBossEncounter(node) {
+        return getOrCreateTrainerEncounter(node, chooseBossTrainer);
+    }
+
+    function getOrCreateTrainerEncounter(node, chooseTrainer) {
         const existingEncounter = state.run.battleEncounters[node.id];
 
         if (existingEncounter && !existingEncounter.completed) {
@@ -802,11 +820,11 @@
             state.run.area.activeCaptureNodeId = null;
             state.run.area.activeEventNodeId = null;
             state.run.area.activeMartNodeId = null;
-            sanitizeBattleEncounter(existingEncounter);
+            sanitizeBattleEncounter(existingEncounter, node);
             return existingEncounter;
         }
 
-        const trainer = chooseStandardTrainer();
+        const trainer = chooseTrainer();
 
         if (!trainer) return null;
 
@@ -1128,13 +1146,13 @@
         state.run.battleEncounters = state.run.battleEncounters || {};
 
         return state.area.nodes.reduce((changed, node) => {
-            if (!node || node.type !== 'battle') return changed;
+            if (!node || !isTrainerNodeType(node.type)) return changed;
 
             const existingEncounter = state.run.battleEncounters[node.id];
 
             if (existingEncounter) return changed;
 
-            const trainer = chooseStandardTrainer();
+            const trainer = chooseTrainerForNode(node);
 
             if (!trainer) return changed;
 
@@ -1144,10 +1162,13 @@
         }, false);
     }
 
-    function sanitizeBattleEncounter(encounter) {
-        if (encounter.trainerName && getTrainerByName(encounter.trainerName)) return false;
+    function sanitizeBattleEncounter(encounter, node = null) {
+        const encounterNode = node || getNodeById(encounter.nodeId);
+        const existingTrainer = encounter.trainerName ? getTrainerByName(encounter.trainerName) : null;
 
-        const trainer = chooseStandardTrainer();
+        if (existingTrainer && trainerMatchesNodeRank(existingTrainer, encounterNode)) return false;
+
+        const trainer = chooseTrainerForNode(encounterNode);
 
         if (!trainer) return false;
 
@@ -1158,17 +1179,43 @@
         return true;
     }
 
+    function chooseTrainerForNode(node) {
+        return node && node.type === 'boss'
+            ? chooseBossTrainer()
+            : chooseStandardTrainer();
+    }
+
     function chooseStandardTrainer() {
+        return chooseTrainerByRank('standard');
+    }
+
+    function chooseBossTrainer() {
+        return chooseTrainerByRank('boss');
+    }
+
+    function chooseTrainerByRank(rank) {
         const trainers = arena.GameData && Array.isArray(arena.GameData.trainers)
             ? arena.GameData.trainers
             : [];
-        const standardTrainers = trainers.filter(trainer => (
-            trainer && String(trainer.rank || '').toLowerCase() === 'standard'
+        const rankedTrainers = trainers.filter(trainer => (
+            trainer && String(trainer.rank || '').toLowerCase() === rank
         ));
 
-        if (standardTrainers.length === 0) return null;
+        if (rankedTrainers.length === 0) return null;
 
-        return standardTrainers[randomInt(0, standardTrainers.length - 1)];
+        return rankedTrainers[randomInt(0, rankedTrainers.length - 1)];
+    }
+
+    function trainerMatchesNodeRank(trainer, node) {
+        if (!trainer || !node || !isTrainerNodeType(node.type)) return true;
+
+        const expectedRank = node.type === 'boss' ? 'boss' : 'standard';
+
+        return String(trainer.rank || '').toLowerCase() === expectedRank;
+    }
+
+    function isTrainerNodeType(type) {
+        return type === 'battle' || type === 'boss';
     }
 
     function getTrainerByName(name) {
@@ -1505,8 +1552,10 @@
     }
 
     function getNodeAriaLabel(node, current, selectable) {
-        const trainer = node.type === 'battle' ? getBattleNodeTrainer(node) : null;
-        const parts = [trainer ? `${getTrainerDisplayName(trainer)} battle` : LOCATION_LABELS[node.type]];
+        const trainer = isTrainerNodeType(node.type) ? getBattleNodeTrainer(node) : null;
+        const parts = [trainer
+            ? `${getTrainerDisplayName(trainer)} ${node.type === 'boss' ? 'boss battle' : 'battle'}`
+            : LOCATION_LABELS[node.type]];
 
         if (node.step > 0) parts.push(`location ${node.step}`);
         if (current) parts.push('current location');

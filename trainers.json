@@ -44,5 +44,51 @@
       "Withdraw Wand",
       "Liechi Berry"
     ]
+  },
+  {
+    "name": "Wallace",
+    "sprite": "Wallace",
+    "cash": 180,
+    "rank": "Boss",
+    "typeSpecialization": "WATER",
+    "pokemon": [
+      "Milotic",
+      "Kingdra",
+      "Gyarados",
+      "Suicune"
+    ],
+    "attacks": [
+      [
+        "Hydro Pump",
+        "Surf",
+        "Rain Dance",
+        "Waterfall"
+      ],
+      [
+        "Hydro Pump",
+        "Dragon Claw",
+        "Rain Dance",
+        "Waterfall"
+      ],
+      [
+        "Hydro Pump",
+        "Dragon Claw",
+        "Waterfall",
+        "Surf"
+      ],
+      [
+        "Great Flood",
+        "Hydro Pump",
+        "Rain Dance",
+        "Waterfall"
+      ]
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Liechi Berry"
+    ]
   }
 ]

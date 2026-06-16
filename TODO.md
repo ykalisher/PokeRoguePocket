@@ -34,13 +34,13 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [ ] Rebalance stats (human type is super broken)
 ## Overworld Mechanics
 - [x] Decide on how you capture more pokemon.
-- [ ] Decide on how you get more attacks
+- [x] Decide on how you get more attacks
 - [ ] Come up with algorithm for locations and selection.
 - [ ] Come up with algorithm or presets for opposing trainers.
-- [ ] Create system for shopkeeper and costs.
+- [x] Create system for shopkeeper and costs.
 - [ ] Decide on progression system.
 ## Map UI
-- [ ] Replace the placeholder boss grey circle with shaded boss trainer sprite art.
+- [x] Replace the placeholder boss grey circle with shaded boss trainer sprite art.
 - [ ] Replace placeholder trainer, capture, shop, and event symbols with final map icon assets.
 - [x] Add trainer encounter definitions and show trainer-specific battle nodes on the map.
 - [ ] Add event definitions and wire event nodes to a real event UI instead of only showing a popup.
@@ -48,7 +48,7 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [x] Add shop contents, prices, and buying UI for item and attack cards.
 - [ ] Add starter deck selection before entering the first area.
 - [x] Connect regular battle nodes to the arena screen and return to the map after a win.
-- [ ] Connect boss nodes to boss battles and gate area completion behind winning them.
+- [x] Connect boss nodes to boss battles and gate area completion behind winning them.
 - [ ] Add four terrain-themed areas with terrain-specific Pokemon, trainers, shops, and events.
 - [ ] Add the final boss gauntlet after the fourth area.
 - [x] Persist run state across screens, including current location, visited paths, money, Pokemon cards, and action cards.

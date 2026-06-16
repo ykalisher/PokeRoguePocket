@@ -423,8 +423,8 @@
     border-radius: 0;
 }
 
-.area-icon--battle.area-icon--trainer-sprite::before,
-.area-icon--battle.area-icon--trainer-sprite::after {
+.area-icon--trainer-sprite::before,
+.area-icon--trainer-sprite::after {
     content: none;
 }
 
