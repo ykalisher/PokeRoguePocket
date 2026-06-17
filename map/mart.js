@@ -29,6 +29,9 @@
     async function init() {
         state.elements.root = document.getElementById('mart-root');
         state.elements.root.addEventListener('click', handleMartClick);
+        state.elements.root.addEventListener('dragstart', handleMartDragStart);
+        state.elements.root.addEventListener('dragover', handleMartDragOver);
+        state.elements.root.addEventListener('drop', handleMartDrop);
         window.addEventListener('keydown', handleKeyDown);
 
         await arena.Data.loadGameData();
@@ -103,6 +106,33 @@
         }
     }
 
+    function handleMartDragStart(event) {
+        const pokemonButton = event.target.closest('[data-pokemon-card-id]');
+        if (!pokemonButton) return;
+
+        event.dataTransfer.setData('text/plain', pokemonButton.dataset.pokemonCardId);
+        event.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleMartDragOver(event) {
+        const pcCurrent = event.target.closest('.mart-pc-current');
+        if (!pcCurrent) return;
+
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleMartDrop(event) {
+        const pcCurrent = event.target.closest('.mart-pc-current');
+        if (!pcCurrent) return;
+
+        event.preventDefault();
+        const cardId = event.dataTransfer.getData('text/plain');
+        if (cardId) {
+            depositPokemonById(cardId);
+        }
+    }
+
     function handleKeyDown(event) {
         if (event.key === 'Escape' && state.cardWindow) {
             closeCardWindow();
@@ -173,6 +203,9 @@
         refreshPcPokemon();
         runStore.rebuildActionDeckForActivePokemon(state.run);
         runStore.saveRunState(state.run);
+
+        state.run = runStore.loadRunState();
+
         setMessage(result.zone === 'bench'
             ? `Withdrew ${withdrawnCard.pokemon.name} to the bench.`
             : `Withdrew ${withdrawnCard.pokemon.name}.`);
@@ -180,12 +213,23 @@
 
     function depositSelectedPokemon() {
         const selectedCard = getPokemonCardById(state.selectedPokemonId);
+        performDeposit(selectedCard);
+    }
 
+    function depositPokemonById(cardId) {
+        const selectedCard = getPokemonCardById(cardId);
+        performDeposit(selectedCard);
+    }
+
+    function performDeposit(selectedCard) {
         if (!selectedCard) return;
 
         const hasPcPokemon = Boolean(state.pcPokemon);
 
-        if (!hasPcPokemon && state.run.collections.pokemon.length <= 1) {
+        const totalPokemonCount = state.run.collections.pokemon.length + 
+                                 state.run.collections.bench.pokemon.length;
+
+        if (!hasPcPokemon && totalPokemonCount <= 1) {
             setMessage('Keep at least one Pokemon in your deck.');
             return;
         }
@@ -193,6 +237,9 @@
         const pcName = hasPcPokemon ? state.pcPokemon.pokemon.name : null;
 
         state.run.collections.pokemon = state.run.collections.pokemon
+            .filter(card => card.id !== selectedCard.id);
+
+        state.run.collections.bench.pokemon = state.run.collections.bench.pokemon
             .filter(card => card.id !== selectedCard.id);
 
         if (hasPcPokemon) {
@@ -300,6 +347,11 @@
         const depositText = state.pcPokemon ? 'Swap Selected' : 'Deposit Selected';
         const depositDisabled = selectedCard && (state.pcPokemon || state.run.collections.pokemon.length > 1) ? '' : 'disabled';
 
+        const allPokemon = [
+            ...state.run.collections.pokemon,
+            ...state.run.collections.bench.pokemon
+        ];
+
         return `
             <aside class="mart-pc-panel" aria-label="Pokemon PC">
                 <header class="mart-section-header">
@@ -319,10 +371,10 @@
                 <section class="mart-pokemon-deck" aria-label="Pokemon deck">
                     <header class="mart-mini-header">
                         <h3>Your Pokemon</h3>
-                        <span>${state.run.collections.pokemon.length}</span>
+                        <span>${allPokemon.length}</span>
                     </header>
                     <div class="mart-pokemon-grid">
-                        ${state.run.collections.pokemon.map(renderPokemonChoice).join('')}
+                        ${allPokemon.map(renderPokemonChoice).join('')}
                     </div>
                 </section>
                 <button class="mart-continue-button" type="button" data-mart-action="continue">Continue</button>
@@ -334,7 +386,7 @@
         const selected = state.selectedPokemonId === card.id;
 
         return `
-            <button class="mart-pokemon-choice ${selected ? 'is-selected' : ''}" type="button" data-pokemon-card-id="${card.id}" aria-pressed="${selected ? 'true' : 'false'}" aria-label="Select ${card.pokemon.name}">
+            <button class="mart-pokemon-choice ${selected ? 'is-selected' : ''}" type="button" draggable="true" data-pokemon-card-id="${card.id}" aria-pressed="${selected ? 'true' : 'false'}" aria-label="Select ${card.pokemon.name}">
                 ${arena.Render.renderCardPreview(card, { className: 'mart-pokemon-card' })}
             </button>
         `;
@@ -498,7 +550,9 @@
     function getPokemonCardById(cardId) {
         if (!cardId) return null;
 
-        return state.run.collections.pokemon.find(card => card.id === cardId) || null;
+        return state.run.collections.pokemon.find(card => card.id === cardId) || 
+               state.run.collections.bench.pokemon.find(card => card.id === cardId) || 
+               null;
     }
 
     function getOfferCost(kind) {
