@@ -48,20 +48,21 @@
   {
     "name": "Wallace",
     "sprite": "Wallace",
-    "cash": 180,
+    "cash": 300,
     "rank": "Boss",
     "typeSpecialization": "WATER",
     "pokemon": [
       "Milotic",
       "Kingdra",
       "Gyarados",
-      "Suicune"
+      "Milotic",
+      "Gyarados"
     ],
     "attacks": [
       [
         "Hydro Pump",
         "Surf",
-        "Rain Dance",
+        "Dragon Claw",
         "Waterfall"
       ],
       [
@@ -77,10 +78,16 @@
         "Surf"
       ],
       [
-        "Great Flood",
+        "Mist",
         "Hydro Pump",
-        "Rain Dance",
-        "Waterfall"
+        "Moonblast",
+        "Helping Hand"
+      ],
+      [
+        "Mist",
+        "Dazzling Dance",
+        "Moonblast",
+        "Helping Hand"
       ]
     ],
     "items": [
@@ -88,7 +95,8 @@
       "Lum Berry",
       "Salac Berry",
       "Withdraw Wand",
-      "Liechi Berry"
+      "Liechi Berry",
+      "Psychic Gem"
     ]
   }
 ]

@@ -421,6 +421,7 @@
     overflow: visible;
     border: 0;
     border-radius: 0;
+    background: none;
 }
 
 .area-icon--trainer-sprite::before,
