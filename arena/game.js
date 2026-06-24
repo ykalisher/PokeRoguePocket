@@ -248,17 +248,17 @@
     }
 
     function createTrainerDeckDefinition(trainer) {
+        const attackNames = Array.isArray(trainer.attacks) ? trainer.attacks : [];
+        const itemNames = Array.isArray(trainer.items) ? trainer.items : [];
+        const pokemonNames = Array.isArray(trainer.pokemon) ? trainer.pokemon : [];
+
         return {
             actionCards: [
-                ...trainer.attacks.flatMap(attacks => (
-                    Array.isArray(attacks)
-                        ? attacks.map(name => ({ kind: 'attack', name }))
-                        : []
-                )),
-                ...trainer.items.map(name => ({ kind: 'item', name }))
+                ...attackNames.map(name => ({ kind: 'attack', name })),
+                ...itemNames.map(name => ({ kind: 'item', name }))
             ],
             exactCards: true,
-            pokemonCards: trainer.pokemon.map(name => ({ name }))
+            pokemonCards: pokemonNames.map(name => ({ name }))
         };
     }
 

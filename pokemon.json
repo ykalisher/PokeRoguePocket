@@ -547,7 +547,7 @@
     "baseHealth": 115,
     "baseAttack": 115,
     "baseDefense": 75,
-    "baseSpeed": 90
+    "baseSpeed": 45
   },
   {
     "name": "Aggron",

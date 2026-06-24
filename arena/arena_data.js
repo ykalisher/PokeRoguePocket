@@ -377,6 +377,18 @@
         };
     }
 
+    function normalizeTrainerAttackNames(attacks) {
+        if (!Array.isArray(attacks)) return [];
+
+        return attacks.flatMap(entry => {
+            if (Array.isArray(entry)) return normalizeTrainerAttackNames(entry);
+            if (typeof entry !== 'string') return [];
+
+            const attackName = entry.trim();
+            return attackName ? [attackName] : [];
+        });
+    }
+
     function normalizeTrainer(record) {
         const sprite = record.sprite || record.name;
         const trainerSprites = rogue && rogue.TrainerSprites;
@@ -388,9 +400,7 @@
             : stripTerminalGender(record.name);
 
         return {
-            attacks: Array.isArray(record.attacks)
-                ? record.attacks.map(attacks => Array.isArray(attacks) ? attacks.filter(Boolean) : [])
-                : [],
+            attacks: normalizeTrainerAttackNames(record.attacks),
             cash: Number(record.cash) || 0,
             items: Array.isArray(record.items) ? record.items.filter(Boolean) : [],
             displayName,

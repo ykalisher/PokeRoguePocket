@@ -1,5 +1,11 @@
 # Tasks
-This file is for humans only! Agents should not act on this file unless explicitly requested to mark something as complete or add a  new item.
+This file is intended primarily for humans. Agents should not act on this file unless explicitly requested to mark something as complete or add a  new item, and should not use the contents of this file for anything.
+## Next Big Task
+1. Create trainers
+2. Create events
+3. Create locations
+4. Add rules for specialization in each location
+
 ## Data
 - [x] Decide on type specializations for attacks
 	ARTIFICIAL: Interacts with the deck and hand; Attacks to increase the number of cards in your hand or prevent the next card you play from being discarded or replay a discarded card etc.
@@ -53,7 +59,7 @@ This file is for humans only! Agents should not act on this file unless explicit
 - [ ] Add the final boss gauntlet after the fourth area.
 - [x] Persist run state across screens, including current location, visited paths, money, Pokemon cards, and action cards.
 - [x] Enforce run loss when the player loses a battle, then reset to a new run.
-- [ ] Refine map generation bounds for branch density, node spacing, terrain weighting, and guaranteed boss placement.
+- [x] Refine map generation bounds for branch density, node spacing, terrain weighting, and guaranteed boss placement.
 ## Battle Mechanics
 - [x] Implement statuses and stat changes in battles.
 - [x] Implement new statuses or effects from types (~healing status away~, ~multi-attack moves~, ~fighting types~, ~fossil types~, ~normal types~, ~human type~, ~ice types~, ~steel types~)

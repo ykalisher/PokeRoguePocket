@@ -59,7 +59,7 @@ async function handleAddTrainer(rl, pokemonList, attackList, itemList) {
 
     for (const pokemon of selectedPokemon) {
         const attacks = await askAttacksForPokemon(rl, pokemon, attackList);
-        trainer.attacks.push(attacks.map(attack => attack.name));
+        trainer.attacks.push(...attacks.map(attack => attack.name));
     }
 
     const selectedItems = await askFixedSelections(rl, {

@@ -2,8 +2,8 @@
   {
     "name": "Gamer",
     "sprite": "Gamer",
-    "cash": 100,
-    "rank": "Standard",
+    "cash": 300,
+    "rank": "Ace",
     "typeSpecialization": "HUMAN",
     "pokemon": [
       "Alakazam",
@@ -12,30 +12,22 @@
       "Gengar"
     ],
     "attacks": [
-      [
-        "Mind Break",
-        "Mind Break",
-        "Trick",
-        "Future Sight"
-      ],
-      [
-        "Body Slam",
-        "Body Slam",
-        "Mega Punch",
-        "Mega Punch"
-      ],
-      [
-        "Expanding Force",
-        "Expanding Force",
-        "Meditate",
-        "Trick"
-      ],
-      [
-        "Shadow Ball",
-        "Jumpscare",
-        "Ghastly Grip",
-        "Curse"
-      ]
+      "Mind Break",
+      "Mind Break",
+      "Trick",
+      "Future Sight",
+      "Body Slam",
+      "Body Slam",
+      "Mega Punch",
+      "Mega Punch",
+      "Expanding Force",
+      "Expanding Force",
+      "Meditate",
+      "Trick",
+      "Shadow Ball",
+      "Jumpscare",
+      "Ghastly Grip",
+      "Curse"
     ],
     "items": [
       "Sitrus Berry",
@@ -48,7 +40,7 @@
   {
     "name": "Wallace",
     "sprite": "Wallace",
-    "cash": 300,
+    "cash": 500,
     "rank": "Boss",
     "typeSpecialization": "WATER",
     "pokemon": [
@@ -59,36 +51,26 @@
       "Gyarados"
     ],
     "attacks": [
-      [
-        "Hydro Pump",
-        "Surf",
-        "Dragon Claw",
-        "Waterfall"
-      ],
-      [
-        "Hydro Pump",
-        "Dragon Claw",
-        "Rain Dance",
-        "Waterfall"
-      ],
-      [
-        "Hydro Pump",
-        "Dragon Claw",
-        "Waterfall",
-        "Surf"
-      ],
-      [
-        "Mist",
-        "Hydro Pump",
-        "Moonblast",
-        "Helping Hand"
-      ],
-      [
-        "Mist",
-        "Dazzling Dance",
-        "Moonblast",
-        "Helping Hand"
-      ]
+      "Hydro Pump",
+      "Surf",
+      "Dragon Claw",
+      "Waterfall",
+      "Hydro Pump",
+      "Dragon Claw",
+      "Rain Dance",
+      "Waterfall",
+      "Hydro Pump",
+      "Dragon Claw",
+      "Waterfall",
+      "Surf",
+      "Mist",
+      "Hydro Pump",
+      "Moonblast",
+      "Helping Hand",
+      "Mist",
+      "Dazzling Dance",
+      "Moonblast",
+      "Helping Hand"
     ],
     "items": [
       "Sitrus Berry",
