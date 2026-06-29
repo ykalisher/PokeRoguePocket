@@ -80,5 +80,134 @@
       "Liechi Berry",
       "Psychic Gem"
     ]
+  },
+  {
+    "name": "Brock",
+    "sprite": "Brock",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "ROCK",
+    "pokemon": [
+      "Avalugg",
+      "Rhyperior",
+      "Probopass",
+      "Mamoswine",
+      "Rhyperior"
+    ],
+    "attacks": [
+      "Ice Beam",
+      "Slush Rush",
+      "Rock Slide",
+      "Stone Edge",
+      "Rock Slide",
+      "Stone Edge",
+      "Earthquake",
+      "Bulldoze",
+      "Iron Head",
+      "Rock Slide",
+      "Stone Wall",
+      "Stone Edge",
+      "Ice Beam",
+      "Earthquake",
+      "Bulldoze",
+      "Slush Rush",
+      "Rock Slide",
+      "Stone Edge",
+      "Stone Wall",
+      "Bulldoze"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Withdraw Wand",
+      "Lum Berry",
+      "Sitrus Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Misty",
+    "sprite": "Misty",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "WATER",
+    "pokemon": [
+      "Blastoise",
+      "Poliwrath",
+      "Blastoise",
+      "Feraligatr",
+      "Gyarados"
+    ],
+    "attacks": [
+      "Angered Roar",
+      "Crunch",
+      "Hydro Pump",
+      "Waterfall",
+      "Hydro Pump",
+      "Soaking Smash",
+      "Soaking Smash",
+      "Surf",
+      "Angered Roar",
+      "Crunch",
+      "Hydro Pump",
+      "Waterfall",
+      "Violent Smash",
+      "Raging River",
+      "Raging River",
+      "Raging River",
+      "Hydro Pump",
+      "Intimidating Stare",
+      "Dragon Rage",
+      "Dragon Rage"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Psychic Gem",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Lt Surge",
+    "sprite": "Lt Surge",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "ELECTRIC",
+    "pokemon": [
+      "Electivire",
+      "Magnezone",
+      "Probopass",
+      "Electivire",
+      "Magnezone"
+    ],
+    "attacks": [
+      "Meditate",
+      "Thunder Bolt",
+      "Discharge",
+      "Flash Cannon",
+      "Iron Head",
+      "Iron Defense",
+      "Magnetize",
+      "Flash Cannon",
+      "Flash Cannon",
+      "Iron Head",
+      "Flash Cannon",
+      "Stone Wall",
+      "Meditate",
+      "Thunder Bolt",
+      "Thunder Punch",
+      "Thunder Punch",
+      "Thunder Bolt",
+      "Discharge",
+      "Flash Cannon",
+      "Thunder Wave"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Liechi Berry",
+      "Babiri Berry"
+    ]
   }
 ]

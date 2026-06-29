@@ -1021,5 +1021,27 @@
     "baseAttack": 100,
     "baseDefense": 70,
     "baseSpeed": 70
+  },
+  {
+    "name": "Manectric",
+    "type1": "ELECTRIC",
+    "type2": "NONE",
+    "type3": "NONE",
+    "id": "0310",
+    "baseHealth": 70,
+    "baseAttack": 105,
+    "baseDefense": 60,
+    "baseSpeed": 105
+  },
+  {
+    "name": "Orbeetle",
+    "type1": "BUG",
+    "type2": "ELECTRIC",
+    "type3": "PSYCHIC",
+    "id": "0826",
+    "baseHealth": 65,
+    "baseAttack": 100,
+    "baseDefense": 85,
+    "baseSpeed": 90
   }
 ]
