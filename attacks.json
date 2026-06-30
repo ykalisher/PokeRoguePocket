@@ -939,12 +939,12 @@
   {
     "name": "Bug Buzz",
     "type1": "BUG",
-    "type2": "NONE",
-    "basePower": 20,
+    "type2": "ELECTRIC",
+    "basePower": 25,
     "status": "MULTI_ATTACK",
     "statChanges": [],
     "target": "ALL_OPPONENTS",
-    "full_type_requirements": false
+    "full_type_requirements": true
   },
   {
     "name": "Ancient Power",
@@ -1246,5 +1246,15 @@
     "statChanges": [],
     "target": "ALL_OPPONENTS",
     "full_type_requirements": false
+  },
+  {
+    "name": "Roaring Swarm",
+    "type1": "BUG",
+    "type2": "LEGENDARY",
+    "basePower": 40,
+    "status": "MULTI_ATTACK",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
   }
 ]

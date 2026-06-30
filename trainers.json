@@ -45,10 +45,10 @@
     "typeSpecialization": "WATER",
     "pokemon": [
       "Milotic",
-      "Kingdra",
+      "Whiscash",
       "Gyarados",
-      "Milotic",
-      "Gyarados"
+      "Primarina",
+      "Dragalge"
     ],
     "attacks": [
       "Hydro Pump",
@@ -82,49 +82,6 @@
     ]
   },
   {
-    "name": "Brock",
-    "sprite": "Brock",
-    "cash": 500,
-    "rank": "Boss",
-    "typeSpecialization": "ROCK",
-    "pokemon": [
-      "Avalugg",
-      "Rhyperior",
-      "Probopass",
-      "Mamoswine",
-      "Rhyperior"
-    ],
-    "attacks": [
-      "Ice Beam",
-      "Slush Rush",
-      "Rock Slide",
-      "Stone Edge",
-      "Rock Slide",
-      "Stone Edge",
-      "Earthquake",
-      "Bulldoze",
-      "Iron Head",
-      "Rock Slide",
-      "Stone Wall",
-      "Stone Edge",
-      "Ice Beam",
-      "Earthquake",
-      "Bulldoze",
-      "Slush Rush",
-      "Rock Slide",
-      "Stone Edge",
-      "Stone Wall",
-      "Bulldoze"
-    ],
-    "items": [
-      "Sitrus Berry",
-      "Withdraw Wand",
-      "Lum Berry",
-      "Sitrus Berry",
-      "Withdraw Wand"
-    ]
-  },
-  {
     "name": "Misty",
     "sprite": "Misty",
     "cash": 500,
@@ -133,7 +90,7 @@
     "pokemon": [
       "Blastoise",
       "Poliwrath",
-      "Blastoise",
+      "Drednaw",
       "Feraligatr",
       "Gyarados"
     ],
@@ -168,39 +125,39 @@
     ]
   },
   {
-    "name": "Lt Surge",
-    "sprite": "Lt Surge",
+    "name": "Brock",
+    "sprite": "Brock",
     "cash": 500,
     "rank": "Boss",
-    "typeSpecialization": "ELECTRIC",
+    "typeSpecialization": "ROCK",
     "pokemon": [
-      "Electivire",
-      "Magnezone",
-      "Probopass",
-      "Electivire",
-      "Magnezone"
+      "Golem",
+      "Steelix",
+      "Aggron",
+      "Rhyperior",
+      "Probopass"
     ],
     "attacks": [
-      "Meditate",
-      "Thunder Bolt",
-      "Discharge",
       "Flash Cannon",
+      "Thunder Wave",
+      "Stone Edge",
+      "Flash Cannon",
+      "Rock Slide",
+      "Stone Edge",
+      "Earth Power",
+      "Earthquake",
+      "Iron Head",
+      "Rock Slide",
+      "Stone Wall",
+      "Rock Polish",
+      "Stone Edge",
+      "Stone Wall",
+      "Bulldoze",
+      "Earthquake",
       "Iron Head",
       "Iron Defense",
-      "Magnetize",
       "Flash Cannon",
-      "Flash Cannon",
-      "Iron Head",
-      "Flash Cannon",
-      "Stone Wall",
-      "Meditate",
-      "Thunder Bolt",
-      "Thunder Punch",
-      "Thunder Punch",
-      "Thunder Bolt",
-      "Discharge",
-      "Flash Cannon",
-      "Thunder Wave"
+      "Rock Polish"
     ],
     "items": [
       "Sitrus Berry",
@@ -208,6 +165,929 @@
       "Withdraw Wand",
       "Liechi Berry",
       "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Lt. Surge",
+    "sprite": "Lt Surge",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "HUMAN",
+    "pokemon": [
+      "Electivire",
+      "Toxtricity",
+      "Pawmot",
+      "Conkeldurr",
+      "Gallade"
+    ],
+    "attacks": [
+      "Mega Punch",
+      "Meditate",
+      "Thunder Punch",
+      "Thunder Punch",
+      "Discharge",
+      "Power-up Punch",
+      "Sludge Bomb",
+      "Ooze",
+      "Mega Punch",
+      "Meditate",
+      "Overwork",
+      "Thunder Punch",
+      "Karate Smash",
+      "Power-up Punch",
+      "Kick in the Face",
+      "Mega Punch",
+      "Mind Break",
+      "Protect",
+      "Kick in the Face",
+      "Karate Smash"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Liechi Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Erika",
+    "sprite": "Erika",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "GRASS",
+    "pokemon": [
+      "Vileplume",
+      "Venusaur",
+      "Victreebel",
+      "Roserade",
+      "Cradily"
+    ],
+    "attacks": [
+      "Sleep Powder",
+      "Leech Seed",
+      "Sludge Bomb",
+      "Toxic",
+      "Ooze",
+      "Razor Leaf",
+      "Earth Power",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Razor Leaf",
+      "Leech Seed",
+      "Razor Leaf",
+      "Sludge Strike",
+      "Razor Leaf",
+      "Toxic",
+      "Sludge Bomb",
+      "Ancient Power",
+      "Earth Power",
+      "Razor Leaf",
+      "Leech Seed"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Salac Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Koga",
+    "sprite": "Koga",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "POISON",
+    "pokemon": [
+      "Crobat",
+      "Venomoth",
+      "Slowking",
+      "Scolipede",
+      "Gliscor"
+    ],
+    "attacks": [
+      "Sludge Bomb",
+      "Air Slash",
+      "Tailwind",
+      "Sludge Strike",
+      "Swarming Strike",
+      "Buzz Up",
+      "Future Sight",
+      "Expanding Force",
+      "Sludge Bomb",
+      "Mind Break",
+      "Ooze",
+      "Expanding Force",
+      "Sludge Bomb",
+      "Swarming Strike",
+      "Sludge Strike",
+      "Toxic",
+      "Air Slash",
+      "Tailwind",
+      "Earthquake",
+      "Sludge Bomb"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Salac Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Sabrina",
+    "sprite": "Sabrina",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "PSYCHIC",
+    "pokemon": [
+      "Hatterene",
+      "Gothitelle",
+      "Gardevoir",
+      "Alakazam",
+      "Gallade"
+    ],
+    "attacks": [
+      "Mist",
+      "Dazzling Dance",
+      "Moon Blast",
+      "Expanding Force",
+      "Mega Punch",
+      "Meditate",
+      "Mind Break",
+      "Expanding Force",
+      "Future Sight",
+      "Moon Blast",
+      "Mind Break",
+      "Haze",
+      "Mind Break",
+      "Trick",
+      "Protect",
+      "Expanding Force",
+      "Overwork",
+      "Kick in the Face",
+      "Mega Punch",
+      "Mega Punch"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Liechi Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Blaine",
+    "sprite": "Blaine",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "FIRE",
+    "pokemon": [
+      "Arcanine",
+      "Camerupt",
+      "Solrock",
+      "Armarouge",
+      "Marowak"
+    ],
+    "attacks": [
+      "Flame Thrower",
+      "Rock Slide",
+      "Stone Edge",
+      "Fire Spin",
+      "Flame Thrower",
+      "Earth Power",
+      "Bulldoze",
+      "Fire Spin",
+      "Protect",
+      "Stone Wall",
+      "Stone Edge",
+      "Expanding Force",
+      "Flame Thrower",
+      "Fire Spin",
+      "Mind Break",
+      "Meditate",
+      "Flame Thrower",
+      "Shadow Ball",
+      "Fire Spin",
+      "Mind Break"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Liechi Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Giovanni",
+    "sprite": "Giovanni",
+    "cash": 400,
+    "rank": "Special",
+    "typeSpecialization": "GROUND",
+    "pokemon": [
+      "Nidoking",
+      "Rhyperior",
+      "Garchomp",
+      "Gliscor",
+      "Seismitoad"
+    ],
+    "attacks": [
+      "Sludge Bomb",
+      "Angered Roar",
+      "Crunch",
+      "Earth Power",
+      "Rock Slide",
+      "Bulldoze",
+      "Earthquake",
+      "Stone Wall",
+      "Intimidating Stare",
+      "Dragon Dance",
+      "Dragon Claw",
+      "Earthquake",
+      "Sludge Bomb",
+      "Tailwind",
+      "Bulldoze",
+      "Sludge Strike",
+      "Rain Dance",
+      "Muddy Water",
+      "Bulldoze",
+      "Ooze"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Liechi Berry",
+      "Poison Gem"
+    ]
+  },
+  {
+    "name": "Guitarist",
+    "sprite": "Guitarist",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "ELECTRIC",
+    "pokemon": [
+      "Toxtricity",
+      "Kilowattrel",
+      "Manectric"
+    ],
+    "attacks": [
+      "Sludge Bomb",
+      "Thunder Bolt",
+      "Discharge",
+      "Thunder Wave",
+      "Air Slash",
+      "Thunder Bolt",
+      "Flash Cannon",
+      "Tailwind",
+      "Thunder Bolt",
+      "Discharge",
+      "Flash Cannon",
+      "Thunder Wave"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Withdraw Wand",
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Dancer",
+    "sprite": "Dancer",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "HUMAN",
+    "pokemon": [
+      "Toxtricity",
+      "Electivire",
+      "Pawmot"
+    ],
+    "attacks": [
+      "Mega Punch",
+      "Meditate",
+      "Thunder Punch",
+      "Thunder Punch",
+      "Mega Punch",
+      "Trick",
+      "Thunder Punch",
+      "Power-up Punch",
+      "Mega Punch",
+      "Mega Punch",
+      "Discharge",
+      "Power-up Punch"
+    ],
+    "items": [
+      "Lum Berry",
+      "Withdraw Wand",
+      "Sitrus Berry"
+    ]
+  },
+  {
+    "name": "Dragon Tamer",
+    "sprite": "Dragon Tamer",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "DRAGON",
+    "pokemon": [
+      "Altaria",
+      "Dragonite",
+      "Appletun"
+    ],
+    "attacks": [
+      "Air Slash",
+      "Dragon Dance",
+      "Moon Blast",
+      "Dragon's Breath",
+      "Tailwind",
+      "Dragon Rage",
+      "Sparkling Breeze",
+      "Dragon Claw",
+      "Chomp",
+      "Burp",
+      "Dragon's Breath",
+      "Stockpile"
+    ],
+    "items": [
+      "Electric Gem",
+      "Grass Gem",
+      "Sitrus Berry"
+    ]
+  },
+  {
+    "name": "Engineer",
+    "sprite": "Engineer",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "STEEL",
+    "pokemon": [
+      "Magnezone",
+      "Dugtrio",
+      "Steelix"
+    ],
+    "attacks": [
+      "Thunder Bolt",
+      "Flash Cannon",
+      "Iron Defense",
+      "Magnetize",
+      "Iron Head",
+      "Earth Power",
+      "Earthquake",
+      "Swords Dance",
+      "Stone Edge",
+      "Stone Wall",
+      "Flash Cannon",
+      "Iron Head"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Lass",
+    "sprite": "Lass",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "NORMAL",
+    "pokemon": [
+      "Ursaluna",
+      "Quagsire",
+      "Farigiraf"
+    ],
+    "attacks": [
+      "Body Slam",
+      "Protect",
+      "Bulldoze",
+      "Inspiring Noise",
+      "Mist",
+      "Earth Power",
+      "Earthquake",
+      "Body Slam",
+      "Mind Break",
+      "Expanding Force",
+      "Body Slam",
+      "Inspiring Noise"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Lass",
+    "sprite": "Lass",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "GROUND",
+    "pokemon": [
+      "Quagsire",
+      "Ursaluna",
+      "Swampert"
+    ],
+    "attacks": [
+      "Hydro Pump",
+      "Bulldoze",
+      "Muddy Water",
+      "Earthquake",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Earth Power",
+      "Muddy Water",
+      "Rain Dance",
+      "Earth Power",
+      "Bulldoze"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Waiter",
+    "sprite": "Waiter",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "GOURMET",
+    "pokemon": [
+      "Snorlax",
+      "Exeggutor",
+      "Appletun"
+    ],
+    "attacks": [
+      "Stockpile",
+      "Snack Up",
+      "Espresso Shot",
+      "Chomp",
+      "Burp",
+      "Razor Leaf",
+      "Chomp",
+      "Burp",
+      "Sleep Powder",
+      "Snack Up",
+      "Chomp",
+      "Leech Seed"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Nurse",
+    "sprite": "Nurse",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "FAIRY",
+    "pokemon": [
+      "Blissey",
+      "Milotic",
+      "Primarina"
+    ],
+    "attacks": [
+      "Mist",
+      "Body Slam",
+      "Dazzling Dance",
+      "Moon Blast",
+      "Surf",
+      "Haze",
+      "Dazzling Dance",
+      "Moon Blast",
+      "Hydro Pump",
+      "Moon Blast",
+      "Moon Blast",
+      "Mist"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Sitrus Berry",
+      "Sitrus Berry"
+    ]
+  },
+  {
+    "name": "Psychic",
+    "sprite": "Psychic F",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "PSYCHIC",
+    "pokemon": [
+      "Butterfree",
+      "Venomoth",
+      "Orbeetle"
+    ],
+    "attacks": [
+      "Swarming Strike",
+      "Buzz Up",
+      "Expanding Force",
+      "Mind Break",
+      "Future Sight",
+      "Protect",
+      "Swarming Strike",
+      "Expanding Force",
+      "Mind Break",
+      "Mind Break",
+      "Bug Buzz",
+      "Buzz Up"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Bug Catcher",
+    "sprite": "Bug Catcher",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "BUG",
+    "pokemon": [
+      "Butterfree",
+      "Masquerain",
+      "Beautifly"
+    ],
+    "attacks": [
+      "Air Slash",
+      "Tailwind",
+      "Swarming Strike",
+      "Buzz Up",
+      "Air Slash",
+      "Tailwind",
+      "Swarming Strike",
+      "Buzz Up",
+      "Swarming Strike",
+      "Air Slash",
+      "Air Slash",
+      "Swarming Strike"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Liechi Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Pilot",
+    "sprite": "Pilot",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "FLYING",
+    "pokemon": [
+      "Staraptor",
+      "Braviary",
+      "Quaquaval"
+    ],
+    "attacks": [
+      "Air Slash",
+      "Tailwind",
+      "Mega Punch",
+      "Karate Smash",
+      "Body Slam",
+      "Kick in the Face",
+      "Inspiring Noise",
+      "Air Slash",
+      "Tailwind",
+      "Karate Smash",
+      "Air Slash",
+      "Kick in the Face"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Swimmer",
+    "sprite": "Swimmer M",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "WATER",
+    "pokemon": [
+      "Sharpedo",
+      "Whiscash",
+      "Poliwrath"
+    ],
+    "attacks": [
+      "Hydro Pump",
+      "Waterfall",
+      "Rain Dance",
+      "Surf",
+      "Hydro Pump",
+      "Waterfall",
+      "Rain Dance",
+      "Surf",
+      "Hydro Pump",
+      "Waterfall",
+      "Waterfall",
+      "Waterfall"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Sitrus Berry",
+      "Lum Berry"
+    ]
+  },
+  {
+    "name": "Mecha Cop",
+    "sprite": "Mecha Cop",
+    "cash": 400,
+    "rank": "Special",
+    "typeSpecialization": "STEEL",
+    "pokemon": [
+      "Scizor",
+      "Magnezone",
+      "Orbeetle",
+      "Vikavolt"
+    ],
+    "attacks": [
+      "Swarming Strike",
+      "Iron Head",
+      "Flash Cannon",
+      "Swords Dance",
+      "Thunder Bolt",
+      "Discharge",
+      "Flash Cannon",
+      "Magnetize",
+      "Mind Break",
+      "Thunder Bolt",
+      "Buzz Up",
+      "Bug Buzz",
+      "Bug Buzz",
+      "Flash Cannon",
+      "Swarming Strike",
+      "Thunder Bolt"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Roughneck",
+    "sprite": "Roughneck",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "DARK",
+    "pokemon": [
+      "Greninja",
+      "Kingambit",
+      "Zoroark"
+    ],
+    "attacks": [
+      "Crunch",
+      "Sucker Punch",
+      "Murky Water",
+      "Trick",
+      "Crunch",
+      "Mega Punch",
+      "Meditate",
+      "Iron Head",
+      "Crunch",
+      "Mega Punch",
+      "Protect",
+      "Inspiring Noise"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Dancer",
+    "sprite": "Dancer",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "FIRE",
+    "pokemon": [
+      "Cinderace",
+      "Ceruledge",
+      "Skeledirge"
+    ],
+    "attacks": [
+      "Flame Thrower",
+      "Mega Punch",
+      "Meditate",
+      "Power-up Punch",
+      "Flame Thrower",
+      "Fire Spin",
+      "Shadow Ball",
+      "Curse",
+      "Mind Break",
+      "Shadow Ball",
+      "Cursed Flame",
+      "Fire Spin"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Pokémon Ranger",
+    "sprite": "Pokémon Ranger F",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "GRASS",
+    "pokemon": [
+      "Sceptile",
+      "Serperior",
+      "Torterra"
+    ],
+    "attacks": [
+      "Sleep Powder",
+      "Leech Seed",
+      "Dragon Rage",
+      "Dragon Claw",
+      "Dragon Dance",
+      "Razor Leaf",
+      "Earth Power",
+      "Dragon's Breath",
+      "Razor Leaf",
+      "Bulldoze",
+      "Earthquake",
+      "Earth Power"
+    ],
+    "items": [
+      "Grass Gem",
+      "Sitrus Berry",
+      "Lum Berry"
+    ]
+  },
+  {
+    "name": "Battle Girl",
+    "sprite": "Battle Girl",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "FIGHTING",
+    "pokemon": [
+      "Machamp",
+      "Heracross",
+      "Ledian"
+    ],
+    "attacks": [
+      "Mega Punch",
+      "Overwork",
+      "Power-up Punch",
+      "Kick in the Face",
+      "Swarming Punch",
+      "Swarming Punch",
+      "Swarming Punch",
+      "Buzz Up",
+      "Karate Smash",
+      "Karate Smash",
+      "Kick in the Face",
+      "Swords Dance"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Babiri Berry",
+      "Babiri Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Backpacker",
+    "sprite": "Backpacker M",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "ROCK",
+    "pokemon": [
+      "Avalugg",
+      "Probopass",
+      "Rhyperior"
+    ],
+    "attacks": [
+      "Rock Slide",
+      "Rock Slide",
+      "Rock Slide",
+      "Rock Slide",
+      "Rock Slide",
+      "Rock Slide",
+      "Rock Slide",
+      "Rock Slide",
+      "Stone Wall",
+      "Stone Wall",
+      "Stone Edge",
+      "Stone Edge"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Sitrus Berry",
+      "Lum Berry"
+    ]
+  },
+  {
+    "name": "Rocker",
+    "sprite": "Rocker",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "ELECTRIC",
+    "pokemon": [
+      "Toxtricity",
+      "Ampharos",
+      "Luxray",
+      "Zoroark"
+    ],
+    "attacks": [
+      "Discharge",
+      "Mega Punch",
+      "Sludge Strike",
+      "Thunder Wave",
+      "Thunder Bolt",
+      "Dazzling Dance",
+      "Moon Blast",
+      "Flash Cannon",
+      "Crunch",
+      "Sucker Punch",
+      "Thunder Bolt",
+      "Discharge",
+      "Mega Punch",
+      "Sucker Punch",
+      "Power-up Punch",
+      "Meditate"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Withdraw Wand",
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Hex maniac",
+    "sprite": "Hex Maniac",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "GHOST",
+    "pokemon": [
+      "Gengar",
+      "Froslass",
+      "Dusknoir"
+    ],
+    "attacks": [
+      "Shadow Ball",
+      "Curse",
+      "Jumpscare",
+      "Trick",
+      "Meditate",
+      "Curse",
+      "Mind Break",
+      "Mind Break",
+      "Power-up Punch",
+      "Shadow Ball",
+      "Ghastly Grip",
+      "Nightmare"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Skier",
+    "sprite": "Skier",
+    "cash": 200,
+    "rank": "Standard",
+    "typeSpecialization": "ICE",
+    "pokemon": [
+      "Empoleon",
+      "Beartic",
+      "Avalugg"
+    ],
+    "attacks": [
+      "Waterfall",
+      "Flash Cannon",
+      "Ice Beam",
+      "Freeze-Dry",
+      "Ice Beam",
+      "Slush Rush",
+      "Haze",
+      "Ice Beam",
+      "Ice Beam",
+      "Rock Slide",
+      "Stone Wall",
+      "Ice Beam"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Sitrus Berry"
     ]
   }
 ]

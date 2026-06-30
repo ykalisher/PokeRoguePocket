@@ -1,10 +1,15 @@
 # Tasks
 This file is intended primarily for humans. Agents should not act on this file unless explicitly requested to mark something as complete or add a  new item, and should not use the contents of this file for anything.
 ## Next Big Task
-1. Create trainers
-2. Create events
-3. Create locations
-4. Add rules for specialization in each location
+1. Create trainers✅
+2. Add artificial abilities and pokemon
+3. Fix bug where trainers with 3 pokemon don't lose immediately (it should be knock out all opponent's pokemon or 4 if more than 4)
+4. Fix bug where trainers' sprites are overlayed on top of another image
+5. Create events
+6. Create locations with rules for specialization in each location (pokemon types, opponent trainer types, events)
+7. Implement locations and have final boss rush
+8. Tweaks
+	- Legendaries should give you a legendary attack when you get them
 
 ## Data
 - [x] Decide on type specializations for attacks

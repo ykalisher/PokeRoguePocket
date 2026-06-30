@@ -66,7 +66,7 @@ async function handleAddTrainer(rl, pokemonList, attackList, itemList) {
         title: 'Items',
         prompt: 'Select Item',
         records: itemList,
-        count: 5,
+        count: getItemCountForRank(trainer.rank),
         describe: describeItem,
         allowRepeats: true
     });
@@ -109,7 +109,8 @@ async function askPokemonTeam(rl, pokemonList) {
             title: 'Pokemon',
             prompt: `Select Pokemon ${i + 1}`,
             records: pokemonList,
-            describe: describePokemon
+            describe: describePokemon,
+            useIdForSelection: true
         });
         selected.push(pokemon);
     }
@@ -122,7 +123,8 @@ async function askPokemonTeam(rl, pokemonList) {
             title: 'Pokemon',
             prompt: `Select Pokemon ${selected.length + 1}`,
             records: pokemonList,
-            describe: describePokemon
+            describe: describePokemon,
+            useIdForSelection: true
         });
         selected.push(pokemon);
     }
@@ -166,27 +168,61 @@ async function askFixedSelections(rl, options) {
 
 async function askRecordSelection(rl, options) {
     const unavailableNames = new Set(options.unavailableNames || []);
+    let displayRecords = options.records;
+    let idToRecord = null;
+
+    if (options.useIdForSelection) {
+        displayRecords = [...options.records].sort((a, b) => a.id.localeCompare(b.id));
+        idToRecord = new Map();
+        for (const record of displayRecords) {
+            idToRecord.set(record.id, record);
+            idToRecord.set(record.name, record);
+        }
+    }
 
     while (true) {
         console.log(`\n${options.title}:`);
-        options.records.forEach((record, i) => {
+        displayRecords.forEach((record, i) => {
             const disabled = unavailableNames.has(record.name) ? ' (already selected)' : '';
-            console.log(`${i + 1}. ${options.describe(record)}${disabled}`);
+            if (options.useIdForSelection) {
+                console.log(`${record.id}. ${options.describe(record)}${disabled}`);
+            } else {
+                console.log(`${i + 1}. ${options.describe(record)}${disabled}`);
+            }
         });
 
-        const input = (await rl.question(`${options.prompt} (1-${options.records.length}): `)).trim();
-        const index = parseInt(input, 10) - 1;
-
-        if (!isNaN(index) && index >= 0 && index < options.records.length) {
-            const record = options.records[index];
-            if (unavailableNames.has(record.name)) {
-                console.log('That option has already been selected.');
-                continue;
-            }
-            return record;
+        let prompt = options.prompt;
+        if (options.useIdForSelection) {
+            const ids = displayRecords.map(r => r.id);
+            prompt = `${options.prompt} (enter ID or name, e.g., ${ids[0]}-${ids[ids.length-1]})`;
+        } else {
+            prompt = `${options.prompt} (1-${displayRecords.length})`;
         }
 
-        console.log('Invalid selection. Please pick a number from the list.');
+        const input = (await rl.question(`${prompt}: `)).trim();
+        
+        if (options.useIdForSelection) {
+            const record = idToRecord.get(input);
+            if (record) {
+                if (unavailableNames.has(record.name)) {
+                    console.log('That option has already been selected.');
+                    continue;
+                }
+                return record;
+            }
+        } else {
+            const index = parseInt(input, 10) - 1;
+            if (!isNaN(index) && index >= 0 && index < displayRecords.length) {
+                const record = displayRecords[index];
+                if (unavailableNames.has(record.name)) {
+                    console.log('That option has already been selected.');
+                    continue;
+                }
+                return record;
+            }
+        }
+
+        console.log('Invalid selection. Please pick a valid option from the list.');
     }
 }
 
@@ -235,6 +271,13 @@ async function askEnum(rl, label, enumObj) {
 
         console.log('Invalid selection. Please pick a number from the list.');
     }
+}
+
+function getItemCountForRank(rank) {
+    if (rank === Rank.STANDARD) return 3;
+    if (rank === Rank.ACE || rank === Rank.SPECIAL) return 4;
+    if (rank === Rank.BOSS || rank === Rank.ELITE) return 5;
+    throw new Error(`Unknown trainer rank: ${rank}`);
 }
 
 function withoutNone(enumObj) {
@@ -288,4 +331,6 @@ function getRecordTypes(record, typeKeys) {
     return types.filter(type => type && type !== 'NONE');
 }
 
-main();
+if (require.main === module) {
+    main();
+}

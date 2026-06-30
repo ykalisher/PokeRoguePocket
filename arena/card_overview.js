@@ -15,7 +15,7 @@
         await arena.Data.loadGameData();
 
         root.innerHTML = `
-            ${renderSection('Pokemon', 'pokemon', arena.GameData.pokemon.map(createPokemonPreviewCard))}
+            ${renderSection('Pokemon', 'pokemon', arena.GameData.pokemon.slice().sort((a, b) => a.id.localeCompare(b.id)).map(createPokemonPreviewCard))}
             ${renderSection('Attacks', 'attacks', arena.GameData.attacks.map(createAttackPreviewCard))}
             ${renderSection('Items', 'items', arena.GameData.items.map(createItemPreviewCard))}
         `;
