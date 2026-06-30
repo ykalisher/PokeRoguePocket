@@ -49,11 +49,11 @@ async function handleAddTrainer(rl, pokemonList, attackList, itemList) {
 
     trainer.name = await askString(rl, 'Enter Trainer Name: ');
     trainer.sprite = await askString(rl, 'Enter Sprite Icon Name: ');
-    trainer.cash = await askInt(rl, 'Enter Cash Amount: ');
     trainer.rank = await askEnum(rl, 'Select Rank', Rank);
+    trainer.cash = getCashForRank(trainer.rank);
     trainer.typeSpecialization = await askEnum(rl, 'Select Type Specialization', withoutNone(PokeType));
 
-    const selectedPokemon = await askPokemonTeam(rl, pokemonList);
+    const selectedPokemon = await askPokemonTeam(rl, pokemonList, trainer.rank);
     trainer.pokemon = selectedPokemon.map(pokemon => pokemon.name);
     trainer.attacks = [];
 
@@ -101,27 +101,14 @@ function validateRequiredData(pokemonList, attackList, itemList) {
     }
 }
 
-async function askPokemonTeam(rl, pokemonList) {
+async function askPokemonTeam(rl, pokemonList, rank) {
     const selected = [];
+    const pokemonCount = getPokemonCountForRank(rank);
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < pokemonCount; i++) {
         const pokemon = await askRecordSelection(rl, {
             title: 'Pokemon',
             prompt: `Select Pokemon ${i + 1}`,
-            records: pokemonList,
-            describe: describePokemon,
-            useIdForSelection: true
-        });
-        selected.push(pokemon);
-    }
-
-    while (selected.length < 6) {
-        const shouldAdd = await askBoolean(rl, 'Do you want to add another Pokemon? (y/n): ');
-        if (!shouldAdd) break;
-
-        const pokemon = await askRecordSelection(rl, {
-            title: 'Pokemon',
-            prompt: `Select Pokemon ${selected.length + 1}`,
             records: pokemonList,
             describe: describePokemon,
             useIdForSelection: true
@@ -277,6 +264,22 @@ function getItemCountForRank(rank) {
     if (rank === Rank.STANDARD) return 3;
     if (rank === Rank.ACE || rank === Rank.SPECIAL) return 4;
     if (rank === Rank.BOSS || rank === Rank.ELITE) return 5;
+    throw new Error(`Unknown trainer rank: ${rank}`);
+}
+
+function getPokemonCountForRank(rank) {
+    if (rank === Rank.STANDARD) return 3;
+    if (rank === Rank.ACE) return 4;
+    if (rank === Rank.SPECIAL || rank === Rank.BOSS) return 5;
+    if (rank === Rank.ELITE) return 6;
+    throw new Error(`Unknown trainer rank: ${rank}`);
+}
+
+function getCashForRank(rank) {
+    if (rank === Rank.STANDARD) return 200;
+    if (rank === Rank.ACE) return 300;
+    if (rank === Rank.SPECIAL) return 400;
+    if (rank === Rank.BOSS || rank === Rank.ELITE) return 500;
     throw new Error(`Unknown trainer rank: ${rank}`);
 }
 
