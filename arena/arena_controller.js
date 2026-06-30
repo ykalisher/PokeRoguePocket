@@ -2483,7 +2483,8 @@
         model.updatePokemonLeft(owner);
         logEvent(`${model.getCardName(removedCard)} was knocked out.`);
 
-        if (owner.knockoutCount >= KNOCKOUT_LIMIT) return;
+        const effectiveLimit = getEffectiveKnockoutLimit(owner);
+        if (owner.knockoutCount >= effectiveLimit) return;
 
         queuePokemonReplacement(ownerId, slotIndex);
     }
@@ -2655,10 +2656,30 @@
         arena.BattleFlow.handleBattleFinished(outcome);
     }
 
+    function getEffectiveKnockoutLimit(player) {
+        if (!player) return KNOCKOUT_LIMIT;
+
+        const totalPokemon = Number.isFinite(player.initialPokemonCount) && player.initialPokemonCount > 0
+            ? player.initialPokemonCount
+            : 4;
+
+        return totalPokemon <= 4 ? totalPokemon : 4;
+    }
+
     function isPlayerDefeated(player) {
         if (!player) return false;
 
-        return Boolean(player.lostByPokemonDeck) || (Number(player.knockoutCount) || 0) >= KNOCKOUT_LIMIT;
+        const effectiveLimit = getEffectiveKnockoutLimit(player);
+        const knockoutDefeat = (Number(player.knockoutCount) || 0) >= effectiveLimit;
+        
+        // For players with >4 pokemon, defeat if deck is empty (lostByPokemonDeck)
+        // For players with <=4 pokemon, only defeat by KO count
+        const totalPokemon = Number.isFinite(player.initialPokemonCount) && player.initialPokemonCount > 0
+            ? player.initialPokemonCount
+            : 4;
+        const deckEmptyDefeat = totalPokemon > 4 && Boolean(player.lostByPokemonDeck);
+        
+        return knockoutDefeat || deckEmptyDefeat;
     }
 
     function showPopup(message) {

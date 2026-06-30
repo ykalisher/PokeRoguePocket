@@ -424,8 +424,8 @@
     background: none;
 }
 
-.area-icon--trainer-sprite::before,
-.area-icon--trainer-sprite::after {
+.area-node-icon.area-icon--trainer-sprite::before,
+.area-node-icon.area-icon--trainer-sprite::after {
     content: none;
 }
 

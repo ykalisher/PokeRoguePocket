@@ -12,6 +12,16 @@
 
     const state = arena.state;
     const { KNOCKOUT_LIMIT } = arena.Constants;
+    
+    function getEffectiveKnockoutLimit(player) {
+        if (!player) return KNOCKOUT_LIMIT;
+
+        const totalPokemon = Number.isFinite(player.initialPokemonCount) && player.initialPokemonCount > 0
+            ? player.initialPokemonCount
+            : 4;
+
+        return totalPokemon <= 4 ? totalPokemon : KNOCKOUT_LIMIT;
+    }
     const ACTION_STATUS_ICON_ALIASES = Object.freeze({
         FULL_HEAL: ['HEAL', 'HEAL_STATUS']
     });
@@ -125,7 +135,7 @@
                         <span class="stat-pill">Action deck ${player.deck.length}</span>
                         <span class="stat-pill">Hand ${player.hand.length}/${arena.Model.getPlayerHandSize(player)}</span>
                         <span class="stat-pill">Discard ${player.discard.length}</span>
-                        <span class="stat-pill">KO ${player.knockoutCount}/${KNOCKOUT_LIMIT}</span>
+                        <span class="stat-pill">KO ${player.knockoutCount}/${getEffectiveKnockoutLimit(player)}</span>
                     </div>
                 </header>
                 ${handFirst}

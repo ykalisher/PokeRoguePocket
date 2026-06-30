@@ -127,6 +127,7 @@
             hand: [],
             handSize: HAND_SIZE,
             id,
+            initialPokemonCount: decks.pokemonDeck.length,
             knockout: [],
             knockoutCount: 0,
             lostByPokemonDeck: false,
@@ -325,6 +326,9 @@
             hand,
             handSize: Number.isFinite(normalizedPlayer.handSize) ? normalizedPlayer.handSize : HAND_SIZE,
             id,
+            initialPokemonCount: Number.isFinite(normalizedPlayer.initialPokemonCount)
+                ? normalizedPlayer.initialPokemonCount
+                : countTotalPokemon(normalizedBoard, pokemonDeck, knockout),
             knockout,
             knockoutCount: Number.isFinite(normalizedPlayer.knockoutCount)
                 ? normalizedPlayer.knockoutCount
@@ -344,6 +348,14 @@
         return [
             ...player.board,
             ...player.pokemonDeck
+        ].filter(isPokemonCard).length;
+    }
+
+    function countTotalPokemon(board, pokemonDeck, knockout) {
+        return [
+            ...board,
+            ...pokemonDeck,
+            ...knockout
         ].filter(isPokemonCard).length;
     }
 

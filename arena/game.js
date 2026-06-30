@@ -367,10 +367,29 @@
         return playerDefeated ? 'loss' : 'win';
     }
 
+    function getEffectiveKnockoutLimit(player) {
+        if (!player) return arena.Constants.KNOCKOUT_LIMIT;
+
+        const totalPokemon = Number.isFinite(player.initialPokemonCount) && player.initialPokemonCount > 0
+            ? player.initialPokemonCount
+            : 4;
+
+        return totalPokemon <= 4 ? totalPokemon : arena.Constants.KNOCKOUT_LIMIT;
+    }
+
     function isSavedPlayerDefeated(player) {
         if (!player) return false;
 
-        return Boolean(player.lostByPokemonDeck) ||
-            (Number(player.knockoutCount) || 0) >= arena.Constants.KNOCKOUT_LIMIT;
+        const effectiveLimit = getEffectiveKnockoutLimit(player);
+        const knockoutDefeat = (Number(player.knockoutCount) || 0) >= effectiveLimit;
+        
+        // For players with >4 pokemon, defeat if deck is empty (lostByPokemonDeck)
+        // For players with <=4 pokemon, only defeat by KO count
+        const totalPokemon = Number.isFinite(player.initialPokemonCount) && player.initialPokemonCount > 0
+            ? player.initialPokemonCount
+            : 4;
+        const deckEmptyDefeat = totalPokemon > 4 && Boolean(player.lostByPokemonDeck);
+        
+        return knockoutDefeat || deckEmptyDefeat;
     }
 })(window.CardArena = window.CardArena || {}, window.PokeRun);
