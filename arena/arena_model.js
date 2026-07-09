@@ -98,7 +98,9 @@
         phase: 'setup',
         flowTimer: null,
         drag: null,
-        itemUsed: { opponent: false, player: false },
+        extraAttacks: { opponent: {}, player: {} },
+        itemAllowance: { opponent: 1, player: 1 },
+        itemUsed: { opponent: 0, player: 0 },
         pendingActionCardId: null,
         pendingUserCardId: null,
         pendingPokemonReplacements: [],
@@ -133,7 +135,8 @@
             lostByPokemonDeck: false,
             name,
             pokemonDeck: decks.pokemonDeck,
-            pokemonLeft: decks.pokemonDeck.length
+            pokemonLeft: decks.pokemonDeck.length,
+            removed: []
         };
     }
 
@@ -175,6 +178,8 @@
         state.phase = savedBattle.phase || 'turn';
         state.flowTimer = null;
         state.drag = null;
+        state.extraAttacks = normalizeExtraAttacks(savedBattle.extraAttacks);
+        state.itemAllowance = normalizeItemAllowance(savedBattle.itemAllowance);
         state.itemUsed = normalizeItemUsed(savedBattle.itemUsed);
         state.pendingActionCardId = savedBattle.pendingActionCardId || null;
         state.pendingUserCardId = savedBattle.pendingUserCardId || null;
@@ -262,7 +267,9 @@
     function serializeBattleState() {
         return {
             currentPlayer: state.currentPlayer,
+            extraAttacks: state.extraAttacks,
             finished: state.finished,
+            itemAllowance: state.itemAllowance,
             itemUsed: state.itemUsed,
             log: state.log,
             pendingActionCardId: state.pendingActionCardId,
@@ -283,9 +290,41 @@
 
     function normalizeItemUsed(itemUsed) {
         return {
-            opponent: Boolean(itemUsed && itemUsed.opponent),
-            player: Boolean(itemUsed && itemUsed.player)
+            opponent: normalizeCount(itemUsed && itemUsed.opponent, 0),
+            player: normalizeCount(itemUsed && itemUsed.player, 0)
         };
+    }
+
+    function normalizeItemAllowance(itemAllowance) {
+        return {
+            opponent: normalizeCount(itemAllowance && itemAllowance.opponent, 1),
+            player: normalizeCount(itemAllowance && itemAllowance.player, 1)
+        };
+    }
+
+    function normalizeExtraAttacks(extraAttacks) {
+        return {
+            opponent: normalizeExtraAttackMap(extraAttacks && extraAttacks.opponent),
+            player: normalizeExtraAttackMap(extraAttacks && extraAttacks.player)
+        };
+    }
+
+    function normalizeExtraAttackMap(extraAttackMap) {
+        if (!extraAttackMap || typeof extraAttackMap !== 'object') return {};
+
+        return Object.keys(extraAttackMap).reduce((extras, cardId) => {
+            const count = normalizeCount(extraAttackMap[cardId], 0);
+
+            if (count > 0) extras[cardId] = count;
+
+            return extras;
+        }, {});
+    }
+
+    function normalizeCount(value, minimum) {
+        const count = Math.floor(Number(value));
+
+        return Number.isFinite(count) && count > minimum ? count : minimum;
     }
 
     function normalizePlannedActions(plannedActions) {
@@ -312,6 +351,9 @@
             ? normalizedPlayer.hand.filter(card => !isPokemonCard(card))
             : [];
         const knockout = Array.isArray(normalizedPlayer.knockout) ? normalizedPlayer.knockout : [];
+        const removed = Array.isArray(normalizedPlayer.removed)
+            ? normalizedPlayer.removed.filter(card => !isPokemonCard(card))
+            : [];
         const pokemonDeck = Array.isArray(normalizedPlayer.pokemonDeck)
             ? normalizedPlayer.pokemonDeck.filter(isPokemonCard)
             : [];
@@ -336,7 +378,8 @@
             lostByPokemonDeck: Boolean(normalizedPlayer.lostByPokemonDeck),
             name: normalizedPlayer.name || name,
             pokemonDeck,
-            pokemonLeft: 0
+            pokemonLeft: 0,
+            removed
         };
 
         updatePokemonLeft(playerState);
@@ -1350,6 +1393,15 @@
         return Boolean(card && card.kind === 'attack');
     }
 
+    /**
+     * ARTIFICIAL-typed attacks are trainer-effect attacks: they resolve
+     * immediately, ignore the per-Pokemon attack limit, and are removed from
+     * play after one use per battle.
+     */
+    function isArtificialAttackCard(card) {
+        return isAttackCard(card) && getCardTypes(card).includes('ARTIFICIAL');
+    }
+
     function isItemCard(card) {
         return Boolean(card && card.kind === 'item');
     }
@@ -1384,6 +1436,63 @@
         return state.plannedActions[playerId].some(action => action.userCardId === pokemonCardId);
     }
 
+    function getQueuedAttackCount(playerId, pokemonCardId) {
+        return state.plannedActions[playerId].filter(action => action.userCardId === pokemonCardId).length;
+    }
+
+    function getExtraAttackCount(playerId, pokemonCardId) {
+        const extras = state.extraAttacks && state.extraAttacks[playerId];
+        const count = extras ? Number(extras[pokemonCardId]) : 0;
+
+        return Number.isFinite(count) && count > 0 ? count : 0;
+    }
+
+    /**
+     * Checks the per-turn attack limit: one queued attack per Pokemon plus any
+     * extra attacks granted this turn by EXTRA_ATTACK trainer effects.
+     */
+    function canQueueAnotherAttack(playerId, pokemonCardId) {
+        return getQueuedAttackCount(playerId, pokemonCardId) < 1 + getExtraAttackCount(playerId, pokemonCardId);
+    }
+
+    /**
+     * Grants one extra queued attack this turn, cleared when the next player
+     * turn resets state.extraAttacks.
+     */
+    function grantExtraAttack(playerId, pokemonCardId) {
+        if (!state.extraAttacks[playerId]) state.extraAttacks[playerId] = {};
+
+        state.extraAttacks[playerId][pokemonCardId] = getExtraAttackCount(playerId, pokemonCardId) + 1;
+    }
+
+    /**
+     * Counts item plays against the per-turn allowance, which starts at one and
+     * can grow through EXTRA_ITEM trainer effects.
+     */
+    function getItemAllowance(playerId) {
+        const allowance = state.itemAllowance ? Number(state.itemAllowance[playerId]) : 1;
+
+        return Number.isFinite(allowance) && allowance > 1 ? allowance : 1;
+    }
+
+    function getItemUseCount(playerId) {
+        const count = state.itemUsed ? Number(state.itemUsed[playerId]) : 0;
+
+        return Number.isFinite(count) && count > 0 ? count : 0;
+    }
+
+    function hasItemUseRemaining(playerId) {
+        return getItemUseCount(playerId) < getItemAllowance(playerId);
+    }
+
+    function markItemUsed(playerId) {
+        state.itemUsed[playerId] = getItemUseCount(playerId) + 1;
+    }
+
+    function grantExtraItemUse(playerId) {
+        state.itemAllowance[playerId] = getItemAllowance(playerId) + 1;
+    }
+
     /**
      * Checks attack type requirements. Most attacks need any shared type; attacks
      * marked full_type_requirements require every listed attack type.
@@ -1405,14 +1514,28 @@
 
     /**
      * Used by turn-ending rules and UI affordances to know whether a Pokemon
-     * still has a legal attack in hand that can target something.
+     * still has a legal attack in hand that can target something. Artificial
+     * attacks are optional single-use cards, so they never block ending a turn.
      */
     function hasUsableAttackInHand(player, pokemonCard) {
         return player.hand.some(card => (
             isAttackCard(card) &&
+            !isArtificialAttackCard(card) &&
             pokemonCanUseAttack(pokemonCard, card) &&
             getTargetOptionsForAction(card, player.id, pokemonCard.id).length > 0
         ));
+    }
+
+    /**
+     * Full use check for one Pokemon and one attack card right now: type
+     * requirements, a live target, and the attack limit. Artificial attacks
+     * skip the limit so a Pokemon can use one alongside its normal attack.
+     */
+    function canPokemonUseAttackNow(playerId, pokemonCard, attackCard) {
+        if (!pokemonCanUseAttack(pokemonCard, attackCard)) return false;
+        if (getTargetOptionsForAction(attackCard, playerId, pokemonCard.id).length === 0) return false;
+
+        return isArtificialAttackCard(attackCard) || canQueueAnotherAttack(playerId, pokemonCard.id);
     }
 
     /**
@@ -1426,6 +1549,12 @@
 
         if (isAttackCard(actionCard)) {
             if (!userCardId) return [];
+
+            if (target === 'TRAINER') {
+                return actionCardHasUsableTrainerEffect(actionCard, actorId, userCardId)
+                    ? [{ kind: 'trainer', owner: actorId }]
+                    : [];
+            }
 
             if (target === 'SELF') {
                 return getBoardCardById(actorId, userCardId)
@@ -1481,6 +1610,31 @@
         return [];
     }
 
+    /**
+     * TRAINER-target attacks only offer their trainer target while at least one
+     * listed trainer effect could do something, so dead single-use cards are
+     * never playable.
+     */
+    function actionCardHasUsableTrainerEffect(actionCard, actorId, userCardId) {
+        return getActionStatuses(actionCard).some(status => canApplyTrainerEffect(status, actorId, userCardId));
+    }
+
+    function canApplyTrainerEffect(status, actorId, userCardId) {
+        const player = state.players[actorId];
+
+        if (!player) return false;
+
+        if (status === 'EXTRA_ATTACK') {
+            return getBoardCards(actorId).some(card => card.id !== userCardId);
+        }
+
+        if (status === 'REFRESH_DECK') {
+            return player.discard.length > 0;
+        }
+
+        return status === 'INCREASE_CAPACITY' || status === 'EXTRA_ITEM';
+    }
+
     function targetOptionsIncludeCard(options, owner, cardId) {
         return options.some(option => option.kind === 'single' && option.owner === owner && option.cardId === cardId);
     }
@@ -1524,6 +1678,42 @@
     }
 
     /**
+     * REFRESH_DECK trainer effect: shuffles the discard pile into the main deck
+     * immediately, without waiting for the deck to run empty.
+     */
+    function shuffleDiscardIntoDeck(player) {
+        if (!player || player.discard.length === 0) return false;
+
+        player.discard.forEach(card => {
+            card.faceUp = false;
+        });
+        player.deck = shuffle([...player.deck, ...player.discard]);
+        player.discard = [];
+
+        return true;
+    }
+
+    /**
+     * INCREASE_CAPACITY trainer effect: raises the hand size the player refills
+     * to at the start of each turn for the rest of the battle.
+     */
+    function increasePlayerHandSize(player) {
+        player.handSize = getPlayerHandSize(player) + 1;
+
+        return player.handSize;
+    }
+
+    /**
+     * Sets a used single-use card aside for the rest of the battle. Removed
+     * cards never rejoin the deck through discard recycling.
+     */
+    function removeCardFromPlay(player, card) {
+        if (!Array.isArray(player.removed)) player.removed = [];
+
+        player.removed.push(card);
+    }
+
+    /**
      * Small Promise-based delay helper used by controller animations.
      */
     function sleep(milliseconds) {
@@ -1535,6 +1725,8 @@
     arena.state = state;
     arena.Model = {
         applyStatus,
+        canPokemonUseAttackNow,
+        canQueueAnotherAttack,
         clearPokemonStatChanges,
         clearPokemonStatuses,
         clearTurnStatuses,
@@ -1574,9 +1766,14 @@
         getPortraitUrl,
         getStatusIconPath,
         getTargetOptionsForAction,
+        grantExtraAttack,
+        grantExtraItemUse,
+        hasItemUseRemaining,
         hasPokemonStatus,
         hasQueuedAttack,
         hasUsableAttackInHand,
+        increasePlayerHandSize,
+        isArtificialAttackCard,
         isAttackCard,
         isBattleStatus,
         isDragonGemItemCard,
@@ -1586,13 +1783,16 @@
         playerHasCardInHand,
         pokemonCanUseAttack,
         putPokemonOnBottomOfDeck,
+        markItemUsed,
         recycleDiscardIntoDeck,
         removeCardFromHand,
         removeCardFromBoard,
+        removeCardFromPlay,
         removePokemonStatus,
         restoreSavedBattleState,
         saveBattleState,
         shuffle,
+        shuffleDiscardIntoDeck,
         targetOptionsIncludeCard,
         targetOptionsIncludeGroup,
         updatePokemonLeft,

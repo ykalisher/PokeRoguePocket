@@ -13,6 +13,10 @@
  *    cards into attack, item, and discard paths:
  *    - Attack cards select a valid allied Pokemon user, then select/drag to a
  *      legal target, then queue through queuePlayerAttack().
+ *    - Artificial (ARTIFICIAL-typed, TRAINER-target) attacks resolve
+ *      immediately after user selection through useArtificialAttackFromHand().
+ *      They ignore the one-attack-per-Pokemon limit and are removed from play
+ *      for the rest of the battle instead of being discarded.
  *    - Dragon Gem items resolve as side effects immediately; other item cards
  *      select/drag to a legal target and resolve through usePendingItem() ->
  *      applyItemCard().
@@ -87,7 +91,9 @@
         state.isResolving = true;
         state.log = [];
         state.phase = 'setup';
-        state.itemUsed = { opponent: false, player: false };
+        state.extraAttacks = { opponent: {}, player: {} };
+        state.itemAllowance = { opponent: 1, player: 1 };
+        state.itemUsed = { opponent: 0, player: 0 };
         state.pendingActionCardId = null;
         state.pendingUserCardId = null;
         state.pendingPokemonReplacements = [];
@@ -134,7 +140,9 @@
         state.currentPlayer = 'player';
         state.isResolving = true;
         state.phase = 'turn';
-        state.itemUsed = { opponent: false, player: false };
+        state.extraAttacks = { opponent: {}, player: {} };
+        state.itemAllowance = { opponent: 1, player: 1 };
+        state.itemUsed = { opponent: 0, player: 0 };
         state.pendingActionCardId = null;
         state.pendingUserCardId = null;
         state.plannedActions = { opponent: [], player: [] };
@@ -327,8 +335,9 @@
     }
 
     /**
-     * Stores the Pokemon that will use the pending attack. Self-targeting
-     * attacks can queue immediately; other attacks advance to target selection.
+     * Stores the Pokemon that will use the pending attack. Artificial attacks
+     * resolve immediately on the trainer, self-targeting attacks can queue
+     * immediately, and other attacks advance to target selection.
      */
     function chooseAttackUser(userCardId) {
         if (state.phase !== 'selecting-attack-user' || !state.pendingActionCardId) return;
@@ -348,6 +357,11 @@
         }
 
         state.pendingUserCardId = userCardId;
+
+        if (model.isArtificialAttackCard(attackCard)) {
+            useArtificialAttackFromHand('player', state.pendingActionCardId, userCardId);
+            return;
+        }
 
         if (isSelfTargetSelection(attackCard, targets, userCardId)) {
             queuePlayerAttack(targets[0]);
@@ -371,8 +385,8 @@
 
         if (!model.isItemCard(itemCard)) return;
 
-        if (state.itemUsed.player) {
-            showPopup('You already used an item this turn.');
+        if (!model.hasItemUseRemaining('player')) {
+            showPopup('You cannot use another item this turn.');
             state.selectedCardId = cardId;
             render();
             return;
@@ -491,7 +505,8 @@
         const queuedCard = model.findHandCard(player, cardId);
         const userCard = model.getBoardCardById('player', userCardId);
         const userCanQueue = queuedCard && userCard && (
-            !model.hasQueuedAttack('player', userCard.id) &&
+            !model.isArtificialAttackCard(queuedCard) &&
+            model.canQueueAnotherAttack('player', userCard.id) &&
             model.pokemonCanUseAttack(userCard, queuedCard)
         );
         const targetOptions = userCanQueue
@@ -553,7 +568,7 @@
         }
 
         itemCard.faceUp = true;
-        state.itemUsed.player = true;
+        model.markItemUsed('player');
         clearPendingAction();
         state.phase = 'turn';
         state.isResolving = true;
@@ -587,7 +602,7 @@
         if (!removedCard) return false;
 
         removedCard.faceUp = true;
-        state.itemUsed[ownerId] = true;
+        model.markItemUsed(ownerId);
 
         if (ownerId === 'player') {
             clearPendingAction();
@@ -621,6 +636,127 @@
         if (!effect) return false;
 
         return !model.getDragonGemEffects(ownerId).some(activeEffect => activeEffect.status === effect.status);
+    }
+
+    /**
+     * Resolves an artificial attack immediately: a chosen ARTIFICIAL Pokemon
+     * uses the card, the effect applies to its trainer, and the single-use card
+     * is removed from play for the rest of the battle instead of discarded.
+     */
+    async function useArtificialAttackFromHand(ownerId, cardId, userCardId) {
+        const owner = state.players[ownerId];
+
+        if (!owner) return false;
+
+        const attackCard = model.findHandCard(owner, cardId);
+        const userCard = model.getBoardCardById(ownerId, userCardId);
+
+        if (!model.isArtificialAttackCard(attackCard) || !userCard) return false;
+        if (!model.canPokemonUseAttackNow(ownerId, userCard, attackCard)) return false;
+
+        const sourceCenter = getHandCardCenter(ownerId, cardId);
+        const removedCard = model.removeCardFromHand(owner, cardId);
+
+        if (!removedCard) return false;
+
+        removedCard.faceUp = true;
+
+        if (ownerId === 'player') {
+            clearPendingAction();
+            state.phase = 'turn';
+            state.isResolving = true;
+        }
+
+        render();
+
+        await animateArtificialAttackCard(removedCard, sourceCenter, ownerId);
+
+        logEvent(`${model.getCardName(userCard)} used ${model.getCardName(removedCard)}.`);
+        showPopup(`${model.getCardName(userCard)} used ${model.getCardName(removedCard)}.`);
+        applyTrainerEffects(removedCard, ownerId, userCard);
+        model.removeCardFromPlay(owner, removedCard);
+        logEvent(`${model.getCardName(removedCard)} was removed from play for the rest of the battle.`);
+
+        if (ownerId === 'player') {
+            state.isResolving = false;
+        }
+
+        render();
+        return true;
+    }
+
+    /**
+     * Applies an artificial attack's trainer effects to the card user's side.
+     */
+    function applyTrainerEffects(attackCard, ownerId, userCard) {
+        const owner = state.players[ownerId];
+        const statuses = model.getActionStatuses(attackCard);
+
+        if (statuses.includes('INCREASE_CAPACITY')) {
+            const handSize = model.increasePlayerHandSize(owner);
+
+            logEvent(`${owner.name} will draw up to ${handSize} cards for the rest of the battle.`);
+        }
+
+        if (statuses.includes('EXTRA_ITEM')) {
+            model.grantExtraItemUse(ownerId);
+            logEvent(`${owner.name} can use an additional item this turn.`);
+        }
+
+        if (statuses.includes('EXTRA_ATTACK')) {
+            const allyCard = model.getBoardCards(ownerId).find(card => card.id !== userCard.id);
+
+            if (allyCard) {
+                model.grantExtraAttack(ownerId, allyCard.id);
+                logEvent(`${model.getCardName(allyCard)} can use an additional attack this turn.`);
+            } else {
+                logEvent(`${model.getCardName(attackCard)} had no ally to energize.`);
+            }
+        }
+
+        if (statuses.includes('REFRESH_DECK')) {
+            if (model.shuffleDiscardIntoDeck(owner)) {
+                logEvent(`${owner.name} shuffled the discard pile into the action deck.`);
+            } else {
+                logEvent(`${owner.name}'s discard pile was already empty.`);
+            }
+        }
+    }
+
+    async function animateArtificialAttackCard(attackCard, sourceCenter, ownerId) {
+        if (!sourceCenter) {
+            await model.sleep(280);
+            return null;
+        }
+
+        const ghost = createCardAnimationElement(attackCard, 'attack-animation-card', true);
+
+        if (!ghost) {
+            await model.sleep(280);
+            return null;
+        }
+
+        document.body.appendChild(ghost);
+
+        const middleCenter = getArenaCenter();
+        const deckElement = getPileCardElement(ownerId, 'deck');
+        const targetCenter = deckElement ? getElementCenter(deckElement) : middleCenter;
+
+        placeAnimationElement(ghost, sourceCenter);
+        ghost.classList.add('is-attack-windup');
+
+        await model.sleep(40);
+        ghost.classList.add('is-attack-moving');
+        placeAnimationElement(ghost, middleCenter);
+
+        await model.sleep(300);
+        ghost.classList.add('is-attack-impact');
+        placeAnimationElement(ghost, targetCenter);
+
+        await model.sleep(360);
+        ghost.remove();
+
+        return targetCenter;
     }
 
     function discardSelectedPlayerCard() {
@@ -800,7 +936,7 @@
             if (directAttackDrop) return directAttackDrop;
         }
 
-        if (model.isItemCard(card) && !state.itemUsed.player) {
+        if (model.isItemCard(card) && model.hasItemUseRemaining('player')) {
             if (model.isDragonGemItemCard(card) && boardOwner === 'player' && canUseDragonGemItem('player', card)) {
                 return { kind: 'dragon-gem' };
             }
@@ -840,7 +976,7 @@
             return getDirectAttackDropForGroupTarget(card, groupOwner);
         }
 
-        if (!model.isItemCard(card) || state.itemUsed.player) return null;
+        if (!model.isItemCard(card) || !model.hasItemUseRemaining('player')) return null;
 
         if (model.isDragonGemItemCard(card)) {
             return groupOwner === 'player' && canUseDragonGemItem('player', card)
@@ -942,9 +1078,9 @@
 
     /**
      * Opponent planning phase called after the player ends their turn. The rival
-     * refills to hand size, may use one item immediately, queues attacks,
-     * discards unplayable cards according to next-turn options, then schedules
-     * attack resolution.
+     * refills to hand size, uses its artificial attacks, uses items up to its
+     * item allowance, queues attacks, discards unplayable cards according to
+     * next-turn options, then schedules attack resolution.
      */
     async function runOpponentTurn() {
         if (state.finished || state.currentPlayer !== 'opponent') return;
@@ -970,7 +1106,9 @@
             await model.sleep(280);
         }
 
-        await useOpponentItem();
+        await useOpponentArtificialAttacks();
+
+        while (await useOpponentItem());
 
         chooseOpponentAttacks();
         render();
@@ -982,8 +1120,30 @@
     }
 
     /**
-     * Queues one legal attack for each opponent Pokemon that can attack with a
-     * card in hand. The attack will resolve later with the player's queued moves.
+     * Uses every artificial attack the opponent can play this turn. These
+     * resolve immediately during planning, so an Energize or Recycle still
+     * benefits the attacks and items chosen afterwards.
+     */
+    async function useOpponentArtificialAttacks() {
+        const opponent = state.players.opponent;
+        const artificialCards = opponent.hand.filter(model.isArtificialAttackCard);
+
+        for (const attackCard of artificialCards) {
+            if (state.finished || state.currentPlayer !== 'opponent') return;
+
+            const userCard = getEligibleAttackUsers('opponent', attackCard)[0];
+
+            if (!userCard) continue;
+
+            await useArtificialAttackFromHand('opponent', attackCard.id, userCard.id);
+            await model.sleep(180);
+        }
+    }
+
+    /**
+     * Queues legal attacks for each opponent Pokemon that can attack with a
+     * card in hand, up to its attack allowance for this turn. The attacks will
+     * resolve later with the player's queued moves.
      */
     function chooseOpponentAttacks() {
         const opponent = state.players.opponent;
@@ -991,29 +1151,32 @@
         let chosenCount = 0;
 
         attackers.forEach(userCard => {
-            const attackCard = opponent.hand.find(card => (
-                model.isAttackCard(card) &&
-                model.pokemonCanUseAttack(userCard, card) &&
-                model.getTargetOptionsForAction(card, 'opponent', userCard.id).length > 0
-            ));
+            while (model.canQueueAnotherAttack('opponent', userCard.id)) {
+                const attackCard = opponent.hand.find(card => (
+                    model.isAttackCard(card) &&
+                    !model.isArtificialAttackCard(card) &&
+                    model.pokemonCanUseAttack(userCard, card) &&
+                    model.getTargetOptionsForAction(card, 'opponent', userCard.id).length > 0
+                ));
 
-            if (!attackCard) return;
+                if (!attackCard) return;
 
-            const selection = chooseOpponentTarget(attackCard, userCard);
+                const selection = chooseOpponentTarget(attackCard, userCard);
 
-            if (!selection) return;
+                if (!selection) return;
 
-            model.removeCardFromHand(opponent, attackCard.id);
-            attackCard.faceUp = true;
-            state.plannedActions.opponent.push({
-                card: attackCard,
-                owner: 'opponent',
-                selection,
-                speed: model.getPokemonSpeed(userCard),
-                userCardId: userCard.id
-            });
-            chosenCount += 1;
-            logEvent(`${opponent.name} readied ${model.getCardName(attackCard)}.`);
+                model.removeCardFromHand(opponent, attackCard.id);
+                attackCard.faceUp = true;
+                state.plannedActions.opponent.push({
+                    card: attackCard,
+                    owner: 'opponent',
+                    selection,
+                    speed: model.getPokemonSpeed(userCard),
+                    userCardId: userCard.id
+                });
+                chosenCount += 1;
+                logEvent(`${opponent.name} readied ${model.getCardName(attackCard)}.`);
+            }
         });
 
         if (chosenCount === 0) {
@@ -1049,6 +1212,17 @@
         let hasPlayableItem = false;
 
         player.hand.forEach(card => {
+            if (model.isArtificialAttackCard(card)) {
+                const userCard = model.getBoardCards(playerId).find(pokemonCard => (
+                    model.pokemonCanUseAttack(pokemonCard, card) &&
+                    model.getTargetOptionsForAction(card, playerId, pokemonCard.id).length > 0
+                ));
+
+                if (userCard) playableCards.push(card);
+
+                return;
+            }
+
             if (model.isAttackCard(card)) {
                 const userCard = model.getBoardCards(playerId).find(pokemonCard => (
                     !usedAttackers.has(pokemonCard.id) &&
@@ -1081,11 +1255,12 @@
     }
 
     /**
-     * Uses at most one opponent item during the opponent planning phase. Like
-     * player items, these resolve immediately instead of being queued.
+     * Uses one opponent item during the opponent planning phase when the item
+     * allowance is not spent. Like player items, these resolve immediately
+     * instead of being queued.
      */
     async function useOpponentItem() {
-        if (state.itemUsed.opponent) return false;
+        if (!model.hasItemUseRemaining('opponent')) return false;
 
         const opponent = state.players.opponent;
         const itemPlan = chooseOpponentItem();
@@ -1103,7 +1278,7 @@
         if (!itemCard) return false;
 
         itemCard.faceUp = true;
-        state.itemUsed.opponent = true;
+        model.markItemUsed('opponent');
         render();
 
         const impactCenter = await animateItemCard(itemCard, sourceCenter, targets);
@@ -2990,9 +3165,7 @@
 
     function getEligibleAttackUsers(playerId, attackCard) {
         return model.getBoardCards(playerId).filter(card => (
-            !model.hasQueuedAttack(playerId, card.id) &&
-            model.pokemonCanUseAttack(card, attackCard) &&
-            model.getTargetOptionsForAction(attackCard, playerId, card.id).length > 0
+            model.canPokemonUseAttackNow(playerId, card, attackCard)
         ));
     }
 

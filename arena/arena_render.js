@@ -53,6 +53,7 @@
         'WATER'
     ]);
     const SPECIAL_TYPE_RULES = Object.freeze([
+        { type: 'ARTIFICIAL', text: 'ARTIFICIAL attacks affect the trainer and resolve immediately when used. They do not count toward a Pokemon\'s one-attack limit, and each card is single-use: after use it is removed from play for the rest of the battle instead of discarded.' },
         { type: 'FIGHTING', text: 'While affected by any persistent status, gains 1.5x Attack and ignores Burn\'s Attack penalty.' },
         { type: 'NORMAL', text: 'A single action can only move each stat by a net +1 or -1 stage after other type modifiers.' },
         { type: 'HUMAN', text: 'Doubles the net stat-stage delta received from each action.' },
@@ -80,7 +81,11 @@
         { status: 'REVERT_STATS', text: 'Sets the target\'s Attack, Defense, and Speed stat stages to 0.' },
         { status: 'DRAGON_GEM', text: 'Adds or replaces a side marker. Damaging DRAGON attacks from that side can apply this gem\'s paired status.' },
         { status: 'SELF_INFLICT', text: 'Stat changes apply to the attacking Pokemon instead of the selected targets.' },
-        { status: 'SWITCH', text: 'Removes the target from the board, clears stat stages, puts it on the bottom of its Pokemon deck, and draws a replacement.' }
+        { status: 'SWITCH', text: 'Removes the target from the board, clears stat stages, puts it on the bottom of its Pokemon deck, and draws a replacement.' },
+        { status: 'INCREASE_CAPACITY', text: 'Trainer effect: draw up to one more card at the start of each turn for the rest of the battle.' },
+        { status: 'EXTRA_ITEM', text: 'Trainer effect: use one additional item this turn.' },
+        { status: 'EXTRA_ATTACK', text: 'Trainer effect: the other allied Pokemon can ready a second attack this turn.' },
+        { status: 'REFRESH_DECK', text: 'Trainer effect: immediately shuffle the discard pile back into the action deck.' }
     ]);
     const STAGE_REFERENCE = Object.freeze([
         [-6, '0.1x'],
@@ -392,9 +397,7 @@
             state.phase === 'selecting-attack-user' &&
             playerId === 'player' &&
             arena.Model.isAttackCard(pendingCard) &&
-            !arena.Model.hasQueuedAttack('player', card.id) &&
-            arena.Model.pokemonCanUseAttack(card, pendingCard) &&
-            arena.Model.getTargetOptionsForAction(pendingCard, 'player', card.id).length > 0
+            arena.Model.canPokemonUseAttackNow('player', card, pendingCard)
         );
 
         return {
@@ -1034,7 +1037,8 @@
             ALLY: 'One Ally',
             OPPONENT: 'One Opponent',
             SELF: 'Self',
-            SIDE: 'Your Side'
+            SIDE: 'Your Side',
+            TRAINER: 'Trainer'
         };
 
         return labels[target] || 'No target';

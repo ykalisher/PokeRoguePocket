@@ -1256,5 +1256,45 @@
     "statChanges": [],
     "target": "ALL_OPPONENTS",
     "full_type_requirements": true
+  },
+  {
+    "name": "Increase Capacity",
+    "type1": "ARTIFICIAL",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "INCREASE_CAPACITY",
+    "statChanges": [],
+    "target": "TRAINER",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Recycle",
+    "type1": "ARTIFICIAL",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "EXTRA_ITEM",
+    "statChanges": [],
+    "target": "TRAINER",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Energize",
+    "type1": "ARTIFICIAL",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "EXTRA_ATTACK",
+    "statChanges": [],
+    "target": "TRAINER",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Refresh",
+    "type1": "ARTIFICIAL",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "REFRESH_DECK",
+    "statChanges": [],
+    "target": "TRAINER",
+    "full_type_requirements": false
   }
 ]
