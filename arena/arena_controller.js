@@ -68,6 +68,7 @@
     } = arena.Constants;
     const model = arena.Model;
     const FOSSIL_REVIVAL_HEALTH_PERCENT = 0.6;
+    const LOG_ENTRY_LIMIT = 100;
     const render = () => {
         arena.Render.render();
         model.saveBattleState();
@@ -119,11 +120,23 @@
     async function runOpeningPokemonAnimations(placements) {
         if (state.finished || state.phase !== 'setup') return;
 
-        for (const placement of placements) {
+        await Promise.all(placements.map((placement, index) => (async () => {
+            await model.sleep(index * 130);
             await animatePokemonEnterBoard(placement.ownerId, placement.card, 'pokemon-deck');
-        }
+        })()));
 
         startPlayerTurn();
+    }
+
+    /**
+     * Animates a batch of drawn cards with a short stagger so multi-card draws
+     * overlap smoothly instead of playing strictly one after another.
+     */
+    async function animateDrawCards(playerId, cards) {
+        await Promise.all(cards.map((card, index) => (async () => {
+            await model.sleep(index * 90);
+            await animateDrawCard(playerId, card);
+        })()));
     }
 
     /**
@@ -161,9 +174,7 @@
 
         render();
 
-        for (const drawnCard of drawnCards) {
-            await animateDrawCard('player', drawnCard);
-        }
+        await animateDrawCards('player', drawnCards);
 
         state.isResolving = false;
         render();
@@ -724,39 +735,10 @@
     }
 
     async function animateArtificialAttackCard(attackCard, sourceCenter, ownerId) {
-        if (!sourceCenter) {
-            await model.sleep(280);
-            return null;
-        }
-
-        const ghost = createCardAnimationElement(attackCard, 'attack-animation-card', true);
-
-        if (!ghost) {
-            await model.sleep(280);
-            return null;
-        }
-
-        document.body.appendChild(ghost);
-
-        const middleCenter = getArenaCenter();
         const deckElement = getPileCardElement(ownerId, 'deck');
-        const targetCenter = deckElement ? getElementCenter(deckElement) : middleCenter;
+        const targetCenter = deckElement ? getElementCenter(deckElement) : getArenaCenter();
 
-        placeAnimationElement(ghost, sourceCenter);
-        ghost.classList.add('is-attack-windup');
-
-        await model.sleep(40);
-        ghost.classList.add('is-attack-moving');
-        placeAnimationElement(ghost, middleCenter);
-
-        await model.sleep(300);
-        ghost.classList.add('is-attack-impact');
-        placeAnimationElement(ghost, targetCenter);
-
-        await model.sleep(360);
-        ghost.remove();
-
-        return targetCenter;
+        return animateActionCardToTarget(attackCard, sourceCenter, targetCenter);
     }
 
     function discardSelectedPlayerCard() {
@@ -1099,9 +1081,7 @@
         render();
 
         if (drawnCards.length > 0) {
-            for (const drawnCard of drawnCards) {
-                await animateDrawCard('opponent', drawnCard);
-            }
+            await animateDrawCards('opponent', drawnCards);
         } else {
             await model.sleep(280);
         }
@@ -1358,10 +1338,32 @@
         }
 
         if (getBattleStatuses(itemCard).length > 0) {
-            return options[0];
+            return chooseStatusItemTarget(options);
         }
 
         return null;
+    }
+
+    /**
+     * Opponent helper for status-inflicting items: a new persistent status is
+     * blocked while one is active, so only statusless Pokemon are considered.
+     * Statuses aimed at the opponent's own side are only worthwhile on
+     * FIGHTING Pokemon, which convert statuses into an Attack boost.
+     */
+    function chooseStatusItemTarget(options) {
+        const candidate = options
+            .filter(option => option.kind === 'single')
+            .map(option => ({
+                option,
+                card: model.getBoardCardById(option.owner, option.cardId)
+            }))
+            .find(target => (
+                target.card &&
+                model.getPokemonStatuses(target.card).length === 0 &&
+                (target.option.owner === 'player' || model.getCardTypes(target.card).includes('FIGHTING'))
+            ));
+
+        return candidate ? candidate.option : null;
     }
 
     /**
@@ -1834,7 +1836,7 @@
         const attackBlockReason = await resolvePreAttackStatuses(action, attacker);
 
         if (attackBlockReason.blocked) {
-            await discardActionCard(action);
+            await discardActionCard(action, getBoardCardCenter(action.owner, attacker.id));
             if (attackBlockReason.message) logEvent(attackBlockReason.message);
             if (attackBlockReason.popup) showPopup(attackBlockReason.popup);
             return;
@@ -1844,7 +1846,7 @@
         const targets = targetResolution.targets;
 
         if (targets.length === 0) {
-            await discardActionCard(action);
+            await discardActionCard(action, getBoardCardCenter(action.owner, attacker.id));
             logEvent(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}, but there was no target.`);
             return;
         }
@@ -1861,9 +1863,7 @@
         let handledEffect = false;
 
         showPopup(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}.`);
-        const impactCenter = isSelfTargetResolution(action, targets, attacker)
-            ? getBoardCardCenter(action.owner, attacker.id)
-            : await animateAttackCard(action, targets);
+        const impactCenter = await animateAttackCard(action, targets);
 
         if (statuses.includes('SWITCH')) {
             for (const target of targets) {
@@ -1885,6 +1885,7 @@
                     const damageResults = targets.map(target => damagePokemon(target.owner, target.card, attacker, action.card));
 
                     showDamageNumbers(damageResults);
+                    render();
                     await model.sleep(560);
                 }
                 handledEffect = true;
@@ -1907,132 +1908,57 @@
         await discardActionCard(action, impactCenter);
     }
 
-    function isSelfTargetResolution(action, targets, attacker) {
-        return (
-            model.getActionTarget(action.card) === 'SELF' &&
-            targets.length === 1 &&
-            targets[0].owner === action.owner &&
-            targets[0].card === attacker
-        );
+    /**
+     * Shared flight for action cards (attacks, items, gems): the card ghost
+     * arcs from its source to the target and lands with an impact pulse.
+     * Returns the impact center so discard animations can continue from it.
+     */
+    async function animateActionCardToTarget(card, sourceCenter, targetCenter, extraClass = '') {
+        if (!sourceCenter || !targetCenter) {
+            await model.sleep(280);
+            return null;
+        }
+
+        const ghost = createCardAnimationElement(card, `attack-animation-card${extraClass ? ` ${extraClass}` : ''}`, true);
+
+        if (!ghost) {
+            await model.sleep(280);
+            return null;
+        }
+
+        document.body.appendChild(ghost);
+        await animateCardFlight(ghost, sourceCenter, targetCenter, {
+            duration: 470,
+            endRotate: 0,
+            impactDuration: 250
+        });
+        ghost.remove();
+
+        return targetCenter;
+    }
+
+    function getTargetElementsCenter(targets) {
+        const targetElements = targets
+            .map(target => getBoardCardElement(target.owner, target.card.id))
+            .filter(Boolean);
+
+        return targetElements.length > 0 ? getElementsCenter(targetElements) : null;
     }
 
     async function animateAttackCard(action, targets) {
-        const sourceElement = getBoardCardElement(action.owner, action.userCardId);
-        const targetElements = targets
-            .map(target => getBoardCardElement(target.owner, target.card.id))
-            .filter(Boolean);
+        const sourceCenter = getBoardCardCenter(action.owner, action.userCardId);
 
-        if (!sourceElement || targetElements.length === 0) {
-            await model.sleep(280);
-            return null;
-        }
-
-        const template = document.createElement('template');
-
-        template.innerHTML = arena.Render.renderCardForAnimation(action.card).trim();
-
-        const ghost = template.content.firstElementChild;
-
-        if (!ghost) {
-            await model.sleep(280);
-            return null;
-        }
-
-        document.body.appendChild(ghost);
-
-        const sourceCenter = getElementCenter(sourceElement);
-        const middleCenter = getArenaCenter();
-        const targetCenter = getElementsCenter(targetElements);
-
-        placeAnimationElement(ghost, sourceCenter);
-        ghost.classList.add('is-attack-windup');
-
-        await model.sleep(40);
-        ghost.classList.add('is-attack-moving');
-        placeAnimationElement(ghost, middleCenter);
-
-        await model.sleep(360);
-        ghost.classList.add('is-attack-impact');
-        placeAnimationElement(ghost, targetCenter);
-
-        await model.sleep(430);
-        ghost.remove();
-
-        return targetCenter;
+        return animateActionCardToTarget(action.card, sourceCenter, getTargetElementsCenter(targets));
     }
 
     async function animateItemCard(itemCard, sourceCenter, targets) {
-        const targetElements = targets
-            .map(target => getBoardCardElement(target.owner, target.card.id))
-            .filter(Boolean);
-
-        if (!sourceCenter || targetElements.length === 0) {
-            await model.sleep(280);
-            return null;
-        }
-
-        const ghost = createCardAnimationElement(itemCard, 'attack-animation-card item-animation-card', true);
-
-        if (!ghost) {
-            await model.sleep(280);
-            return null;
-        }
-
-        document.body.appendChild(ghost);
-
-        const middleCenter = getArenaCenter();
-        const targetCenter = getElementsCenter(targetElements);
-
-        placeAnimationElement(ghost, sourceCenter);
-        ghost.classList.add('is-attack-windup');
-
-        await model.sleep(40);
-        ghost.classList.add('is-attack-moving');
-        placeAnimationElement(ghost, middleCenter);
-
-        await model.sleep(300);
-        ghost.classList.add('is-attack-impact');
-        placeAnimationElement(ghost, targetCenter);
-
-        await model.sleep(360);
-        ghost.remove();
-
-        return targetCenter;
+        return animateActionCardToTarget(itemCard, sourceCenter, getTargetElementsCenter(targets), 'item-animation-card');
     }
 
     async function animateDragonGemCard(itemCard, sourceCenter, ownerId) {
-        if (!sourceCenter) {
-            await model.sleep(280);
-            return null;
-        }
+        const targetCenter = getDragonGemAnchorCenter(ownerId) || getArenaCenter();
 
-        const ghost = createCardAnimationElement(itemCard, 'attack-animation-card item-animation-card', true);
-
-        if (!ghost) {
-            await model.sleep(280);
-            return null;
-        }
-
-        document.body.appendChild(ghost);
-
-        const middleCenter = getArenaCenter();
-        const targetCenter = getDragonGemAnchorCenter(ownerId) || middleCenter;
-
-        placeAnimationElement(ghost, sourceCenter);
-        ghost.classList.add('is-attack-windup');
-
-        await model.sleep(40);
-        ghost.classList.add('is-attack-moving');
-        placeAnimationElement(ghost, middleCenter);
-
-        await model.sleep(300);
-        ghost.classList.add('is-attack-impact');
-        placeAnimationElement(ghost, targetCenter);
-
-        await model.sleep(360);
-        ghost.remove();
-
-        return targetCenter;
+        return animateActionCardToTarget(itemCard, sourceCenter, targetCenter, 'item-animation-card');
     }
 
     /**
@@ -2227,6 +2153,7 @@
      */
     async function resolveMultiAttackDamage(actionCard, targets, attacker) {
         const hitCount = getRandomMultiAttackHitCount();
+        let executedHits = 0;
 
         for (let hitIndex = 0; hitIndex < hitCount; hitIndex += 1) {
             const activeTargets = targets.filter(target => (
@@ -2238,11 +2165,13 @@
 
             const damageResults = activeTargets.map(target => damagePokemon(target.owner, target.card, attacker, actionCard));
 
+            executedHits += 1;
             showDamageNumbers(damageResults);
+            render();
             await model.sleep(260);
         }
 
-        logEvent(`${model.getCardName(actionCard)} hit ${hitCount} times.`);
+        logEvent(`${model.getCardName(actionCard)} hit ${executedHits} ${executedHits === 1 ? 'time' : 'times'}.`);
     }
 
     function getRandomMultiAttackHitCount() {
@@ -2871,6 +2800,10 @@
 
     function logEvent(message) {
         state.log.unshift(formatLogEvent(message));
+
+        if (state.log.length > LOG_ENTRY_LIMIT) {
+            state.log.length = LOG_ENTRY_LIMIT;
+        }
     }
 
     function formatLogEvent(message) {
@@ -3020,6 +2953,11 @@
         ghost.remove();
     }
 
+    /**
+     * Shared ghost-card flight: arcs from source to target using transform
+     * keyframes. options.impactDuration appends a landing pulse at the target,
+     * used by attack/item flights so the card visibly connects before removal.
+     */
     async function animateCardFlight(ghost, sourceCenter, targetCenter, options = {}) {
         placeAnimationElement(ghost, sourceCenter);
 
@@ -3030,21 +2968,50 @@
         const distance = Math.hypot(deltaX, deltaY);
         const arc = Math.min(86, Math.max(24, distance * 0.16));
         const direction = deltaX >= 0 ? 1 : -1;
-        const animation = ghost.animate([
+        const flightDuration = options.duration || 540;
+        const impactDuration = options.impactDuration || 0;
+        const totalDuration = flightDuration + impactDuration;
+        const arrivalOffset = flightDuration / totalDuration;
+        const endOpacity = options.endOpacity === undefined ? 1 : options.endOpacity;
+        const endRotate = options.endRotate === undefined ? 1 : options.endRotate;
+        const endScale = options.endScale === undefined ? 1 : options.endScale;
+        const landing = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+        const keyframes = [
             {
+                offset: 0,
                 opacity: 1,
                 transform: 'translate3d(0, 0, 0) rotate(-2deg) scale(0.96)'
             },
             {
+                offset: arrivalOffset * 0.45,
                 opacity: 1,
                 transform: `translate3d(${deltaX * 0.45}px, ${(deltaY * 0.45) - arc}px, 0) rotate(${3 * direction}deg) scale(1.04)`
             },
             {
-                opacity: options.endOpacity === undefined ? 1 : options.endOpacity,
-                transform: `translate3d(${deltaX}px, ${deltaY}px, 0) rotate(${options.endRotate === undefined ? 1 : options.endRotate}deg) scale(${options.endScale === undefined ? 1 : options.endScale})`
+                offset: arrivalOffset,
+                opacity: endOpacity,
+                transform: `${landing} rotate(${endRotate}deg) scale(${endScale})`
             }
-        ], {
-            duration: options.duration || 540,
+        ];
+
+        if (impactDuration > 0) {
+            keyframes.push(
+                {
+                    offset: arrivalOffset + ((1 - arrivalOffset) * 0.4),
+                    opacity: endOpacity,
+                    transform: `${landing} rotate(0deg) scale(${endScale * 1.12})`,
+                    boxShadow: '0 0 0 7px rgba(216, 95, 79, 0.55), 0 18px 32px rgba(0, 0, 0, 0.38)'
+                },
+                {
+                    offset: 1,
+                    opacity: endOpacity,
+                    transform: `${landing} rotate(0deg) scale(${endScale * 0.98})`
+                }
+            );
+        }
+
+        const animation = ghost.animate(keyframes, {
+            duration: totalDuration,
             easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
             fill: 'forwards'
         });

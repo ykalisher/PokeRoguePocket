@@ -876,45 +876,21 @@ button.playing-card:focus-visible {
     transform: rotate(2deg) scale(1.04);
 }
 
-/* Attack and item animation clone moving from user/hand toward targets. */
+/* Attack and item animation clone flown from user/hand toward targets.
+   Flight movement is driven by controller keyframes (animateCardFlight);
+   the base transform matches the flight's first keyframe to avoid a flash. */
 .attack-animation-card {
     z-index: 1100;
-    transform: rotate(-1deg) scale(1.02);
-    transition:
-        left 0.46s cubic-bezier(0.22, 1, 0.36, 1),
-        top 0.46s cubic-bezier(0.22, 1, 0.36, 1),
-        transform 0.46s cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 0.24s ease;
+    transform: rotate(-2deg) scale(0.96);
     box-shadow: 0 0 0 3px rgba(224, 184, 79, 0.58), 0 18px 32px rgba(0, 0, 0, 0.38);
 }
 
-/* Mid-flight attack/item animation state. */
-.attack-animation-card.is-attack-moving {
-    transform: rotate(2deg) scale(1.05);
-}
-
-/* Impact state when an attack/item animation reaches targets. */
-.attack-animation-card.is-attack-impact {
-    transform: rotate(0deg) scale(0.98);
-    box-shadow: 0 0 0 6px rgba(216, 95, 79, 0.52), 0 18px 32px rgba(0, 0, 0, 0.38);
-}
-
-/* Draw and discard animation clones. */
+/* Draw and discard animation clones, also flown by controller keyframes. */
 .draw-animation-card,
 .discard-animation-card {
     z-index: 1080;
     transform: rotate(-2deg) scale(0.96);
-    transition:
-        left 0.52s cubic-bezier(0.22, 1, 0.36, 1),
-        top 0.52s cubic-bezier(0.22, 1, 0.36, 1),
-        transform 0.52s cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 0.22s ease;
     box-shadow: 0 0 0 3px rgba(224, 184, 79, 0.42), 0 16px 28px rgba(0, 0, 0, 0.36);
-}
-
-/* Arrival state for a drawn card animation. */
-.draw-animation-card.is-card-moving {
-    transform: rotate(1deg) scale(1.02);
 }
 
 /* Pokemon draw animation clone traveling from Pokemon/KO pile into a board slot. */
@@ -925,12 +901,6 @@ button.playing-card:focus-visible {
 /* Higher stacking for discard animation so it clears cards and damage text. */
 .discard-animation-card {
     z-index: 1110;
-}
-
-/* Movement state for discard animation. */
-.discard-animation-card.is-card-moving {
-    opacity: 0.78;
-    transform: rotate(4deg) scale(0.88);
 }
 
 /* Temporarily hides a real card while its draw animation finishes. */
