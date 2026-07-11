@@ -294,11 +294,9 @@
     }
 
     function loseRandomCards(run, cardKind, count, options = {}) {
-        const entries = getCardsByKind(run, cardKind)
-            .filter(entry => !(options.keepOnePokemon && cardKind === 'pokemon' && getCardsByKind(run, 'pokemon').length <= 1));
-        const removableCount = options.keepOnePokemon && cardKind === 'pokemon'
-            ? Math.max(0, entries.length - 1)
-            : entries.length;
+        const keepOnePokemon = Boolean(options.keepOnePokemon) && cardKind === 'pokemon';
+        const entries = getCardsByKind(run, cardKind);
+        const removableCount = keepOnePokemon ? Math.max(0, entries.length - 1) : entries.length;
         const selectedEntries = shuffleRecords(entries).slice(0, Math.min(count, removableCount));
         const removedNames = selectedEntries.map(entry => removeCardAtLocation(run, entry));
 

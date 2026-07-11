@@ -11,17 +11,6 @@
     'use strict';
 
     const state = arena.state;
-    const { KNOCKOUT_LIMIT } = arena.Constants;
-    
-    function getEffectiveKnockoutLimit(player) {
-        if (!player) return KNOCKOUT_LIMIT;
-
-        const totalPokemon = Number.isFinite(player.initialPokemonCount) && player.initialPokemonCount > 0
-            ? player.initialPokemonCount
-            : 4;
-
-        return totalPokemon <= 4 ? totalPokemon : KNOCKOUT_LIMIT;
-    }
     const ACTION_STATUS_ICON_ALIASES = Object.freeze({
         FULL_HEAL: ['HEAL', 'HEAL_STATUS']
     });
@@ -60,7 +49,7 @@
         { type: 'ICE', text: 'ICE attacks calculate damage from base Attack and base Defense only, ignoring stat stages and status multipliers.' },
         { type: 'STEEL', text: 'STEEL attacks use the attacker\'s Defense instead of Attack as the damage stat.' },
         { type: 'DRAGON', text: 'A played Dragon Gem marks that side. Its damaging DRAGON attacks can apply the active gem\'s paired status using the normal status chance. Playing another Dragon Gem replaces the current one.' },
-        { type: 'FOSSIL', text: 'A Fossil already in the knockout pile can revive once at end of turn after another allied Pokemon is knocked out, returning with 60% max HP and Fatigue instead of drawing a replacement.' }
+        { type: 'FOSSIL', text: 'A Fossil already in the knockout pile can revive once at end of turn after another allied Pokemon is knocked out, returning with 60% max HP and Fatigue instead of drawing a replacement. Its earlier knockout no longer counts toward the knockout limit.' }
     ]);
     const PERSISTENT_STATUS_REFERENCE = Object.freeze([
         { status: 'BURN', text: 'End of turn: 5% max HP damage. While active: Attack is halved unless the Pokemon is FIGHTING. Protect blocks burn damage.' },
@@ -140,7 +129,7 @@
                         <span class="stat-pill">Action deck ${player.deck.length}</span>
                         <span class="stat-pill">Hand ${player.hand.length}/${arena.Model.getPlayerHandSize(player)}</span>
                         <span class="stat-pill">Discard ${player.discard.length}</span>
-                        <span class="stat-pill">KO ${player.knockoutCount}/${getEffectiveKnockoutLimit(player)}</span>
+                        <span class="stat-pill">KO ${player.knockoutCount}/${arena.Model.getEffectiveKnockoutLimit(player)}</span>
                     </div>
                 </header>
                 ${handFirst}

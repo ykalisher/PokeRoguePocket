@@ -55,7 +55,6 @@
         CONFUSION_RECOVERY_CHANCE,
         CONFUSION_SELF_DAMAGE_CHANCE,
         DAMAGE_PERCENT,
-        KNOCKOUT_LIMIT,
         MULTI_ATTACK_MAX_HITS,
         MULTI_ATTACK_MIN_HITS,
         MULTI_ATTACK_STAT_CHANGE_TRIGGER_CHANCE,
@@ -1164,18 +1163,15 @@
         }
     }
 
+    /**
+     * Keeps up to three cards the opponent can still play next turn and
+     * discards the rest, so the rival redraws instead of hoarding cards its
+     * active Pokemon cannot use.
+     */
     async function discardOpponentCardsForNextTurn() {
         const opponent = state.players.opponent;
-        const playableCards = getPlayableNextTurnCards('opponent');
-        const playableCount = Math.min(3, playableCards.length);
-        const discardCount = Math.min(3 - playableCount, opponent.hand.length);
-
-        if (discardCount <= 0) return;
-
-        const playableIds = new Set(playableCards.map(card => card.id));
-        const discardCards = opponent.hand
-            .filter(card => !playableIds.has(card.id))
-            .slice(0, discardCount);
+        const playableIds = new Set(getPlayableNextTurnCards('opponent').map(card => card.id));
+        const discardCards = opponent.hand.filter(card => !playableIds.has(card.id));
 
         for (const card of discardCards) {
             if (state.finished || state.currentPlayer !== 'opponent') return;
@@ -2587,7 +2583,7 @@
         model.updatePokemonLeft(owner);
         logEvent(`${model.getCardName(removedCard)} was knocked out.`);
 
-        const effectiveLimit = getEffectiveKnockoutLimit(owner);
+        const effectiveLimit = model.getEffectiveKnockoutLimit(owner);
         if (owner.knockoutCount >= effectiveLimit) return;
 
         queuePokemonReplacement(ownerId, slotIndex);
@@ -2674,6 +2670,7 @@
     /**
      * FOSSIL special rule: during end-of-turn replacement, a once-per-card
      * Fossil already in the knockout pile can return to the vacated slot.
+     * Its earlier knockout is refunded so revival grants a real extra life.
      */
     function reviveFossilPokemonFromKnockout(owner, slotIndex) {
         if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT || owner.board[slotIndex]) return null;
@@ -2689,6 +2686,7 @@
 
         const [fossilCard] = owner.knockout.splice(fossilIndex, 1);
 
+        owner.knockoutCount = Math.max(0, (Number(owner.knockoutCount) || 0) - 1);
         fossilCard.faceUp = true;
         fossilCard.hasUsedFossilRevival = true;
         fossilCard.currentHealth = Math.max(1, Math.ceil(fossilCard.pokemon.baseHealth * FOSSIL_REVIVAL_HEALTH_PERCENT));
@@ -2722,8 +2720,8 @@
     function checkGameOver() {
         if (state.finished) return true;
 
-        const playerDefeated = isPlayerDefeated(state.players.player);
-        const opponentDefeated = isPlayerDefeated(state.players.opponent);
+        const playerDefeated = model.isPlayerDefeated(state.players.player);
+        const opponentDefeated = model.isPlayerDefeated(state.players.opponent);
 
         if (!playerDefeated && !opponentDefeated) return false;
 
@@ -2758,32 +2756,6 @@
         if (!arena.BattleFlow || typeof arena.BattleFlow.handleBattleFinished !== 'function') return;
 
         arena.BattleFlow.handleBattleFinished(outcome);
-    }
-
-    function getEffectiveKnockoutLimit(player) {
-        if (!player) return KNOCKOUT_LIMIT;
-
-        const totalPokemon = Number.isFinite(player.initialPokemonCount) && player.initialPokemonCount > 0
-            ? player.initialPokemonCount
-            : 4;
-
-        return totalPokemon <= 4 ? totalPokemon : 4;
-    }
-
-    function isPlayerDefeated(player) {
-        if (!player) return false;
-
-        const effectiveLimit = getEffectiveKnockoutLimit(player);
-        const knockoutDefeat = (Number(player.knockoutCount) || 0) >= effectiveLimit;
-        
-        // For players with >4 pokemon, defeat if deck is empty (lostByPokemonDeck)
-        // For players with <=4 pokemon, only defeat by KO count
-        const totalPokemon = Number.isFinite(player.initialPokemonCount) && player.initialPokemonCount > 0
-            ? player.initialPokemonCount
-            : 4;
-        const deckEmptyDefeat = totalPokemon > 4 && Boolean(player.lostByPokemonDeck);
-        
-        return knockoutDefeat || deckEmptyDefeat;
     }
 
     function showPopup(message) {

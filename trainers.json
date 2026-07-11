@@ -65,11 +65,11 @@
       "Surf",
       "Mist",
       "Hydro Pump",
-      "Moonblast",
+      "Moon Blast",
       "Helping Hand",
       "Mist",
       "Dazzling Dance",
-      "Moonblast",
+      "Moon Blast",
       "Helping Hand"
     ],
     "items": [
@@ -581,7 +581,7 @@
     ]
   },
   {
-    "name": "Lass",
+    "name": "Lass Janice",
     "sprite": "Lass",
     "cash": 200,
     "rank": "Standard",
@@ -866,7 +866,7 @@
     ]
   },
   {
-    "name": "Dancer",
+    "name": "Dancer Raymond",
     "sprite": "Dancer",
     "cash": 200,
     "rank": "Standard",

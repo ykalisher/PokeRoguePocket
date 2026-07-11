@@ -16,7 +16,8 @@
         BOARD_SLOT_COUNT,
         DEFAULT_BATTLE_DECK,
         HAND_SIZE,
-        ITEM_CARDS_PER_MAIN_DECK
+        ITEM_CARDS_PER_MAIN_DECK,
+        KNOCKOUT_LIMIT
     } = arena.Constants;
 
     const BATTLE_STORAGE_KEY = 'card-arena-current-battle';
@@ -408,6 +409,34 @@
         player.pokemonLeft = countRemainingPokemon(player);
 
         return player.pokemonLeft;
+    }
+
+    function getInitialPokemonCount(player) {
+        return Number.isFinite(player && player.initialPokemonCount) && player.initialPokemonCount > 0
+            ? player.initialPokemonCount
+            : KNOCKOUT_LIMIT;
+    }
+
+    /**
+     * Knockouts needed to defeat a player: every Pokemon for teams at or below
+     * the standard knockout limit, otherwise the standard limit.
+     */
+    function getEffectiveKnockoutLimit(player) {
+        return Math.min(getInitialPokemonCount(player), KNOCKOUT_LIMIT);
+    }
+
+    /**
+     * Defeat check shared by the controller, render, and page flow. Teams
+     * larger than the knockout limit also lose when their Pokemon deck cannot
+     * supply a replacement.
+     */
+    function isPlayerDefeated(player) {
+        if (!player) return false;
+
+        const knockoutDefeat = (Number(player.knockoutCount) || 0) >= getEffectiveKnockoutLimit(player);
+        const deckEmptyDefeat = getInitialPokemonCount(player) > KNOCKOUT_LIMIT && Boolean(player.lostByPokemonDeck);
+
+        return knockoutDefeat || deckEmptyDefeat;
     }
 
     /**
@@ -1751,6 +1780,7 @@
         getCardsForTargetSelection,
         getDragonGemEffectForItem,
         getDragonGemEffects,
+        getEffectiveKnockoutLimit,
         getHealthPercent,
         getPokemonEffectiveStat,
         getPokemonStatMultiplier,
@@ -1778,6 +1808,7 @@
         isBattleStatus,
         isDragonGemItemCard,
         isItemCard,
+        isPlayerDefeated,
         isPokemonCard,
         playOpeningPokemon,
         playerHasCardInHand,

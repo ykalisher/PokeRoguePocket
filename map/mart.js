@@ -205,6 +205,7 @@
         runStore.saveRunState(state.run);
 
         state.run = runStore.loadRunState();
+        state.encounter = runStore.getActiveMartEncounter(state.run);
 
         setMessage(result.zone === 'bench'
             ? `Withdrew ${withdrawnCard.pokemon.name} to the bench.`
