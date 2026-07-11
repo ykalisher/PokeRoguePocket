@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check:*)",
+      "Bash(node --test:*)",
+      "Bash(node tests/run_all.js)",
+      "Bash(python3 -m http.server 8931:*)",
+      "Bash(pkill -f \"http.server 8931\")",
+      "Bash(bash dev/verify/setup.sh)",
+      "Bash(cd dev/verify:*)",
+      "Bash(.cache/venv/bin/python:*)",
+      "Bash(dev/verify/.cache/venv/bin/python:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/dev/hooks/check_edited.js\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

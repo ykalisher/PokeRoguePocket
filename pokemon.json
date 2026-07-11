@@ -189,7 +189,7 @@
   {
     "name": "Feraligatr",
     "type1": "WATER",
-    "type2": "MONSTER",
+    "type2": "DARK",
     "type3": "NONE",
     "id": "0160",
     "baseHealth": 90,

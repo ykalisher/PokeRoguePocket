@@ -1,0 +1,4 @@
+.cache/
+*.deb
+*.png
+__pycache__/
