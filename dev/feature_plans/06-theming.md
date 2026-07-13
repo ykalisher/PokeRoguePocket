@@ -37,7 +37,7 @@ palette-derived gradients as the placeholder. Ends green + playable.
 
 ## Steps
 
-- [ ] 1. **Token restructure (`static/styles.css`).** Move the token block to
+- [x] 1. **Token restructure (`static/styles.css`).** Move the token block to
   `body` with a neutral slate default and decompose the composites:
 
   ```css
@@ -73,20 +73,20 @@ palette-derived gradients as the placeholder. Ends green + playable.
   `--coral` usages for clashes (grep each). `color-mix()` is acceptable for this
   project's modern-browser target; if it misbehaves in verification, fall back to
   two extra pre-mixed rgba tokens set from JS alongside the others.
-- [ ] 2. **`applyLocationTheme(run)` in `map/locations.js`:** no-op unless
+- [x] 2. **`applyLocationTheme(run)` in `map/locations.js`:** no-op unless
   `run?.location?.theme` and `document` exist. Sets the six `--loc-*` /
   `--page-bg-image` inline props via `document.body.style.setProperty` and
   `document.body.dataset.location = id`. `--page-bg-image` gets
   `url("<background>")` only when `background` is set.
-- [ ] 3. **Init hooks (one line each)** right after the run loads, before awaits:
+- [x] 3. **Init hooks (one line each)** right after the run loads, before awaits:
   `map/area.js`, `map/capture.js`, `map/mart.js`, `map/event.js`,
   `arena/game.js`. No run / no location → untouched neutral default (index.html,
   overview.html, 404.html never call it).
-- [ ] 4. **Per-page CSS token pass:** grep `area.css`/`capture.css`/`event.css`/
+- [x] 4. **Per-page CSS token pass:** grep `area.css`/`capture.css`/`event.css`/
   `mart.css` for hardcoded hexes tied to the old green look; convert to token
   references where they should follow the location theme. Targeted — don't
   restyle layouts.
-- [ ] 5. **Tests:** `node tests/run_all.js` (locations.js must still load in Node —
+- [x] 5. **Tests:** `node tests/run_all.js` (locations.js must still load in Node —
   the `document` guard in `applyLocationTheme` keeps arena_env happy; add a tiny
   test that calling it without `document` doesn't throw).
 

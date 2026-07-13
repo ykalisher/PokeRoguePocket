@@ -1,17 +1,8 @@
 /* --- Mart --- */
 
 .mart-page {
-    --mart-bg:
-        linear-gradient(145deg, #102f35, #10251f 52%, #2d2520);
-    --mart-panel:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(0, 0, 0, 0.16)),
-        #173f38;
-    --mart-panel-deep: #0c2427;
-    --gold: #e0b84f;
-    --aqua: #4ab0a5;
-    --coral: #d85f4f;
-    --muted: rgba(250, 246, 230, 0.72);
-    --paper: #f2f4f5;
+    --mart-panel: var(--panel-bg);
+    --mart-panel-deep: var(--panel-deep);
     --card-w: clamp(72px, 7vw, 96px);
     --card-h: calc(var(--card-w) * 1.52);
     --pc-card-w: clamp(82px, 9vw, 112px);
@@ -21,7 +12,7 @@
     height: auto;
     display: block;
     overflow: auto;
-    background: var(--mart-bg);
+    background: var(--page-bg-stack);
     color: #fbf6e8;
 }
 
@@ -33,7 +24,7 @@
     width: auto;
     padding: 9px 14px;
     border: 1px solid rgba(251, 246, 232, 0.22);
-    background-color: rgba(22, 34, 35, 0.9);
+    background-color: color-mix(in srgb, var(--loc-bg-deep) 90%, transparent);
     font-size: 0.95rem;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
@@ -162,7 +153,7 @@
 
 .mart-deck-counter:hover,
 .mart-deck-counter:focus-visible {
-    outline: 3px solid rgba(224, 184, 79, 0.75);
+    outline: 3px solid color-mix(in srgb, var(--gold) 75%, transparent);
     outline-offset: 2px;
     transform: translateY(-2px);
 }
@@ -292,7 +283,7 @@
     padding: 7px 11px;
     border: 1px solid rgba(251, 246, 232, 0.22);
     border-radius: 6px;
-    background-color: rgba(74, 176, 165, 0.3);
+    background-color: color-mix(in srgb, var(--aqua) 30%, transparent);
     color: #fbf6e8;
     font: inherit;
     font-size: 0.86rem;
@@ -310,9 +301,9 @@
 .mart-pc-button:focus-visible:not(:disabled),
 .mart-continue-button:hover,
 .mart-continue-button:focus-visible {
-    outline: 2px solid rgba(224, 184, 79, 0.72);
+    outline: 2px solid color-mix(in srgb, var(--gold) 72%, transparent);
     outline-offset: 2px;
-    background-color: rgba(74, 176, 165, 0.45);
+    background-color: color-mix(in srgb, var(--aqua) 45%, transparent);
 }
 
 .mart-buy-button:disabled,
@@ -391,7 +382,7 @@
 .mart-pokemon-choice:hover .playing-card,
 .mart-pokemon-choice:focus-visible .playing-card,
 .mart-pokemon-choice.is-selected .playing-card {
-    outline: 3px solid rgba(224, 184, 79, 0.82);
+    outline: 3px solid color-mix(in srgb, var(--gold) 82%, transparent);
     outline-offset: 3px;
     transform: translateY(-4px);
 }
@@ -400,7 +391,7 @@
     width: 100%;
     min-height: 42px;
     margin-top: 2px;
-    background-color: rgba(224, 184, 79, 0.28);
+    background-color: color-mix(in srgb, var(--gold) 28%, transparent);
 }
 
 @media (max-width: 920px) {

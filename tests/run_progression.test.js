@@ -598,3 +598,74 @@ test('chooseEvent only returns events matching the run location types', () => {
         assert.ok(event && allowed.has(event.id), `chooseEvent leaked ${event && event.id}`);
     }
 });
+
+// --- Location theming (phase 6) ------------------------------------------
+
+test('applyLocationTheme without document does not throw', () => {
+    // Node has no document; the guard must make every call shape a no-op.
+    assert.equal(typeof document, 'undefined');
+    assert.doesNotThrow(() => P.applyLocationTheme(null));
+    assert.doesNotThrow(() => P.applyLocationTheme(undefined));
+    assert.doesNotThrow(() => P.applyLocationTheme({}));
+    assert.doesNotThrow(() => P.applyLocationTheme({
+        location: {
+            id: 'tidepool-coast',
+            theme: { accent: '#fff', glow: '#fff', surface: '#111', bgDeep: '#000', bgMid: '#222' },
+            background: 'assets/backgrounds/tidepool-coast.png'
+        }
+    }));
+});
+
+test('applyLocationTheme sets body tokens when a document exists', () => {
+    // Minimal document stub shaped like the DOM surface the function touches.
+    const setCalls = {};
+    const removed = [];
+    globalThis.document = {
+        baseURI: 'http://localhost/area.html',
+        body: {
+            dataset: {},
+            style: {
+                setProperty: (name, value) => { setCalls[name] = value; },
+                removeProperty: name => { removed.push(name); }
+            }
+        }
+    };
+
+    try {
+        P.applyLocationTheme({
+            location: {
+                id: 'cinder-ridge',
+                theme: { accent: '#f2a35c', glow: '#d95f3b', surface: '#402420', bgDeep: '#1c0f0c', bgMid: '#2e1a14' },
+                background: 'assets/backgrounds/cinder-ridge.png'
+            }
+        });
+
+        assert.equal(setCalls['--loc-accent'], '#f2a35c');
+        assert.equal(setCalls['--loc-glow'], '#d95f3b');
+        assert.equal(setCalls['--loc-surface'], '#402420');
+        assert.equal(setCalls['--loc-bg-deep'], '#1c0f0c');
+        assert.equal(setCalls['--loc-bg-mid'], '#2e1a14');
+        // Document-absolute: a relative url() in a custom property would
+        // resolve against static/styles.css instead of the page.
+        assert.equal(setCalls['--page-bg-image'], 'url("http://localhost/assets/backgrounds/cinder-ridge.png")');
+        assert.equal(document.body.dataset.location, 'cinder-ridge');
+
+        // No background -> the inline image override is cleared, not kept.
+        P.applyLocationTheme({
+            location: {
+                id: 'no-bg',
+                theme: { accent: '#fff', glow: '#fff', surface: '#111', bgDeep: '#000', bgMid: '#222' },
+                background: null
+            }
+        });
+        assert.deepEqual(removed, ['--page-bg-image']);
+
+        // No run/location/theme -> body untouched.
+        const before = JSON.stringify(setCalls);
+        P.applyLocationTheme(null);
+        P.applyLocationTheme({ location: { id: 'x' } });
+        assert.equal(JSON.stringify(setCalls), before);
+    } finally {
+        delete globalThis.document;
+    }
+});

@@ -2,7 +2,7 @@
  * Pokemon Rogue Pocket - event page
  */
 
-(function bootEventPage(arena, runStore, eventSystem) {
+(function bootEventPage(arena, runStore, eventSystem, locations) {
     'use strict';
 
     const CARD_BACKS = Object.freeze({
@@ -25,6 +25,8 @@
     document.addEventListener('DOMContentLoaded', init);
 
     async function init() {
+        locations.applyLocationTheme(runStore.loadRunState());
+
         state.elements.root = document.getElementById('event-root');
         state.elements.root.addEventListener('click', handleEventClick);
         window.addEventListener('keydown', handleKeyDown);
@@ -680,4 +682,4 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
-})(window.CardArena = window.CardArena || {}, window.PokeRun, window.PokeEvents);
+})(window.CardArena = window.CardArena || {}, window.PokeRun, window.PokeEvents, window.PokeLocations);

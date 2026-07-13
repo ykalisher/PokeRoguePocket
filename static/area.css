@@ -1,20 +1,11 @@
 /* --- Area Map --- */
 
 .area-page {
-    --area-bg: linear-gradient(145deg, #102f35, #10251f 54%, #2d2520);
-    --area-panel: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(0, 0, 0, 0.16)), #173f38;
-    --area-panel-deep: #0c2427;
+    --area-panel: var(--panel-bg);
+    --area-panel-deep: var(--panel-deep);
     --area-line: rgba(251, 246, 232, 0.24);
-    --area-line-active: #e0b84f;
-    --area-line-traveled: #4ab0a5;
-    --felt: #17483d;
-    --felt-dark: #0f2f2d;
-    --ink: #251b18;
-    --gold: #e0b84f;
-    --aqua: #4ab0a5;
-    --coral: #d85f4f;
-    --muted: rgba(250, 246, 230, 0.72);
-    --paper: #f2f4f5;
+    --area-line-active: var(--gold);
+    --area-line-traveled: var(--aqua);
     --card-w: 92px;
     --card-h: calc(var(--card-w) * 1.52);
 
@@ -22,7 +13,7 @@
     height: 100dvh;
     display: block;
     overflow: hidden;
-    background: var(--area-bg);
+    background: var(--page-bg-stack);
     color: #fbf6e8;
 }
 
@@ -34,7 +25,7 @@
     width: auto;
     padding: 9px 14px;
     border: 1px solid rgba(251, 246, 232, 0.22);
-    background-color: rgba(22, 34, 35, 0.9);
+    background-color: color-mix(in srgb, var(--loc-bg-deep) 90%, transparent);
     font-size: 0.95rem;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
@@ -155,7 +146,7 @@
 
 .area-deck-button:hover,
 .area-deck-button:focus-visible {
-    outline: 3px solid rgba(224, 184, 79, 0.75);
+    outline: 3px solid color-mix(in srgb, var(--gold) 75%, transparent);
     outline-offset: 2px;
     transform: translateY(-2px);
 }
@@ -204,7 +195,7 @@
 
 .area-bench-button:hover,
 .area-bench-button:focus-visible {
-    outline: 3px solid rgba(224, 184, 79, 0.75);
+    outline: 3px solid color-mix(in srgb, var(--gold) 75%, transparent);
     outline-offset: 2px;
     transform: translateY(-2px);
 }
@@ -216,7 +207,7 @@
     place-items: center;
     border: 2px solid rgba(37, 27, 24, 0.5);
     border-radius: 999px;
-    background: linear-gradient(180deg, rgba(74, 176, 165, 0.92), rgba(23, 72, 61, 0.96));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--aqua) 92%, transparent), color-mix(in srgb, var(--felt) 96%, transparent));
     color: #fbf6e8;
     font-size: 0.78rem;
     font-weight: 950;
@@ -275,10 +266,10 @@
     z-index: 5;
     max-width: calc(100% - 24px);
     padding: 8px 18px;
-    border: 1px solid var(--accent, #e8c266);
+    border: 1px solid var(--gold);
     border-radius: 999px;
     background-color: rgba(5, 13, 16, 0.82);
-    color: var(--accent, #e8c266);
+    color: var(--gold);
     font-weight: 820;
     letter-spacing: 0.02em;
     text-align: center;
@@ -303,7 +294,7 @@
 .area-map-link.is-available {
     stroke: var(--area-line-active);
     stroke-width: 2.8;
-    filter: drop-shadow(0 0 7px rgba(224, 184, 79, 0.48));
+    filter: drop-shadow(0 0 7px color-mix(in srgb, var(--gold) 48%, transparent));
 }
 
 .area-map-link.is-traveled {
@@ -334,24 +325,24 @@
 
 .area-node.is-selectable {
     cursor: pointer;
-    border-color: rgba(224, 184, 79, 0.82);
-    box-shadow: 0 0 0 4px rgba(224, 184, 79, 0.16), 0 13px 26px rgba(0, 0, 0, 0.38);
+    border-color: color-mix(in srgb, var(--gold) 82%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 16%, transparent), 0 13px 26px rgba(0, 0, 0, 0.38);
 }
 
 .area-node.is-selectable:hover,
 .area-node.is-selectable:focus-visible {
-    outline: 3px solid rgba(224, 184, 79, 0.85);
+    outline: 3px solid color-mix(in srgb, var(--gold) 85%, transparent);
     outline-offset: 3px;
     transform: translate(-50%, -54%);
 }
 
 .area-node.is-current {
-    border-color: rgba(74, 176, 165, 0.95);
-    box-shadow: 0 0 0 5px rgba(74, 176, 165, 0.22), 0 13px 26px rgba(0, 0, 0, 0.38);
+    border-color: color-mix(in srgb, var(--aqua) 95%, transparent);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--aqua) 22%, transparent), 0 13px 26px rgba(0, 0, 0, 0.38);
 }
 
 .area-node.is-visited:not(.is-current) {
-    border-color: rgba(74, 176, 165, 0.48);
+    border-color: color-mix(in srgb, var(--aqua) 48%, transparent);
 }
 
 .area-node:disabled {
@@ -397,7 +388,7 @@
 .area-icon--start {
     border: 2px solid rgba(251, 246, 232, 0.72);
     border-radius: 999px;
-    background: linear-gradient(180deg, rgba(74, 176, 165, 0.52), rgba(22, 72, 61, 0.82));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--aqua) 52%, transparent), color-mix(in srgb, var(--felt) 82%, transparent));
 }
 
 .area-icon--start::before {
@@ -563,7 +554,7 @@
     border-radius: 8px;
     background:
         linear-gradient(180deg, rgba(251, 246, 232, 0.08), rgba(0, 0, 0, 0.16)),
-        #102f2d;
+        var(--loc-surface);
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.54);
 }
 
@@ -602,7 +593,7 @@
     padding: 0;
     border: 1px solid rgba(251, 246, 232, 0.26);
     border-radius: 999px;
-    background-color: rgba(216, 95, 79, 0.24);
+    background-color: color-mix(in srgb, var(--coral) 24%, transparent);
     color: #fbf6e8;
     font: inherit;
     font-size: 1rem;
@@ -612,9 +603,9 @@
 
 .area-card-window-close:hover,
 .area-card-window-close:focus-visible {
-    outline: 2px solid rgba(224, 184, 79, 0.7);
+    outline: 2px solid color-mix(in srgb, var(--gold) 70%, transparent);
     outline-offset: 2px;
-    background-color: rgba(216, 95, 79, 0.38);
+    background-color: color-mix(in srgb, var(--coral) 38%, transparent);
 }
 
 .area-card-window-body {
@@ -719,7 +710,7 @@
 .area-bench-card-button:hover .playing-card,
 .area-bench-card-button:focus-visible .playing-card,
 .area-bench-card-button.is-selected .playing-card {
-    outline: 3px solid rgba(224, 184, 79, 0.82);
+    outline: 3px solid color-mix(in srgb, var(--gold) 82%, transparent);
     outline-offset: 3px;
     transform: translateY(-4px);
 }
@@ -757,7 +748,7 @@
     padding: 8px 14px;
     border: 1px solid rgba(251, 246, 232, 0.22);
     border-radius: 6px;
-    background-color: rgba(74, 176, 165, 0.3);
+    background-color: color-mix(in srgb, var(--aqua) 30%, transparent);
     color: #fbf6e8;
     font: inherit;
     font-size: 0.88rem;
@@ -767,9 +758,9 @@
 
 .area-bench-swap-button:hover:not(:disabled),
 .area-bench-swap-button:focus-visible:not(:disabled) {
-    outline: 2px solid rgba(224, 184, 79, 0.72);
+    outline: 2px solid color-mix(in srgb, var(--gold) 72%, transparent);
     outline-offset: 2px;
-    background-color: rgba(74, 176, 165, 0.45);
+    background-color: color-mix(in srgb, var(--aqua) 45%, transparent);
 }
 
 .area-bench-swap-button:disabled {
@@ -814,7 +805,7 @@
     padding: 12px 16px;
     border: 1px solid rgba(251, 246, 232, 0.25);
     border-radius: 8px;
-    background: rgba(22, 34, 35, 0.96);
+    background: color-mix(in srgb, var(--loc-bg-deep) 96%, transparent);
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.36);
     color: #fbf6e8;
     font-weight: 760;
@@ -865,7 +856,7 @@
         overflow-x: auto;
         overflow-y: hidden;
         overscroll-behavior-x: contain;
-        scrollbar-color: rgba(224, 184, 79, 0.72) rgba(5, 13, 16, 0.42);
+        scrollbar-color: color-mix(in srgb, var(--gold) 72%, transparent) rgba(5, 13, 16, 0.42);
     }
 
     .area-map-canvas {

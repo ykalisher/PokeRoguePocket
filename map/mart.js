@@ -2,7 +2,7 @@
  * Pokemon Rogue Pocket - mart page
  */
 
-(function bootMartPage(arena, runStore) {
+(function bootMartPage(arena, runStore, locations) {
     'use strict';
 
     const ATTACK_COUNT = 8;
@@ -27,6 +27,8 @@
     document.addEventListener('DOMContentLoaded', init);
 
     async function init() {
+        locations.applyLocationTheme(runStore.loadRunState());
+
         state.elements.root = document.getElementById('mart-root');
         state.elements.root.addEventListener('click', handleMartClick);
         state.elements.root.addEventListener('dragstart', handleMartDragStart);
@@ -647,4 +649,4 @@
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '');
     }
-})(window.CardArena = window.CardArena || {}, window.PokeRun);
+})(window.CardArena = window.CardArena || {}, window.PokeRun, window.PokeLocations);

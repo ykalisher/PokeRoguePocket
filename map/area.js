@@ -47,6 +47,10 @@
     document.addEventListener('DOMContentLoaded', init);
 
     async function init() {
+        // Theme from the saved run before the data await so the first paint
+        // is already themed; re-applied below once the run may have changed.
+        locations.applyLocationTheme(runStore.loadRunState());
+
         state.elements.root = document.getElementById('area-root');
         state.elements.popup = document.getElementById('area-popup');
 
@@ -56,6 +60,7 @@
         await arena.Data.loadGameData();
 
         restoreOrCreateRunState();
+        locations.applyLocationTheme(state.run);
 
         if (redirectToActiveEncounter()) return;
 

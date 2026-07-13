@@ -523,6 +523,41 @@
     }
 
     /**
+     * Applies the run's location palette to <body> as inline custom
+     * properties plus a data-location attribute. Inline body styles survive
+     * the innerHTML re-renders the pages use, and the document guard keeps
+     * this module loadable in Node tests. No run/location/theme -> no-op,
+     * leaving the neutral stylesheet defaults untouched.
+     */
+    function applyLocationTheme(run) {
+        if (typeof document === 'undefined' || !document.body) return;
+
+        const location = run && run.location;
+        if (!location || !location.theme) return;
+
+        const style = document.body.style;
+        const setToken = (name, value) => { if (value) style.setProperty(name, value); };
+
+        setToken('--loc-accent', location.theme.accent);
+        setToken('--loc-glow', location.theme.glow);
+        setToken('--loc-surface', location.theme.surface);
+        setToken('--loc-bg-deep', location.theme.bgDeep);
+        setToken('--loc-bg-mid', location.theme.bgMid);
+
+        if (location.background) {
+            // Resolve against the document: a relative url() inside a custom
+            // property is otherwise resolved against the stylesheet that
+            // substitutes it (static/styles.css), which breaks the path.
+            const backgroundUrl = new URL(location.background, document.baseURI).href;
+            style.setProperty('--page-bg-image', `url("${backgroundUrl}")`);
+        } else {
+            style.removeProperty('--page-bg-image');
+        }
+
+        document.body.dataset.location = location.id || '';
+    }
+
+    /**
      * Wild pokemon pool for a location: unique-by-name, non-legendary species
      * with at least one type slot in the location's types. Falls back to all
      * non-legendaries so the pool is never empty.
@@ -542,6 +577,7 @@
         STARTER_DECKS,
         TOTAL_LEVELS,
         advanceRunToNextLevel,
+        applyLocationTheme,
         bossNodeIdForLevel,
         chooseNextLocation,
         chooseTrainer,

@@ -31,6 +31,8 @@
     document.addEventListener('DOMContentLoaded', init);
 
     async function init() {
+        locations.applyLocationTheme(runStore.loadRunState());
+
         state.elements.root = document.getElementById('capture-root');
         state.elements.root.addEventListener('click', handleCaptureClick);
         window.addEventListener('keydown', handleKeyDown);

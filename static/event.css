@@ -1,18 +1,17 @@
 /* --- Events --- */
 
 .event-page {
-    --event-bg: linear-gradient(145deg, #15292f, #172a23 52%, #302826);
-    --event-panel: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(0, 0, 0, 0.18)), #173b37;
-    --event-panel-deep: #0f2528;
-    --event-gold: #e0b84f;
-    --event-aqua: #4ab0a5;
-    --event-coral: #d85f4f;
-    --event-muted: rgba(250, 246, 230, 0.72);
+    --event-panel: var(--panel-bg);
+    --event-panel-deep: var(--panel-deep);
+    --event-gold: var(--gold);
+    --event-aqua: var(--aqua);
+    --event-coral: var(--coral);
+    --event-muted: var(--muted);
     --card-w: 92px;
     --card-h: calc(var(--card-w) * 1.52);
 
     min-height: 100dvh;
-    background: var(--event-bg);
+    background: var(--page-bg-stack);
     color: #fbf6e8;
 }
 
@@ -24,7 +23,7 @@
     width: auto;
     padding: 9px 14px;
     border: 1px solid rgba(251, 246, 232, 0.22);
-    background-color: rgba(22, 34, 35, 0.9);
+    background-color: color-mix(in srgb, var(--loc-bg-deep) 90%, transparent);
     font-size: 0.95rem;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
@@ -165,7 +164,7 @@
 .event-secondary-button:focus-visible:not(:disabled),
 .event-icon-button:hover,
 .event-icon-button:focus-visible {
-    outline: 3px solid rgba(224, 184, 79, 0.75);
+    outline: 3px solid color-mix(in srgb, var(--gold) 75%, transparent);
     outline-offset: 2px;
 }
 
@@ -336,12 +335,12 @@
 
 .event-primary-button {
     padding: 9px 14px;
-    background-color: rgba(74, 176, 165, 0.34);
+    background-color: color-mix(in srgb, var(--aqua) 34%, transparent);
 }
 
 .event-secondary-button {
     padding: 9px 14px;
-    background-color: rgba(224, 184, 79, 0.26);
+    background-color: color-mix(in srgb, var(--gold) 26%, transparent);
 }
 
 .event-icon-button {
@@ -350,7 +349,7 @@
     flex: 0 0 auto;
     padding: 0;
     border-radius: 999px;
-    background-color: rgba(216, 95, 79, 0.24);
+    background-color: color-mix(in srgb, var(--coral) 24%, transparent);
 }
 
 .event-primary-button:disabled,
@@ -417,7 +416,7 @@
 .event-card-choice:hover .playing-card,
 .event-card-choice:focus-visible .playing-card,
 .event-card-choice.is-selected .playing-card {
-    outline: 3px solid rgba(224, 184, 79, 0.82);
+    outline: 3px solid color-mix(in srgb, var(--gold) 82%, transparent);
     outline-offset: 3px;
     transform: translateY(-4px);
 }

@@ -2,7 +2,7 @@
  * Pokemon Rogue Pocket - card arena prototype
  */
 
-(function bootCardArena(arena, runStore) {
+(function bootCardArena(arena, runStore, locations) {
     'use strict';
 
     let activeRun = null;
@@ -17,6 +17,10 @@
      * placement flow through Controller.resetPrototype().
      */
     async function initGame() {
+        if (locations && runStore && typeof runStore.loadRunState === 'function') {
+            locations.applyLocationTheme(runStore.loadRunState());
+        }
+
         const state = arena.state;
 
         state.elements.board = document.getElementById('game-board');
@@ -424,4 +428,4 @@
 
         return arena.Model.isPlayerDefeated(arena.state.players.player) ? 'loss' : 'win';
     }
-})(window.CardArena = window.CardArena || {}, window.PokeRun);
+})(window.CardArena = window.CardArena || {}, window.PokeRun, window.PokeLocations);
