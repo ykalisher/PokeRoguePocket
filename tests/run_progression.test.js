@@ -354,3 +354,176 @@ test('normalizeLocationSnapshot rejects id-less and typeless input', () => {
     assert.equal(ok.terrain, 'x');
     assert.deepEqual(ok.types, ['WATER']);
 });
+
+// --- Phase 3: area graph generation ----------------------------------------
+
+function countTypes(nodes) {
+    return nodes.reduce((counts, node) => {
+        counts[node.type] = (counts[node.type] || 0) + 1;
+        return counts;
+    }, {});
+}
+
+test('every level graph ends in a boss node with the right id and step', () => {
+    [1, 2, 3, 4].forEach(level => {
+        const nodeCount = P.LEVEL_CONFIG[level].nodeCount;
+        for (let seed = 0; seed < 200; seed++) {
+            const graph = P.createAreaGraph(level, { includeEvents: true });
+            const bosses = graph.nodes.filter(node => node.type === 'boss');
+            assert.equal(bosses.length, 1, `L${level}: expected exactly one boss node`);
+            assert.equal(bosses[0].id, `boss-${nodeCount}`, `L${level}: boss id`);
+            assert.equal(bosses[0].step, nodeCount, `L${level}: boss step`);
+            assert.ok(graph.nodes.some(node => node.id === 'start'), `L${level}: has a start node`);
+            assert.deepEqual(graph.nodes, graph.columns.flat(), `L${level}: nodes match flattened columns`);
+        }
+    });
+});
+
+test('bossNodeIdForLevel matches the generated graph', () => {
+    [1, 2, 3, 4].forEach(level => {
+        const graph = P.createAreaGraph(level, { includeEvents: true });
+        const boss = graph.nodes.find(node => node.type === 'boss');
+        assert.equal(P.bossNodeIdForLevel(level), boss.id);
+    });
+});
+
+test('branching graphs honor forced node types and never exceed caps', () => {
+    [1, 2, 3].forEach(level => {
+        const config = P.LEVEL_CONFIG[level];
+        for (let seed = 0; seed < 300; seed++) {
+            const graph = P.createAreaGraph(level, { includeEvents: true });
+            const singleByStep = {};
+            graph.columns.forEach((column, step) => {
+                if (column.length === 1) singleByStep[step] = column[0];
+            });
+
+            Object.entries(config.forcedTypes).forEach(([step, type]) => {
+                const node = singleByStep[Number(step)];
+                assert.ok(node, `L${level}: forced step ${step} should be a single-lane node`);
+                assert.equal(node.type, type, `L${level} step ${step} forced type`);
+            });
+
+            const counts = countTypes(graph.nodes);
+            assert.ok((counts.capture || 0) <= config.caps.capture, `L${level}: capture cap`);
+            assert.ok((counts.shop || 0) <= config.caps.shop, `L${level}: shop cap`);
+        }
+    });
+});
+
+test('includeEvents:false produces zero event nodes on every branching level', () => {
+    [1, 2, 3].forEach(level => {
+        for (let seed = 0; seed < 300; seed++) {
+            const graph = P.createAreaGraph(level, { includeEvents: false });
+            assert.equal(countTypes(graph.nodes).event || 0, 0, `L${level}: no events`);
+        }
+    });
+});
+
+test('level 4 is a strictly linear 6-node single-lane gauntlet', () => {
+    for (let seed = 0; seed < 200; seed++) {
+        const graph = P.createAreaGraph(4, { includeEvents: true });
+
+        // 6 columns, each a single node.
+        assert.equal(graph.columns.length, 6);
+        graph.columns.forEach(column => assert.equal(column.length, 1));
+        assert.equal(graph.nodes.length, 6);
+
+        const typeByStep = {};
+        graph.nodes.forEach(node => { typeByStep[node.step] = node.type; });
+        assert.equal(typeByStep[0], 'start');
+        assert.equal(typeByStep[1], 'shop');
+        assert.equal(typeByStep[2], 'battle');
+        assert.equal(typeByStep[3], 'battle');
+        assert.equal(typeByStep[4], 'battle');
+        assert.equal(typeByStep[5], 'boss');
+
+        // Strictly linear edges: start -> 1 -> 2 -> 3 -> 4 -> boss-5.
+        const ids = ['start', 'node-1-1', 'node-2-1', 'node-3-1', 'node-4-1', 'boss-5'];
+        const expectedEdges = ids.slice(0, -1).map((from, i) => `${from}->${ids[i + 1]}`);
+        assert.deepEqual(graph.edges.map(edge => `${edge.from}->${edge.to}`), expectedEdges);
+    }
+});
+
+// --- Phase 3: level transition ---------------------------------------------
+
+test('advanceRunToNextLevel bumps the level, refreshes the area, and preserves progress', () => {
+    const gameData = {
+        locations: [
+            makeLoc('a', ['WATER', 'ICE']),
+            makeLoc('b', ['ICE', 'ROCK'])
+        ]
+    };
+    const run = {
+        level: 1,
+        location: { id: 'a', name: 'A', terrain: 'A', types: ['WATER', 'ICE'], theme: {}, background: null },
+        visitedLocationIds: ['a'],
+        area: { completed: true, graph: makeGraph(), bossNodeId: 'boss-12' },
+        battleEncounters: { 'node-3-1': {} },
+        captureEncounters: { 'node-1-1': {} },
+        martEncounters: { 'node-5-1': {} },
+        eventEncounters: { 'node-6-1': {} },
+        collections: { pokemon: ['keep'] },
+        cash: 250,
+        nextCardId: 9,
+        starterId: 'water'
+    };
+
+    P.advanceRunToNextLevel(run, gameData, { includeEvents: false });
+
+    assert.equal(run.level, 2);
+    assert.equal(run.location.id, 'b');
+    assert.ok(run.location.types.some(type => ['WATER', 'ICE'].includes(type)), 'shares a type with the old location');
+    assert.deepEqual(run.visitedLocationIds, ['a', 'b']);
+
+    assert.deepEqual(run.battleEncounters, {});
+    assert.deepEqual(run.captureEncounters, {});
+    assert.deepEqual(run.martEncounters, {});
+    assert.deepEqual(run.eventEncounters, {});
+
+    assert.equal(run.area.completed, false);
+    assert.equal(run.area.currentNodeId, 'start');
+    assert.deepEqual(run.area.visitedNodeIds, ['start']);
+    assert.deepEqual(run.area.traveledPathKeys, []);
+    assert.equal(run.area.activeBattleNodeId, null);
+    assert.equal(run.area.bossNodeId, 'boss-12');
+    assert.ok(run.area.graph.nodes.length > 1);
+
+    // Untouched carry-over.
+    assert.deepEqual(run.collections, { pokemon: ['keep'] });
+    assert.equal(run.cash, 250);
+    assert.equal(run.nextCardId, 9);
+    assert.equal(run.starterId, 'water');
+});
+
+// --- Phase 3: trainer selection against real data --------------------------
+
+test('chooseTrainer against real data never returns null or Special and honors rank floors', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const locations = gameData.locations;
+
+    // Battle-node rank floor per level (L2 is a Standard/Ace mix, so no strict
+    // single rank); the final boss node has its own rank.
+    const battleExpect = { 1: 'Standard', 3: 'Ace', 4: 'Elite' };
+    const bossExpect = { 1: 'Boss', 2: 'Boss', 3: 'Boss', 4: 'Elite' };
+
+    [1, 2, 3, 4].forEach(level => {
+        locations.forEach(location => {
+            const excludeNames = [];
+            for (let node = 0; node < 4; node++) {
+                const nodeType = node === 3 ? 'boss' : 'battle';
+                const picked = P.chooseTrainer(gameData, {
+                    level, nodeType, locationTypes: location.types, excludeNames
+                });
+                assert.ok(picked, `L${level} ${location.id}: never null`);
+                assert.notEqual(picked.rank, 'Special', `L${level} ${location.id}: never Special`);
+
+                const expected = nodeType === 'boss' ? bossExpect[level] : battleExpect[level];
+                if (expected) {
+                    assert.equal(picked.rank, expected, `L${level} ${location.id} ${nodeType}: expected ${expected}`);
+                }
+                excludeNames.push(picked.name);
+            }
+        });
+    });
+});

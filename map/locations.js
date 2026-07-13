@@ -219,10 +219,14 @@
         const isAllowed = trainer => isAllowedTrainerRank(trainer, nodeType, level);
 
         const attempt = pool => {
+            // Rank is the invariant (per the difficulty table), type is only a
+            // preference: honor the rolled rank first — with a type match, then
+            // without — before ever relaxing the rank. Otherwise a type-matching
+            // Standard could displace an Elite at an L4 gauntlet node.
             const rungs = [
                 pool.filter(trainer => trainer.rank === rolledRank && isTypeMatch(trainer)),
-                pool.filter(trainer => isAllowed(trainer) && isTypeMatch(trainer)),
                 pool.filter(trainer => trainer.rank === rolledRank),
+                pool.filter(trainer => isAllowed(trainer) && isTypeMatch(trainer)),
                 pool.filter(trainer => isAllowed(trainer))
             ];
             for (const rung of rungs) {
@@ -233,6 +237,289 @@
 
         const included = trainers.filter(trainer => !excludeSet.has(trainer.name));
         return attempt(included) || attempt(trainers) || randomPick(trainers);
+    }
+
+    // --- Area graph generation -------------------------------------------
+    // Ported from map/area.js so a single generator drives every level. The
+    // output shape { columns, edges, nodes } is identical to the old area.js
+    // graph — renderers depend on it, so it must not change.
+
+    const LANE_COUNT = 5;
+    const OPENING_LINEAR_STEPS = 3;
+    const START_NODE_ID = 'start';
+
+    function bossNodeIdForLevel(level) {
+        const config = LEVEL_CONFIG[level] || LEVEL_CONFIG[1];
+        return `boss-${config.nodeCount}`;
+    }
+
+    /**
+     * Builds the area graph for a level from LEVEL_CONFIG. Branching levels
+     * (1-3) use the classic 12-step map; the gauntlet level (4) is a strictly
+     * linear 6-node chain. `includeEvents === false` zeroes the event weight.
+     */
+    function createAreaGraph(level, options) {
+        const opts = options || {};
+        const includeEvents = opts.includeEvents !== false;
+        const config = LEVEL_CONFIG[level] || LEVEL_CONFIG[1];
+
+        return config.layout === 'gauntlet'
+            ? createGauntletGraph(config)
+            : createBranchingGraph(config, includeEvents);
+    }
+
+    function graphFromColumns(columns, edges) {
+        return { columns, edges, nodes: columns.flat() };
+    }
+
+    function createGauntletGraph(config) {
+        const nodeCount = config.nodeCount;
+        const edges = [];
+        const columns = [[makeNode(START_NODE_ID, 2, 0, 'start', nodeCount)]];
+        let previous = columns[0][0];
+
+        for (let step = 1; step <= nodeCount; step += 1) {
+            const type = forcedTypeForStep(step, config, nodeCount) || 'battle';
+            const node = makeNode(singleNodeId(step, nodeCount), 2, step, type, nodeCount);
+
+            columns[step] = [node];
+            addEdge(edges, previous.id, node.id);
+            previous = node;
+        }
+
+        return graphFromColumns(columns, edges);
+    }
+
+    function createBranchingGraph(config, includeEvents) {
+        const nodeCount = config.nodeCount;
+        const counts = { capture: 0, shop: 0 };
+        const edges = [];
+        const columns = [[makeNode(START_NODE_ID, 2, 0, 'start', nodeCount)]];
+        let currentNode = columns[0][0];
+        let segmentIndex = 1;
+
+        for (let step = 1; step <= OPENING_LINEAR_STEPS; step += 1) {
+            const node = makeStepNode(step, 0, null, config, counts, includeEvents, nodeCount);
+
+            columns[step] = [node];
+            addEdge(edges, currentNode.id, node.id);
+            currentNode = node;
+        }
+
+        while (currentNode.step < nodeCount) {
+            const remainingSteps = nodeCount - currentNode.step;
+
+            if (remainingSteps < 3) {
+                const node = makeStepNode(currentNode.step + 1, 0, null, config, counts, includeEvents, nodeCount);
+
+                columns[node.step] = [node];
+                addEdge(edges, currentNode.id, node.id);
+                currentNode = node;
+                continue;
+            }
+
+            currentNode = addBranchSegment(columns, edges, currentNode, segmentIndex, config, counts, includeEvents, nodeCount);
+            segmentIndex += 1;
+        }
+
+        return graphFromColumns(columns, edges);
+    }
+
+    function makeStepNode(step, lane, id, config, counts, includeEvents, nodeCount) {
+        const type = forcedTypeForStep(step, config, nodeCount) || pickRandomType(config, counts, includeEvents);
+
+        tallyType(counts, type);
+        return makeNode(id || singleNodeId(step, nodeCount), lane, step, type, nodeCount);
+    }
+
+    function addBranchSegment(columns, edges, sourceNode, segmentIndex, config, counts, includeEvents, nodeCount) {
+        const remainingSteps = nodeCount - sourceNode.step;
+        const branchLength = chooseBranchLength(remainingSteps);
+        const branchCount = randomInt(2, 3);
+        const lanes = getBranchLanes(branchCount);
+        let previousBranchNodes = [];
+
+        for (let offset = 1; offset <= branchLength; offset += 1) {
+            const step = sourceNode.step + offset;
+            const branchNodes = lanes.map((lane, branchIndex) => {
+                const type = pickRandomType(config, counts, includeEvents);
+
+                tallyType(counts, type);
+                return makeNode(`node-${step}-${branchIndex + 1}`, lane, step, type, nodeCount);
+            });
+
+            columns[step] = branchNodes;
+
+            branchNodes.forEach((node, branchIndex) => {
+                const fromNode = offset === 1 ? sourceNode : previousBranchNodes[branchIndex];
+
+                addEdge(edges, fromNode.id, node.id);
+            });
+
+            previousBranchNodes = branchNodes;
+        }
+
+        const joinStep = sourceNode.step + branchLength + 1;
+        const joinNode = makeStepNode(joinStep, 2, joinNodeId(joinStep, segmentIndex, nodeCount), config, counts, includeEvents, nodeCount);
+
+        columns[joinStep] = [joinNode];
+        previousBranchNodes.forEach(node => addEdge(edges, node.id, joinNode.id));
+
+        return joinNode;
+    }
+
+    function makeNode(id, lane, step, type, nodeCount) {
+        const x = 5 + ((step / nodeCount) * 90);
+        const lanePercent = LANE_COUNT === 1 ? 50 : 18 + ((lane / (LANE_COUNT - 1)) * 64);
+
+        return {
+            id,
+            lane,
+            step,
+            type,
+            x: roundOneDecimal(x),
+            y: roundOneDecimal(clamp(lanePercent, 10, 90))
+        };
+    }
+
+    // The final step is always a boss node; other forced types come from config.
+    function forcedTypeForStep(step, config, nodeCount) {
+        if (step === nodeCount) return 'boss';
+
+        const forced = config.forcedTypes || {};
+        return forced[step] || null;
+    }
+
+    /**
+     * Weighted random node type honoring per-level weights, the event toggle,
+     * and capture/shop caps. Battle is never capped, so the pool is never empty.
+     */
+    function pickRandomType(config, counts, includeEvents) {
+        const weights = config.weights || {};
+        const caps = config.caps || {};
+        const entries = [];
+        const pushWeight = (type, weight) => { if (weight > 0) entries.push({ type, weight }); };
+
+        pushWeight('battle', weights.battle || 0);
+        if ((counts.capture || 0) < (caps.capture != null ? caps.capture : Infinity)) {
+            pushWeight('capture', weights.capture || 0);
+        }
+        if (includeEvents) pushWeight('event', weights.event || 0);
+        if ((counts.shop || 0) < (caps.shop != null ? caps.shop : Infinity)) {
+            pushWeight('shop', weights.shop || 0);
+        }
+
+        if (entries.length === 0) return 'battle';
+
+        const total = entries.reduce((sum, entry) => sum + entry.weight, 0);
+        let roll = Math.random() * total;
+
+        for (const entry of entries) {
+            roll -= entry.weight;
+            if (roll <= 0) return entry.type;
+        }
+
+        return entries[0].type;
+    }
+
+    // Forced and rolled nodes both count toward caps.
+    function tallyType(counts, type) {
+        if (type === 'capture') counts.capture = (counts.capture || 0) + 1;
+        else if (type === 'shop') counts.shop = (counts.shop || 0) + 1;
+    }
+
+    function chooseBranchLength(remainingSteps) {
+        if (remainingSteps <= 3) return 2;
+        if (remainingSteps === 4) return 3;
+        if (remainingSteps === 5) return 3;
+
+        return randomInt(2, 3);
+    }
+
+    function getBranchLanes(branchCount) {
+        if (branchCount === 3) return [0, 2, 4];
+
+        return Math.random() < 0.5 ? [1, 3] : [0, 4];
+    }
+
+    function singleNodeId(step, nodeCount) {
+        if (step === nodeCount) return `boss-${nodeCount}`;
+
+        return `node-${step}-1`;
+    }
+
+    function joinNodeId(step, segmentIndex, nodeCount) {
+        if (step === nodeCount) return `boss-${nodeCount}`;
+
+        return `node-${step}-join-${segmentIndex}`;
+    }
+
+    function addEdge(edges, from, to) {
+        const key = `${from}->${to}`;
+
+        if (edges.some(edge => `${edge.from}->${edge.to}` === key)) return false;
+
+        edges.push({ from, to });
+        return true;
+    }
+
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function roundOneDecimal(value) {
+        return Math.round(value * 10) / 10;
+    }
+
+    /**
+     * Advances a run to its next level in place: bumps the level, picks a new
+     * location sharing a type with the current one, regenerates a fresh area
+     * graph, and wipes every per-area encounter map. Collections, cash,
+     * nextCardId, and starterId are left untouched. Caller guards level bounds.
+     */
+    function advanceRunToNextLevel(run, gameData, options) {
+        const opts = options || {};
+        const includeEvents = opts.includeEvents !== false;
+
+        run.level += 1;
+
+        const nextLocation = chooseNextLocation(gameData, {
+            previousTypes: run.location ? run.location.types : [],
+            visitedIds: run.visitedLocationIds,
+            previousId: run.location ? run.location.id : null
+        });
+        const snapshot = createLocationSnapshot(nextLocation);
+
+        run.location = snapshot;
+        if (!Array.isArray(run.visitedLocationIds)) run.visitedLocationIds = [];
+        if (snapshot && !run.visitedLocationIds.includes(snapshot.id)) {
+            run.visitedLocationIds.push(snapshot.id);
+        }
+
+        run.area = {
+            activeBattleNodeId: null,
+            activeCaptureNodeId: null,
+            activeEventNodeId: null,
+            activeMartNodeId: null,
+            bossNodeId: bossNodeIdForLevel(run.level),
+            completed: false,
+            completedAt: null,
+            completedBossNodeId: null,
+            currentNodeId: START_NODE_ID,
+            graph: createAreaGraph(run.level, { includeEvents }),
+            traveledPathKeys: [],
+            visitedNodeIds: [START_NODE_ID]
+        };
+        run.battleEncounters = {};
+        run.captureEncounters = {};
+        run.martEncounters = {};
+        run.eventEncounters = {};
+
+        return run;
     }
 
     /**
@@ -254,8 +541,11 @@
         LEVEL_CONFIG,
         STARTER_DECKS,
         TOTAL_LEVELS,
+        advanceRunToNextLevel,
+        bossNodeIdForLevel,
         chooseNextLocation,
         chooseTrainer,
+        createAreaGraph,
         createLocationSnapshot,
         getLocationById,
         getLocations,

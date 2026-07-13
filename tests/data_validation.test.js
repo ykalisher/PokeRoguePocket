@@ -136,6 +136,19 @@ test('trainers.json entries are well-formed and cross-reference real data', () =
     });
 });
 
+test('the roster has enough seeded Elite and Ace trainers with specializations', () => {
+    const elites = trainers.filter(record => record.rank === Rank.ELITE);
+    const aces = trainers.filter(record => record.rank === Rank.ACE);
+
+    assert.ok(elites.length >= 4, `expected >=4 Elite trainers, found ${elites.length}`);
+    assert.ok(aces.length >= 6, `expected >=6 Ace trainers, found ${aces.length}`);
+
+    elites.concat(aces).forEach(record => {
+        assert.ok(record.typeSpecialization, `${record.name}: seeded Elite/Ace needs a typeSpecialization`);
+        assert.ok(VALID_TYPES.has(record.typeSpecialization), `${record.name}: bad typeSpecialization`);
+    });
+});
+
 test('events.json parses as an array', () => {
     assert.ok(Array.isArray(events), 'events.json must be an array');
 });

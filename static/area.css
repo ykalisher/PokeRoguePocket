@@ -267,6 +267,24 @@
     min-height: 100%;
 }
 
+.area-victory-banner {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    max-width: calc(100% - 24px);
+    padding: 8px 18px;
+    border: 1px solid var(--accent, #e8c266);
+    border-radius: 999px;
+    background-color: rgba(5, 13, 16, 0.82);
+    color: var(--accent, #e8c266);
+    font-weight: 820;
+    letter-spacing: 0.02em;
+    text-align: center;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34);
+}
+
 .area-map-links {
     position: absolute;
     inset: 0;

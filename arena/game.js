@@ -159,8 +159,29 @@
             completeSourceEvent();
         }
 
+        if (activeBattleEncounter.outcome === 'win' && isRunVictory()) {
+            finalizeRunVictory();
+        }
+
         runStore.saveRunState(activeRun);
         renderBattleResultOverlay(activeBattleEncounter.outcome);
+    }
+
+    /**
+     * Marks the run as won. A victory has no continue-to-map step, so the area
+     * completion that Continue normally performs is applied here instead.
+     */
+    function finalizeRunVictory() {
+        const now = new Date().toISOString();
+
+        activeBattleEncounter.completed = true;
+        activeBattleEncounter.completedAt = now;
+        activeRun.area.completed = true;
+        activeRun.area.completedAt = now;
+        activeRun.area.completedBossNodeId = activeBattleEncounter.nodeId;
+        activeRun.area.activeBattleNodeId = null;
+        activeRun.runCompleted = true;
+        activeRun.runCompletedAt = now;
     }
 
     function renderBattleResultShell() {
@@ -172,9 +193,12 @@
 
         const overlay = document.createElement('div');
         overlay.className = 'battle-flow-overlay';
-        overlay.innerHTML = outcome === 'win'
-            ? renderWinResultWindow()
-            : renderLossResultWindow();
+
+        if (outcome === 'win') {
+            overlay.innerHTML = isRunVictory() ? renderVictoryResultWindow() : renderWinResultWindow();
+        } else {
+            overlay.innerHTML = renderLossResultWindow();
+        }
 
         document.body.appendChild(overlay);
     }
@@ -183,9 +207,24 @@
         return `
             <section class="battle-result-window" role="dialog" aria-modal="true" aria-labelledby="battle-result-title">
                 <span class="battle-flow-kicker">Battle Complete</span>
-                <h1 id="battle-result-title">${isBossBattle() ? 'Area cleared' : 'You won'}</h1>
+                <h1 id="battle-result-title">${isFinalNodeBattle() ? 'Area cleared' : 'You won'}</h1>
                 ${renderWinRewardSummary()}
                 <button class="arena-button battle-flow-primary" type="button" data-battle-flow-action="continue">Continue</button>
+            </section>
+        `;
+    }
+
+    function renderVictoryResultWindow() {
+        return `
+            <section class="battle-result-window battle-result-window--victory" role="dialog" aria-modal="true" aria-labelledby="battle-result-title">
+                <span class="battle-flow-kicker">Run Complete</span>
+                <h1 id="battle-result-title">Champion!</h1>
+                <p>You cleared all ${getTotalLevels()} levels and won the run.</p>
+                ${renderWinRewardSummary()}
+                <div class="battle-flow-actions">
+                    <button class="arena-button battle-flow-primary" type="button" data-battle-flow-action="start-over">Start over</button>
+                    <button class="arena-button" type="button" data-battle-flow-action="main-menu">Main menu</button>
+                </div>
             </section>
         `;
     }
@@ -209,7 +248,7 @@
 
         activeBattleEncounter.completed = true;
         activeBattleEncounter.completedAt = new Date().toISOString();
-        if (activeBattleEncounter.outcome === 'win' && isBossBattle()) {
+        if (activeBattleEncounter.outcome === 'win' && isFinalNodeBattle()) {
             activeRun.area.completed = true;
             activeRun.area.completedAt = activeBattleEncounter.completedAt;
             activeRun.area.completedBossNodeId = activeBattleEncounter.nodeId;
@@ -321,7 +360,7 @@
             : [];
 
         if (rewardSummary.length === 0) {
-            return isBossBattle()
+            return isFinalNodeBattle()
                 ? '<p>The area boss stepped aside.</p>'
                 : '<p>The trainer stepped aside.</p>';
         }
@@ -347,15 +386,37 @@
     }
 
     function getBattleKicker() {
-        return isBossBattle() ? 'Boss Battle' : 'Trainer Battle';
+        const isFinal = isFinalNodeBattle();
+
+        if (getRunLevel() >= getTotalLevels()) {
+            return isFinal ? 'Final Battle' : 'Elite Battle';
+        }
+
+        return isFinal ? 'Boss Battle' : 'Trainer Battle';
     }
 
-    function isBossBattle() {
-        const rank = activeBattleEncounter && activeBattleEncounter.rank
-            ? activeBattleEncounter.rank
-            : activeTrainer && activeTrainer.rank;
+    // The final node of an area is the one whose id matches the run's bossNodeId.
+    function isFinalNodeBattle() {
+        if (!activeRun || !activeBattleEncounter || !activeRun.area) return false;
 
-        return String(rank || '').toLowerCase() === 'boss';
+        const bossNodeId = activeRun.area.bossNodeId;
+
+        return Boolean(bossNodeId && activeBattleEncounter.nodeId === bossNodeId);
+    }
+
+    // A win on the last level's final node ends the whole run in victory.
+    function isRunVictory() {
+        return isFinalNodeBattle() && getRunLevel() >= getTotalLevels();
+    }
+
+    function getRunLevel() {
+        return activeRun && Number.isFinite(activeRun.level) ? activeRun.level : 1;
+    }
+
+    function getTotalLevels() {
+        return window.PokeLocations && Number.isFinite(window.PokeLocations.TOTAL_LEVELS)
+            ? window.PokeLocations.TOTAL_LEVELS
+            : 4;
     }
 
     function getSavedBattleOutcome() {

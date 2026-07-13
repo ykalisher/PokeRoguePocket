@@ -44,7 +44,7 @@ playable (full run winnable).
 
 ## Steps
 
-- [ ] 1. **Move graph generation into `map/locations.js`** as
+- [x] 1. **Move graph generation into `map/locations.js`** as
   `createAreaGraph(level, { includeEvents })`, driven by `LEVEL_CONFIG[level]`:
   - `branching` layout = today's algorithm parametrized by `nodeCount`, `weights`,
     `caps`, `forcedTypes` (final step always `'boss'`-type, id
@@ -63,7 +63,7 @@ playable (full run winnable).
   - Every hardcoded `BOSS_NODE_ID`/`AREA_NODE_COUNT` reference (grep both,
     including route-status rendering ~369 and `isLastThirdMapNode` ~1032) derives
     from `run.area.bossNodeId` / graph max step instead.
-- [ ] 2. **Level transition.** In `map/locations.js`:
+- [x] 2. **Level transition.** In `map/locations.js`:
   `advanceRunToNextLevel(run, gameData)` — `run.level += 1`; next location via
   `chooseNextLocation(gameData, { previousTypes: run.location.types, visitedIds:
   run.visitedLocationIds, previousId: run.location.id })`; push to
@@ -75,7 +75,7 @@ playable (full run winnable).
   in the restore flow — if `area.completed && !run.runCompleted && run.level <
   PokeLocations.TOTAL_LEVELS` → advance, re-apply state,
   `ensureBattleNodeEncounters()`, save, popup `Entering <name> — Level N of 4`.
-- [ ] 3. **Final-node detection + victory (`arena/game.js`).** Replace rank-based
+- [x] 3. **Final-node detection + victory (`arena/game.js`).** Replace rank-based
   `isBossBattle` with nodeId-based: active encounter's nodeId ===
   `run.area.bossNodeId`. Kicker: L1–3 final → "Boss Battle"; L4 battles → "Elite
   Battle"; L4 final → "Final Battle". On final-node win: `area.completed = true`
@@ -84,7 +84,7 @@ playable (full run winnable).
   victory/champion message with Start Over + Main Menu only (no continue-to-map);
   `area.html` loaded with `runCompleted` shows the completed map with a victory
   banner (reuse the existing area-complete render path, keyed off the new flag).
-- [ ] 4. **Trainer selection wiring (`map/area.js`, same commit as rank mixes).**
+- [x] 4. **Trainer selection wiring (`map/area.js`, same commit as rank mixes).**
   `chooseTrainerForNode` and friends collapse into
   `PokeLocations.chooseTrainer(arena.GameData, { level: run.level, nodeType,
   locationTypes: run.location.types, excludeNames })`. `excludeNames` = trainer
@@ -94,7 +94,7 @@ playable (full run winnable).
   `sanitizeBattleEncounter` with `PokeLocations.isAllowedTrainerRank(trainer,
   nodeType, run.level)` — type mismatch must NOT trigger a re-roll (type is a
   selection preference, not an invariant).
-- [ ] 5. **Seed trainers (`trainers.json`, direct edit — owner-authorized).**
+- [x] 5. **Seed trainers (`trainers.json`, direct edit — owner-authorized).**
   ~6 Elite-rank trainers with distinct `typeSpecialization`s spread across the
   seeded locations' types (suggested: WATER, FIRE, GRASS, PSYCHIC, DARK, DRAGON)
   and ~7 Ace-rank trainers similarly spread (today's Aces cover only
@@ -103,7 +103,7 @@ playable (full run winnable).
   `cash` above Standard for Aces and above Boss for Elites (compare against
   existing Boss trainers with `node -e`). Resolve the `sprite` question from
   Context first.
-- [ ] 6. **Tests** (extend `tests/run_progression.test.js` + data tests):
+- [x] 6. **Tests** (extend `tests/run_progression.test.js` + data tests):
   - Graph: for each level × many seeds — final node is `'boss'`-type with id
     `boss-<nodeCount>`; forced types honored; caps never exceeded;
     `includeEvents:false` → zero event nodes; L4 = strictly linear 6-step
@@ -116,7 +116,7 @@ playable (full run winnable).
     Special, L3 returns only Aces, L4 only Elites.
   - Data: ≥4 Elite trainers and ≥6 Ace trainers exist, each with a
     `typeSpecialization`.
-- [ ] 7. **Browser verification** (verify skill; full manual 4-level run is too
+- [x] 7. **Browser verification** (verify skill; full manual 4-level run is too
   slow — use targeted checks):
   - Drive one L1 boss win with the committed battle drivers → back on area.html:
     popup + header show Level 2 and a new location sharing a type with the old

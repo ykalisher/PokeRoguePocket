@@ -5,11 +5,8 @@
 (function bootAreaMap(arena, area, runStore, locations) {
     'use strict';
 
-    const AREA_NODE_COUNT = 12;
-    const LANE_COUNT = 5;
-    const OPENING_LINEAR_STEPS = 3;
     const START_NODE_ID = 'start';
-    const BOSS_NODE_ID = 'boss-12';
+    const DEFAULT_BOSS_NODE_ID = 'boss-12';
     const LOCATION_LABELS = Object.freeze({
         battle: 'Trainer Battle',
         boss: 'Boss',
@@ -18,12 +15,6 @@
         shop: 'Shop',
         start: 'Entrance'
     });
-    const RANDOM_LOCATION_TYPES = Object.freeze([
-        { type: 'battle', weight: 38 },
-        { type: 'capture', weight: 26 },
-        { type: 'event', weight: 21 },
-        { type: 'shop', weight: 15 }
-    ]);
     const LEGENDARY_CAPTURE_CHANCE = 0.3;
     const CARD_BACKS = Object.freeze({
         actions: 'assets/card-backs/ACTION_CARD_BACK.png',
@@ -223,9 +214,7 @@
         state.traveledPathKeys.add(getPathKey(previousNodeId, node.id));
 
         if (node.type === 'battle' || node.type === 'boss') {
-            const encounter = node.type === 'boss'
-                ? getOrCreateBossEncounter(node)
-                : getOrCreateBattleEncounter(node);
+            const encounter = getOrCreateTrainerEncounter(node);
 
             if (!encounter) {
                 state.currentNodeId = previousNodeId;
@@ -234,7 +223,7 @@
                 render();
                 showPopup(node.type === 'boss'
                     ? 'No Boss trainers are available.'
-                    : 'No Standard trainers are available.');
+                    : 'No trainers are available.');
                 return;
             }
 
@@ -291,7 +280,7 @@
                     <div class="area-subrow">
                         <span class="stat-pill">${getLocationTerrain()}</span>
                         <span class="stat-pill">${renderCurrentLocationText(currentNode)}</span>
-                        ${isAreaComplete() ? '<span class="stat-pill">Cleared</span>' : ''}
+                        ${isRunComplete() ? '<span class="stat-pill">Champion</span>' : (isAreaComplete() ? '<span class="stat-pill">Cleared</span>' : '')}
                     </div>
                 </div>
                 <div class="area-hud" aria-label="Run resources and decks">
@@ -303,6 +292,7 @@
             </header>
             <section class="area-map-panel" aria-label="Area route">
                 <div class="area-map-viewport">
+                    ${isRunComplete() ? '<div class="area-victory-banner" role="status">Champion! You cleared all 4 levels.</div>' : ''}
                     <div class="area-map-canvas">
                         ${renderMapLinks()}
                         ${state.area.nodes.map(renderNode).join('')}
@@ -353,15 +343,16 @@
     function renderCurrentLocationText(currentNode) {
         if (!currentNode || currentNode.type === 'start') return 'Entrance';
 
-        return `Location ${currentNode.step} of ${AREA_NODE_COUNT}: ${LOCATION_LABELS[currentNode.type]}`;
+        return `Location ${currentNode.step} of ${getMaxStep()}: ${LOCATION_LABELS[currentNode.type]}`;
     }
 
     function renderRouteStatus() {
         const currentNode = getCurrentNode();
         const nextNodes = getAvailableNextNodes();
 
+        if (isRunComplete()) return 'Run complete — Champion!';
         if (isAreaComplete()) return 'Area complete';
-        if (!currentNode || currentNode.id === BOSS_NODE_ID) return 'Area boss reached';
+        if (!currentNode || currentNode.id === getBossNodeId()) return 'Area boss reached';
 
         return `${nextNodes.length} path${nextNodes.length === 1 ? '' : 's'} available`;
     }
@@ -673,6 +664,7 @@
 
         if (savedRun) {
             applyRunState(savedRun);
+            const advanced = advanceLevelIfNeeded();
             const changed = [
                 repairRunLocation(),
                 repairRunCollections(),
@@ -682,7 +674,7 @@
                 sanitizeBattleEncounters()
             ].some(Boolean);
 
-            if (changed) saveRunState();
+            if (changed || advanced) saveRunState();
             return;
         }
 
@@ -696,16 +688,39 @@
         const location = chooseLevelLocation({
             requiredType: getStarterType(starterId)
         });
+        const level = 1;
 
         applyRunState(runStore.createRunState({
-            area: createAreaGraph(),
+            area: locations.createAreaGraph(level, { includeEvents: hasAvailableEvents() }),
+            bossNodeId: locations.bossNodeIdForLevel(level),
             collections: createCardCollections(),
             location,
             starterId,
-            level: 1
+            level
         }));
         ensureBattleNodeEncounters();
         saveRunState();
+    }
+
+    /**
+     * When the current area's boss has been cleared but the run is not over,
+     * advance to the next level: regenerate the map/location and refresh the
+     * in-memory state. Returns true when an advance happened.
+     */
+    function advanceLevelIfNeeded() {
+        if (!state.run || !state.run.area) return false;
+        if (!state.run.area.completed || state.run.runCompleted) return false;
+        if (getRunLevel() >= locations.TOTAL_LEVELS) return false;
+
+        locations.advanceRunToNextLevel(state.run, arena.GameData, {
+            includeEvents: hasAvailableEvents()
+        });
+        applyRunState(state.run);
+        ensureBattleNodeEncounters();
+        saveRunState();
+        showPopup(`Entering ${getLocationName()} — Level ${getRunLevel()} of ${locations.TOTAL_LEVELS}`);
+
+        return true;
     }
 
     function chooseLevelLocation(options) {
@@ -722,6 +737,20 @@
 
     function getRunLevel() {
         return state.run && Number.isFinite(state.run.level) ? state.run.level : 1;
+    }
+
+    function getBossNodeId() {
+        return (state.run && state.run.area && state.run.area.bossNodeId) || DEFAULT_BOSS_NODE_ID;
+    }
+
+    function getMaxStep() {
+        return state.area && Array.isArray(state.area.nodes) && state.area.nodes.length > 0
+            ? state.area.nodes.reduce((max, node) => Math.max(max, Number(node.step) || 0), 0)
+            : 12;
+    }
+
+    function isRunComplete() {
+        return Boolean(state.run && state.run.runCompleted);
     }
 
     function getRunLocation() {
@@ -863,15 +892,7 @@
         return encounter;
     }
 
-    function getOrCreateBattleEncounter(node) {
-        return getOrCreateTrainerEncounter(node, chooseStandardTrainer);
-    }
-
-    function getOrCreateBossEncounter(node) {
-        return getOrCreateTrainerEncounter(node, chooseBossTrainer);
-    }
-
-    function getOrCreateTrainerEncounter(node, chooseTrainer) {
+    function getOrCreateTrainerEncounter(node) {
         const existingEncounter = state.run.battleEncounters[node.id];
 
         if (existingEncounter && !existingEncounter.completed) {
@@ -883,7 +904,7 @@
             return existingEncounter;
         }
 
-        const trainer = chooseTrainer();
+        const trainer = chooseTrainerForNode(node);
 
         if (!trainer) return null;
 
@@ -1081,7 +1102,7 @@
     }
 
     function isLastThirdMapNode(node) {
-        return Boolean(node && Number(node.step) > (AREA_NODE_COUNT * 2 / 3));
+        return Boolean(node && Number(node.step) > (getMaxStep() * 2 / 3));
     }
 
     function chooseLegendaryPokemon() {
@@ -1217,7 +1238,10 @@
         const encounterNode = node || getNodeById(encounter.nodeId);
         const existingTrainer = encounter.trainerName ? getTrainerByName(encounter.trainerName) : null;
 
-        if (existingTrainer && trainerMatchesNodeRank(existingTrainer, encounterNode)) return false;
+        // Only the trainer's RANK is an invariant; a type mismatch is just a
+        // selection preference and must not force a re-roll (which would churn
+        // the encounter on every page load).
+        if (existingTrainer && isRankAllowedAtNode(existingTrainer, encounterNode)) return false;
 
         const trainer = chooseTrainerForNode(encounterNode);
 
@@ -1230,39 +1254,36 @@
         return true;
     }
 
-    function chooseTrainerForNode(node) {
-        return node && node.type === 'boss'
-            ? chooseBossTrainer()
-            : chooseStandardTrainer();
-    }
-
-    function chooseStandardTrainer() {
-        return chooseTrainerByRank('standard');
-    }
-
-    function chooseBossTrainer() {
-        return chooseTrainerByRank('boss');
-    }
-
-    function chooseTrainerByRank(rank) {
-        const trainers = arena.GameData && Array.isArray(arena.GameData.trainers)
-            ? arena.GameData.trainers
-            : [];
-        const rankedTrainers = trainers.filter(trainer => (
-            trainer && String(trainer.rank || '').toLowerCase() === rank
-        ));
-
-        if (rankedTrainers.length === 0) return null;
-
-        return rankedTrainers[randomInt(0, rankedTrainers.length - 1)];
-    }
-
-    function trainerMatchesNodeRank(trainer, node) {
+    function isRankAllowedAtNode(trainer, node) {
         if (!trainer || !node || !isTrainerNodeType(node.type)) return true;
 
-        const expectedRank = node.type === 'boss' ? 'boss' : 'standard';
+        return locations.isAllowedTrainerRank(trainer, node.type, getRunLevel());
+    }
 
-        return String(trainer.rank || '').toLowerCase() === expectedRank;
+    function chooseTrainerForNode(node) {
+        return locations.chooseTrainer(arena.GameData, {
+            level: getRunLevel(),
+            nodeType: node ? node.type : 'battle',
+            locationTypes: getLocationTypes(),
+            excludeNames: getAssignedTrainerNames(node)
+        });
+    }
+
+    // Trainer names already assigned to other battle encounters in this area.
+    // Passed as excludeNames so siblings (and the L4 gauntlet) prefer variety;
+    // chooseTrainer drops the exclusion when the pool is too small.
+    function getAssignedTrainerNames(excludeNode) {
+        if (!state.run || !state.run.battleEncounters) return [];
+
+        const excludeId = excludeNode ? excludeNode.id : null;
+        const names = new Set();
+
+        Object.values(state.run.battleEncounters).forEach(encounter => {
+            if (!encounter || encounter.nodeId === excludeId || !encounter.trainerName) return;
+            names.add(encounter.trainerName);
+        });
+
+        return Array.from(names);
     }
 
     function isTrainerNodeType(type) {
@@ -1317,156 +1338,6 @@
         }
 
         return shuffled;
-    }
-
-    function createAreaGraph() {
-        const edges = [];
-        const columns = createAreaColumns(edges);
-
-        return {
-            columns,
-            edges,
-            nodes: columns.flat()
-        };
-    }
-
-    function createAreaColumns(edges) {
-        const columns = [[createNode({
-            id: START_NODE_ID,
-            lane: 2,
-            step: 0,
-            type: 'start'
-        })]];
-        let currentNode = columns[0][0];
-        let segmentIndex = 1;
-
-        for (let step = 1; step <= OPENING_LINEAR_STEPS; step += 1) {
-            const node = createStepNode(step, 0);
-
-            columns[step] = [node];
-            addEdge(edges, currentNode.id, node.id);
-            currentNode = node;
-        }
-
-        while (currentNode.step < AREA_NODE_COUNT) {
-            const remainingSteps = AREA_NODE_COUNT - currentNode.step;
-
-            if (remainingSteps < 3) {
-                const node = createStepNode(currentNode.step + 1, 0);
-
-                columns[node.step] = [node];
-                addEdge(edges, currentNode.id, node.id);
-                currentNode = node;
-                continue;
-            }
-
-            currentNode = addBranchSegment(columns, edges, currentNode, segmentIndex);
-            segmentIndex += 1;
-        }
-
-        return columns;
-    }
-
-    function createStepNode(step, lane, id = null) {
-        return createNode({
-            id: id || getSingleNodeId(step),
-            lane,
-            step,
-            type: getForcedLocationType(step) || pickRandomLocationType()
-        });
-    }
-
-    function addBranchSegment(columns, edges, sourceNode, segmentIndex) {
-        const remainingSteps = AREA_NODE_COUNT - sourceNode.step;
-        const branchLength = chooseBranchLength(remainingSteps);
-        const branchCount = randomInt(2, 3);
-        const lanes = getBranchLanes(branchCount);
-        let previousBranchNodes = [];
-
-        for (let offset = 1; offset <= branchLength; offset += 1) {
-            const step = sourceNode.step + offset;
-            const branchNodes = lanes.map((lane, branchIndex) => createNode({
-                id: `node-${step}-${branchIndex + 1}`,
-                lane,
-                step,
-                type: pickRandomLocationType()
-            }));
-
-            columns[step] = branchNodes;
-
-            branchNodes.forEach((node, branchIndex) => {
-                const fromNode = offset === 1 ? sourceNode : previousBranchNodes[branchIndex];
-
-                addEdge(edges, fromNode.id, node.id);
-            });
-
-            previousBranchNodes = branchNodes;
-        }
-
-        const joinStep = sourceNode.step + branchLength + 1;
-        const joinNode = createStepNode(joinStep, 2, getJoinNodeId(joinStep, segmentIndex));
-
-        columns[joinStep] = [joinNode];
-        previousBranchNodes.forEach(node => addEdge(edges, node.id, joinNode.id));
-
-        return joinNode;
-    }
-
-    function createNode({ id, lane, step, type }) {
-        const x = 5 + ((step / AREA_NODE_COUNT) * 90);
-        const lanePercent = LANE_COUNT === 1 ? 50 : 18 + ((lane / (LANE_COUNT - 1)) * 64);
-
-        return {
-            id,
-            lane,
-            step,
-            type,
-            x: roundOneDecimal(x),
-            y: roundOneDecimal(clamp(lanePercent, 10, 90))
-        };
-    }
-
-    function getForcedLocationType(step) {
-        if (step === 1 || step === 2) return 'capture';
-        if (step === 3) return 'battle';
-        if (step === AREA_NODE_COUNT) return 'boss';
-
-        return null;
-    }
-
-    function chooseBranchLength(remainingSteps) {
-        if (remainingSteps <= 3) return 2;
-        if (remainingSteps === 4) return 3;
-        if (remainingSteps === 5) return 3;
-
-        return randomInt(2, 3);
-    }
-
-    function getBranchLanes(branchCount) {
-        if (branchCount === 3) return [0, 2, 4];
-
-        return Math.random() < 0.5 ? [1, 3] : [0, 4];
-    }
-
-    function getSingleNodeId(step) {
-        if (step === AREA_NODE_COUNT) return BOSS_NODE_ID;
-
-        return `node-${step}-1`;
-    }
-
-    function getJoinNodeId(step, segmentIndex) {
-        if (step === AREA_NODE_COUNT) return BOSS_NODE_ID;
-
-        return `node-${step}-join-${segmentIndex}`;
-    }
-
-    function addEdge(edges, from, to) {
-        const key = getPathKey(from, to);
-
-        if (edges.some(edge => getPathKey(edge.from, edge.to) === key)) return false;
-
-        edges.push({ from, to });
-        return true;
     }
 
     function createCardCollections() {
@@ -1634,28 +1505,6 @@
         return leftCard.id.localeCompare(rightCard.id);
     }
 
-    function pickRandomLocationType() {
-        const locationTypes = getRandomLocationTypes();
-        const totalWeight = locationTypes.reduce((total, entry) => total + entry.weight, 0);
-        let roll = Math.random() * totalWeight;
-
-        for (const entry of locationTypes) {
-            roll -= entry.weight;
-
-            if (roll <= 0) return entry.type;
-        }
-
-        return locationTypes[0].type;
-    }
-
-    function getRandomLocationTypes() {
-        if (hasAvailableEvents()) return RANDOM_LOCATION_TYPES;
-
-        const locationTypes = RANDOM_LOCATION_TYPES.filter(entry => entry.type !== 'event');
-
-        return locationTypes.length > 0 ? locationTypes : RANDOM_LOCATION_TYPES;
-    }
-
     function hasAvailableEvents() {
         return Boolean(
             window.PokeEvents &&
@@ -1666,14 +1515,6 @@
 
     function randomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    function roundOneDecimal(value) {
-        return Math.round(value * 10) / 10;
     }
 
     function getPathKey(from, to) {

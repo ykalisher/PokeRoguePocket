@@ -16,7 +16,7 @@
     const ACTIVE_POKEMON_LIMIT = 6;
     const STARTING_CASH = 100;
 
-    function createRunState({ area, collections, location, starterId, level }) {
+    function createRunState({ area, collections, location, starterId, level, bossNodeId }) {
         const locationSnapshot = normalizeLocationSnapshot(location);
 
         return {
@@ -25,7 +25,7 @@
                 activeCaptureNodeId: null,
                 activeEventNodeId: null,
                 activeMartNodeId: null,
-                bossNodeId: DEFAULT_BOSS_NODE_ID,
+                bossNodeId: bossNodeId || DEFAULT_BOSS_NODE_ID,
                 completed: false,
                 completedAt: null,
                 completedBossNodeId: null,
