@@ -119,7 +119,7 @@ every starter-deck name resolves to a real record.
 
 ## Progress checklist
 
-- [ ] Phase 1 — Locations data + framework module (inert)
+- [x] Phase 1 — Locations data + framework module (inert)
 - [ ] Phase 2 — Run state v2 + location-driven level 1
 - [ ] Phase 3 — Multi-level progression, gauntlet, difficulty, victory
 - [ ] Phase 4 — Starter picker

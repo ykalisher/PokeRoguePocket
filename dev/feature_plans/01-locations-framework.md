@@ -35,7 +35,7 @@ yet. Gameplay is byte-for-byte unchanged. Ends green + playable.
 
 ## Steps
 
-- [ ] 1. **Create `locations.json`** (repo root) with these 12 records. Schema per
+- [x] 1. **Create `locations.json`** (repo root) with these 12 records. Schema per
   record:
 
   ```json
@@ -71,7 +71,7 @@ yet. Gameplay is byte-for-byte unchanged. Ends green + playable.
   harmless, and pre-filling the path means images activate automatically). Palettes
   may be refined in phase 6; don't bikeshed them here.
 
-- [ ] 2. **Wire into `arena/arena_data.js`:** add `normalizeLocation(record)`
+- [x] 2. **Wire into `arena/arena_data.js`:** add `normalizeLocation(record)`
   (require non-empty `id` + `name`, normalize `types` uppercase via the existing
   type helper, default any missing theme fields to the neutral values
   `#e0b84f/#4ab0a5/#232f3d/#10161f/#1b2836`, `enabled: record.enabled !== false`,
@@ -81,7 +81,7 @@ yet. Gameplay is byte-for-byte unchanged. Ends green + playable.
   `fallbackRecords.locations` = the tidepool-coast, murkwater-marsh, cinder-ridge
   records verbatim (covers WATER/GRASS/FIRE starters when fetch fails).
 
-- [ ] 3. **Create `map/locations.js`** — IIFE exporting `window.PokeLocations`,
+- [x] 3. **Create `map/locations.js`** — IIFE exporting `window.PokeLocations`,
   **zero `document`/DOM access at load time**. Contents:
   - `TOTAL_LEVELS = 4`.
   - `LEVEL_CONFIG` (frozen) — exactly:
@@ -146,7 +146,7 @@ yet. Gameplay is byte-for-byte unchanged. Ends green + playable.
   - `getWildPokemonPool(gameData, locationTypes)` — unique-by-name, non-legendary,
     any type slot ∈ `locationTypes`; if empty → all non-legendaries (never empty).
 
-- [ ] 4. **Create `scripts/manage_locations.js`** in the manage_events.js style
+- [x] 4. **Create `scripts/manage_locations.js`** in the manage_events.js style
   (self-contained; copy the helper patterns, don't import from siblings). Menu:
   Add / List / Remove / Exit. Add flow prompts: name → auto-slug id (`formatId` +
   `askUniqueId`) → terrain label → 2–4 types (repeated `askEnum` over `PokeType`
@@ -157,12 +157,12 @@ yet. Gameplay is byte-for-byte unchanged. Ends green + playable.
   trailing newline. **Never run it** — `node --check scripts/manage_locations.js`
   is your only validation (the PostToolUse hook runs it on save anyway).
 
-- [ ] 5. **Add script tags** for `map/locations.js` to `area.html`, `capture.html`,
+- [x] 5. **Add script tags** for `map/locations.js` to `area.html`, `capture.html`,
   `mart.html`, `event.html`, `game.html` — immediately after the
   `map/run_state.js` tag in each. The module is inert; pages must behave
   identically.
 
-- [ ] 6. **Tests.**
+- [x] 6. **Tests.**
   - Extend `tests/data_validation.test.js` (match its existing style — it
     `require`s `scripts/data_options.js` and reads JSON off disk): locations is an
     array with ≥8 records; ids and names unique; `types` length 2–4, all ∈

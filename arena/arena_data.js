@@ -305,7 +305,36 @@
             }
         ],
         trainers: [],
-        events: []
+        events: [],
+        locations: [
+            {
+                id: 'tidepool-coast',
+                name: 'Tidepool Coast',
+                terrain: 'Waterfront',
+                types: ['WATER', 'ICE'],
+                theme: { accent: '#e8c266', glow: '#4ab0c8', surface: '#143a4a', bgDeep: '#081b26', bgMid: '#123240' },
+                background: 'assets/backgrounds/tidepool-coast.png',
+                enabled: true
+            },
+            {
+                id: 'murkwater-marsh',
+                name: 'Murkwater Marsh',
+                terrain: 'Swamp',
+                types: ['WATER', 'POISON', 'GRASS'],
+                theme: { accent: '#b5cc66', glow: '#66a68c', surface: '#22362c', bgDeep: '#0e1a13', bgMid: '#1a2a20' },
+                background: 'assets/backgrounds/murkwater-marsh.png',
+                enabled: true
+            },
+            {
+                id: 'cinder-ridge',
+                name: 'Cinder Ridge',
+                terrain: 'Volcanic',
+                types: ['FIRE', 'ROCK', 'GROUND'],
+                theme: { accent: '#f2a35c', glow: '#d95f3b', surface: '#402420', bgDeep: '#1c0f0c', bgMid: '#2e1a14' },
+                background: 'assets/backgrounds/cinder-ridge.png',
+                enabled: true
+            }
+        ]
     });
 
     /**
@@ -419,6 +448,52 @@
         return record && typeof record === 'object' ? record : null;
     }
 
+    /**
+     * Neutral palette used when a location omits theme fields. Phase 6 reads
+     * these custom-property values, so keep them in sync with the CLI default.
+     */
+    const NEUTRAL_LOCATION_THEME = Object.freeze({
+        accent: '#e0b84f',
+        glow: '#4ab0a5',
+        surface: '#232f3d',
+        bgDeep: '#10161f',
+        bgMid: '#1b2836'
+    });
+
+    /**
+     * Normalizes a raw location record. Returns null (so it is filtered out)
+     * when id or name is missing. Types are upper-cased and compacted; missing
+     * theme fields fall back to the neutral palette.
+     */
+    function normalizeLocation(record) {
+        if (!record || typeof record !== 'object') return null;
+
+        const id = String(record.id || '').trim();
+        const name = String(record.name || '').trim();
+        if (!id || !name) return null;
+
+        const rawTypes = Array.isArray(record.types) ? record.types : [];
+        const types = compactTypes(rawTypes.map(type => String(type || '').toUpperCase()));
+        const rawTheme = record.theme && typeof record.theme === 'object' ? record.theme : {};
+        const theme = {
+            accent: rawTheme.accent || NEUTRAL_LOCATION_THEME.accent,
+            glow: rawTheme.glow || NEUTRAL_LOCATION_THEME.glow,
+            surface: rawTheme.surface || NEUTRAL_LOCATION_THEME.surface,
+            bgDeep: rawTheme.bgDeep || NEUTRAL_LOCATION_THEME.bgDeep,
+            bgMid: rawTheme.bgMid || NEUTRAL_LOCATION_THEME.bgMid
+        };
+
+        return {
+            id,
+            name,
+            terrain: record.terrain || name,
+            types,
+            theme,
+            background: record.background || null,
+            enabled: record.enabled !== false
+        };
+    }
+
     function stripTerminalGender(name) {
         return String(name || '').trim().replace(/\s+/g, ' ').replace(/\s+[MF]$/u, '');
     }
@@ -441,6 +516,7 @@
         return {
             attacks: records.attacks.map(normalizeAttack),
             events: (records.events || []).map(normalizeEvent).filter(Boolean),
+            locations: (records.locations || []).map(normalizeLocation).filter(Boolean),
             items: records.items.map(normalizeItem),
             pokemon: records.pokemon.map(normalizePokemon),
             trainers: (records.trainers || []).map(normalizeTrainer).filter(trainer => trainer.name)
@@ -469,15 +545,16 @@
      * It loads and normalizes all card data, then replaces arena.GameData.
      */
     async function loadGameData() {
-        const [pokemon, attacks, items, trainers, events] = await Promise.all([
+        const [pokemon, attacks, items, trainers, events, locations] = await Promise.all([
             loadJson('pokemon.json', fallbackRecords.pokemon),
             loadJson('attacks.json', fallbackRecords.attacks),
             loadJson('items.json', fallbackRecords.items),
             loadJson('trainers.json', fallbackRecords.trainers),
-            loadJson('events.json', fallbackRecords.events)
+            loadJson('events.json', fallbackRecords.events),
+            loadJson('locations.json', fallbackRecords.locations)
         ]);
 
-        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events });
+        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events, locations });
         return arena.GameData;
     }
 

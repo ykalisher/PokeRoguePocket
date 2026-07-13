@@ -39,6 +39,14 @@ const attacks = readData('attacks.json');
 const items = readData('items.json');
 const trainers = readData('trainers.json');
 const events = readData('events.json');
+const locations = readData('locations.json');
+
+// The locations module is a window-namespace IIFE; arena_env aliased window to
+// globalThis when it was required above, so this populates globalThis.PokeLocations.
+require('../map/locations');
+const PokeLocations = globalThis.PokeLocations;
+
+const HEX_PATTERN = /^#[0-9a-f]{6}$/i;
 
 test('pokemon.json entries are well-formed', () => {
     assertUniqueNames(pokemon, 'pokemon.json');
@@ -130,6 +138,67 @@ test('trainers.json entries are well-formed and cross-reference real data', () =
 
 test('events.json parses as an array', () => {
     assert.ok(Array.isArray(events), 'events.json must be an array');
+});
+
+test('locations.json entries are well-formed', () => {
+    assert.ok(Array.isArray(locations), 'locations.json must be an array');
+    assert.ok(locations.length >= 8, `locations.json should have >=8 records, has ${locations.length}`);
+    assertUniqueNames(locations, 'locations.json');
+
+    const seenIds = new Set();
+    locations.forEach(record => {
+        assert.ok(record.id && typeof record.id === 'string', 'locations.json: entry missing id');
+        assert.ok(!seenIds.has(record.id), `locations.json: duplicate id ${record.id}`);
+        seenIds.add(record.id);
+
+        assert.ok(Array.isArray(record.types), `${record.id}: types must be an array`);
+        assert.ok(record.types.length >= 2 && record.types.length <= 4, `${record.id}: types must be 2-4, has ${record.types.length}`);
+        assert.equal(new Set(record.types).size, record.types.length, `${record.id}: duplicate type`);
+        record.types.forEach(type => {
+            assert.ok(VALID_TYPES.has(type), `${record.id}: bad type ${type}`);
+            assert.notEqual(type, 'NONE', `${record.id}: NONE is not a location type`);
+            assert.notEqual(type, 'LEGENDARY', `${record.id}: LEGENDARY is not a location type`);
+        });
+
+        if (record.theme && typeof record.theme === 'object') {
+            Object.entries(record.theme).forEach(([field, value]) => {
+                assert.match(String(value), HEX_PATTERN, `${record.id}: theme.${field} must be 6-digit hex, got ${value}`);
+            });
+        }
+
+        if (record.background) {
+            assert.ok(record.background.startsWith('assets/backgrounds/'), `${record.id}: background must live under assets/backgrounds/`);
+        }
+    });
+});
+
+test('every starter type appears in an enabled location', () => {
+    const enabled = locations.filter(record => record.enabled !== false);
+    Object.values(PokeLocations.STARTER_DECKS).forEach(deck => {
+        const covered = enabled.some(record => record.types.includes(deck.type));
+        assert.ok(covered, `no enabled location contains starter type ${deck.type} (${deck.id})`);
+    });
+});
+
+test('enabled locations form a connected shared-type graph', () => {
+    const enabled = locations.filter(record => record.enabled !== false);
+    assert.ok(enabled.length > 0, 'need at least one enabled location');
+
+    const shareType = (a, b) => a.types.some(type => b.types.includes(type));
+    const visited = new Set([enabled[0].id]);
+    const queue = [enabled[0]];
+
+    while (queue.length > 0) {
+        const current = queue.shift();
+        enabled.forEach(other => {
+            if (!visited.has(other.id) && shareType(current, other)) {
+                visited.add(other.id);
+                queue.push(other);
+            }
+        });
+    }
+
+    assert.equal(visited.size, enabled.length, `overlap graph is disconnected: reached ${visited.size} of ${enabled.length}`);
 });
 
 test('default battle deck references resolve against real data', async () => {
