@@ -1296,5 +1296,15 @@
     "statChanges": [],
     "target": "TRAINER",
     "full_type_requirements": false
+  },
+  {
+    "name": "Will-o-wisp",
+    "type1": "FIRE",
+    "type2": "GHOST",
+    "basePower": 0,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": false
   }
 ]
