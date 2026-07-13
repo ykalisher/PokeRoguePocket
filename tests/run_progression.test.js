@@ -232,6 +232,18 @@ test('every starter-deck card name resolves to a real record', async () => {
     });
 });
 
+test('every starter-deck type has an enabled location containing it', async () => {
+    // Level 1's location must include the chosen starter's type, so each deck's
+    // type needs at least one enabled location to select from.
+    await loadRealGameData();
+    const locations = P.getLocations(arena.GameData);
+
+    Object.values(P.STARTER_DECKS).forEach(deck => {
+        const match = locations.some(location => Array.isArray(location.types) && location.types.includes(deck.type));
+        assert.ok(match, `${deck.id} deck: no enabled location includes ${deck.type}`);
+    });
+});
+
 test('getWildPokemonPool filters by type and excludes legendaries', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;

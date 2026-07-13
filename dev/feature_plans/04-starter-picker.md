@@ -28,21 +28,21 @@ Ends green + playable.
 
 ## Steps
 
-- [ ] 1. **`starter.html`** — new root page, same skeleton/script order as the
+- [x] 1. **`starter.html`** — new root page, same skeleton/script order as the
   other map pages (`arena/arena_data.js`, `map/run_state.js`, `map/locations.js`,
   then `map/starter.js`; no arena engine files needed). Body class `menu-page
   starter-page`; a heading ("Choose your starter deck") and a container the JS
   fills.
-- [ ] 2. **`map/starter.js`** — on init, `await arena.Data.loadGameData()`, render
+- [x] 2. **`map/starter.js`** — on init, `await arena.Data.loadGameData()`, render
   one card per `PokeLocations.STARTER_DECKS` entry: deck display name, its type,
   the two pokemon portraits + names, and the attack/item list (names × counts,
   straight from the deck definition — do NOT retype card names). Click/keyboard
   select → `location.href = 'area.html?newRun=1&starter=<id>'`. Simple bespoke
   markup; don't pull in `arena.Render`.
-- [ ] 3. **`main.js`** — `handleNewGame` still clears both localStorage keys, then
+- [x] 3. **`main.js`** — `handleNewGame` still clears both localStorage keys, then
   navigates to `starter.html` (update `NEW_RUN_ROUTE` or introduce a sibling
   constant; keep the clearing exactly as-is).
-- [ ] 4. **`map/area.js`** — `consumeNewRunRequest` also reads the `starter` param
+- [x] 4. **`map/area.js`** — `consumeNewRunRequest` also reads the `starter` param
   and returns it; `createFreshRunState(starterId)` validates it against
   `STARTER_DECKS` (invalid/missing → `'water'`), passes it into `createRunState`,
   and chooses the L1 location with `requiredType:
@@ -50,11 +50,11 @@ Ends green + playable.
   deck definition (pokemon ×1 each, attacks/items × their counts) instead of the
   hardcoded Blastoise list; keep the existing `findGameRecord` + fallback + card-
   factory structure and the collections shape (`{ pokemon, actions, bench }`).
-- [ ] 5. **`static/styles.css`** — small `.starter-page` section (grep the
+- [x] 5. **`static/styles.css`** — small `.starter-page` section (grep the
   section-comment style, e.g. `/* --- Main Menu --- */`, and match it): responsive
   3-card row (wraps on narrow viewports), reusing existing tokens/button styles.
   No redesign of anything else.
-- [ ] 6. **Tests** (`tests/data_validation.test.js` or the progression file —
+- [x] 6. **Tests** (`tests/data_validation.test.js` or the progression file —
   match surrounding style): after `loadRealGameData()`, every pokemon/attack/item
   name in every `STARTER_DECKS` entry resolves to a real record (guards the
   "Flame Thrower"/"Will-o-wisp" traps against the silent fallback); each deck's

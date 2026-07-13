@@ -653,10 +653,12 @@
     }
 
     function restoreOrCreateRunState() {
-        if (consumeNewRunRequest()) {
+        const newRunStarterId = consumeNewRunRequest();
+
+        if (newRunStarterId !== null) {
             runStore.clearRunState();
             arena.Model.clearSavedBattleState();
-            createFreshRunState();
+            createFreshRunState(newRunStarterId);
             return;
         }
 
@@ -678,13 +680,13 @@
             return;
         }
 
-        createFreshRunState();
+        createFreshRunState(null);
     }
 
-    function createFreshRunState() {
-        // Phase 4 threads the real starter choice through here; for now level 1
-        // always uses the water starter, so pick a location that has WATER.
-        const starterId = 'water';
+    function createFreshRunState(requestedStarterId) {
+        // The starter choice from starter.html threads in via the newRun URL;
+        // an invalid or missing choice falls back to the water starter.
+        const starterId = normalizeStarterId(requestedStarterId);
         const location = chooseLevelLocation({
             requiredType: getStarterType(starterId)
         });
@@ -693,7 +695,7 @@
         applyRunState(runStore.createRunState({
             area: locations.createAreaGraph(level, { includeEvents: hasAvailableEvents() }),
             bossNodeId: locations.bossNodeIdForLevel(level),
-            collections: createCardCollections(),
+            collections: createCardCollections(starterId),
             location,
             starterId,
             level
@@ -733,6 +735,10 @@
         const deck = locations.STARTER_DECKS[starterId] || locations.STARTER_DECKS.water;
 
         return deck.type;
+    }
+
+    function normalizeStarterId(starterId) {
+        return starterId && locations.STARTER_DECKS[starterId] ? starterId : 'water';
     }
 
     function getRunLevel() {
@@ -775,13 +781,16 @@
         return location && Array.isArray(location.types) ? location.types : [];
     }
 
+    // Returns the requested starter id for a new run (may be null/invalid — the
+    // caller validates it), or null when this is not a new-run request.
     function consumeNewRunRequest() {
         const params = new URLSearchParams(window.location.search);
 
-        if (params.get('newRun') !== '1') return false;
+        if (params.get('newRun') !== '1') return null;
 
+        const starterId = params.get('starter');
         window.history.replaceState(null, '', 'area.html');
-        return true;
+        return starterId || '';
     }
 
     function applyRunState(run) {
@@ -1340,27 +1349,31 @@
         return shuffled;
     }
 
-    function createCardCollections() {
-        const blastoise = findGameRecord('pokemon', 'Blastoise') || createFallbackPokemon('Blastoise');
-        const waterfall = findGameRecord('attacks', 'Waterfall') || createFallbackAttack('Waterfall');
-        const rainDance = findGameRecord('attacks', 'Rain Dance') || createFallbackAttack('Rain Dance');
-        const sitrusBerry = findGameRecord('items', 'Sitrus Berry') || createFallbackItem('Sitrus Berry');
-        const lumBerry = findGameRecord('items', 'Lum Berry') || createFallbackItem('Lum Berry');
+    function createCardCollections(starterId) {
+        const deck = locations.STARTER_DECKS[starterId] || locations.STARTER_DECKS.water;
+        const actions = [];
+        const pokemon = [];
 
-        return {
-            actions: [
-                createAttackCard(waterfall, 1),
-                createAttackCard(waterfall, 2),
-                createAttackCard(rainDance, 1),
-                createAttackCard(rainDance, 2),
-                createItemCard(sitrusBerry, 1),
-                createItemCard(lumBerry, 1)
-            ],
-            pokemon: [
-                createPokemonCard(blastoise, 1),
-                createPokemonCard(blastoise, 2)
-            ]
-        };
+        deck.pokemon.forEach((name, index) => {
+            const record = findGameRecord('pokemon', name) || createFallbackPokemon(name);
+            pokemon.push(createPokemonCard(record, index + 1));
+        });
+
+        deck.attacks.forEach(([name, count]) => {
+            const record = findGameRecord('attacks', name) || createFallbackAttack(name);
+            for (let index = 1; index <= count; index += 1) {
+                actions.push(createAttackCard(record, index));
+            }
+        });
+
+        deck.items.forEach(([name, count]) => {
+            const record = findGameRecord('items', name) || createFallbackItem(name);
+            for (let index = 1; index <= count; index += 1) {
+                actions.push(createItemCard(record, index));
+            }
+        });
+
+        return { actions, pokemon };
     }
 
     function createPokemonCard(pokemon, index) {
