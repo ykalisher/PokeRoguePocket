@@ -123,7 +123,7 @@ every starter-deck name resolves to a real record.
 - [x] Phase 2 — Run state v2 + location-driven level 1
 - [x] Phase 3 — Multi-level progression, gauntlet, difficulty, victory
 - [x] Phase 4 — Starter picker
-- [ ] Phase 5 — Events gating + seeded events
+- [x] Phase 5 — Events gating + seeded events
 - [ ] Phase 6 — Theming (neutral restyle + per-location)
 - [ ] Phase 7 — UI audit + targeted fixes
 

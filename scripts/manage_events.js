@@ -1,6 +1,13 @@
 const fs = require('fs');
 const readline = require('readline/promises');
 const { stdin: input, stdout: output } = require('process');
+const { PokeType } = require('./data_options');
+
+// Location types gate where an event may appear (matched against a location's
+// types). NONE/LEGENDARY are never valid location types.
+const LOCATION_TYPES = Object.freeze(
+    Object.values(PokeType).filter(value => value !== 'NONE' && value !== 'LEGENDARY')
+);
 
 const EVENTS_FILE = 'events.json';
 const POKEMON_FILE = 'pokemon.json';
@@ -96,7 +103,28 @@ async function askCommonEventFields(rl, events, type) {
     event.body = await askMultiline(rl, 'Event explanatory text');
     event.resultTitle = await askOptionalString(rl, 'Result title (optional): ');
 
+    const types = await askLocationTypes(rl);
+    if (types.length > 0) event.types = types;
+
     return event;
+}
+
+async function askLocationTypes(rl) {
+    const types = [];
+
+    console.log('\nLocation types gate where this event can appear (leave empty to allow anywhere).');
+
+    while (true) {
+        const remaining = LOCATION_TYPES.filter(value => !types.includes(value));
+        if (remaining.length === 0) break;
+
+        const value = await askOptionalEnum(rl, 'Add a location type (blank to finish)', remaining);
+        if (!value) break;
+
+        types.push(value);
+    }
+
+    return types;
 }
 
 async function askChoices(rl, data) {
@@ -401,7 +429,8 @@ function listEvents(events) {
     console.log('\n--- Current Events ---');
     events.forEach((event, index) => {
         const enabled = event.enabled === false ? 'disabled' : 'enabled';
-        console.log(`${index + 1}. ${event.title} | ${event.type} | ${event.id} | ${enabled}`);
+        const types = Array.isArray(event.types) && event.types.length > 0 ? event.types.join('/') : 'any';
+        console.log(`${index + 1}. ${event.title} | ${event.type} | ${event.id} | ${enabled} | ${types}`);
     });
 }
 
@@ -536,6 +565,25 @@ async function askEnum(rl, label, enumObj) {
 
         if (!isNaN(index) && index >= 0 && index < entries.length) {
             return entries[index][1];
+        }
+
+        console.log('Invalid selection. Please pick a number from the list.');
+    }
+}
+
+async function askOptionalEnum(rl, label, values) {
+    while (true) {
+        console.log(`\n${label}:`);
+        values.forEach((value, index) => {
+            console.log(`${index + 1}. ${value}`);
+        });
+
+        const raw = (await rl.question(`Pick a number (1-${values.length}, blank to finish): `)).trim();
+        if (raw.length === 0) return '';
+
+        const index = parseInt(raw, 10) - 1;
+        if (!isNaN(index) && index >= 0 && index < values.length) {
+            return values[index];
         }
 
         console.log('Invalid selection. Please pick a number from the list.');

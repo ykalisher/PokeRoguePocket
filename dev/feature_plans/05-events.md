@@ -33,20 +33,20 @@ gets real schema validation. Ends green + playable.
 
 ## Steps
 
-- [ ] 1. **Gating (`map/event_effects.js`):** `getAvailableEvents(gameData,
+- [x] 1. **Gating (`map/event_effects.js`):** `getAvailableEvents(gameData,
   locationTypes)` — when `locationTypes` is a non-empty array, additionally require
   `!event.types || event.types.length === 0 || event.types.some(t =>
   locationTypes.includes(t))`; `undefined` keeps today's behavior (so
   `getEventById` and any restore path stay ungated). `chooseEvent(gameData, run)`
   uses its existing second arg: `run?.location?.types` → pass through. Keep the
   public `window.PokeEvents` surface otherwise identical.
-- [ ] 2. **`map/area.js`:** `hasAvailableEvents` passes `state.run.location.types`
+- [x] 2. **`map/area.js`:** `hasAvailableEvents` passes `state.run.location.types`
   so event-node generation goes per-location (the phase-3 `includeEvents` flag now
   varies by location).
-- [ ] 3. **`arena/arena_data.js`:** `normalizeEvent` normalizes `types` to
+- [x] 3. **`arena/arena_data.js`:** `normalizeEvent` normalizes `types` to
   uppercase strings when present (reuse the same type helper as locations),
   otherwise passthrough.
-- [ ] 4. **Seed `events.json`** (direct edit — owner-authorized) with 6 events.
+- [x] 4. **Seed `events.json`** (direct edit — owner-authorized) with 6 events.
   Semantics below; build the exact effect objects by mirroring
   `manage_events.js`'s builders and validating against the dispatch switch:
   1. gift `berry-cache` "Berry Cache" — no `types` (universal): gain 1 Sitrus
@@ -61,12 +61,12 @@ gets real schema validation. Ends green + playable.
   6. trainer `rogue-mecha-cop` — types [STEEL, ELECTRIC, HUMAN]:
      `trainerName: "Mecha Cop"`, include a `payment` alternative.
   Keep copy short and in the game's existing voice (look at trainer/mart strings).
-- [ ] 5. **Extend `scripts/manage_events.js`** (owner-authorized exception to
+- [x] 5. **Extend `scripts/manage_events.js`** (owner-authorized exception to
   AGENTS.md — this one field only): in the Add flow, an optional "location types"
   multi-prompt (repeated enum pick over `PokeType` minus NONE/LEGENDARY, blank to
   finish, empty = universal) stored as `types`; show types in the List view.
   Match the file's existing helper style. **Never run it** (`node --check` only).
-- [ ] 6. **Tests:**
+- [x] 6. **Tests:**
   - `tests/data_validation.test.js` — replace the is-array placeholder with full
     schema validation: unique non-empty ids; `type` ∈ {gift, choice, trainer};
     title/body non-empty strings; `types`, when present, valid PokeTypes (no

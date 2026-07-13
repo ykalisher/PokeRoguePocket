@@ -9,8 +9,19 @@ const { loadRealGameData, arena } = require('./helpers/arena_env');
 require('../map/locations');
 require('../map/run_state');
 
+require('../map/event_effects');
+
 const P = globalThis.PokeLocations;
 const R = globalThis.PokeRun;
+const E = globalThis.PokeEvents;
+
+function makeEvent(id, type, types) {
+    const event = { id, type, title: id, body: 'text', enabled: true };
+    if (types) event.types = types;
+    if (type === 'choice') event.choices = [{ title: 'a', id: 'a', effects: [] }];
+    if (type === 'trainer') { event.trainerName = 'x'; event.rewardEffects = []; }
+    return event;
+}
 
 function makeGraph() {
     return { nodes: [{ id: 'start' }], edges: [] };
@@ -538,4 +549,52 @@ test('chooseTrainer against real data never returns null or Special and honors r
             }
         });
     });
+});
+
+const EVENT_POOL = {
+    events: [
+        makeEvent('universal-gift', 'gift'),
+        makeEvent('water-gift', 'gift', ['WATER', 'ICE']),
+        makeEvent('fire-choice', 'choice', ['FIRE', 'ROCK', 'GROUND'])
+    ]
+};
+
+test('getAvailableEvents keeps universal events for any location types', () => {
+    const water = E.getAvailableEvents(EVENT_POOL, ['WATER']).map(event => event.id);
+    const psychic = E.getAvailableEvents(EVENT_POOL, ['PSYCHIC']).map(event => event.id);
+
+    assert.ok(water.includes('universal-gift'));
+    assert.ok(psychic.includes('universal-gift'));
+});
+
+test('getAvailableEvents gates typed events by location type overlap', () => {
+    const water = E.getAvailableEvents(EVENT_POOL, ['WATER']).map(event => event.id);
+    const fire = E.getAvailableEvents(EVENT_POOL, ['FIRE']).map(event => event.id);
+
+    assert.ok(water.includes('water-gift'));
+    assert.ok(!water.includes('fire-choice'));
+    assert.ok(fire.includes('fire-choice'));
+    assert.ok(!fire.includes('water-gift'));
+});
+
+test('getAvailableEvents with undefined location types stays ungated', () => {
+    const all = E.getAvailableEvents(EVENT_POOL).map(event => event.id);
+
+    assert.deepEqual(all.sort(), ['fire-choice', 'universal-gift', 'water-gift']);
+});
+
+test('getAvailableEvents returns nothing when no typed or universal event matches', () => {
+    const typedOnly = { events: [makeEvent('water-gift', 'gift', ['WATER'])] };
+
+    assert.equal(E.getAvailableEvents(typedOnly, ['FIRE']).length, 0);
+});
+
+test('chooseEvent only returns events matching the run location types', () => {
+    const run = { location: { types: ['FIRE'] } };
+    const allowed = new Set(['universal-gift', 'fire-choice']);
+
+    for (let index = 0; index < 200; index += 1) {
+        const event = E.chooseEvent(EVENT_POOL, run);
+        assert.ok(event && allowed.has(event.id), `chooseEvent leaked ${event && event.id}`);
+    }
 });

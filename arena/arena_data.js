@@ -445,7 +445,14 @@
     }
 
     function normalizeEvent(record) {
-        return record && typeof record === 'object' ? record : null;
+        if (!record || typeof record !== 'object') return null;
+        if (!Array.isArray(record.types)) return record;
+
+        // Uppercase + compact location-type gates so events match the same
+        // normalized type strings that locations use.
+        const types = compactTypes(record.types.map(type => String(type || '').toUpperCase()));
+
+        return { ...record, types };
     }
 
     /**

@@ -1,1 +1,145 @@
-[]
+[
+  {
+    "type": "gift",
+    "title": "Berry Cache",
+    "id": "berry-cache",
+    "kicker": "Lucky find",
+    "subtitle": "Someone's loss is your gain.",
+    "body": "A hollow beneath a mossy rock hides a small stash of berries, forgotten by whoever left them. They still look fresh.",
+    "resultTitle": "Pocketed",
+    "buttonText": "Take the berry",
+    "effects": [
+      { "type": "gain-card", "cardKind": "item", "name": "Sitrus Berry", "count": 1 }
+    ],
+    "enabled": true
+  },
+  {
+    "type": "gift",
+    "title": "Message in a Bottle",
+    "id": "message-in-a-bottle",
+    "types": ["WATER", "ICE"],
+    "kicker": "Washed ashore",
+    "subtitle": "The tide brought a gift.",
+    "body": "A weathered bottle bobs against the rocks. Inside, wrapped in oilcloth, is a tidy roll of coins and a note that just reads \"good luck.\"",
+    "resultTitle": "Cashed in",
+    "buttonText": "Uncork the bottle",
+    "effects": [
+      { "type": "gain-cash", "amount": 120 }
+    ],
+    "enabled": true
+  },
+  {
+    "type": "choice",
+    "title": "Wandering Trader",
+    "id": "wandering-trader",
+    "kicker": "Deal or pass",
+    "subtitle": "A trader spreads out their wares.",
+    "body": "A cloaked trader flags you down. \"Swap one of your Pokemon, or I'll teach a technique to anyone with the coin.\"",
+    "resultTitle": "Trade made",
+    "choices": [
+      {
+        "title": "Trade a Pokemon",
+        "id": "trade-a-pokemon",
+        "description": "Hand over a random Pokemon for one of the trader's.",
+        "buttonText": "Make the trade",
+        "requires": [],
+        "effects": [
+          { "type": "trade-random-pokemon", "replacement": { "cardKind": "pokemon", "source": "random" } }
+        ]
+      },
+      {
+        "title": "Buy a technique",
+        "id": "buy-a-technique",
+        "description": "Pay for a random attack card.",
+        "buttonText": "Pay up",
+        "requires": [],
+        "effects": [
+          { "type": "lose-cash", "amount": 80 },
+          { "type": "gain-random-card", "cardKind": "attack", "count": 1 }
+        ]
+      }
+    ],
+    "enabled": true
+  },
+  {
+    "type": "choice",
+    "title": "Volcanic Vent",
+    "id": "volcanic-vent",
+    "types": ["FIRE", "ROCK", "GROUND"],
+    "kicker": "Risk it",
+    "subtitle": "Heat shimmers off the rock.",
+    "body": "A crack in the ground breathes hot air, and something glints deep inside. Reaching in could cost you — or pay off.",
+    "resultTitle": "The vent decides",
+    "choices": [
+      {
+        "title": "Reach into the vent",
+        "id": "reach-into-the-vent",
+        "description": "Scorch a random attack card, but grab a new one from the depths.",
+        "buttonText": "Reach in",
+        "requires": [],
+        "effects": [
+          { "type": "lose-random-cards", "cardKind": "attack", "count": 1, "strict": false },
+          { "type": "gain-random-card", "cardKind": "attack", "count": 1 }
+        ]
+      },
+      {
+        "title": "Play it safe",
+        "id": "play-it-safe",
+        "description": "Pocket some loose ore instead.",
+        "buttonText": "Back away",
+        "requires": [],
+        "effects": [
+          { "type": "gain-cash", "amount": 60 }
+        ]
+      }
+    ],
+    "enabled": true
+  },
+  {
+    "type": "trainer",
+    "title": "Team Rocket Ambush",
+    "id": "team-rocket-ambush",
+    "types": ["GROUND", "DARK", "POISON"],
+    "kicker": "Ambush",
+    "subtitle": "The boss himself blocks the path.",
+    "body": "Grunts fan out across the trail, and Giovanni steps forward. \"Hand over your team, or take your beating.\"",
+    "resultTitle": "Rocket routed",
+    "trainerName": "Giovanni",
+    "battleTitle": "Stand your ground",
+    "battleText": "Beat Giovanni and the spoils are yours.",
+    "battleButtonText": "Battle Giovanni",
+    "rewardCash": 450,
+    "rewardEffects": [
+      { "type": "gain-random-card", "cardKind": "item", "count": 1 }
+    ],
+    "enabled": true
+  },
+  {
+    "type": "trainer",
+    "title": "Rogue Mecha Cop",
+    "id": "rogue-mecha-cop",
+    "types": ["STEEL", "ELECTRIC", "HUMAN"],
+    "kicker": "Checkpoint",
+    "subtitle": "A malfunctioning patrol unit bars the way.",
+    "body": "A Mecha Cop whirs to life, optics flaring red. \"UNAUTHORIZED TRAINER. PAY THE FINE OR BE SUBDUED.\"",
+    "resultTitle": "Cleared the checkpoint",
+    "trainerName": "Mecha Cop",
+    "battleTitle": "Override it",
+    "battleText": "Short out the rogue unit and salvage its cache.",
+    "battleButtonText": "Battle Mecha Cop",
+    "rewardCash": 450,
+    "rewardEffects": [
+      { "type": "gain-random-card", "cardKind": "attack", "count": 1 }
+    ],
+    "payment": {
+      "title": "Pay the fine",
+      "description": "Slip it some coins and walk through.",
+      "buttonText": "Pay 150 coins",
+      "requires": [],
+      "effects": [
+        { "type": "lose-cash", "amount": 150 }
+      ]
+    },
+    "enabled": true
+  }
+]

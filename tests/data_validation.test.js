@@ -149,8 +149,75 @@ test('the roster has enough seeded Elite and Ace trainers with specializations',
     });
 });
 
-test('events.json parses as an array', () => {
+// The effect vocabulary the event engine dispatches on
+// (map/event_effects.js applyEffect switch). Keep in sync when adding effects.
+const VALID_EFFECT_TYPES = new Set([
+    'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card',
+    'lose-random-cards', 'lose-random-pokemon', 'remove-selected-card',
+    'duplicate-selected-card', 'duplicate-random-card', 'replace-selected-card',
+    'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon'
+]);
+
+const VALID_EVENT_TYPES = new Set(['gift', 'choice', 'trainer']);
+
+function collectEventEffects(event) {
+    const effects = [];
+
+    if (Array.isArray(event.effects)) effects.push(...event.effects);
+    if (Array.isArray(event.rewardEffects)) effects.push(...event.rewardEffects);
+    if (event.payment && Array.isArray(event.payment.effects)) effects.push(...event.payment.effects);
+    if (Array.isArray(event.choices)) {
+        event.choices.forEach(choice => {
+            if (choice && Array.isArray(choice.effects)) effects.push(...choice.effects);
+        });
+    }
+
+    return effects;
+}
+
+test('events.json entries are well-formed', () => {
     assert.ok(Array.isArray(events), 'events.json must be an array');
+
+    const trainerNames = new Set(trainers.map(record => record.name));
+    const seenIds = new Set();
+    let trainerEventCount = 0;
+
+    events.forEach(event => {
+        assert.ok(event && typeof event === 'object', 'events.json: entry must be an object');
+
+        assert.ok(event.id && typeof event.id === 'string', 'events.json: entry missing id');
+        assert.ok(!seenIds.has(event.id), `events.json: duplicate id ${event.id}`);
+        seenIds.add(event.id);
+
+        assert.ok(VALID_EVENT_TYPES.has(event.type), `${event.id}: bad type ${event.type}`);
+        assert.ok(event.title && typeof event.title === 'string', `${event.id}: title must be a non-empty string`);
+        assert.ok(event.body && typeof event.body === 'string', `${event.id}: body must be a non-empty string`);
+
+        if (event.types !== undefined) {
+            assert.ok(Array.isArray(event.types), `${event.id}: types must be an array`);
+            event.types.forEach(type => {
+                assert.ok(VALID_TYPES.has(type), `${event.id}: bad type ${type}`);
+                assert.notEqual(type, 'NONE', `${event.id}: NONE is not an event type`);
+                assert.notEqual(type, 'LEGENDARY', `${event.id}: LEGENDARY is not an event type`);
+            });
+        }
+
+        collectEventEffects(event).forEach(effect => {
+            assert.ok(effect && typeof effect === 'object', `${event.id}: effect must be an object`);
+            assert.ok(VALID_EFFECT_TYPES.has(effect.type), `${event.id}: unknown effect type ${effect.type}`);
+        });
+
+        if (event.type === 'choice') {
+            assert.ok(Array.isArray(event.choices) && event.choices.length >= 1, `${event.id}: choice event needs >=1 choice`);
+        }
+
+        if (event.type === 'trainer') {
+            trainerEventCount += 1;
+            assert.ok(trainerNames.has(event.trainerName), `${event.id}: unknown trainer ${event.trainerName}`);
+        }
+    });
+
+    assert.ok(trainerEventCount >= 1, 'events.json needs at least one trainer event');
 });
 
 test('locations.json entries are well-formed', () => {
