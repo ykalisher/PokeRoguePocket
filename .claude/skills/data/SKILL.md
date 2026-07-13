@@ -43,15 +43,27 @@ exist in the other files — validated by the tests).
   intentionally very small — do not add artificial attacks unless asked.
 - Dragon Gem items pair `DRAGON_GEM` with the status the gem applies.
 
-## Deck construction rules (arena_data.js `arena.Constants`)
+## Deck construction rules
 
-- Each battle-deck Pokemon lists 2 attacks; the main deck gets
+Two deck paths exist (`arena_model.js`); hand size 6 and knockout limit 4
+apply to both:
+
+- **Run battles (the real game) use exact cards.** `game.js` builds both
+  sides with `exactCards: true` — the player deck is the run's collected
+  card list 1:1 (`run_state.js`, grows unbounded as attacks are collected;
+  attacks no active Pokemon can use are benched, not lost), and trainer
+  decks are exactly the `pokemon`/`attacks`/`items` lists in
+  `trainers.json`. No copy multiplier or item cap applies here.
+- **Definition-style decks (demo/fallback only)** — `DEFAULT_BATTLE_DECK`,
+  used when `game.html` loads without an active run, and by the tests —
+  list Pokemon with 2 attacks each; the main deck gets
   `ATTACK_COPIES_PER_MAIN_DECK` (2) copies of each, plus up to
-  `ITEM_CARDS_PER_MAIN_DECK` (10) items. Hand size 6, knockout limit 4.
-- A selected attack silently drops out of the deck if its paired Pokemon
-  cannot use it (type mismatch, see `full_type_requirements`). When pairing
-  attacks in `DEFAULT_BATTLE_DECK` or `trainers.json`, check the Pokemon's
-  types in `pokemon.json` — not the fallback data in `arena_data.js`, which
-  can drift out of sync. `tests/data_validation.test.js` guards the default
+  `ITEM_CARDS_PER_MAIN_DECK` (10) items (`arena_data.js` `arena.Constants`).
+- An attack a Pokemon cannot use (type mismatch, see
+  `full_type_requirements`) silently drops out of definition-style decks
+  and sits dead in exact-card decks. Either way, when pairing attacks in
+  `DEFAULT_BATTLE_DECK` or `trainers.json`, check the Pokemon's types in
+  `pokemon.json` — not the fallback data in `arena_data.js`, which can
+  drift out of sync. `tests/data_validation.test.js` guards the default
   deck's pairings; a bulk import once retyped Feraligatr and silently
   shrank the deck.
