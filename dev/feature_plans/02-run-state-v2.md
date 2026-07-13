@@ -30,14 +30,14 @@ completely. Ends green + playable.
 
 ## Steps
 
-- [ ] 1. **`map/run_state.js`:** bump `STORAGE_VERSION` to 2. Extend
+- [x] 1. **`map/run_state.js`:** bump `STORAGE_VERSION` to 2. Extend
   `createRunState` to accept and set `{ area, collections, location, starterId,
   level }` → new top-level fields:
   `level` (default 1), `starterId` (default `'water'`), `location` (snapshot object
   or null), `visitedLocationIds` (default `location ? [location.id] : []`),
   `runCompleted: false`, `runCompletedAt: null`. Add `bossNodeId` to the area state
   (default `'boss-12'` — the current graph's terminal node id).
-- [ ] 2. **Normalizers (same commit):** `normalizeRunState` — carry `level`
+- [x] 2. **Normalizers (same commit):** `normalizeRunState` — carry `level`
   (integer clamp 1–4, default 1), `starterId` (non-empty string, default
   `'water'`), `location: normalizeLocationSnapshot(run.location)`,
   `visitedLocationIds` (array of strings, default `[]`), `runCompleted` (Boolean),
@@ -46,30 +46,30 @@ completely. Ends green + playable.
   background with safe defaults. `normalizeAreaState` — carry
   `bossNodeId: area.bossNodeId || 'boss-12'`. Lenient defaults everywhere: a v2
   save written before a later phase must still load after that phase.
-- [ ] 3. **`map/area.js` — new-run location:** in `createFreshRunState`, choose the
+- [x] 3. **`map/area.js` — new-run location:** in `createFreshRunState`, choose the
   L1 location: `PokeLocations.chooseNextLocation(arena.GameData, { requiredType:
   PokeLocations.STARTER_DECKS['water'].type })` (hardcoded `'water'` with a brief
   comment that phase 4 threads the real starter choice through), snapshot it, and
   pass `location`, `starterId: 'water'`, `level: 1` into `createRunState`.
-- [ ] 4. **`map/area.js` — repair path:** in the restore branch, if a loaded v2 run
+- [x] 4. **`map/area.js` — repair path:** in the restore branch, if a loaded v2 run
   has `location == null` (mid-development save), choose one the same way, set
   `visitedLocationIds`, and save. Keeps every v2 save playable.
-- [ ] 5. **`map/area.js` — display + stamping:** header renders from run state, not
+- [x] 5. **`map/area.js` — display + stamping:** header renders from run state, not
   `AREA_THEME`: location `name`, `terrain` pill, and
   `Level ${run.level} of ${PokeLocations.TOTAL_LEVELS}` (replaces "Area 1 of 4").
   Capture-encounter creation stamps `terrain: run.location.terrain`. Delete the
   `AREA_THEME` constant once nothing references it (grep to confirm).
-- [ ] 6. **Wild pools (both files, same commit):**
+- [x] 6. **Wild pools (both files, same commit):**
   `getAvailablePokemonForCurrentTerrain` in `map/area.js` AND `map/capture.js`
   become delegates to `PokeLocations.getWildPokemonPool(arena.GameData,
   run.location.types)` (each file already has access to the loaded run — grep how
   each obtains it). Keep the functions' names/callers; only the body changes.
   Legendary-capture logic stays untouched.
-- [ ] 7. **`main.js` Continue guard:** `loadSavedRunState` returns null unless
+- [x] 7. **`main.js` Continue guard:** `loadSavedRunState` returns null unless
   `run.version === 2` (match how the file is structured; a local constant is fine —
   note it must track `PokeRun.STORAGE_VERSION`). Old v1 saves now grey out/hide
   Continue instead of ghost-routing.
-- [ ] 8. **Tests** (extend `tests/run_progression.test.js`): `createRunState` v2
+- [x] 8. **Tests** (extend `tests/run_progression.test.js`): `createRunState` v2
   field shape; normalize round-trip preserves
   level/starterId/location/visitedLocationIds/runCompleted/bossNodeId; v1 blob →
   null; missing-location v2 blob still normalizes (location null, not a crash);

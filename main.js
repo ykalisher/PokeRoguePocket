@@ -5,6 +5,9 @@
 const CURRENT_BATTLE_STORAGE_KEY = 'card-arena-current-battle';
 const RUN_STORAGE_KEY = 'pokemon-rogue-pocket-run';
 const NEW_RUN_ROUTE = 'area.html?newRun=1';
+// Must track PokeRun.STORAGE_VERSION — main.js loads no shared modules, so the
+// Continue button reads the run JSON directly and rejects stale save formats.
+const RUN_STORAGE_VERSION = 2;
 
 document.addEventListener('DOMContentLoaded', () => {
     init();
@@ -68,8 +71,11 @@ function getSavedRunRoute() {
 function loadSavedRunState() {
     try {
         const rawRun = localStorage.getItem(RUN_STORAGE_KEY);
+        const run = rawRun ? JSON.parse(rawRun) : null;
 
-        return rawRun ? JSON.parse(rawRun) : null;
+        if (!run || run.version !== RUN_STORAGE_VERSION) return null;
+
+        return run;
     } catch (error) {
         console.warn('Could not load saved run.', error);
         return null;

@@ -2,7 +2,7 @@
  * Pokemon Rogue Pocket - capture encounter page
  */
 
-(function bootCapturePage(arena, runStore) {
+(function bootCapturePage(arena, runStore, locations) {
     'use strict';
 
     const CARD_BACKS = Object.freeze({
@@ -383,15 +383,13 @@
     }
 
     function getAvailablePokemonForCurrentTerrain() {
-        const records = arena.GameData && Array.isArray(arena.GameData.pokemon)
-            ? arena.GameData.pokemon
-            : [];
-        const uniquePokemon = getUniqueRecordsByName(records);
-        const nonLegendaryPokemon = uniquePokemon.filter(pokemon => !isLegendaryPokemon(pokemon));
-        // TODO: Replace this WATER placeholder with terrain-specific encounter tables.
-        const waterPokemon = nonLegendaryPokemon.filter(pokemon => getRecordTypes(pokemon).includes('WATER'));
+        return locations.getWildPokemonPool(arena.GameData, getLocationTypes());
+    }
 
-        return waterPokemon.length > 0 ? waterPokemon : nonLegendaryPokemon;
+    function getLocationTypes() {
+        return state.run && state.run.location && Array.isArray(state.run.location.types)
+            ? state.run.location.types
+            : [];
     }
 
     function shouldChooseLegendaryCaptureEncounter(node) {
@@ -603,4 +601,4 @@
 
         return leftCard.id.localeCompare(rightCard.id);
     }
-})(window.CardArena = window.CardArena || {}, window.PokeRun);
+})(window.CardArena = window.CardArena || {}, window.PokeRun, window.PokeLocations);

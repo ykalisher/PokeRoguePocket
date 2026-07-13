@@ -7,8 +7,25 @@ const assert = require('node:assert/strict');
 // to globalThis.PokeLocations.
 const { loadRealGameData, arena } = require('./helpers/arena_env');
 require('../map/locations');
+require('../map/run_state');
 
 const P = globalThis.PokeLocations;
+const R = globalThis.PokeRun;
+
+function makeGraph() {
+    return { nodes: [{ id: 'start' }], edges: [] };
+}
+
+function makeSnapshot(id = 'tidepool-coast', types = ['WATER', 'ICE']) {
+    return {
+        id,
+        name: 'Tidepool Coast',
+        terrain: 'Waterfront',
+        types,
+        theme: { accent: '#e8c266', glow: '#4ab0c8', surface: '#143a4a', bgDeep: '#081b26', bgMid: '#123240' },
+        background: 'assets/backgrounds/tidepool-coast.png'
+    };
+}
 
 function makeLoc(id, types, enabled = true) {
     return { id, name: id, terrain: id, types, theme: {}, background: null, enabled };
@@ -248,4 +265,92 @@ test('getWildPokemonPool falls back to all non-legendaries when nothing matches'
     fallbackPool.forEach(species => {
         assert.ok(!species.types.includes('LEGENDARY'));
     });
+});
+
+// --- Phase 2: run state v2 -------------------------------------------------
+
+test('createRunState v2 sets the new run fields', () => {
+    const run = R.createRunState({
+        area: makeGraph(),
+        collections: {},
+        location: makeSnapshot(),
+        starterId: 'water',
+        level: 1
+    });
+
+    assert.equal(run.version, 2);
+    assert.equal(run.level, 1);
+    assert.equal(run.starterId, 'water');
+    assert.equal(run.location.id, 'tidepool-coast');
+    assert.deepEqual(run.visitedLocationIds, ['tidepool-coast']);
+    assert.equal(run.runCompleted, false);
+    assert.equal(run.runCompletedAt, null);
+    assert.equal(run.area.bossNodeId, 'boss-12');
+});
+
+test('createRunState clamps level and defaults starter/location', () => {
+    const run = R.createRunState({ area: makeGraph(), collections: {}, level: 99 });
+
+    assert.equal(run.level, 4);
+    assert.equal(run.starterId, 'water');
+    assert.equal(run.location, null);
+    assert.deepEqual(run.visitedLocationIds, []);
+});
+
+test('save/load round-trips the v2 fields (normalizeRunState)', () => {
+    R.clearRunState();
+    const run = R.createRunState({
+        area: makeGraph(),
+        collections: {},
+        location: makeSnapshot('cinder-ridge', ['FIRE', 'ROCK']),
+        starterId: 'fire',
+        level: 3
+    });
+    run.visitedLocationIds = ['a', 'cinder-ridge'];
+    run.runCompleted = true;
+    run.runCompletedAt = '2026-07-13T00:00:00.000Z';
+
+    assert.ok(R.saveRunState(run));
+    const result = R.loadRunState();
+
+    assert.equal(result.version, 2);
+    assert.equal(result.level, 3);
+    assert.equal(result.starterId, 'fire');
+    assert.equal(result.location.id, 'cinder-ridge');
+    assert.deepEqual(result.location.types, ['FIRE', 'ROCK']);
+    assert.deepEqual(result.visitedLocationIds, ['a', 'cinder-ridge']);
+    assert.equal(result.runCompleted, true);
+    assert.equal(result.runCompletedAt, '2026-07-13T00:00:00.000Z');
+    assert.equal(result.area.bossNodeId, 'boss-12');
+    R.clearRunState();
+});
+
+test('a v1 run blob loads as null', () => {
+    localStorage.setItem(R.STORAGE_KEY, JSON.stringify({ version: 1, area: makeGraph() }));
+    assert.equal(R.loadRunState(), null);
+    R.clearRunState();
+});
+
+test('a v2 run with no location still loads (location null)', () => {
+    R.clearRunState();
+    const run = R.createRunState({ area: makeGraph(), collections: {} });
+    run.location = null;
+    assert.ok(R.saveRunState(run));
+    const result = R.loadRunState();
+    assert.ok(result);
+    assert.equal(result.location, null);
+    R.clearRunState();
+});
+
+test('normalizeLocationSnapshot rejects id-less and typeless input', () => {
+    assert.equal(R.normalizeLocationSnapshot(null), null);
+    assert.equal(R.normalizeLocationSnapshot({ name: 'x', types: ['WATER'] }), null);
+    assert.equal(R.normalizeLocationSnapshot({ id: 'x', types: [] }), null);
+    assert.equal(R.normalizeLocationSnapshot({ id: 'x' }), null);
+
+    const ok = R.normalizeLocationSnapshot({ id: 'x', types: ['WATER'] });
+    assert.equal(ok.id, 'x');
+    assert.equal(ok.name, 'x');
+    assert.equal(ok.terrain, 'x');
+    assert.deepEqual(ok.types, ['WATER']);
 });

@@ -6,19 +6,26 @@
     'use strict';
 
     const STORAGE_KEY = 'pokemon-rogue-pocket-run';
-    const STORAGE_VERSION = 1;
+    const STORAGE_VERSION = 2;
+    const DEFAULT_BOSS_NODE_ID = 'boss-12';
+    const DEFAULT_STARTER_ID = 'water';
+    const MIN_LEVEL = 1;
+    const MAX_LEVEL = 4;
     const PC_STORAGE_KEY = 'pokemon-rogue-pocket-pc';
     const PC_STORAGE_VERSION = 1;
     const ACTIVE_POKEMON_LIMIT = 6;
     const STARTING_CASH = 100;
 
-    function createRunState({ area, collections }) {
+    function createRunState({ area, collections, location, starterId, level }) {
+        const locationSnapshot = normalizeLocationSnapshot(location);
+
         return {
             area: {
                 activeBattleNodeId: null,
                 activeCaptureNodeId: null,
                 activeEventNodeId: null,
                 activeMartNodeId: null,
+                bossNodeId: DEFAULT_BOSS_NODE_ID,
                 completed: false,
                 completedAt: null,
                 completedBossNodeId: null,
@@ -32,11 +39,25 @@
             captureEncounters: {},
             collections: normalizeCollections(collections),
             eventEncounters: {},
+            level: clampLevel(level),
+            location: locationSnapshot,
             martEncounters: {},
             nextCardId: 1,
+            runCompleted: false,
+            runCompletedAt: null,
             savedAt: null,
-            version: STORAGE_VERSION
+            starterId: starterId || DEFAULT_STARTER_ID,
+            version: STORAGE_VERSION,
+            visitedLocationIds: locationSnapshot ? [locationSnapshot.id] : []
         };
+    }
+
+    function clampLevel(level) {
+        const numericLevel = Math.floor(Number(level));
+
+        if (!Number.isFinite(numericLevel)) return MIN_LEVEL;
+
+        return Math.min(MAX_LEVEL, Math.max(MIN_LEVEL, numericLevel));
     }
 
     function loadRunState() {
@@ -368,11 +389,58 @@
             captureEncounters: normalizeCaptureEncounters(run.captureEncounters),
             collections: normalizeCollections(run.collections),
             eventEncounters: normalizeEventEncounters(run.eventEncounters),
+            level: clampLevel(run.level),
+            location: normalizeLocationSnapshot(run.location),
             martEncounters: normalizeMartEncounters(run.martEncounters),
             nextCardId: Number.isFinite(run.nextCardId) ? run.nextCardId : 1,
+            runCompleted: Boolean(run.runCompleted),
+            runCompletedAt: run.runCompletedAt || null,
             savedAt: run.savedAt || null,
-            version: STORAGE_VERSION
+            starterId: typeof run.starterId === 'string' && run.starterId ? run.starterId : DEFAULT_STARTER_ID,
+            version: STORAGE_VERSION,
+            visitedLocationIds: normalizeIdList(run.visitedLocationIds)
         };
+    }
+
+    function normalizeLocationSnapshot(location) {
+        if (!location || typeof location !== 'object') return null;
+        if (typeof location.id !== 'string' || !location.id) return null;
+
+        const types = Array.isArray(location.types)
+            ? location.types.filter(type => typeof type === 'string' && type)
+            : [];
+
+        if (types.length === 0) return null;
+
+        const theme = location.theme && typeof location.theme === 'object' ? location.theme : {};
+
+        return {
+            id: location.id,
+            name: typeof location.name === 'string' && location.name ? location.name : location.id,
+            terrain: typeof location.terrain === 'string' && location.terrain ? location.terrain : (location.name || location.id),
+            types,
+            theme: {
+                accent: theme.accent || null,
+                glow: theme.glow || null,
+                surface: theme.surface || null,
+                bgDeep: theme.bgDeep || null,
+                bgMid: theme.bgMid || null
+            },
+            background: typeof location.background === 'string' && location.background ? location.background : null
+        };
+    }
+
+    function normalizeIdList(ids) {
+        if (!Array.isArray(ids)) return [];
+
+        const seen = new Set();
+
+        return ids.filter(id => {
+            if (typeof id !== 'string' || !id || seen.has(id)) return false;
+
+            seen.add(id);
+            return true;
+        });
     }
 
     function normalizeAreaState(area) {
@@ -384,6 +452,7 @@
             activeCaptureNodeId: area.activeCaptureNodeId || null,
             activeEventNodeId: area.activeEventNodeId || null,
             activeMartNodeId: area.activeMartNodeId || null,
+            bossNodeId: area.bossNodeId || DEFAULT_BOSS_NODE_ID,
             completed: Boolean(area.completed),
             completedAt: area.completedAt || null,
             completedBossNodeId: area.completedBossNodeId || null,
@@ -604,6 +673,7 @@
         ACTIVE_POKEMON_LIMIT,
         PC_STORAGE_KEY,
         STORAGE_KEY,
+        STORAGE_VERSION,
         addActionCard,
         addPokemonCard,
         allocateCardId,
@@ -621,6 +691,7 @@
         hasSavedRun,
         loadPcPokemon,
         loadRunState,
+        normalizeLocationSnapshot,
         rebuildActionDeckForActivePokemon,
         savePcPokemon,
         saveRunState,

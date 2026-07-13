@@ -2,7 +2,7 @@
  * Pokemon Rogue Pocket - overworld area map prototype
  */
 
-(function bootAreaMap(arena, area, runStore) {
+(function bootAreaMap(arena, area, runStore, locations) {
     'use strict';
 
     const AREA_NODE_COUNT = 12;
@@ -10,11 +10,6 @@
     const OPENING_LINEAR_STEPS = 3;
     const START_NODE_ID = 'start';
     const BOSS_NODE_ID = 'boss-12';
-    const AREA_THEME = Object.freeze({
-        areaNumber: 1,
-        name: 'Coastal Trail',
-        terrain: 'Waterfront'
-    });
     const LOCATION_LABELS = Object.freeze({
         battle: 'Trainer Battle',
         boss: 'Boss',
@@ -291,10 +286,10 @@
         state.elements.root.innerHTML = `
             <header class="area-topbar">
                 <div class="area-title-group">
-                    <span class="area-kicker">Area ${AREA_THEME.areaNumber} of 4</span>
-                    <h1>${AREA_THEME.name}</h1>
+                    <span class="area-kicker">Level ${getRunLevel()} of ${locations.TOTAL_LEVELS}</span>
+                    <h1>${getLocationName()}</h1>
                     <div class="area-subrow">
-                        <span class="stat-pill">${AREA_THEME.terrain}</span>
+                        <span class="stat-pill">${getLocationTerrain()}</span>
                         <span class="stat-pill">${renderCurrentLocationText(currentNode)}</span>
                         ${isAreaComplete() ? '<span class="stat-pill">Cleared</span>' : ''}
                     </div>
@@ -679,6 +674,7 @@
         if (savedRun) {
             applyRunState(savedRun);
             const changed = [
+                repairRunLocation(),
                 repairRunCollections(),
                 sanitizeCaptureEncounters(),
                 sanitizeEventEncounters(),
@@ -694,12 +690,60 @@
     }
 
     function createFreshRunState() {
+        // Phase 4 threads the real starter choice through here; for now level 1
+        // always uses the water starter, so pick a location that has WATER.
+        const starterId = 'water';
+        const location = chooseLevelLocation({
+            requiredType: getStarterType(starterId)
+        });
+
         applyRunState(runStore.createRunState({
             area: createAreaGraph(),
-            collections: createCardCollections()
+            collections: createCardCollections(),
+            location,
+            starterId,
+            level: 1
         }));
         ensureBattleNodeEncounters();
         saveRunState();
+    }
+
+    function chooseLevelLocation(options) {
+        const location = locations.chooseNextLocation(arena.GameData, options || {});
+
+        return locations.createLocationSnapshot(location);
+    }
+
+    function getStarterType(starterId) {
+        const deck = locations.STARTER_DECKS[starterId] || locations.STARTER_DECKS.water;
+
+        return deck.type;
+    }
+
+    function getRunLevel() {
+        return state.run && Number.isFinite(state.run.level) ? state.run.level : 1;
+    }
+
+    function getRunLocation() {
+        return state.run && state.run.location ? state.run.location : null;
+    }
+
+    function getLocationName() {
+        const location = getRunLocation();
+
+        return location && location.name ? location.name : 'Unknown Region';
+    }
+
+    function getLocationTerrain() {
+        const location = getRunLocation();
+
+        return location && location.terrain ? location.terrain : 'Wilds';
+    }
+
+    function getLocationTypes() {
+        const location = getRunLocation();
+
+        return location && Array.isArray(location.types) ? location.types : [];
     }
 
     function consumeNewRunRequest() {
@@ -737,6 +781,21 @@
 
     function isAreaComplete() {
         return Boolean(state.run && state.run.area && state.run.area.completed);
+    }
+
+    function repairRunLocation() {
+        if (!state.run || state.run.location) return false;
+
+        // A v2 save written before a location was assigned (mid-development).
+        // Assign one now the same way a fresh run would, so it stays playable.
+        const location = chooseLevelLocation({
+            requiredType: getStarterType(state.run.starterId)
+        });
+
+        state.run.location = location;
+        state.run.visitedLocationIds = location ? [location.id] : [];
+
+        return true;
     }
 
     function repairRunCollections() {
@@ -792,7 +851,7 @@
             options: pokemonOptions.map(pokemon => pokemon.name),
             rewardAttackName: null,
             selectedPokemonName: null,
-            terrain: AREA_THEME.terrain
+            terrain: getLocationTerrain()
         };
 
         state.run.captureEncounters[node.id] = encounter;
@@ -1014,15 +1073,7 @@
     }
 
     function getAvailablePokemonForCurrentTerrain() {
-        const pokemonRecords = arena.GameData && Array.isArray(arena.GameData.pokemon)
-            ? arena.GameData.pokemon
-            : [];
-        const uniquePokemon = getUniqueRecordsByName(pokemonRecords);
-        const nonLegendaryPokemon = uniquePokemon.filter(pokemon => !isLegendaryPokemon(pokemon));
-        // TODO: Replace this WATER placeholder with terrain-specific encounter tables.
-        const waterPokemon = nonLegendaryPokemon.filter(pokemon => getRecordTypes(pokemon).includes('WATER'));
-
-        return waterPokemon.length > 0 ? waterPokemon : nonLegendaryPokemon;
+        return locations.getWildPokemonPool(arena.GameData, getLocationTypes());
     }
 
     function shouldChooseLegendaryCaptureEncounter(node) {
@@ -1644,4 +1695,4 @@
             .replace(/[^A-Z0-9]+/g, '_')
             .replace(/^_+|_+$/g, '');
     }
-})(window.CardArena = window.CardArena || {}, window.AreaMap = window.AreaMap || {}, window.PokeRun);
+})(window.CardArena = window.CardArena || {}, window.AreaMap = window.AreaMap || {}, window.PokeRun, window.PokeLocations);
