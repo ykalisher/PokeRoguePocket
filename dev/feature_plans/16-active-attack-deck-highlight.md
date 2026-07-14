@@ -85,10 +85,10 @@ In `static/area.css`, near `.area-card-grid .playing-card` (~area.css:659), add 
 The same deck-window overlay is duplicated in `map/capture.js`, `map/event.js`, `map/mart.js` — each has its own `renderActionCardSections`/`renderCardGrid`-style copy (grep each for `area-card-grid` / `renderCardGrid`). Apply the SAME change (benched "Benched" section from `state.collections.bench.actions` + `is-active-attack` on active attacks; the 16c CSS is global so it already applies). If a file renders a flat grid with no Attacks/Items split, adapt: still append a "Benched" section and highlight the active attacks. Do `area.js` first, verify it, then repeat. Skip any of these three only if its deck window does not render attack cards.
 
 ## Verify
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill (serve on 8931): open `area.html` in a run that has benched attacks (start a run, capture until the active roster hits 6 and you own an attack no active Pokémon can use → it gets benched). Open the Action deck: active attacks show a gold outline; a "Benched" section lists benched attacks. Screenshot to scratchpad.
-- [ ] With no benched attacks, the "Benched" section is absent (no empty header).
-- [ ] Pokémon Cards window is visually unchanged (no stray highlight).
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill (serve on 8931): open `area.html` in a run that has benched attacks (start a run, capture until the active roster hits 6 and you own an attack no active Pokémon can use → it gets benched). Open the Action deck: active attacks show a gold outline; a "Benched" section lists benched attacks. Screenshot to scratchpad.
+- [x] With no benched attacks, the "Benched" section is absent (no empty header).
+- [x] Pokémon Cards window is visually unchanged (no stray highlight).
 
 ## Out of scope
 Don't change the auto-bench logic (`run_state.js` `rebuildActionDeckForActivePokemon` / `shouldBenchNewAttack`), the battle engine, or the Pokémon bench UI. Display-only — no benched-attack management/moving. Never run `scripts/manage_*`, never act on `TODO.md`, never git commit unless asked.

@@ -667,6 +667,12 @@
     height: var(--card-h);
 }
 
+.area-card-grid .area-card-preview.is-active-attack {
+    outline: 3px solid color-mix(in srgb, var(--gold) 86%, transparent);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
 .area-bench-window {
     width: min(1120px, calc(100vw - 28px));
 }

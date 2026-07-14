@@ -562,29 +562,32 @@
     function renderActionCardSections(cards) {
         const attacks = cards.filter(arena.Model.isAttackCard).sort(compareCardsByName);
         const items = cards.filter(arena.Model.isItemCard).sort(compareCardsByName);
+        const benched = getBenchedAttackCards().slice().sort(compareCardsByName);
 
         return [
-            renderCardSection('Attacks', attacks),
+            renderCardSection('Attacks', attacks, { highlight: true }),
+            benched.length > 0 ? renderCardSection('Benched', benched) : '',
             renderCardSection('Items', items)
         ].join('');
     }
 
-    function renderCardSection(title, cards) {
+    function renderCardSection(title, cards, options = {}) {
         return `
             <section class="area-card-section">
                 <header class="area-card-section-header">
                     <h3>${title}</h3>
                     <span>${cards.length} ${cards.length === 1 ? 'card' : 'cards'}</span>
                 </header>
-                ${renderCardGrid(cards)}
+                ${renderCardGrid(cards, options)}
             </section>
         `;
     }
 
-    function renderCardGrid(cards) {
+    function renderCardGrid(cards, options = {}) {
+        const extraClass = options.highlight ? ' is-active-attack' : '';
         return `
             <div class="area-card-grid">
-                ${cards.map(card => arena.Render.renderCardPreview(card, { className: 'area-card-preview' })).join('')}
+                ${cards.map(card => arena.Render.renderCardPreview(card, { className: `area-card-preview${extraClass}` })).join('')}
             </div>
         `;
     }
@@ -593,6 +596,12 @@
         return state.run.collections[state.cardWindow]
             .slice()
             .sort(compareCardsByName);
+    }
+
+    function getBenchedAttackCards() {
+        const bench = state.run.collections.bench;
+        const cards = bench && Array.isArray(bench.actions) ? bench.actions : [];
+        return cards.filter(arena.Model.isAttackCard);
     }
 
     function repairMartEncounter() {
