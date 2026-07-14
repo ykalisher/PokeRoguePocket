@@ -58,12 +58,12 @@ Findings (fill in when done):
 
 | Page shell | Verdict |
 |------------|---------|
-| `.event-page`  | fixed (this session) |
+| `.event-page`  | fixed (this session) — added `height: auto; display: block; overflow: auto;`, matching `.capture-page`/`.mart-page` |
 | `.area-page`   | OK by design (inner scrollers) |
-| `.capture-page`   | … |
-| `.mart-page`   | … |
-| `.starter-page`   | … |
-| `.overview-page`   | … |
+| `.capture-page`   | OK — already has `min-height: 100dvh; height: auto; display: block; overflow: auto;` |
+| `.mart-page`   | OK — already has `min-height: 100dvh; height: auto; display: block; overflow: auto;` |
+| `.starter-page`   | OK — inherits `.menu-page`'s `height: auto; overflow: auto` (body class is `menu-page starter-page`) |
+| `.overview-page`   | OK — actual class is `.card-overview-page`, body is `game-page card-overview-page`; inherits `.game-page`'s `height: auto; overflow: auto` |
 
 ---
 
@@ -73,10 +73,23 @@ Use the `verify` skill. To force a tall trainer event, drive to an event node in
 overworld, or open `event.html` for a run whose active event is a trainer event
 (inspect / stage via the run state the drivers expose). At 390×844:
 
-- [ ] The trainer event scrolls; **Battle** and **Pay** are both reachable.
-- [ ] No horizontal page overflow.
-- [ ] Re-check area / capture / mart / starter / overview at 390×844 — none clip content.
-- [ ] `node tests/run_all.js` green. Save a before/after screenshot of the trainer event.
+- [x] The trainer event scrolls; **Battle** and **Pay** are both reachable. Verified with
+  `team-rocket-ambush` (type `trainer`) at 375×667 and 390×844: before the fix a real wheel
+  gesture left `scrollTop` at 0 and the Battle button sat below the viewport; after the fix
+  the same gesture scrolls the page and the button lands fully on-screen. Note: no event in
+  `events.json` currently defines a `payment` block, so `renderTrainerActions` never emits a
+  **Pay** card today (`map/event.js:386`, conditional on `paymentAction`) — the fix makes the
+  page scrollable regardless of how many choice cards render, so Pay will be reachable too
+  whenever an event adds one.
+- [x] No horizontal page overflow. Confirmed `scrollWidth === clientWidth` (390/375) on the
+  event page in both before/after checks.
+- [x] Re-check area / capture / mart / starter / overview at 390×844 — none clip content.
+  Confirmed via headless probe: `.capture-page`, `.mart-page`, `.starter-page` (via
+  `.menu-page`), and `.card-overview-page` (via `.game-page`) all report
+  `overflowY: auto` with `scrollHeight > clientHeight` and no horizontal overflow;
+  `.area-page` intentionally keeps `overflow: hidden` with inner scroll containers.
+- [x] `node tests/run_all.js` green (64/64 pass). Before/after screenshots of the trainer
+  event saved to the session scratchpad (`before_wheel_top.png`, `after_wheel_scrolled.png`).
 
 ## Out of scope
 Redesigning the event layout or the trainer event's two-column stage; changing which

@@ -11,6 +11,9 @@
     --card-h: calc(var(--card-w) * 1.52);
 
     min-height: 100dvh;
+    height: auto;
+    display: block;
+    overflow: auto;
     background: var(--page-bg-stack);
     color: #fbf6e8;
 }
