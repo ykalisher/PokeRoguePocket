@@ -1,10 +1,9 @@
 # Tasks
 This file is intended primarily for humans. Agents should not act on this file unless explicitly requested to mark something as complete or add a  new item, and should not use the contents of this file for anything.
 ## Next Big Task
-0. UI bug fixes and game logic tweaks
-2. Events need to all be redone because they're bad
-3. Figure out better progression system for increasing difficulty and actually getting stronger. Also more teambuilding options.
-4. Fix trainers, lots of gym leaders and elite trainers are just ace instead of being bosses and elite
+1. Events need to all be redone because they're bad
+2. Figure out better progression system for increasing difficulty and actually getting stronger. Also more teambuilding options.
+3. Fix trainers, lots of gym leaders and elite trainers are just ace instead of being bosses and elite
 ## Data
 - [x] Decide on type specializations for attacks
 	ARTIFICIAL: Interacts with the deck and hand; Attacks to increase the number of cards in your hand or prevent the next card you play from being discarded or replay a discarded card etc.
@@ -55,7 +54,7 @@ This file is intended primarily for humans. Agents should not act on this file u
 - [x] Connect regular battle nodes to the arena screen and return to the map after a win.
 - [x] Connect boss nodes to boss battles and gate area completion behind winning them.
 - [x] Add four terrain-themed areas with terrain-specific Pokemon, trainers, shops, and events.
-- [ ] Add the final boss gauntlet after the fourth area.
+- [x] Add the final boss gauntlet after the fourth area.
 - [x] Persist run state across screens, including current location, visited paths, money, Pokemon cards, and action cards.
 - [x] Enforce run loss when the player loses a battle, then reset to a new run.
 - [x] Refine map generation bounds for branch density, node spacing, terrain weighting, and guaranteed boss placement.
