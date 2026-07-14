@@ -13,7 +13,7 @@ multi-hit toward more hits. Ends green + playable.
   `arena/arena_data.js` `arena.Constants` (~`:48-57`): `STATUS_TRIGGER_CHANCE=1/3`,
   `STAT_CHANGE_TRIGGER_CHANCE=1/3`, `MULTI_ATTACK_MIN_HITS=2`, `MULTI_ATTACK_MAX_HITS=6`.
 - **The three roll sites to modify** (all in `arena/arena_controller.js`, all reached from
-  `resolveAttackAction` ~`:1855`, which has `action.owner` = the attacking side's id):
+  `resolveQueuedAttack` ~`:1838`, which has `action.owner` = the attacking side's id):
   - `maybeApplyAttackStatuses(actionCard, targets, isDamaging, extraStatuses)` (~`:2287`):
     `if (isDamaging && Math.random() >= STATUS_TRIGGER_CHANCE)`.
   - `maybeApplyAttackStatChanges(actionCard, targets, isDamaging, triggerChance)` (~`:2465`):
@@ -53,7 +53,7 @@ multi-hit toward more hits. Ends green + playable.
   target — mirror the gem's no-target handling in the targeting/`usePendingItem` path). The
   physical card **discards normally** (only gems are no-discard — that's phase 19).
 - [ ] 4. **`arena/arena_controller.js`** — apply the boost at the three roll sites. Compute
-  `const boosted = model.hasEffectBoost(action.owner);` in `resolveAttackAction` and thread it
+  `const boosted = model.hasEffectBoost(action.owner);` in `resolveQueuedAttack` and thread it
   in:
   - `maybeApplyAttackStatuses`: use `boosted ? Math.min(1, STATUS_TRIGGER_CHANCE * 2) : STATUS_TRIGGER_CHANCE`.
   - `maybeApplyAttackStatChanges`: pass a doubled `triggerChance` (`Math.min(1, base * 2)`) when boosted.

@@ -57,7 +57,7 @@ Anchors captured 2026-07-14 — **hints, not addresses**; find by function name.
   text badge. `applyStatus` (~`:980`) / `createStatusEntry` build per-Pokémon status entries.
   `removeCardFromPlay(player, card)` (~`:1739`) pushes to `player.removed[]` (the
   "one-time-use, gone for the battle" pile).
-- **Battle resolution:** `arena/arena_controller.js` — `resolveAttackAction` (~`:1855`) drives
+- **Battle resolution:** `arena/arena_controller.js` — `resolveQueuedAttack` (~`:1838`) drives
   an attack; `maybeApplyAttackStatuses` (~`:2287`) rolls `STATUS_TRIGGER_CHANCE`;
   `maybeApplyAttackStatChanges` (~`:2465`) rolls the stat-change chance;
   `getRandomMultiAttackHitCount` (~`:2188`) / `resolveMultiAttackDamage` (~`:2165`) handle

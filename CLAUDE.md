@@ -21,7 +21,7 @@ Binding rules for all agents (imported):
 | `arena/trainer_sprites.js` (2.2k lines) | embedded sprite data — never read whole |
 | `map/` | overworld run: `area.js` (1.6k), `capture.js`, `mart.js`, `event.js`, `event_effects.js`, `run_state.js` |
 | root `*.html` (8 files) | entry points; `game.html` = battle, `index.html` = start |
-| `pokemon.json` (188) `attacks.json` (115) `trainers.json` (31) `items.json` `events.json` | card data — see `data` skill |
+| `pokemon.json` (188) `attacks.json` (116) `trainers.json` (44) `items.json` `events.json` | card data — see `data` skill |
 | `scripts/` | HUMAN-ONLY interactive CLIs; `data_options.js` = canonical enums (CommonJS) |
 | `tests/` | Node test harness, zero deps (`helpers/arena_env.js` loads the engine in Node) |
 | `dev/` | agent tooling: `verify/` browser drivers, `hooks/` edit-check hook |
