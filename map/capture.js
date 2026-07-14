@@ -495,6 +495,15 @@
         const attacks = arena.GameData && Array.isArray(arena.GameData.attacks)
             ? arena.GameData.attacks
             : [];
+
+        if (isLegendaryPokemon(pokemon)) {
+            const legendaryOptions = attacks.filter(attack => legendaryCanUseDualAttack(pokemon, attack));
+            if (legendaryOptions.length > 0) {
+                return legendaryOptions[randomInt(0, legendaryOptions.length - 1)];
+            }
+            // Defensive: no eligible dual-req legendary attack — fall through to the normal roll.
+        }
+
         const learnableAttacks = attacks.filter(attack => pokemonCanLearnCaptureAttack(pokemon, attack));
         const fallbackAttacks = attacks.filter(attack => !requiresBothAttackTypes(attack));
         const options = learnableAttacks.length > 0 ? learnableAttacks : fallbackAttacks;
@@ -563,6 +572,13 @@
 
     function requiresBothAttackTypes(attack) {
         return Boolean(attack.full_type_requirements && getRecordTypes(attack, ['type1', 'type2']).length > 1);
+    }
+
+    function legendaryCanUseDualAttack(pokemon, attack) {
+        const attackTypes = getRecordTypes(attack, ['type1', 'type2']);
+        if (!requiresBothAttackTypes(attack) || !attackTypes.includes('LEGENDARY')) return false;
+        const pokemonTypes = getRecordTypes(pokemon);
+        return attackTypes.every(type => pokemonTypes.includes(type));
     }
 
     function getRecordTypes(record, keys = ['type1', 'type2', 'type3']) {

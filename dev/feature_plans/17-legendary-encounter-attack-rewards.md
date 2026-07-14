@@ -73,9 +73,9 @@ const eligible = a.full_type_requirements
 Fail with a message naming any legendary that has zero eligible attacks. This catches future JSON edits that would strand a legendary with no proper reward.
 
 ## Verify
-- [ ] `node tests/run_all.js` green (incl. the new invariant test).
-- [ ] `verify` skill (serve on 8931): trigger a legendary capture and confirm the reward is one of the 14 dual-req legendary attacks matching the legendary's second type (e.g. Articuno → Blizzard or Great Storm). Legendary offers are chance-gated on last-third map nodes; if hard to hit organically, drive `map/capture.js` directly after `arena.Data.loadGameData()` and read the capture `state.encounter.rewardAttackName`. Screenshot to scratchpad.
-- [ ] Spot-check a non-legendary capture still gets a normal attack (unchanged).
+- [x] `node tests/run_all.js` green (incl. the new invariant test). — 69 pass / 0 fail.
+- [x] `verify` skill (serve on 8931): trigger a legendary capture and confirm the reward is one of the 14 dual-req legendary attacks matching the legendary's second type (e.g. Articuno → Blizzard or Great Storm). Legendary offers are chance-gated on last-third map nodes; if hard to hit organically, drive `map/capture.js` directly after `arena.Data.loadGameData()` and read the capture `state.encounter.rewardAttackName`. Screenshot to scratchpad. — Fabricated a last-third capture node offering Articuno, drove capture.html; reward = "Great Storm" (FLYING dual-req), no page/console errors. Shot: scratchpad/legendary_capture.png.
+- [x] Spot-check a non-legendary capture still gets a normal attack (unchanged). — Magnezone capture → "Flash Cannon" (plain on-type), no errors.
 
 ## Out of scope
 Don't change non-legendary reward logic, `pokemonCanLearnCaptureAttack`, the capture UI/animation, or the legendary spawn chance. Don't touch the battle engine. Never run `scripts/manage_*`, never act on `TODO.md`, never git commit unless asked.

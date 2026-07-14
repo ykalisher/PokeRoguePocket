@@ -330,3 +330,27 @@ test('default battle deck references resolve against real data', async () => {
     assert.equal(data.items.length, items.length);
     assert.equal(data.trainers.length, trainers.length);
 });
+
+// A captured legendary is rewarded a dual-requirement legendary attack (one
+// that pairs LEGENDARY with a real type the legendary also has). If a JSON
+// edit ever strands a legendary with no eligible attack, its capture reward
+// would silently fall back to a plain attack — catch that here.
+test('every legendary pokemon has an eligible dual-req legendary attack', () => {
+    const legendaries = pokemon.filter(record => (
+        [record.type1, record.type2, record.type3].includes('LEGENDARY')
+    ));
+
+    assert.ok(legendaries.length > 0, 'no legendary pokemon found');
+
+    legendaries.forEach(p => {
+        const pokeTypes = [p.type1, p.type2, p.type3].filter(t => t && t !== 'NONE');
+        const hasEligible = attacks.some(a => {
+            const attackTypes = [a.type1, a.type2].filter(t => t && t !== 'NONE');
+            return a.full_type_requirements
+                && attackTypes.includes('LEGENDARY')
+                && attackTypes.length > 1
+                && attackTypes.every(t => pokeTypes.includes(t));
+        });
+        assert.ok(hasEligible, `legendary ${p.name} has no eligible dual-req legendary attack`);
+    });
+});
