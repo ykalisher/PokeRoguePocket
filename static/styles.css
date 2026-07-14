@@ -146,11 +146,12 @@ body {
     box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.14), 0 20px 48px rgba(0, 0, 0, 0.28);
 }
 
-/* Main menu title override. */
+/* Main menu title override; sized so the longest word ("POKEMON") stays
+   inside the panel's content box and does not skew the grid column. */
 .menu-page h1 {
     margin: 0;
     color: #fbf6e8;
-    font-size: clamp(3rem, 12vw, 5rem);
+    font-size: clamp(2.5rem, 10vw, 3.75rem);
     letter-spacing: 0;
     text-shadow: 0 8px 22px rgba(0, 0, 0, 0.36);
 }
@@ -173,6 +174,11 @@ body {
 .menu-page .btn {
     width: 100%;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+}
+
+/* The corner back link stays compact despite full-width menu buttons. */
+.menu-page .btn-back {
+    width: auto;
 }
 
 /* Hover/focus color for menu buttons and arena action buttons. */
@@ -367,6 +373,7 @@ body {
 
 /* Player/opponent arena panels that contain status, board slots, piles, and hand. */
 .side-panel {
+    min-width: 0;
     min-height: 0;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
@@ -393,18 +400,31 @@ body {
     gap: 10px;
 }
 
-/* Aligns side-panel title and counters at opposite ends. */
+/* Aligns side-panel title and counters at opposite ends. Kept above the
+   board row so counters stay readable if a tight viewport overflows cards.
+   min-width keeps a long nowrap trainer name from widening the panel column
+   on narrow screens; the title truncates instead. */
 .side-status {
+    position: relative;
+    z-index: 3;
+    min-width: 0;
     justify-content: space-between;
 }
 
-/* Player/opponent heading inside a side panel. */
+/* Player/opponent heading inside a side panel. Long names truncate with an
+   ellipsis; the min-width floor keeps short names ("You") whole when the
+   counter pills crowd the row on narrow screens. */
 .side-title {
     margin: 0;
+    min-width: 3.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: clamp(0.86rem, 1.5vw, 1.16rem);
     font-weight: 750;
     letter-spacing: 0;
 }
+
 
 /* Counter group for Pokemon left, deck, hand, discard, and KO totals. */
 .side-stats {
@@ -1282,13 +1302,21 @@ button.playing-card:focus-visible {
 
 /* Persistent status token shown on Pokemon cards. */
 .status-token {
-    width: clamp(12px, 1.15vw, 16px);
-    height: clamp(12px, 1.15vw, 16px);
+    width: clamp(15px, 1.5vw, 20px);
+    height: clamp(15px, 1.5vw, 20px);
     display: grid;
-    border: 1px solid rgba(37, 27, 24, 0.46);
-    background-color: rgba(247, 238, 215, 0.9);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.28);
+    border: 2px solid rgba(37, 27, 24, 0.62);
+    background-color: rgba(252, 248, 238, 0.97);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.34);
 }
+
+/* Per-status tints so conditions read at a glance even at token size. */
+.status-token--burn { background-color: #ffd3b6; border-color: #b3441e; }
+.status-token--poison { background-color: #eccdf5; border-color: #7d3d92; }
+.status-token--sleep { background-color: #ccdcf7; border-color: #3c5a8f; }
+.status-token--paralysis { background-color: #ffeea8; border-color: #a8830f; }
+.status-token--confusion { background-color: #fbd0e0; border-color: #a83d62; }
+.status-token--flinch { background-color: #dcd9d2; border-color: #5c564c; }
 
 /* Icon image sizing inside status/action tokens. */
 .status-token img,
@@ -1305,14 +1333,14 @@ button.playing-card:focus-visible {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 3px;
     align-items: center;
-    color: rgba(37, 27, 24, 0.7);
-    font-size: 0.46rem;
+    color: rgba(37, 27, 24, 0.84);
+    font-size: 0.56rem;
     font-weight: 850;
 }
 
 /* Health bar track inside Pokemon cards. */
 .health-track {
-    height: 5px;
+    height: 6px;
     overflow: hidden;
     border-radius: 999px;
     background-color: rgba(37, 27, 24, 0.18);
@@ -1331,8 +1359,8 @@ button.playing-card:focus-visible {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1px 2px;
-    color: rgba(37, 27, 24, 0.74);
-    font-size: 0.46rem;
+    color: rgba(37, 27, 24, 0.86);
+    font-size: 0.54rem;
     font-weight: 850;
     line-height: 1.05;
 }
@@ -2000,6 +2028,12 @@ button.playing-card:focus-visible {
     white-space: normal;
 }
 
+/* Entries are newest-first; the latest one reads as the current headline. */
+.event-log li:first-child {
+    color: #fbf6e8;
+    font-weight: 740;
+}
+
 /* Temporary popup toast shown for action feedback. */
 .arena-popup {
     position: fixed;
@@ -2368,12 +2402,13 @@ button.playing-card:focus-visible {
 
 /* Wide arena layout and larger card sizing. */
 @media (min-width: 1100px) {
-    /* Wide card/pile sizing tokens. */
+    /* Wide card/pile sizing tokens. The dvh terms are sized so both panels
+       plus hands fit 100dvh down to ~650px-tall viewports without overlap. */
     .game-page {
-        --card-w: clamp(64px, min(7.6vw, 15.2dvh), 128px);
-        --hand-card-w: clamp(58px, min(6.4vw, 12.4dvh), 108px);
-        --opponent-hand-card-w: clamp(22px, min(2.2vw, 4.2dvh), 36px);
-        --pile-card-w: clamp(48px, min(5.3vw, 10.2dvh), 92px);
+        --card-w: clamp(64px, min(7.6vw, 11.8dvh), 128px);
+        --hand-card-w: clamp(58px, min(6.4vw, 9.4dvh), 108px);
+        --opponent-hand-card-w: clamp(22px, min(2.2vw, 3.6dvh), 36px);
+        --pile-card-w: clamp(44px, min(5.3vw, 6.4dvh), 92px);
         --panel-gap: clamp(8px, 1vw, 14px);
     }
 
@@ -2400,18 +2435,30 @@ button.playing-card:focus-visible {
         grid-row: 1;
     }
 
-    /* Wide placement for player panel spanning the full width. */
+    /* Wide placement for player panel mirroring the opponent column. */
     .side-panel--player {
-        grid-column: 1 / -1;
+        grid-column: 1;
         grid-row: 2;
     }
 
-    /* Wide turn-control box positioned in the right column. */
+    /* Reserves room for the fixed Back button beside the opponent title. */
+    .side-panel--opponent .side-status {
+        padding-left: 70px;
+    }
+
+    /* Counters keep their size; a long trainer name truncates instead.
+       Wide-only: narrow layouts need the pill group to wrap and shrink. */
+    .side-status .side-stats {
+        flex-shrink: 0;
+    }
+
+    /* Wide turn-control box fills the right column so it can never bleed
+       over the player panel at short heights and the log gets the leftover. */
     .arena-status {
         position: static;
         grid-column: 2;
-        grid-row: 1;
-        align-self: start;
+        grid-row: 1 / -1;
+        align-self: stretch;
         justify-self: stretch;
         z-index: 25;
         width: auto;
@@ -2419,6 +2466,7 @@ button.playing-card:focus-visible {
         min-height: 0;
         display: grid;
         grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto auto minmax(0, 1fr);
         gap: 8px 10px;
         align-items: center;
         padding: 12px;
@@ -2463,11 +2511,13 @@ button.playing-card:focus-visible {
         font-size: clamp(0.9rem, 0.95vw, 1rem);
     }
 
-    /* Wide event log fills the control box width. */
+    /* Wide event log fills the control box width and all leftover height. */
     .event-log {
         grid-column: 1 / -1;
+        align-self: stretch;
         width: 100%;
-        max-height: min(30dvh, 260px);
+        min-height: 0;
+        max-height: none;
         font-size: 0.86rem;
     }
 
@@ -2529,8 +2579,18 @@ button.playing-card:focus-visible {
 
     /* Wide persistent status token sizing. */
     .status-token {
-        width: clamp(18px, calc(var(--card-w) * 0.18), 24px);
-        height: clamp(18px, calc(var(--card-w) * 0.18), 24px);
+        width: clamp(20px, calc(var(--card-w) * 0.21), 28px);
+        height: clamp(20px, calc(var(--card-w) * 0.21), 28px);
+    }
+
+    /* Wide toast sits bottom-right over the log tail, clear of every card. */
+    .arena-popup {
+        top: auto;
+        bottom: 18px;
+        left: auto;
+        right: 18px;
+        transform: none;
+        max-width: min(30vw, 420px);
     }
 
     /* Wide action-card name sizing. */
@@ -2541,6 +2601,51 @@ button.playing-card:focus-visible {
     /* Wide action-card target sizing. */
     .action-card-meta {
         font-size: 0.38rem;
+    }
+}
+
+/* Short wide viewports: clamp cards further down so both panels fit 100dvh
+   without board rows spilling over headers or hands. */
+@media (min-width: 1100px) and (max-height: 720px) {
+    .game-page {
+        --card-w: clamp(52px, min(7vw, 11.5dvh), 96px);
+        --hand-card-w: clamp(44px, min(5.8vw, 8.4dvh), 84px);
+        --opponent-hand-card-w: clamp(18px, min(2vw, 3.4dvh), 28px);
+        --pile-card-w: clamp(34px, min(4.6vw, 6.6dvh), 64px);
+        --panel-gap: 6px;
+    }
+
+    .game-board {
+        padding: 8px 12px 10px;
+    }
+
+    .side-panel {
+        gap: 6px;
+        padding: 8px;
+    }
+
+    /* Card interiors track the smaller cards so text never overlaps. */
+    .playing-card {
+        gap: 1px;
+        padding: 4px;
+    }
+
+    .card-portrait {
+        width: calc(var(--card-w) * 0.58);
+    }
+
+    .card-name {
+        font-size: 0.5rem;
+    }
+
+    .health-row,
+    .stat-grid {
+        font-size: 0.46rem;
+    }
+
+    .card-topline,
+    .card-footer {
+        font-size: 0.6rem;
     }
 }
 
@@ -2623,11 +2728,13 @@ button.playing-card:focus-visible {
         padding: 5px 3px;
     }
 
-    /* Compact turn-control box stacked into one column. */
+    /* Compact turn-control box stacked into one column; pills keep their
+       natural width instead of stretching into full-width bars. */
     .arena-status {
         min-height: 0;
         display: grid;
         grid-template-columns: 1fr;
+        justify-items: center;
         gap: 8px;
         padding: 9px;
     }
@@ -2653,7 +2760,7 @@ button.playing-card:focus-visible {
     /* Compact log uses the full control width with a shorter scroll window. */
     .event-log {
         width: 100%;
-        max-height: min(18dvh, 120px);
+        max-height: min(26dvh, 190px);
         font-size: 0.72rem;
     }
 
@@ -2698,7 +2805,7 @@ button.playing-card:focus-visible {
 
     /* Compact Pokemon stat text sizing. */
     .stat-grid {
-        font-size: 0.4rem;
+        font-size: 0.46rem;
     }
 
     /* Compact type icon sizing. */
@@ -2767,7 +2874,7 @@ button.playing-card:focus-visible {
 
     .health-row,
     .stat-grid {
-        font-size: 0.32rem;
+        font-size: 0.44rem;
     }
 
     .stat-grid {
@@ -2804,7 +2911,7 @@ button.playing-card:focus-visible {
     .attack-power,
     .action-stat-change,
     .action-card-meta {
-        font-size: 0.3rem;
+        font-size: 0.36rem;
     }
 
     .action-status-token {

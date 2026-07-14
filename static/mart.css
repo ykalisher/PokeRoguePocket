@@ -333,8 +333,10 @@
 }
 
 .mart-pc-card {
-    width: var(--pc-card-w);
-    height: var(--pc-card-h);
+    --card-w: var(--pc-card-w);
+    --card-h: var(--pc-card-h);
+    width: var(--card-w);
+    height: var(--card-h);
 }
 
 .mart-pc-empty {
@@ -375,8 +377,28 @@
 }
 
 .mart-pokemon-choice .playing-card {
-    width: 72px;
-    height: calc(72px * 1.52);
+    /* Re-scope the card tokens so the interior (portrait, name, stats)
+       shrinks with the mini card instead of overflowing into overlap. */
+    --card-w: 72px;
+    --card-h: calc(var(--card-w) * 1.52);
+    width: var(--card-w);
+    height: var(--card-h);
+    gap: 1px;
+    padding: 4px;
+}
+
+/* Compact interior text for the 72px picker cards. */
+.mart-pokemon-choice .card-portrait {
+    width: calc(var(--card-w) * 0.58);
+}
+
+.mart-pokemon-choice .card-name {
+    font-size: 0.5rem;
+}
+
+.mart-pokemon-choice .health-row,
+.mart-pokemon-choice .stat-grid {
+    font-size: 0.46rem;
 }
 
 .mart-pokemon-choice:hover .playing-card,

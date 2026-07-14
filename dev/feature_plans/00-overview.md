@@ -125,7 +125,7 @@ every starter-deck name resolves to a real record.
 - [x] Phase 4 — Starter picker
 - [x] Phase 5 — Events gating + seeded events
 - [x] Phase 6 — Theming (neutral restyle + per-location)
-- [ ] Phase 7 — UI audit + targeted fixes
+- [x] Phase 7 — UI audit + targeted fixes
 
 ## Verification quick reference
 

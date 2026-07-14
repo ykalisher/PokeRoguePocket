@@ -122,7 +122,7 @@
         return `
             <section class="side-panel side-panel--${playerId}" aria-label="${player.name} arena">
                 <header class="side-status">
-                    <h2 class="side-title">${player.name}</h2>
+                    <h2 class="side-title" title="${player.name}">${player.name}</h2>
                     <div class="side-stats">
                         <span class="stat-pill">Pokemon left ${player.pokemonLeft}</span>
                         <span class="stat-pill">Pkmn deck ${player.pokemonDeck.length}</span>
@@ -188,7 +188,7 @@
 
         return `
             <div class="pile pile--${type}" data-pile-owner="${ownerId}" data-pile-type="${type}">
-                <${tagName} class="pile-card ${getPileCardClass(type, cards)}${isEmpty}" ${buttonAttributes} aria-label="${title}">
+                <${tagName} class="pile-card ${getPileCardClass(type, cards)}${isEmpty}" ${buttonAttributes} aria-label="${title}" title="${title}">
                     ${renderPileCardContent(type, cards, count)}
                 </${tagName}>
             </div>
