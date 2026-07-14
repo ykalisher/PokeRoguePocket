@@ -227,7 +227,15 @@
             const tappedId = cardButton.dataset.cardId;
 
             if (tappedId && (tappedId === state.selectedCardId || tappedId === state.pendingActionCardId)) {
-                cancelActionSelection();
+                if (state.phase === 'turn') {
+                    // The card is only highlighted by an unavailable-action popup
+                    // (e.g. no eligible attacker); cancelActionSelection() no-ops
+                    // outside the selecting-* phases, so clear the highlight here.
+                    state.selectedCardId = null;
+                    render();
+                } else {
+                    cancelActionSelection();
+                }
                 return;
             }
 

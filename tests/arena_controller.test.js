@@ -99,3 +99,44 @@ test('tapping a selected attack card again deselects it (tap-to-deselect)', () =
     assert.equal(state.pendingActionCardId, null);
     assert.equal(state.selectedCardId, null);
 });
+
+test('tapping an unusable attack card again clears its highlight while phase stays "turn"', () => {
+    const state = arena.state;
+
+    state.elements = { board: {}, popup: { hidden: false } };
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+    // The only active Pokemon is WATER but the attack requires FIRE, so no
+    // eligible attacker exists: selection highlights the card without leaving
+    // the 'turn' phase.
+    state.players.player.board[0] = makePokemonCard('player', ['WATER']);
+    state.players.opponent.board[0] = makePokemonCard('opponent', ['WATER']);
+
+    const attackCard = makeAttackCard('player', ['FIRE']);
+    state.players.player.hand = [attackCard];
+
+    state.phase = 'turn';
+    state.currentPlayer = 'player';
+    state.isResolving = false;
+    state.finished = false;
+    state.suppressNextClick = false;
+    state.pendingActionCardId = null;
+    state.selectedCardId = null;
+    state.extraAttacks = { opponent: {}, player: {} };
+    state.plannedActions = { opponent: [], player: [] };
+
+    Controller.handleArenaClick(clickOnCard(attackCard.id));
+
+    assert.equal(state.phase, 'turn');
+    assert.equal(state.selectedCardId, attackCard.id);
+    assert.equal(state.pendingActionCardId, null);
+
+    Controller.handleArenaClick(clickOnCard(attackCard.id));
+
+    assert.equal(state.phase, 'turn');
+    assert.equal(state.selectedCardId, null);
+
+    clearTimeout(state.popupTimer);
+});
