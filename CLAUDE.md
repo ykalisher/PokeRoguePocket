@@ -46,6 +46,9 @@ Binding rules for all agents (imported):
 - Verifying behavior in the real game (GUI): `verify` skill — committed drivers
   in `dev/verify/`, do not rebuild them from scratch.
 - Editing card-data JSON: `data` skill.
-- Phased feature plans live in `dev/feature_plans/` — structure, conventions, and the
-  `status.sh` progress viewer are documented in `dev/feature_plans/README.md`.
+- Phased feature plans live in `dev/feature_plans/`; the structure, writing mindset, and
+  canonical phase template are documented in `dev/feature_plans/README.md`. **To do or
+  continue the next step of a plan** (e.g. "do the next step in the dev plan"): run
+  `bash dev/feature_plans/status.sh --current` to find the active phase, then implement
+  exactly that one phase per the README, ticking each checkbox as you go.
 - `TODO.md` is the owner's planning file — never act on it unless explicitly asked.
