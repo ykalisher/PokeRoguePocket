@@ -422,7 +422,6 @@
 
         return `
             <div class="hand-row hand-row--${player.id}">
-                <div class="hand-label">${isOpponent ? 'Opponent Hand' : 'Your Hand'} (${player.hand.length})</div>
                 <div class="hand-cards">
                     ${cards || '<span class="empty-hand">Empty</span>'}
                 </div>

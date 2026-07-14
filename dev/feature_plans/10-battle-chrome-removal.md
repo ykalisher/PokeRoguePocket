@@ -59,11 +59,11 @@ row edge.
 
 ## Verify (whole session)
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill: screenshot the battle screen at 390×844 and on desktop.
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill: screenshot the battle screen at 390×844 and on desktop.
       No Back button; opponent name not clipped; no dead top gap; both hands
       unlabelled and edge-aligned.
-- [ ] Save before/after screenshots to your scratchpad.
+- [x] Save before/after screenshots to your scratchpad.
 
 ## Out of scope
 Resizing the hand cards or the log (that's session 11); any layout redesign.

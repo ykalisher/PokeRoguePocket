@@ -2441,9 +2441,8 @@ button.playing-card:focus-visible {
         grid-row: 2;
     }
 
-    /* Reserves room for the fixed Back button beside the opponent title. */
     .side-panel--opponent .side-status {
-        padding-left: 70px;
+        padding-left: 0;
     }
 
     /* Counters keep their size; a long trainer name truncates instead.
@@ -2662,7 +2661,7 @@ button.playing-card:focus-visible {
 
     /* Compact arena stacks opponent, controls, and player vertically. */
     .game-board {
-        padding: 62px 8px 10px;
+        padding: 10px 8px 10px;
         grid-template-rows: auto auto auto;
     }
 
