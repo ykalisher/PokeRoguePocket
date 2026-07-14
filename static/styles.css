@@ -1871,6 +1871,12 @@ button.playing-card:focus-visible {
     gap: 8px;
     padding: 6px 4px 8px;
     overflow-x: auto;
+    scroll-snap-type: x proximity;
+}
+
+/* Snap each hand card to the strip's leading edge while scrolling. */
+.hand-cards .hand-card {
+    scroll-snap-align: start;
 }
 
 /* Tight spacing for the opponent's hidden hand strip. */
@@ -2653,7 +2659,7 @@ button.playing-card:focus-visible {
     /* Compact card/pile sizing tokens. */
     .game-page {
         --card-w: clamp(46px, min(16vw, 9.4dvh), 68px);
-        --hand-card-w: clamp(42px, min(15vw, 8.7dvh), 62px);
+        --hand-card-w: clamp(38px, min(11.5vw, 8dvh), 52px);
         --opponent-hand-card-w: clamp(20px, min(6vw, 4.6dvh), 28px);
         --pile-card-w: clamp(38px, min(12vw, 7.4dvh), 52px);
         --panel-gap: 8px;
@@ -2721,10 +2727,13 @@ button.playing-card:focus-visible {
         gap: 6px;
     }
 
-    /* Compact hand card strip spacing. */
+    /* Compact hand card strip spacing; fade the edges so off-screen hand
+       cards read as horizontally scrollable. */
     .hand-cards {
         gap: 6px;
         padding: 5px 3px;
+        -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+        mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
     }
 
     /* Compact turn-control box stacked into one column; pills keep their
@@ -2759,7 +2768,7 @@ button.playing-card:focus-visible {
     /* Compact log uses the full control width with a shorter scroll window. */
     .event-log {
         width: 100%;
-        max-height: min(26dvh, 190px);
+        max-height: 108px;
         font-size: 0.72rem;
     }
 
@@ -2836,7 +2845,7 @@ button.playing-card:focus-visible {
 @media (min-width: 501px) and (max-width: 1099px) {
     .game-page {
         --card-w: clamp(68px, min(13vw, 10.5dvh), 78px);
-        --hand-card-w: clamp(62px, min(12vw, 9.3dvh), 70px);
+        --hand-card-w: clamp(52px, min(9.5vw, 8.4dvh), 62px);
         --opponent-hand-card-w: clamp(22px, min(5vw, 4.8dvh), 32px);
         --pile-card-w: clamp(52px, min(9vw, 7.8dvh), 58px);
         --panel-gap: clamp(8px, 1vw, 12px);

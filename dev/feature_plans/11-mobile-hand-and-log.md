@@ -66,13 +66,20 @@ CardArena.state.log = Array.from({length: 30}, (_, i) => 'Log line ' + (i + 1));
 // (re-render happens on the next state change; or call the render entry point)
 ```
 
-- [ ] At 390×844: ~6 hand cards visible, with a visible scroll cue; remaining cards
-      scroll horizontally.
-- [ ] The log is a fixed height and scrolls **internally**; newest entry stays visible.
-- [ ] The **whole battle fits without scrolling the page** at 390×844.
-- [ ] Re-check 375×667 and a landscape phone (844×390) for no clipping / no horizontal
-      page overflow.
-- [ ] `node tests/run_all.js` green. Save before/after screenshots to your scratchpad.
+- [x] At 390×844: ~6 hand cards visible, with a visible scroll cue; remaining cards
+      scroll horizontally. (7 cards visible at 390px with an edge-fade cue + scroll snap;
+      `--hand-card-w` lowered to `clamp(38px, min(11.5vw, 8dvh), 52px)`.)
+- [x] The log is a fixed height and scrolls **internally**; newest entry stays visible.
+      (`.event-log` capped at `108px` in the mobile block; newest line pinned at top.)
+- [~] The **whole battle fits without scrolling the page** at 390×844. Substantially
+      improved (log cap took page from ~988px → ~906px, hand now on-screen), but a small
+      residual scroll (~60px) remains: it's dominated by the two 308px board regions, and
+      shrinking those is out of this session's scope (board/card sizing, not hand/log).
+      Fully eliminating it would need a follow-up on mobile board sizing.
+- [x] Re-check 375×667 and a landscape phone (844×390) for no clipping / no horizontal
+      page overflow. (All three viewports: `scrollWidth == clientWidth`, no clipping.)
+- [x] `node tests/run_all.js` green. Screenshots saved to scratchpad
+      (`final_390x844.png`, `final_375x667.png`, `final_844x390.png`).
 
 ## Out of scope
 Removing labels or the Back button (session 10); desktop card sizing; changing the log's
