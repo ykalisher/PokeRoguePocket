@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Read-only viewer for the phased feature plan in this directory.
-# Prints each batch overview, per-phase checkbox progress, and the current phase.
+# Prints each batch overview, per-phase checkbox progress, the recommended agent
+# (model tier + effort) for each phase, and the current phase.
 # Touches nothing but stdout — safe to run alongside a working agent.
 #
 #   bash dev/feature_plans/status.sh          # full status
@@ -12,9 +13,9 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors only when writing to a terminal.
 if [ -t 1 ]; then
-  B=$'\e[1m'; DIM=$'\e[2m'; GRN=$'\e[32m'; YEL=$'\e[33m'; CYN=$'\e[36m'; RST=$'\e[0m'
+  B=$'\e[1m'; DIM=$'\e[2m'; GRN=$'\e[32m'; YEL=$'\e[33m'; CYN=$'\e[36m'; MAG=$'\e[35m'; RST=$'\e[0m'
 else
-  B=''; DIM=''; GRN=''; YEL=''; CYN=''; RST=''
+  B=''; DIM=''; GRN=''; YEL=''; CYN=''; MAG=''; RST=''
 fi
 
 # `NN` argument: dump that phase file and exit.
@@ -46,6 +47,12 @@ counts_of() {
   un=$(grep -cE '^[[:space:]]*- \[ \]' "$f" || true)
   echo "$ch/$((ch+un))"
 }
+# The phase's "**Recommended agent:**" header line (model tier + effort), or "—".
+power_of() {
+  local p
+  p=$(sed -nE 's/^\*\*Recommended agent:\*\*[[:space:]]*//p' "$1" | head -1)
+  [ -n "$p" ] && echo "$p" || echo "—"
+}
 
 current=""   # first phase file (numeric order) that is WIP, else first TODO
 # Match any NN-*.md (1+ leading digits) and sort numerically so 9 < 10 < 100.
@@ -67,7 +74,7 @@ done
 
 if [[ "${1:-}" == "--current" ]]; then
   if [ -n "$current" ]; then
-    echo "$(basename "$current" .md) — $(title_of "$current")  [$(counts_of "$current") done]"
+    echo "$(basename "$current" .md) — $(title_of "$current")  [$(counts_of "$current") done]  ·  agent: $(power_of "$current")"
   else
     echo "All phases complete."
   fi
@@ -87,12 +94,12 @@ for f in $files; do
     WIP)  mark="${YEL}◑${RST}" ;;
     *)    mark="○"             ;;
   esac
-  printf '    %b %s  %-46s %s\n' "$mark" "$num" "$(title_of "$f")" "${DIM}$cnt${RST}"
+  printf '    %b %s  %-40s %s  %b\n' "$mark" "$num" "$(title_of "$f")" "${DIM}$cnt${RST}" "${MAG}$(power_of "$f")${RST}"
 done
 
 echo
 if [ -n "$current" ]; then
-  echo "${B}${YEL}──▶ CURRENT:${RST} $(basename "$current" .md) — ${B}$(title_of "$current")${RST}  [$(counts_of "$current") done]"
+  echo "${B}${YEL}──▶ CURRENT:${RST} $(basename "$current" .md) — ${B}$(title_of "$current")${RST}  [$(counts_of "$current") done]  ${MAG}agent: $(power_of "$current")${RST}"
   cnum=$(basename "$current"); cnum=${cnum%%-*}
   echo "${DIM}    view it:  bash $(basename "${BASH_SOURCE[0]}") ${cnum}  |  or open ${current}${RST}"
 else

@@ -1,5 +1,7 @@
 # Session 16 — Active-attack deck highlight
 
+**Recommended agent:** Sonnet · medium effort
+
 **Standalone feature** (not part of the 08–14 mobile-polish batch). Overworld deck-viewing UI only; plain JS + CSS. Validate with `node tests/run_all.js` and the `verify` skill.
 
 ## Context / why

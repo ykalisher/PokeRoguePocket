@@ -1,5 +1,7 @@
 # Session 15 — Type-constrained attack rewards from events
 
+**Recommended agent:** Sonnet · medium effort
+
 **Standalone feature** (not part of the 08–14 mobile-polish batch). A data + engine
 change to the overworld event system. Editing `events.json` is governed by the `data`
 skill; validate everything with `node tests/run_all.js`.

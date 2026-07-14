@@ -1,5 +1,7 @@
 # Session 14 — iOS drag & touch-input reliability  (INVESTIGATION)
 
+**Recommended agent:** Opus · high effort
+
 **Read `08-post-launch-overview.md` first.** **This is not a known one-line fix, and it
 is not for a less-powerful model.** It is an open investigation into intermittent
 touch/drag failure on iOS Safari. Do it **last**, after sessions 09–13 have stabilised

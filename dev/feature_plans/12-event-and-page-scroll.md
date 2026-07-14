@@ -1,5 +1,7 @@
 # Session 12 — Event & page scroll fix
 
+**Recommended agent:** Sonnet · low effort
+
 **Read `08-post-launch-overview.md` first.** A focused CSS fix plus a short audit of the
 other page shells.
 

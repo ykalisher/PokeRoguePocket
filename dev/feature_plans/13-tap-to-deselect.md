@@ -1,5 +1,7 @@
 # Session 13 — Tap-to-deselect (touch + mouse)
 
+**Recommended agent:** Sonnet · low effort
+
 **Read `08-post-launch-overview.md` first.** A small, well-scoped controller change. No
 touch-specific code is needed — selection already runs through a delegated `click`
 handler, which fires for both mouse and touch.

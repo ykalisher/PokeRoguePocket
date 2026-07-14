@@ -1,5 +1,7 @@
 # Session 11 — Mobile hand sizing + fixed battle log
 
+**Recommended agent:** Sonnet · medium effort
+
 **Read `08-post-launch-overview.md` first.** **Do session 10 before this one** — it
 removes the "Your Hand" label whose space this session builds on. This session is
 CSS-focused and needs the `verify` skill to tune sizes by screenshot; don't guess final

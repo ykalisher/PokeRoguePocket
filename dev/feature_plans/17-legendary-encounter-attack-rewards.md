@@ -1,5 +1,7 @@
 # Session 17 — Legendary encounter attack rewards
 
+**Recommended agent:** Sonnet · high effort
+
 **Standalone feature** (not part of the 08–14 mobile-polish batch). Touches the capture-encounter reward logic + one data-invariant test. Card data lives in root JSON (see the `data` skill). Validate with `node tests/run_all.js` and the `verify` skill.
 
 ## Context / why

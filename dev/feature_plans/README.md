@@ -55,6 +55,7 @@ etc. are retired variants; use exactly the names below).
 ```
 # Phase NN — <Title>
 
+**Recommended agent:** <Opus | Sonnet | Haiku> · <low | medium | high> effort.
 **Prereqs:** <phase deps, or "none">. **Read first:** `<NN>-overview.md`.
 **Goal:** <the observable end state in 1–2 sentences, e.g. "Ends green + playable">.
 
@@ -80,6 +81,19 @@ and page/code conventions to imitate.>
 those checkboxes). Canonical elements: title prefix **`Phase NN —`**; **`Goal:` in the
 header block** (never buried in Context); sections **`## Context you need`**,
 **`## Steps`**, **`## Verification`**, **`## Out of scope / do not touch`**.
+
+### `**Recommended agent:**` — required header field
+
+Every phase file **must** carry a `**Recommended agent:**` line in its header block: the
+owner's suggestion for how much model muscle the phase warrants, as a **model tier** (`Opus`,
+`Sonnet`, or `Haiku`) plus an **effort level** (`low`, `medium`, or `high`), joined with `·`
+— e.g. `**Recommended agent:** Sonnet · medium effort`. Well-scoped CSS/data edits lean
+Haiku/Sonnet + low; open-ended investigations or subtle engine work lean Opus + high (see
+`14-ios-drag-touch-reliability.md`, flagged "not for a less-powerful model"). It is a hint,
+not a hard gate — the executing session may go stronger if it hits trouble. `status.sh` reads
+this exact line (`sed -nE 's/^\*\*Recommended agent:\*\*[[:space:]]*//p'`) and prints it per
+phase and for the current phase, showing `—` when the field is absent. Batch overviews have
+no `Recommended agent` line (they hold no phase work).
 
 ## Batch-overview template
 
@@ -126,8 +140,9 @@ correctly with the least effort spent *understanding* the task:
 
 Read-only viewer; writes nothing but stdout, so it's safe to run alongside a working agent.
 It discovers files by globbing `NN-*.md`, treats any `*overview*` file as a batch header,
-counts the checkboxes above, and reports the current phase. No hardcoded phase list — new
-files following the conventions above appear automatically.
+counts the checkboxes above, reads each phase's `**Recommended agent:**` line, and reports
+the current phase. No hardcoded phase list — new files following the conventions above appear
+automatically.
 
 ```bash
 bash dev/feature_plans/status.sh            # full board: batches, phases, progress
