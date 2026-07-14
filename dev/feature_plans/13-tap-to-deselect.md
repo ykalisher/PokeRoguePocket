@@ -62,18 +62,18 @@ extra code.
 **Node test** — extend the suite (`tests/helpers/arena_env.js` boots the engine in Node;
 follow an existing controller test for the pattern):
 
-- [ ] Select an attack card; assert something is selected and phase is not `'turn'`.
-- [ ] Trigger selection on the **same** card id again; assert selection is cleared and
+- [x] Select an attack card; assert something is selected and phase is not `'turn'`.
+- [x] Trigger selection on the **same** card id again; assert selection is cleared and
       phase is back to `'turn'`.
 
 **Interactive** — `verify` skill:
 
-- [ ] Click a card to select, click it again to deselect (desktop).
-- [ ] Repeat on a touch-emulated viewport (tap to select, tap again to deselect).
-- [ ] Selecting a *different* card still switches selection normally; the Cancel button
+- [x] Click a card to select, click it again to deselect (desktop).
+- [x] Repeat on a touch-emulated viewport (tap to select, tap again to deselect).
+- [x] Selecting a *different* card still switches selection normally; the Cancel button
       still works; a drag-and-drop is not misread as a deselect.
 
-- [ ] `node tests/run_all.js` green.
+- [x] `node tests/run_all.js` green.
 
 ## Out of scope
 Any change to how attacks resolve or target; drag reliability (that is session 14);

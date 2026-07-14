@@ -224,7 +224,14 @@
         const cardButton = event.target.closest('[data-card-id]');
 
         if (cardButton) {
-            selectPlayerCard(cardButton.dataset.cardId);
+            const tappedId = cardButton.dataset.cardId;
+
+            if (tappedId && (tappedId === state.selectedCardId || tappedId === state.pendingActionCardId)) {
+                cancelActionSelection();
+                return;
+            }
+
+            selectPlayerCard(tappedId);
             return;
         }
 
