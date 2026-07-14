@@ -330,6 +330,13 @@
     border: 1px solid rgba(251, 246, 232, 0.12);
     border-radius: 8px;
     background-color: rgba(0, 0, 0, 0.2);
+    transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+/* Highlight the PC slot while a Pokemon card is dragged over it. */
+.mart-pc-current.is-drop-target {
+    border-color: color-mix(in srgb, var(--gold) 72%, transparent);
+    background-color: color-mix(in srgb, var(--gold) 14%, rgba(0, 0, 0, 0.2));
 }
 
 .mart-pc-card {
@@ -374,6 +381,17 @@
     background: transparent;
     color: inherit;
     cursor: pointer;
+    /* Own the touch gesture so a drag doesn't scroll the page, and stop the iOS
+       long-press callout from hijacking the pointer-based deposit drag. */
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Fade the original card while its drag ghost is active (the ghost is a clone). */
+.mart-pokemon-choice.is-source-dragging {
+    opacity: 0.42;
 }
 
 .mart-pokemon-choice .playing-card {

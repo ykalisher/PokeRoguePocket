@@ -16,12 +16,14 @@
 
     const state = {
         cardWindow: null,
+        drag: null,
         elements: {},
         encounter: null,
         message: '',
         pcPokemon: null,
         run: null,
-        selectedPokemonId: null
+        selectedPokemonId: null,
+        suppressNextClick: false
     };
 
     document.addEventListener('DOMContentLoaded', init);
@@ -31,9 +33,10 @@
 
         state.elements.root = document.getElementById('mart-root');
         state.elements.root.addEventListener('click', handleMartClick);
-        state.elements.root.addEventListener('dragstart', handleMartDragStart);
-        state.elements.root.addEventListener('dragover', handleMartDragOver);
-        state.elements.root.addEventListener('drop', handleMartDrop);
+        state.elements.root.addEventListener('pointerdown', handleMartPointerDown);
+        window.addEventListener('pointermove', handleMartPointerMove);
+        window.addEventListener('pointerup', handleMartPointerUp);
+        window.addEventListener('pointercancel', handleMartPointerCancel);
         window.addEventListener('keydown', handleKeyDown);
 
         await arena.Data.loadGameData();
@@ -61,6 +64,11 @@
     }
 
     function handleMartClick(event) {
+        if (state.suppressNextClick) {
+            state.suppressNextClick = false;
+            return;
+        }
+
         const closeButton = event.target.closest('[data-close-card-window]');
 
         if (closeButton) {
@@ -108,30 +116,162 @@
         }
     }
 
-    function handleMartDragStart(event) {
+    /**
+     * Pointer-based drag for depositing a Pokemon into the PC. iOS Safari ignores
+     * the HTML5 drag API entirely, so the shop drag uses Pointer Events instead —
+     * the same approach as the arena drag engine (movement threshold, floating
+     * ghost, elementFromPoint drop detection). Tapping a card still selects it;
+     * only crossing the movement threshold begins a drag.
+     */
+    function handleMartPointerDown(event) {
+        if (event.button !== undefined && event.button !== 0) return;
+
         const pokemonButton = event.target.closest('[data-pokemon-card-id]');
         if (!pokemonButton) return;
 
-        event.dataTransfer.setData('text/plain', pokemonButton.dataset.pokemonCardId);
-        event.dataTransfer.effectAllowed = 'move';
+        state.drag = {
+            cardId: pokemonButton.dataset.pokemonCardId,
+            ghost: null,
+            isDragging: false,
+            offsetX: 0,
+            offsetY: 0,
+            pointerId: event.pointerId,
+            sourceElement: pokemonButton,
+            startX: event.clientX,
+            startY: event.clientY
+        };
     }
 
-    function handleMartDragOver(event) {
-        const pcCurrent = event.target.closest('.mart-pc-current');
-        if (!pcCurrent) return;
+    function handleMartPointerMove(event) {
+        const drag = state.drag;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+
+        const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
+        if (!drag.isDragging && distance < 8) return;
+
+        if (!drag.isDragging) startMartDrag(event);
 
         event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
+        positionMartGhost(event.clientX, event.clientY);
+        highlightPcDropTarget(event.clientX, event.clientY);
     }
 
-    function handleMartDrop(event) {
-        const pcCurrent = event.target.closest('.mart-pc-current');
-        if (!pcCurrent) return;
+    function handleMartPointerUp(event) {
+        const drag = state.drag;
+        if (!drag || drag.pointerId !== event.pointerId) return;
 
-        event.preventDefault();
-        const cardId = event.dataTransfer.getData('text/plain');
-        if (cardId) {
-            depositPokemonById(cardId);
+        if (drag.isDragging) {
+            event.preventDefault();
+            const droppedOnPc = Boolean(pcSlotFromPoint(event.clientX, event.clientY));
+            const cardId = drag.cardId;
+
+            // Suppress the click the browser synthesizes after the drag so it does
+            // not also toggle the card's selection.
+            state.suppressNextClick = true;
+            setTimeout(() => {
+                state.suppressNextClick = false;
+            }, 0);
+            cleanupMartDrag();
+
+            if (droppedOnPc && cardId) {
+                depositPokemonById(cardId);
+            }
+            return;
+        }
+
+        releasePointer(drag.sourceElement, drag.pointerId);
+        state.drag = null;
+    }
+
+    function handleMartPointerCancel(event) {
+        if (state.drag && event.pointerId !== state.drag.pointerId) return;
+
+        cleanupMartDrag();
+    }
+
+    function startMartDrag(event) {
+        const drag = state.drag;
+        const rect = drag.sourceElement.getBoundingClientRect();
+        const ghost = drag.sourceElement.cloneNode(true);
+
+        drag.isDragging = true;
+        drag.offsetX = event.clientX - rect.left;
+        drag.offsetY = event.clientY - rect.top;
+        drag.ghost = ghost;
+        drag.sourceElement.classList.add('is-source-dragging');
+        capturePointer(drag.sourceElement, event);
+
+        ghost.classList.add('drag-ghost', 'mart-drag-ghost');
+        ghost.removeAttribute('data-pokemon-card-id');
+        ghost.style.width = `${rect.width}px`;
+        ghost.style.height = `${rect.height}px`;
+        document.body.appendChild(ghost);
+
+        positionMartGhost(event.clientX, event.clientY);
+    }
+
+    function positionMartGhost(clientX, clientY) {
+        const drag = state.drag;
+        if (!drag || !drag.ghost) return;
+
+        drag.ghost.style.left = `${clientX - drag.offsetX}px`;
+        drag.ghost.style.top = `${clientY - drag.offsetY}px`;
+    }
+
+    function pcSlotFromPoint(clientX, clientY) {
+        const element = document.elementFromPoint(clientX, clientY);
+
+        return element ? element.closest('.mart-pc-current') : null;
+    }
+
+    function highlightPcDropTarget(clientX, clientY) {
+        const pcSlot = document.querySelector('.mart-pc-current');
+        if (!pcSlot) return;
+
+        pcSlot.classList.toggle('is-drop-target', Boolean(pcSlotFromPoint(clientX, clientY)));
+    }
+
+    function cleanupMartDrag() {
+        const pcSlot = document.querySelector('.mart-pc-current');
+        if (pcSlot) pcSlot.classList.remove('is-drop-target');
+
+        if (state.drag && state.drag.ghost) {
+            state.drag.ghost.remove();
+        }
+        if (state.drag && state.drag.sourceElement) {
+            releasePointer(state.drag.sourceElement, state.drag.pointerId);
+            state.drag.sourceElement.classList.remove('is-source-dragging');
+        }
+        state.drag = null;
+    }
+
+    /**
+     * Binds the pointer to the drag source so the gesture keeps receiving
+     * pointermove/up even if the finger drifts off the card; iOS Safari can
+     * otherwise lose the pointer stream mid-drag. Called only once a drag begins
+     * (startMartDrag), never on pointerdown — capturing in pointerdown suppresses
+     * the synthesized click on iOS Safari and would break tap-to-select. Invalid
+     * pointer ids throw and are harmless.
+     */
+    function capturePointer(element, event) {
+        if (!element || typeof element.setPointerCapture !== 'function') return;
+
+        try {
+            element.setPointerCapture(event.pointerId);
+        } catch (error) {
+            // Pointer already released or not capturable.
+        }
+    }
+
+    function releasePointer(element, pointerId) {
+        if (!element || pointerId === undefined || typeof element.releasePointerCapture !== 'function') return;
+
+        try {
+            if (typeof element.hasPointerCapture !== 'function' || element.hasPointerCapture(pointerId)) {
+                element.releasePointerCapture(pointerId);
+            }
+        } catch (error) {
+            // Already released.
         }
     }
 
@@ -389,7 +529,7 @@
         const selected = state.selectedPokemonId === card.id;
 
         return `
-            <button class="mart-pokemon-choice ${selected ? 'is-selected' : ''}" type="button" draggable="true" data-pokemon-card-id="${card.id}" aria-pressed="${selected ? 'true' : 'false'}" aria-label="Select ${card.pokemon.name}">
+            <button class="mart-pokemon-choice ${selected ? 'is-selected' : ''}" type="button" data-pokemon-card-id="${card.id}" aria-pressed="${selected ? 'true' : 'false'}" aria-label="Select ${card.pokemon.name}">
                 ${arena.Render.renderCardPreview(card, { className: 'mart-pokemon-card' })}
             </button>
         `;

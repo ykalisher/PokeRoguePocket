@@ -3003,15 +3003,50 @@
             fill: 'forwards'
         });
 
-        try {
-            await animation.finished;
-        } catch (error) {
-            // Animation cancellation is harmless because the ghost is temporary.
-        }
+        await settleAnimation(animation, totalDuration);
     }
 
+    /**
+     * Awaits a Web Animation but always settles within a bounded time. iOS Safari
+     * pauses/interrupts animations when the page is backgrounded, and its
+     * `finished` promise can then stay unresolved indefinitely. Because callers
+     * hold state.isResolving true across this await, a hang here would leave all
+     * input dead; a timer fallback (duration + buffer) guarantees the resolve
+     * flow continues. Cancellation is harmless because the ghost is temporary.
+     */
+    function settleAnimation(animation, duration) {
+        return new Promise(resolve => {
+            let settled = false;
+            const done = () => {
+                if (settled) return;
+                settled = true;
+                resolve();
+            };
+
+            animation.finished.then(done, done);
+            setTimeout(done, duration + 200);
+        });
+    }
+
+    /**
+     * Resolves on the next animation frame, but never hangs: iOS Safari stops
+     * firing requestAnimationFrame while the page is backgrounded, which would
+     * otherwise stall the resolve flow (leaving state.isResolving stuck true and
+     * every input dead). A timer fallback settles the wait even when no frame ever
+     * arrives.
+     */
     function waitForNextFrame() {
-        return new Promise(resolve => requestAnimationFrame(resolve));
+        return new Promise(resolve => {
+            let settled = false;
+            const done = () => {
+                if (settled) return;
+                settled = true;
+                resolve();
+            };
+
+            requestAnimationFrame(done);
+            setTimeout(done, 100);
+        });
     }
 
     function createCardAnimationElement(card, animationClass, reveal) {

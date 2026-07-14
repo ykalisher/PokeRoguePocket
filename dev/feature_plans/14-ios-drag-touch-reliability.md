@@ -69,14 +69,51 @@ candidate fix worked without seeing it work on a touch device.
 - Re-verification on a touch device (or emulation) showing the symptom gone.
 - Keep the delegated-listener + `innerHTML` re-render architecture intact.
 
+## Outcome (session 14)
+
+Real iPhone unavailable; verified via the `verify` skill's Chromium touch
+emulation. Confirmed root causes and shipped fixes:
+
+1. **Input dead at turn start = a hung resolve promise (root cause, reproduced).**
+   `animateCardFlight` awaited `requestAnimationFrame` (`waitForNextFrame`) and
+   `animation.finished`; iOS Safari pauses both when backgrounded, so
+   `state.isResolving` could stay `true` forever and kill all input. Neutering
+   `requestAnimationFrame` reproduced a permanent hang deterministically. **Fix:**
+   both awaits now race a `setTimeout` fallback (`waitForNextFrame` + new
+   `settleAnimation`), so the resolve flow can never stall. Post-fix, input
+   recovers even with rAF fully dead.
+2. **Arena drag: no `setPointerCapture`** — added capture, released on every
+   termination path (`arena/arena_drag.js`), so iOS can't lose the pointer stream
+   mid-gesture. Capture is taken only when a drag actually **begins**
+   (`startCardDrag`), never on `pointerdown`: on iOS Safari, capturing in
+   `pointerdown` suppresses the synthesized click and breaks tap-to-select /
+   tap-to-deselect on cards (found in on-device testing — the Cancel button still
+   worked because it isn't a card element and never got captured). Same fix in the
+   mart's `startMartDrag`.
+3. **No long-press-callout suppression** — added `-webkit-touch-callout` /
+   `-webkit-user-select` / `user-select: none` to `.hand-card` (covers the
+   floating pending card).
+4. **Mart used the HTML5 drag API (ignored by iOS Safari)** — migrated
+   `map/mart.js` to a self-contained pointer drag mirroring the arena engine
+   (`arena.Drag` isn't loaded on `mart.html`), plus `touch-action`/callout CSS and
+   a drop highlight. Tap-to-select + Deposit/Swap buttons still work.
+5. **`suppressNextClick`** — audited; no termination path leaves it stuck, so no
+   change (the same pattern is reused in the mart).
+
+Delegated-listener + `innerHTML` re-render architecture left intact.
+
 ## Verify
 
-- [ ] Reproduce each symptom first; record how.
-- [ ] After fixes: on a real iPhone Safari if available (else `verify` touch emulation),
+- [x] Reproduce each symptom first; record how. *(Symptom 2 reproduced
+      deterministically via rAF-neuter; symptoms 1 & mart characterised via
+      emulation + code. Notes in scratchpad `session14_repro_notes.md`.)*
+- [x] After fixes: on a real iPhone Safari if available (else `verify` touch emulation),
       drag a hand card to a valid target successfully; play several turns with **zero**
-      dead-input; drag in the mart works.
-- [ ] `node tests/run_all.js` green. Full driver battle to a result with no console
-      errors.
+      dead-input; drag in the mart works. *(Emulation: full attack completed via
+      drag; 6 turns, zero dead-input; mart pointer-drag deposits a Pokemon.)*
+- [x] `node tests/run_all.js` green. Full driver battle to a result with no console
+      errors. *(66 tests pass; `autoplay_arena.py` ran a battle to a result on turn 11
+      with no page errors.)*
 
 ## Out of scope
 Layout/CSS changes owned by sessions 10–12; tap-to-deselect (session 13); a rewrite of

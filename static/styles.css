@@ -995,6 +995,11 @@ button.playing-card:focus-visible {
     height: var(--hand-card-h);
     padding: 3px;
     touch-action: none;
+    /* iOS Safari: stop long-press from firing the text-selection callout, which
+       otherwise hijacks the pointer stream and kills the drag mid-gesture. */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* Fades the original card while a drag ghost is active. */

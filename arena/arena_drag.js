@@ -45,6 +45,45 @@
     }
 
     /**
+     * Binds this pointer to the drag source so the browser keeps delivering
+     * pointermove/up/cancel for the whole gesture. Without capture, iOS Safari
+     * can lose the pointer stream mid-drag (finger drifts off the card, or the
+     * element re-renders), silently killing the drag. Stale/invalid pointer ids
+     * throw here and are harmless.
+     *
+     * Capture is taken only once a drag actually begins (see startCardDrag), never
+     * on pointerdown: on iOS Safari, capturing the pointer in pointerdown
+     * suppresses the synthesized click, which would break tap-to-select /
+     * tap-to-deselect on hand cards.
+     */
+    function capturePointer(element, event) {
+        if (!element || typeof element.setPointerCapture !== 'function') return;
+
+        try {
+            element.setPointerCapture(event.pointerId);
+        } catch (error) {
+            // Pointer already released or not capturable — nothing to bind.
+        }
+    }
+
+    /**
+     * Releases a pointer capture taken by capturePointer(). The browser also
+     * releases implicitly on pointerup/cancel, so this is a safe no-op when the
+     * capture is already gone.
+     */
+    function releasePointer(element, pointerId) {
+        if (!element || pointerId === undefined || typeof element.releasePointerCapture !== 'function') return;
+
+        try {
+            if (typeof element.hasPointerCapture !== 'function' || element.hasPointerCapture(pointerId)) {
+                element.releasePointerCapture(pointerId);
+            }
+        } catch (error) {
+            // Already released.
+        }
+    }
+
+    /**
      * Captures the initial pointer/card state before the movement threshold is
      * crossed and a visible drag begins.
      */
@@ -107,6 +146,7 @@
             return;
         }
 
+        releasePointer(drag.sourceElement, drag.pointerId);
         state.drag = null;
     }
 
@@ -124,6 +164,7 @@
         drag.offsetY = event.clientY - rect.top;
         drag.ghost = ghost;
         drag.sourceElement.classList.add('is-source-dragging');
+        capturePointer(drag.sourceElement, event);
 
         ghost.classList.add('drag-ghost');
         ghost.style.width = `${rect.width}px`;
@@ -230,6 +271,7 @@
         }
 
         if (state.drag && state.drag.sourceElement) {
+            releasePointer(state.drag.sourceElement, state.drag.pointerId);
             state.drag.sourceElement.classList.remove('is-source-dragging');
         }
 

@@ -531,7 +531,7 @@
                 <span>${healthPercent}%</span>
             </div>
             <div class="stat-grid">
-                <span>HP ${species.baseHealth}</span>
+                <span title="Hit Points">H ${species.baseHealth}</span>
                 ${renderStatCell(card, 'attack')}
                 ${renderStatCell(card, 'defense')}
                 ${renderStatCell(card, 'speed')}
@@ -557,13 +557,20 @@
 
     /**
      * Renders one effective stat cell. Positive/negative stages are shown by
-     * color only so compact cards do not need extra +/- text.
+     * color only so compact cards do not need extra +/- text. Labels are single
+     * letters (A/D/S) so a 3-digit value fits the tiny mobile card column without
+     * clipping; the full name is exposed via title for hover/assistive tech.
      */
     function renderStatCell(card, stat) {
         const labels = {
-            attack: 'ATK',
-            defense: 'DF',
-            speed: 'SPD'
+            attack: 'A',
+            defense: 'D',
+            speed: 'S'
+        };
+        const titles = {
+            attack: 'Attack',
+            defense: 'Defense',
+            speed: 'Speed'
         };
         const stage = arena.Model.getPokemonStatStage(card, stat);
         const stageClass = stage > 0
@@ -571,7 +578,7 @@
             : stage < 0
                 ? ' stat-cell--down'
                 : '';
-        return `<span class="stat-cell${stageClass}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}</span>`;
+        return `<span class="stat-cell${stageClass}" title="${titles[stat]}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}</span>`;
     }
 
     /**
