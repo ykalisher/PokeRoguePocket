@@ -98,7 +98,7 @@
         "requires": [],
         "effects": [
           { "type": "lose-random-cards", "cardKind": "attack", "count": 1, "strict": false },
-          { "type": "gain-random-card", "cardKind": "attack", "count": 1 }
+          { "type": "gain-random-card", "cardKind": "attack", "types": ["FIRE"], "count": 1 }
         ]
       },
       {

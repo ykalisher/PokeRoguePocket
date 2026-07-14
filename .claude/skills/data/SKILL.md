@@ -35,6 +35,17 @@ engine moves non-stat entries into `status` at load).
 `typeSpecialization` (PokeType), `pokemon`/`attacks`/`items` (names that must
 exist in the other files — validated by the tests).
 
+## Event effects (`events.json`)
+
+Effects live in `event.effects`/`rewardEffects`/`payment.effects`/`choices[].effects`
+and are dispatched by `map/event_effects.js` `applyEffect`. `gain-random-card` and
+`replace-random-card`/`replace-selected-card` (via their `replacement` object) accept
+an optional `types` field — an array of uppercase `PokeType` names — to restrict the
+random draw to attacks (or pokemon) whose `type1`/`type2`/`type3` intersect the set.
+No match in the pool means the grant is skipped (no off-type fallback), not a random
+draw from the full pool. `tests/data_validation.test.js` validates `types` values
+against the `PokeType` enum.
+
 ## Engine extensions beyond the enums
 
 - Attack target `TRAINER` + statuses `INCREASE_CAPACITY`, `EXTRA_ITEM`,

@@ -205,6 +205,20 @@ test('events.json entries are well-formed', () => {
         collectEventEffects(event).forEach(effect => {
             assert.ok(effect && typeof effect === 'object', `${event.id}: effect must be an object`);
             assert.ok(VALID_EFFECT_TYPES.has(effect.type), `${event.id}: unknown effect type ${effect.type}`);
+
+            if (effect.types !== undefined) {
+                assert.ok(Array.isArray(effect.types), `${event.id}: effect.types must be an array`);
+                effect.types.forEach(type => {
+                    assert.ok(VALID_TYPES.has(type), `${event.id}: bad effect type filter ${type}`);
+                });
+            }
+
+            if (effect.replacement && effect.replacement.types !== undefined) {
+                assert.ok(Array.isArray(effect.replacement.types), `${event.id}: effect.replacement.types must be an array`);
+                effect.replacement.types.forEach(type => {
+                    assert.ok(VALID_TYPES.has(type), `${event.id}: bad replacement type filter ${type}`);
+                });
+            }
         });
 
         if (event.type === 'choice') {

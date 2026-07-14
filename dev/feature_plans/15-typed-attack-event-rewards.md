@@ -43,6 +43,11 @@ back to an off-type card — skip the grant and return a "No `<type>` attack ava
 message (mirrors the existing no-op path). Every current type has attacks, so this only
 guards bad data.
 
+**Deviation:** implemented `types` (array) only, not the singular `type` alias — the
+effect object's own `type` field is already the effect-kind discriminator
+(`"gain-random-card"`), so a card-type-filter `type` on the same object would collide
+with it. `replacement.types` uses the same array-only convention for consistency.
+
 ## Implementation (`map/event_effects.js`)
 
 1. **Thread a type filter into the chooser.** `chooseRandomRecord` (search
@@ -105,9 +110,9 @@ guards bad data.
 - `node tests/run_all.js` green (syntax + suite + data validation).
 
 ## Verify
-- [ ] Author a test event granting a typed random attack; trigger it in a run and confirm
+- [x] Author a test event granting a typed random attack; trigger it in a run and confirm
       via `window.CardArena`/`verify` (or the Node harness) that the granted card is on-type.
-- [ ] `node tests/run_all.js` green.
+- [x] `node tests/run_all.js` green.
 
 ## Out of scope
 Reworking the named-card or selection-based effects; a new reward UI; balancing which

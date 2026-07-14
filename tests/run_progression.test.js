@@ -599,6 +599,40 @@ test('chooseEvent only returns events matching the run location types', () => {
     }
 });
 
+// --- Typed random attack rewards (phase 15) --------------------------------
+
+test('gain-random-card with types only grants on-type attacks', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const run = R.createRunState({ area: makeGraph(), collections: {} });
+    const effect = { type: 'gain-random-card', cardKind: 'attack', types: ['FIRE'], count: 40 };
+
+    E.applyEffects(run, [effect], {}, { runStore: R, gameData });
+
+    const grantedAttacks = [...run.collections.actions, ...run.collections.bench.actions]
+        .map(card => card.attack);
+
+    assert.ok(grantedAttacks.length > 0, 'expected at least one granted attack');
+    grantedAttacks.forEach(attack => {
+        assert.ok(
+            attack.type1 === 'FIRE' || attack.type2 === 'FIRE',
+            `${attack.name} is not a FIRE attack`
+        );
+    });
+});
+
+test('gain-random-card with an unmatched type grants nothing', () => {
+    const gameData = { attacks: [{ name: 'Splash', type1: 'WATER', type2: 'NONE' }] };
+    const run = R.createRunState({ area: makeGraph(), collections: {} });
+    const effect = { type: 'gain-random-card', cardKind: 'attack', types: ['GRASS'], count: 3 };
+
+    const summary = E.applyEffects(run, [effect], {}, { runStore: R, gameData });
+
+    assert.equal(run.collections.actions.length, 0);
+    assert.equal(run.collections.bench.actions.length, 0);
+    assert.deepEqual(summary, ['No GRASS attack available.']);
+});
+
 // --- Location theming (phase 6) ------------------------------------------
 
 test('applyLocationTheme without document does not throw', () => {

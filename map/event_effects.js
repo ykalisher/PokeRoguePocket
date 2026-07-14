@@ -285,12 +285,20 @@
     }
 
     function gainRandomCards(run, runStore, gameData, cardKind, count, effect) {
+        const types = getEffectTypes(effect);
         const gainedNames = [];
 
         for (let index = 0; index < count; index += 1) {
-            const record = chooseRandomRecord(gameData, cardKind, effect.excludeName);
+            const record = chooseRandomRecord(gameData, cardKind, effect.excludeName, types);
 
-            if (!record) continue;
+            if (!record) {
+                if (types) {
+                    return summarizeNames('Gained', gainedNames)
+                        .concat([`No ${types.join('/')} ${getCardKindLabel(cardKind)} available.`]);
+                }
+
+                continue;
+            }
 
             const card = createCardsFromRecord(run, runStore, cardKind, record, 1)[0];
 
@@ -301,6 +309,12 @@
         }
 
         return summarizeNames('Gained', gainedNames);
+    }
+
+    function getEffectTypes(source) {
+        const types = Array.isArray(source && source.types) ? source.types : null;
+
+        return types && types.length > 0 ? types.map(type => String(type).toUpperCase()) : null;
     }
 
     function loseRandomCards(run, cardKind, count, options = {}) {
@@ -405,7 +419,7 @@
         const cardKind = normalizeCardKind(replacement.cardKind || replacement.kind || sourceKind);
         const record = replacement.name
             ? findRecord(gameData, cardKind, replacement.name)
-            : chooseRandomRecord(gameData, cardKind, getCardName(sourceCard));
+            : chooseRandomRecord(gameData, cardKind, getCardName(sourceCard), getEffectTypes(replacement));
 
         return record ? createCardsFromRecord(run, runStore, cardKind, record, 1)[0] : null;
     }
@@ -570,17 +584,31 @@
         return records.find(record => getRecordName(record) === name) || null;
     }
 
-    function chooseRandomRecord(gameData, cardKind, excludeName = null) {
+    function chooseRandomRecord(gameData, cardKind, excludeName = null, types = null) {
         const collectionKey = getRecordCollectionKey(cardKind);
         const records = getUniqueRecords(gameData && gameData[collectionKey]);
         const filteredRecords = excludeName
             ? records.filter(record => getRecordName(record) !== excludeName)
             : records;
+
+        if (Array.isArray(types) && types.length > 0) {
+            const typeSet = new Set(types);
+            const typedRecords = filteredRecords.filter(record => recordMatchesTypes(record, typeSet));
+
+            return typedRecords.length > 0 ? typedRecords[randomInt(0, typedRecords.length - 1)] : null;
+        }
+
         const choices = filteredRecords.length > 0 ? filteredRecords : records;
 
         if (choices.length === 0) return null;
 
         return choices[randomInt(0, choices.length - 1)];
+    }
+
+    function recordMatchesTypes(record, typeSet) {
+        return ['type1', 'type2', 'type3']
+            .map(key => record && record[key])
+            .some(type => type && type !== 'NONE' && typeSet.has(type));
     }
 
     function getUniqueRecords(records) {
