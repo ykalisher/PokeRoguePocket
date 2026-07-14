@@ -1,16 +1,10 @@
 # Tasks
 This file is intended primarily for humans. Agents should not act on this file unless explicitly requested to mark something as complete or add a  new item, and should not use the contents of this file for anything.
 ## Next Big Task
-1. Create trainers✅
-2. Add artificial abilities and pokemon ✅
-3. Fix bug where trainers with 3 pokemon don't lose immediately (it should be knock out all opponent's pokemon or 4 if more than 4) ✅
-4. Fix bug where trainers' sprites are overlayed on top of another image ✅
-5. Create locations with rules for specialization in each location (pokemon types, opponent trainer types, events)
-6. Create events
-7. Implement locations and have final boss rush
-8. Tweaks
-	- Legendaries should give you a legendary attack when you get them
-
+0. UI bug fixes and game logic tweaks
+2. Events need to all be redone because they're bad
+3. Figure out better progression system for increasing difficulty and actually getting stronger. Also more teambuilding options.
+4. Fix trainers, lots of gym leaders and elite trainers are just ace instead of being bosses and elite
 ## Data
 - [x] Decide on type specializations for attacks
 	ARTIFICIAL: Interacts with the deck and hand; Attacks to increase the number of cards in your hand or prevent the next card you play from being discarded or replay a discarded card etc.
@@ -42,25 +36,25 @@ This file is intended primarily for humans. Agents should not act on this file u
 	- [x] Add 3 pokemon for each type, and add 2 move for each type that pokemon has that synergize with it (If I add water/monster, that counts as 1 water, then need to add 3 more monster still)
 - [x] Add more pokemon with better overlapping types
 - [x] Add more items
-- [ ] Rebalance stats (human type is super broken)
+- [x] Rebalance stats (human type is a bit broken)
 ## Overworld Mechanics
 - [x] Decide on how you capture more pokemon.
 - [x] Decide on how you get more attacks
-- [ ] Come up with algorithm for locations and selection.
-- [ ] Come up with algorithm or presets for opposing trainers.
+- [x] Come up with algorithm for locations and selection.
+- [x] Come up with algorithm or presets for opposing trainers.
 - [x] Create system for shopkeeper and costs.
 - [ ] Decide on progression system.
 ## Map UI
 - [x] Replace the placeholder boss grey circle with shaded boss trainer sprite art.
-- [ ] Replace placeholder trainer, capture, shop, and event symbols with final map icon assets.
+- [x] Replace placeholder trainer, capture, shop, and event symbols with final map icon assets.
 - [x] Add trainer encounter definitions and show trainer-specific battle nodes on the map.
-- [ ] Add event definitions and wire event nodes to a real event UI instead of only showing a popup.
+- [x] Add event definitions and wire event nodes to a real event UI instead of only showing a popup.
 - [x] Add capture spot encounter data and wire capture nodes to a Pokemon selection/add-to-deck flow.
 - [x] Add shop contents, prices, and buying UI for item and attack cards.
-- [ ] Add starter deck selection before entering the first area.
+- [x] Add starter deck selection before entering the first area.
 - [x] Connect regular battle nodes to the arena screen and return to the map after a win.
 - [x] Connect boss nodes to boss battles and gate area completion behind winning them.
-- [ ] Add four terrain-themed areas with terrain-specific Pokemon, trainers, shops, and events.
+- [x] Add four terrain-themed areas with terrain-specific Pokemon, trainers, shops, and events.
 - [ ] Add the final boss gauntlet after the fourth area.
 - [x] Persist run state across screens, including current location, visited paths, money, Pokemon cards, and action cards.
 - [x] Enforce run loss when the player loses a battle, then reset to a new run.
@@ -76,6 +70,7 @@ This file is intended primarily for humans. Agents should not act on this file u
 	- Each pokemon should have moves equipped for battle, and a deck gets generated from that. Draw up so you have 5 cards (attacks + items) in your hand at the start of the turn. Can discard unused moves at the end of the turn, or keep them.
 - [x] Decide on damage calculations
 ## Misc
-- [ ] Sort out the disgusting ui.
+- [x] Sort out the disgusting ui.
 - [ ] Icons for the website
 - [ ] Make it a progressive web app (or at least have the option to be).
+- [ ] Nicer backgrounds

@@ -1,7 +1,26 @@
 [
   {
+    "type": "trainer",
+    "title": "Rogue Mecha Cop",
+    "id": "rogue-mecha-cop",
+    "types": ["STEEL", "ELECTRIC", "HUMAN"],
+    "kicker": "Mecha Cop wants to subdue you",
+    "subtitle": "Stop and frisk",
+    "body": "You hear sirens suddenly explode to life and see a strange police officer jump out from behind a building. \"UNAUTHORIZED TRAINER. PREPARE TO BE SUBDUED.\"",
+    "resultTitle": "One less cop terrorizing the streets.",
+    "trainerName": "Mecha Cop",
+    "battleTitle": "Fight back!",
+    "battleText": "Beat the cop!",
+    "battleButtonText": "Battle Mecha Cop",
+    "rewardCash": 400,
+    "rewardEffects": [
+      { "type": "gain-card", "cardKind": "pokemon", "name": "Porygon2", "count": 1 }
+    ],
+    "enabled": true
+  },
+  {
     "type": "gift",
-    "title": "Berry Cache",
+    "title": "Berry Tree",
     "id": "berry-cache",
     "kicker": "Lucky find",
     "subtitle": "Someone's loss is your gain.",
@@ -112,34 +131,6 @@
     "rewardEffects": [
       { "type": "gain-random-card", "cardKind": "item", "count": 1 }
     ],
-    "enabled": true
-  },
-  {
-    "type": "trainer",
-    "title": "Rogue Mecha Cop",
-    "id": "rogue-mecha-cop",
-    "types": ["STEEL", "ELECTRIC", "HUMAN"],
-    "kicker": "Checkpoint",
-    "subtitle": "A malfunctioning patrol unit bars the way.",
-    "body": "A Mecha Cop whirs to life, optics flaring red. \"UNAUTHORIZED TRAINER. PAY THE FINE OR BE SUBDUED.\"",
-    "resultTitle": "Cleared the checkpoint",
-    "trainerName": "Mecha Cop",
-    "battleTitle": "Override it",
-    "battleText": "Short out the rogue unit and salvage its cache.",
-    "battleButtonText": "Battle Mecha Cop",
-    "rewardCash": 450,
-    "rewardEffects": [
-      { "type": "gain-random-card", "cardKind": "attack", "count": 1 }
-    ],
-    "payment": {
-      "title": "Pay the fine",
-      "description": "Slip it some coins and walk through.",
-      "buttonText": "Pay 150 coins",
-      "requires": [],
-      "effects": [
-        { "type": "lose-cash", "amount": 150 }
-      ]
-    },
     "enabled": true
   }
 ]
