@@ -284,6 +284,11 @@
                     <h1>${getLocationName()}</h1>
                     <div class="area-subrow">
                         <span class="stat-pill">${getLocationTerrain()}</span>
+                        <span class="area-type-chips">
+                            ${getLocationTypes().map(t =>
+                                `<img class="type-icon" src="assets/types-svgs/${t}.svg" alt="${t}" title="${t}">`
+                            ).join('')}
+                        </span>
                         <span class="stat-pill">${renderCurrentLocationText(currentNode)}</span>
                         ${isRunComplete() ? '<span class="stat-pill">Champion</span>' : (isAreaComplete() ? '<span class="stat-pill">Cleared</span>' : '')}
                     </div>

@@ -36,7 +36,6 @@
         return `
             <button type="button" class="starter-card" data-starter="${escapeHtml(deck.id)}">
                 <span class="starter-card-type">${formatType(deck.type)}</span>
-                <span class="starter-card-name">${escapeHtml(deck.name)}</span>
                 <span class="starter-card-pokemon">${pokemon}</span>
                 <ul class="starter-card-cards">${cards}</ul>
                 <span class="starter-card-cta">Choose this deck</span>

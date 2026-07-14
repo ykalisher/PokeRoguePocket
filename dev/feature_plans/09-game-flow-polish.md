@@ -91,10 +91,10 @@ picker; choosing a deck starts a fresh run with *that* deck, not always Water.
 
 ## Verify (whole session)
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `starter.html`: only the type chip on each deck (no name).
-- [ ] `area.html`: location type icons in the header, no overflow at 390px width.
-- [ ] Battle → Start over → starter picker → chosen deck starts the new run.
+- [x] `node tests/run_all.js` green.
+- [x] `starter.html`: only the type chip on each deck (no name).
+- [x] `area.html`: location type icons in the header, no overflow at 390px width.
+- [x] Battle → Start over → starter picker → chosen deck starts the new run.
 
 ## Out of scope
 Restyling the starter cards or area header beyond the above; changing `STARTER_DECKS`

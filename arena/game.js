@@ -271,7 +271,7 @@
         if (runStore && typeof runStore.clearRunState === 'function') {
             runStore.clearRunState();
         }
-        window.location.href = 'area.html?newRun=1';
+        window.location.href = 'starter.html';
     }
 
     function removeBattleFlowOverlay() {

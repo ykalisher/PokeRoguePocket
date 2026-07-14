@@ -96,6 +96,12 @@
     gap: 8px;
 }
 
+.area-type-chips {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
+
 .area-hud {
     flex: 0 0 auto;
     justify-content: flex-end;
