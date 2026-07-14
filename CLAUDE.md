@@ -46,4 +46,6 @@ Binding rules for all agents (imported):
 - Verifying behavior in the real game (GUI): `verify` skill — committed drivers
   in `dev/verify/`, do not rebuild them from scratch.
 - Editing card-data JSON: `data` skill.
+- Phased feature plans live in `dev/feature_plans/` — structure, conventions, and the
+  `status.sh` progress viewer are documented in `dev/feature_plans/README.md`.
 - `TODO.md` is the owner's planning file — never act on it unless explicitly asked.
