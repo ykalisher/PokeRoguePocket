@@ -78,7 +78,8 @@
       "Salac Berry",
       "Withdraw Wand",
       "Liechi Berry",
-      "Psychic Gem"
+      "Psychic Gem",
+      "Withdraw Wand"
     ]
   },
   {
@@ -121,7 +122,8 @@
       "Lum Berry",
       "Withdraw Wand",
       "Psychic Gem",
-      "Babiri Berry"
+      "Babiri Berry",
+      "Withdraw Wand"
     ]
   },
   {
@@ -164,7 +166,8 @@
       "Lum Berry",
       "Withdraw Wand",
       "Liechi Berry",
-      "Babiri Berry"
+      "Babiri Berry",
+      "Withdraw Wand"
     ]
   },
   {
@@ -207,7 +210,8 @@
       "Lum Berry",
       "Withdraw Wand",
       "Liechi Berry",
-      "Salac Berry"
+      "Salac Berry",
+      "Withdraw Wand"
     ]
   },
   {
@@ -250,7 +254,8 @@
       "Lum Berry",
       "Withdraw Wand",
       "Salac Berry",
-      "Babiri Berry"
+      "Babiri Berry",
+      "Withdraw Wand"
     ]
   },
   {
@@ -258,42 +263,42 @@
     "sprite": "Koga",
     "cash": 500,
     "rank": "Boss",
-    "typeSpecialization": "POISON",
+    "typeSpecialization": "DARK",
     "pokemon": [
-      "Crobat",
-      "Venomoth",
-      "Slowking",
-      "Scolipede",
-      "Gliscor"
+      "Tyranitar",
+      "Hydreigon",
+      "Malamar",
+      "Feraligatr",
+      "Inteleon"
     ],
     "attacks": [
-      "Sludge Bomb",
-      "Air Slash",
-      "Tailwind",
-      "Sludge Strike",
-      "Swarming Strike",
-      "Buzz Up",
-      "Future Sight",
-      "Expanding Force",
-      "Sludge Bomb",
-      "Mind Break",
-      "Ooze",
-      "Expanding Force",
-      "Sludge Bomb",
-      "Swarming Strike",
-      "Sludge Strike",
-      "Toxic",
-      "Air Slash",
-      "Tailwind",
-      "Earthquake",
-      "Sludge Bomb"
+      "Crippling Crunch",
+      "Crunch",
+      "Sucker Punch",
+      "Stone Edge",
+      "Crippling Crunch",
+      "Crunch",
+      "Sucker Punch",
+      "Dragon Claw",
+      "Crunch",
+      "Murky Water",
+      "Sucker Punch",
+      "Hydro Pump",
+      "Crunch",
+      "Murky Water",
+      "Sucker Punch",
+      "Hydro Pump",
+      "Crunch",
+      "Murky Water",
+      "Sucker Punch",
+      "Hydro Pump"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
+      "Dark Gem",
       "Withdraw Wand",
-      "Salac Berry",
-      "Salac Berry"
+      "Withdraw Wand"
     ]
   },
   {
@@ -336,7 +341,8 @@
       "Lum Berry",
       "Withdraw Wand",
       "Liechi Berry",
-      "Babiri Berry"
+      "Babiri Berry",
+      "Withdraw Wand"
     ]
   },
   {
@@ -379,7 +385,8 @@
       "Lum Berry",
       "Withdraw Wand",
       "Liechi Berry",
-      "Salac Berry"
+      "Salac Berry",
+      "Withdraw Wand"
     ]
   },
   {
@@ -1029,6 +1036,766 @@
     ]
   },
   {
+    "name": "Black Belt Kenji",
+    "sprite": "Black Belt",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "FIGHTING",
+    "pokemon": [
+      "Machamp",
+      "Conkeldurr",
+      "Annihilape",
+      "Bewear"
+    ],
+    "attacks": [
+      "Karate Smash",
+      "Mega Punch",
+      "Kick in the Face",
+      "Swords Dance",
+      "Karate Smash",
+      "Overwork",
+      "Mega Punch",
+      "Power-up Punch",
+      "Kick in the Face",
+      "Shadow Ball",
+      "Curse",
+      "Karate Smash",
+      "Body Slam",
+      "Mega Punch",
+      "Kick in the Face",
+      "Karate Smash"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Hiker Doug",
+    "sprite": "Hiker",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "ROCK",
+    "pokemon": [
+      "Tyranitar",
+      "Rhyperior",
+      "Aggron",
+      "Golem"
+    ],
+    "attacks": [
+      "Rock Slide",
+      "Stone Edge",
+      "Crunch",
+      "Stone Wall",
+      "Rock Slide",
+      "Stone Edge",
+      "Earthquake",
+      "Stone Wall",
+      "Rock Slide",
+      "Iron Head",
+      "Stone Edge",
+      "Rock Polish",
+      "Rock Slide",
+      "Stone Edge",
+      "Thunder Bolt",
+      "Stone Wall"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Babiri Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Beauty Cassidy",
+    "sprite": "Beauty",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "FAIRY",
+    "pokemon": [
+      "Togekiss",
+      "Primarina",
+      "Gardevoir",
+      "Grimmsnarl"
+    ],
+    "attacks": [
+      "Moon Blast",
+      "Dazzling Dance",
+      "Air Slash",
+      "Sparkling Breeze",
+      "Moon Blast",
+      "Hydro Pump",
+      "Dazzling Dance",
+      "Surf",
+      "Moon Blast",
+      "Dazzling Dance",
+      "Future Sight",
+      "Helping Hand",
+      "Moon Blast",
+      "Dazzling Dance",
+      "Crunch",
+      "Sucker Punch"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Camper Liam",
+    "sprite": "Camper",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "GRASS",
+    "pokemon": [
+      "Venusaur",
+      "Torterra",
+      "Rillaboom",
+      "Sawsbuck"
+    ],
+    "attacks": [
+      "Razor Leaf",
+      "Sleep Powder",
+      "Leech Seed",
+      "Sludge Bomb",
+      "Razor Leaf",
+      "Earthquake",
+      "Earth Power",
+      "Leech Seed",
+      "Razor Leaf",
+      "Leech Seed",
+      "Snack Up",
+      "Chomp",
+      "Razor Leaf",
+      "Body Slam",
+      "Leech Seed",
+      "Sleep Powder"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Grass Gem",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Scientist Miles",
+    "sprite": "Scientist",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "POISON",
+    "pokemon": [
+      "Muk",
+      "Nidoking",
+      "Nidoqueen",
+      "Toxtricity"
+    ],
+    "attacks": [
+      "Sludge Bomb",
+      "Toxic",
+      "Ooze",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Earthquake",
+      "Earth Power",
+      "Crunch",
+      "Sludge Bomb",
+      "Toxic",
+      "Earthquake",
+      "Mega Punch",
+      "Sludge Bomb",
+      "Thunder Bolt",
+      "Discharge",
+      "Toxic"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Poison Gem",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Veteran Karl",
+    "sprite": "Veteran M",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "DARK",
+    "pokemon": [
+      "Hydreigon",
+      "Incineroar",
+      "Malamar",
+      "Honchkrow"
+    ],
+    "attacks": [
+      "Crunch",
+      "Dragon Claw",
+      "Sucker Punch",
+      "Dragon's Breath",
+      "Crunch",
+      "Flame Thrower",
+      "Sucker Punch",
+      "Fire Spin",
+      "Crunch",
+      "Murky Water",
+      "Sucker Punch",
+      "Future Sight",
+      "Crunch",
+      "Air Slash",
+      "Sucker Punch",
+      "Tailwind"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Dark Gem",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Bug Maniac Wade",
+    "sprite": "Bug Maniac",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "BUG",
+    "pokemon": [
+      "Scizor",
+      "Vikavolt",
+      "Escavalier",
+      "Heracross"
+    ],
+    "attacks": [
+      "Swarming Strike",
+      "Buzz Up",
+      "Bullet Punch",
+      "Iron Head",
+      "Swarming Strike",
+      "Buzz Up",
+      "Bug Buzz",
+      "Thunder Bolt",
+      "Swarming Strike",
+      "Buzz Up",
+      "Bullet Punch",
+      "Iron Defense",
+      "Swarming Strike",
+      "Buzz Up",
+      "Swarming Punch",
+      "Karate Smash"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Tamer Cole",
+    "sprite": "Tamer",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "DRAGON",
+    "pokemon": [
+      "Baxcalibur",
+      "Sceptile",
+      "Dragalge",
+      "Serperior"
+    ],
+    "attacks": [
+      "Dragon Claw",
+      "Dragon Dance",
+      "Dragon's Breath",
+      "Ice Beam",
+      "Dragon Claw",
+      "Dragon's Breath",
+      "Razor Leaf",
+      "Dragon Dance",
+      "Dragon Claw",
+      "Dragon's Breath",
+      "Sludge Bomb",
+      "Dragon Rage",
+      "Dragon Claw",
+      "Dragon's Breath",
+      "Leech Seed",
+      "Dragon Dance"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Kindler Axel",
+    "sprite": "Kindler",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "FIRE",
+    "pokemon": [
+      "Emboar",
+      "Skeledirge",
+      "Magmortar",
+      "Arcanine"
+    ],
+    "attacks": [
+      "Flame Thrower",
+      "Fire Spin",
+      "Karate Smash",
+      "Will-o-wisp",
+      "Flame Thrower",
+      "Cursed Flame",
+      "Fire Spin",
+      "Shadow Ball",
+      "Flame Thrower",
+      "Fire Punch",
+      "Fire Spin",
+      "Will-o-wisp",
+      "Flame Thrower",
+      "Fire Spin",
+      "Rock Slide",
+      "Will-o-wisp"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Fire Gem",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Bird Keeper Robin",
+    "sprite": "Bird Keeper",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "FLYING",
+    "pokemon": [
+      "Braviary",
+      "Staraptor",
+      "Corviknight",
+      "Togekiss"
+    ],
+    "attacks": [
+      "Air Slash",
+      "Tailwind",
+      "Karate Smash",
+      "Body Slam",
+      "Air Slash",
+      "Tailwind",
+      "Kick in the Face",
+      "Body Slam",
+      "Air Slash",
+      "Tailwind",
+      "Iron Head",
+      "Flash Cannon",
+      "Air Slash",
+      "Tailwind",
+      "Moon Blast",
+      "Dazzling Dance"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Ruin Maniac Hale",
+    "sprite": "Ruin Maniac",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "FOSSIL",
+    "pokemon": [
+      "Aurorus",
+      "Archeops",
+      "Armaldo",
+      "Relicanth"
+    ],
+    "attacks": [
+      "Ancient Energy",
+      "Ancient Power",
+      "Ice Beam",
+      "Freeze-Dry",
+      "Ancient Energy",
+      "Ancient Power",
+      "Air Slash",
+      "Tailwind",
+      "Ancient Energy",
+      "Ancient Power",
+      "Swarming Strike",
+      "Buzz Up",
+      "Ancient Energy",
+      "Ancient Power",
+      "Waterfall",
+      "Surf"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Channeler Verna",
+    "sprite": "Channeler",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "GHOST",
+    "pokemon": [
+      "Gengar",
+      "Dragapult",
+      "Basculegion",
+      "Trevenant"
+    ],
+    "attacks": [
+      "Shadow Ball",
+      "Jumpscare",
+      "Curse",
+      "Ghastly Grip",
+      "Shadow Ball",
+      "Jumpscare",
+      "Curse",
+      "Dragon Claw",
+      "Shadow Ball",
+      "Jumpscare",
+      "Curse",
+      "Waterfall",
+      "Shadow Ball",
+      "Jumpscare",
+      "Curse",
+      "Razor Leaf"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Baker Nolan",
+    "sprite": "Baker",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "GOURMET",
+    "pokemon": [
+      "Snorlax",
+      "Lickilicky",
+      "Exeggutor",
+      "Infernape"
+    ],
+    "attacks": [
+      "Stockpile",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Stockpile",
+      "Snack Up",
+      "Espresso Shot",
+      "Chomp",
+      "Snack Up",
+      "Chomp",
+      "Razor Leaf",
+      "Future Sight",
+      "Snack Up",
+      "Chomp",
+      "Flame Thrower",
+      "Karate Smash"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Worker Gunnar",
+    "sprite": "Worker",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "GROUND",
+    "pokemon": [
+      "Excadrill",
+      "Seismitoad",
+      "Camerupt",
+      "Ursaluna"
+    ],
+    "attacks": [
+      "Earthquake",
+      "Bulldoze",
+      "Earth Power",
+      "Iron Head",
+      "Earthquake",
+      "Bulldoze",
+      "Muddy Water",
+      "Earth Power",
+      "Earthquake",
+      "Bulldoze",
+      "Earth Power",
+      "Flame Thrower",
+      "Earthquake",
+      "Bulldoze",
+      "Earth Power",
+      "Body Slam"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Skater Elsa",
+    "sprite": "WorkerIce",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "ICE",
+    "pokemon": [
+      "Crabominable",
+      "Frosmoth",
+      "Empoleon",
+      "Avalugg"
+    ],
+    "attacks": [
+      "Ice Beam",
+      "Freeze-Dry",
+      "Slush Rush",
+      "Ice Hammer",
+      "Ice Beam",
+      "Freeze-Dry",
+      "Slush Rush",
+      "Swarming Strike",
+      "Ice Beam",
+      "Freeze-Dry",
+      "Slush Rush",
+      "Waterfall",
+      "Ice Beam",
+      "Freeze-Dry",
+      "Slush Rush",
+      "Rock Slide"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Expert Rourke",
+    "sprite": "Expert M",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "MONSTER",
+    "pokemon": [
+      "Tyranitar",
+      "Drednaw",
+      "Gyarados",
+      "Muk"
+    ],
+    "attacks": [
+      "Angered Roar",
+      "Intimidating Stare",
+      "Violent Smash",
+      "Crunch",
+      "Angered Roar",
+      "Intimidating Stare",
+      "Violent Smash",
+      "Raging River",
+      "Angered Roar",
+      "Intimidating Stare",
+      "Violent Smash",
+      "Raging River",
+      "Angered Roar",
+      "Intimidating Stare",
+      "Violent Smash",
+      "Sludge Bomb"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Youngster Timmy",
+    "sprite": "Youngster",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "NORMAL",
+    "pokemon": [
+      "Slaking",
+      "Blissey",
+      "Farigiraf",
+      "Bewear"
+    ],
+    "attacks": [
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Mega Punch",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Moon Blast",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Future Sight",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Karate Smash"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Psychic Rodney",
+    "sprite": "Psychic M",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "PSYCHIC",
+    "pokemon": [
+      "Alakazam",
+      "Slowbro",
+      "Armarouge",
+      "Lunatone"
+    ],
+    "attacks": [
+      "Future Sight",
+      "Mind Break",
+      "Expanding Force",
+      "Trick",
+      "Future Sight",
+      "Mind Break",
+      "Expanding Force",
+      "Hydro Pump",
+      "Future Sight",
+      "Mind Break",
+      "Expanding Force",
+      "Flame Thrower",
+      "Future Sight",
+      "Mind Break",
+      "Expanding Force",
+      "Rock Slide"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Psychic Gem",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Super Nerd Elton",
+    "sprite": "Super Nerd",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "STEEL",
+    "pokemon": [
+      "Magnezone",
+      "Kingambit",
+      "Gholdengo",
+      "Aggron"
+    ],
+    "attacks": [
+      "Iron Head",
+      "Flash Cannon",
+      "Magnetize",
+      "Thunder Bolt",
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Sucker Punch",
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Shadow Ball",
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Rock Slide"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Fisherman Barney",
+    "sprite": "Fisherman",
+    "cash": 300,
+    "rank": "Ace",
+    "typeSpecialization": "WATER",
+    "pokemon": [
+      "Basculegion",
+      "Seismitoad",
+      "Feraligatr",
+      "Milotic"
+    ],
+    "attacks": [
+      "Hydro Pump",
+      "Waterfall",
+      "Surf",
+      "Shadow Ball",
+      "Hydro Pump",
+      "Waterfall",
+      "Surf",
+      "Muddy Water",
+      "Hydro Pump",
+      "Waterfall",
+      "Surf",
+      "Crunch",
+      "Hydro Pump",
+      "Waterfall",
+      "Surf",
+      "Moon Blast"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
     "name": "Hex maniac",
     "sprite": "Hex Maniac",
     "cash": 200,
@@ -1093,7 +1860,7 @@
   {
     "name": "Lorelei",
     "sprite": "Lorelei",
-    "cash": 750,
+    "cash": 600,
     "rank": "Elite",
     "typeSpecialization": "WATER",
     "pokemon": [
@@ -1136,7 +1903,8 @@
       "Salac Berry",
       "Liechi Berry",
       "Withdraw Wand",
-      "Babiri Berry"
+      "Babiri Berry",
+      "Withdraw Wand"
     ]
   },
   {
@@ -1179,6 +1947,7 @@
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
+      "Withdraw Wand",
       "Withdraw Wand"
     ]
   },
@@ -1222,48 +1991,49 @@
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
+      "Withdraw Wand",
       "Withdraw Wand"
     ]
   },
   {
     "name": "Caitlin",
     "sprite": "Caitlin",
-    "cash": 750,
+    "cash": 600,
     "rank": "Elite",
-    "typeSpecialization": "PSYCHIC",
+    "typeSpecialization": "FAIRY",
     "pokemon": [
-      "Hatterene",
-      "Gothitelle",
-      "Gardevoir",
-      "Alakazam",
-      "Gallade",
-      "Claydol"
+      "Dragonite",
+      "Togekiss",
+      "Meganium",
+      "Ampharos",
+      "Beautifly",
+      "Xerneas"
     ],
     "attacks": [
-      "Mist",
+      "Moon Blast",
       "Dazzling Dance",
-      "Moon Blast",
-      "Expanding Force",
-      "Mega Punch",
-      "Meditate",
-      "Mind Break",
-      "Expanding Force",
-      "Future Sight",
-      "Moon Blast",
-      "Mind Break",
       "Haze",
-      "Mind Break",
-      "Trick",
-      "Protect",
-      "Expanding Force",
-      "Overwork",
-      "Kick in the Face",
-      "Mega Punch",
-      "Mega Punch",
-      "Mist",
-      "Dazzling Dance",
+      "Helping Hand",
       "Moon Blast",
-      "Expanding Force"
+      "Dazzling Dance",
+      "Haze",
+      "Helping Hand",
+      "Moon Blast",
+      "Dazzling Dance",
+      "Haze",
+      "Helping Hand",
+      "Moon Blast",
+      "Dazzling Dance",
+      "Fairy Light",
+      "Haze",
+      "Moon Blast",
+      "Dazzling Dance",
+      "Haze",
+      "Helping Hand",
+      "Moon Blast",
+      "Dazzling Aura",
+      "Dazzling Dance",
+      "Haze"
     ],
     "items": [
       "Sitrus Berry",
@@ -1271,13 +2041,13 @@
       "Salac Berry",
       "Liechi Berry",
       "Withdraw Wand",
-      "Babiri Berry"
+      "Withdraw Wand"
     ]
   },
   {
     "name": "Grimsley",
     "sprite": "Grimsley",
-    "cash": 750,
+    "cash": 600,
     "rank": "Elite",
     "typeSpecialization": "DARK",
     "pokemon": [
@@ -1320,7 +2090,8 @@
       "Salac Berry",
       "Liechi Berry",
       "Withdraw Wand",
-      "Babiri Berry"
+      "Babiri Berry",
+      "Withdraw Wand"
     ]
   },
   {
@@ -1363,6 +2134,7 @@
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
+      "Withdraw Wand",
       "Withdraw Wand"
     ]
   },
@@ -1406,6 +2178,7 @@
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
+      "Withdraw Wand",
       "Withdraw Wand"
     ]
   },
@@ -1414,41 +2187,41 @@
     "sprite": "Chili",
     "cash": 500,
     "rank": "Boss",
-    "typeSpecialization": "FIRE",
+    "typeSpecialization": "GOURMET",
     "pokemon": [
-      "Cinderace",
-      "Ceruledge",
-      "Skeledirge",
-      "Charizard",
-      "Arcanine"
+      "Annihilape",
+      "Snorlax",
+      "Infernape",
+      "Rillaboom",
+      "Exeggutor"
     ],
     "attacks": [
-      "Flame Thrower",
-      "Mega Punch",
-      "Meditate",
-      "Power-up Punch",
-      "Flame Thrower",
-      "Fire Spin",
-      "Shadow Ball",
-      "Curse",
-      "Mind Break",
-      "Shadow Ball",
-      "Cursed Flame",
-      "Fire Spin",
-      "Flame Thrower",
-      "Mega Punch",
-      "Meditate",
-      "Power-up Punch",
-      "Flame Thrower",
-      "Fire Spin",
-      "Will-o-wisp",
-      "Rock Slide"
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
+      "Withdraw Wand",
       "Withdraw Wand"
     ]
   },
@@ -1492,6 +2265,7 @@
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
+      "Withdraw Wand",
       "Withdraw Wand"
     ]
   },
@@ -1535,13 +2309,14 @@
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
+      "Withdraw Wand",
       "Withdraw Wand"
     ]
   },
   {
     "name": "Sidney",
     "sprite": "Sidney",
-    "cash": 750,
+    "cash": 600,
     "rank": "Elite",
     "typeSpecialization": "DARK",
     "pokemon": [
@@ -1584,7 +2359,8 @@
       "Salac Berry",
       "Liechi Berry",
       "Withdraw Wand",
-      "Babiri Berry"
+      "Babiri Berry",
+      "Withdraw Wand"
     ]
   },
   {
@@ -1627,6 +2403,7 @@
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
+      "Withdraw Wand",
       "Withdraw Wand"
     ]
   },
@@ -1670,6 +2447,1455 @@
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Lance",
+    "sprite": "Lance",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "FLYING",
+    "pokemon": [
+      "Dragonite",
+      "Togekiss",
+      "Talonflame",
+      "Charizard",
+      "Beautifly",
+      "Lugia"
+    ],
+    "attacks": [
+      "Air Slash",
+      "Sparkling Breeze",
+      "Tailwind",
+      "Dragon Claw",
+      "Air Slash",
+      "Sparkling Breeze",
+      "Tailwind",
+      "Moon Blast",
+      "Air Slash",
+      "Heat Wave",
+      "Tailwind",
+      "Flame Thrower",
+      "Air Slash",
+      "Heat Wave",
+      "Tailwind",
+      "Flame Thrower",
+      "Air Slash",
+      "Sparkling Breeze",
+      "Tailwind",
+      "Moon Blast",
+      "Great Storm",
+      "Air Slash",
+      "Tailwind",
+      "Divine Wrath"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Glacia",
+    "sprite": "Glacia",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "ICE",
+    "pokemon": [
+      "Mamoswine",
+      "Lapras",
+      "Weavile",
+      "Froslass",
+      "Beartic",
+      "Abomasnow"
+    ],
+    "attacks": [
+      "Ice Beam",
+      "Earthquake",
+      "Freeze-Dry",
+      "Slush Rush",
+      "Ice Beam",
+      "Hydro Pump",
+      "Freeze-Dry",
+      "Surf",
+      "Ice Beam",
+      "Crunch",
+      "Freeze-Dry",
+      "Sucker Punch",
+      "Ice Beam",
+      "Shadow Ball",
+      "Freeze-Dry",
+      "Jumpscare",
+      "Ice Beam",
+      "Waterfall",
+      "Freeze-Dry",
+      "Slush Rush",
+      "Ice Beam",
+      "Razor Leaf",
+      "Freeze-Dry",
+      "Slush Rush"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Babiri Berry",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Burgh",
+    "sprite": "Burgh",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "BUG",
+    "pokemon": [
+      "Scizor",
+      "Orbeetle",
+      "Escavalier",
+      "Vikavolt",
+      "Heracross"
+    ],
+    "attacks": [
+      "Bullet Punch",
+      "Swarming Strike",
+      "Buzz Up",
+      "Iron Head",
+      "Bug Buzz",
+      "Swarming Strike",
+      "Buzz Up",
+      "Flash Cannon",
+      "Bullet Punch",
+      "Swarming Strike",
+      "Buzz Up",
+      "Iron Head",
+      "Bug Buzz",
+      "Swarming Strike",
+      "Buzz Up",
+      "Flash Cannon",
+      "Swarming Punch",
+      "Swarming Strike",
+      "Buzz Up",
+      "Mega Punch"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Wattson",
+    "sprite": "Wattson",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "ELECTRIC",
+    "pokemon": [
+      "Electivire",
+      "Magnezone",
+      "Ampharos",
+      "Orbeetle",
+      "Pawmot"
+    ],
+    "attacks": [
+      "Flash Cannon",
+      "Thunder Punch",
+      "Thunder Bolt",
+      "Discharge",
+      "Flash Cannon",
+      "Thunder Bolt",
+      "Discharge",
+      "Magnetize",
+      "Flash Cannon",
+      "Thunder Bolt",
+      "Discharge",
+      "Fairy Light",
+      "Flash Cannon",
+      "Thunder Bolt",
+      "Discharge",
+      "Bug Buzz",
+      "Flash Cannon",
+      "Thunder Punch",
+      "Thunder Bolt",
+      "Discharge"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Electric Gem",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Whitney",
+    "sprite": "Whitney",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "FAIRY",
+    "pokemon": [
+      "Dragonite",
+      "Togekiss",
+      "Meganium",
+      "Ampharos",
+      "Beautifly"
+    ],
+    "attacks": [
+      "Moon Blast",
+      "Dazzling Dance",
+      "Haze",
+      "Helping Hand",
+      "Moon Blast",
+      "Dazzling Dance",
+      "Haze",
+      "Helping Hand",
+      "Moon Blast",
+      "Dazzling Dance",
+      "Haze",
+      "Helping Hand",
+      "Moon Blast",
+      "Dazzling Dance",
+      "Fairy Light",
+      "Haze",
+      "Moon Blast",
+      "Dazzling Dance",
+      "Haze",
+      "Helping Hand"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Brawly",
+    "sprite": "Brawly",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "FIGHTING",
+    "pokemon": [
+      "Chesnaut",
+      "Crabominable",
+      "Conkeldurr",
+      "Machamp",
+      "Quaquaval"
+    ],
+    "attacks": [
+      "Vine Whip",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face",
+      "Ice Hammer",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face",
+      "Overwork",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face",
+      "Overwork",
+      "Soaking Smash",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Falkner",
+    "sprite": "Falkner",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "FLYING",
+    "pokemon": [
+      "Dragonite",
+      "Togekiss",
+      "Talonflame",
+      "Charizard",
+      "Beautifly"
+    ],
+    "attacks": [
+      "Air Slash",
+      "Sparkling Breeze",
+      "Tailwind",
+      "Dragon Claw",
+      "Air Slash",
+      "Sparkling Breeze",
+      "Tailwind",
+      "Moon Blast",
+      "Air Slash",
+      "Heat Wave",
+      "Tailwind",
+      "Flame Thrower",
+      "Air Slash",
+      "Heat Wave",
+      "Tailwind",
+      "Flame Thrower",
+      "Air Slash",
+      "Sparkling Breeze",
+      "Tailwind",
+      "Moon Blast"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Lenora",
+    "sprite": "Lenora",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "FOSSIL",
+    "pokemon": [
+      "Yanmega",
+      "Relicanth",
+      "Sigilyph",
+      "Cradily",
+      "Claydol"
+    ],
+    "attacks": [
+      "Ancient Power",
+      "Ancient Energy",
+      "Air Slash",
+      "Swarming Strike",
+      "Ancient Power",
+      "Ancient Energy",
+      "Hydro Pump",
+      "Waterfall",
+      "Ancient Power",
+      "Ancient Energy",
+      "Air Slash",
+      "Expanding Force",
+      "Ancient Power",
+      "Ancient Energy",
+      "Earth Power",
+      "Leech Seed",
+      "Ancient Power",
+      "Ancient Energy",
+      "Earthquake",
+      "Earth Power"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Morty",
+    "sprite": "Morty",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "GHOST",
+    "pokemon": [
+      "Ceruledge",
+      "Dusknoir",
+      "Gengar",
+      "Skeledirge",
+      "Typhlosion"
+    ],
+    "attacks": [
+      "Cursed Flame",
+      "Ghastly Grip",
+      "Leech Seed",
+      "Mind Break",
+      "Ghastly Grip",
+      "Leech Seed",
+      "Mind Break",
+      "Shadow Ball",
+      "Ghastly Grip",
+      "Leech Seed",
+      "Mind Break",
+      "Shadow Ball",
+      "Cursed Flame",
+      "Leech Seed",
+      "Mind Break",
+      "Shadow Ball",
+      "Cursed Flame",
+      "Leech Seed",
+      "Mind Break",
+      "Shadow Ball"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Clay",
+    "sprite": "Clay",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "GROUND",
+    "pokemon": [
+      "Swampert",
+      "Seismitoad",
+      "Whiscash",
+      "Gastrodon",
+      "Quagsire"
+    ],
+    "attacks": [
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze",
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze",
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze",
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze",
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Drayden",
+    "sprite": "Drayden",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "MONSTER",
+    "pokemon": [
+      "Tyranitar",
+      "Drednaw",
+      "Gyarados",
+      "Hydreigon",
+      "Blastoise"
+    ],
+    "attacks": [
+      "Titanic Boulder",
+      "Crippling Crunch",
+      "Violent Smash",
+      "Crunch",
+      "Titanic Boulder",
+      "Violent Smash",
+      "Crunch",
+      "Raging River",
+      "Violent Smash",
+      "Crunch",
+      "Raging River",
+      "Angered Roar",
+      "Crippling Crunch",
+      "Violent Smash",
+      "Crunch",
+      "Angered Roar",
+      "Violent Smash",
+      "Crunch",
+      "Raging River",
+      "Angered Roar"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Norman",
+    "sprite": "Norman",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "NORMAL",
+    "pokemon": [
+      "Blissey",
+      "Ursaluna",
+      "Braviary",
+      "Sawsbuck",
+      "Farigiraf"
+    ],
+    "attacks": [
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Moon Blast",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Earthquake",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Air Slash",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Earth Power",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Expanding Force"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Jasmine",
+    "sprite": "Jasmine",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "STEEL",
+    "pokemon": [
+      "Magnezone",
+      "Scizor",
+      "Steelix",
+      "Escavalier",
+      "Aggron"
+    ],
+    "attacks": [
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Magnetize",
+      "Iron Head",
+      "Flash Cannon",
+      "Bullet Punch",
+      "Iron Defense",
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Rock Polish",
+      "Iron Head",
+      "Flash Cannon",
+      "Bullet Punch",
+      "Iron Defense",
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Rock Polish"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Roxie",
+    "sprite": "Roxie",
+    "cash": 500,
+    "rank": "Boss",
+    "typeSpecialization": "POISON",
+    "pokemon": [
+      "Crobat",
+      "Gliscor",
+      "Drapion",
+      "Scolipede",
+      "Sneasler"
+    ],
+    "attacks": [
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Poison Gem",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Aaron",
+    "sprite": "Aaron",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "BUG",
+    "pokemon": [
+      "Scizor",
+      "Orbeetle",
+      "Escavalier",
+      "Vikavolt",
+      "Heracross",
+      "Volcarona"
+    ],
+    "attacks": [
+      "Bullet Punch",
+      "Swarming Strike",
+      "Buzz Up",
+      "Iron Head",
+      "Bug Buzz",
+      "Swarming Strike",
+      "Buzz Up",
+      "Flash Cannon",
+      "Bullet Punch",
+      "Swarming Strike",
+      "Buzz Up",
+      "Iron Head",
+      "Bug Buzz",
+      "Swarming Strike",
+      "Buzz Up",
+      "Flash Cannon",
+      "Swarming Punch",
+      "Swarming Strike",
+      "Buzz Up",
+      "Mega Punch",
+      "Roaring Swarm",
+      "Swarming Strike",
+      "Buzz Up",
+      "Divine Wrath"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Drake",
+    "sprite": "Drake",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "DRAGON",
+    "pokemon": [
+      "Baxcalibur",
+      "Dragonite",
+      "Dragapult",
+      "Salamence",
+      "Garchomp",
+      "Kyurem"
+    ],
+    "attacks": [
+      "Dragon Claw",
+      "Dragon Rage",
+      "Dragon's Breath",
+      "Dragon Dance",
+      "Dragon Claw",
+      "Dragon Rage",
+      "Dragon's Breath",
+      "Dragon Dance",
+      "Dragon Claw",
+      "Dragon Rage",
+      "Dragon's Breath",
+      "Dragon Dance",
+      "Dragon Claw",
+      "Dragon Rage",
+      "Dragon's Breath",
+      "Dragon Dance",
+      "Dragon Claw",
+      "Dragon Rage",
+      "Dragon's Breath",
+      "Dragon Dance",
+      "Hyper Beam",
+      "Dragon Claw",
+      "Dragon Rage",
+      "Dragon's Breath"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Volkner",
+    "sprite": "Volkner",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "ELECTRIC",
+    "pokemon": [
+      "Electivire",
+      "Magnezone",
+      "Ampharos",
+      "Orbeetle",
+      "Pawmot",
+      "Raikou"
+    ],
+    "attacks": [
+      "Flash Cannon",
+      "Thunder Punch",
+      "Thunder Bolt",
+      "Discharge",
+      "Flash Cannon",
+      "Thunder Bolt",
+      "Discharge",
+      "Magnetize",
+      "Flash Cannon",
+      "Thunder Bolt",
+      "Discharge",
+      "Fairy Light",
+      "Flash Cannon",
+      "Thunder Bolt",
+      "Discharge",
+      "Bug Buzz",
+      "Flash Cannon",
+      "Thunder Punch",
+      "Thunder Bolt",
+      "Discharge",
+      "Thunder Storm",
+      "Flash Cannon",
+      "Thunder Bolt",
+      "Discharge"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Electric Gem",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Marshal",
+    "sprite": "Marshal",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "FIGHTING",
+    "pokemon": [
+      "Chesnaut",
+      "Crabominable",
+      "Conkeldurr",
+      "Machamp",
+      "Quaquaval",
+      "Cobalion"
+    ],
+    "attacks": [
+      "Vine Whip",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face",
+      "Ice Hammer",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face",
+      "Overwork",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face",
+      "Overwork",
+      "Soaking Smash",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face",
+      "Sacred Sword",
+      "Mega Punch",
+      "Karate Smash",
+      "Kick in the Face"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Flint",
+    "sprite": "Flint",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "FIRE",
+    "pokemon": [
+      "Ceruledge",
+      "Magmortar",
+      "Talonflame",
+      "Charizard",
+      "Cinderace",
+      "Entei"
+    ],
+    "attacks": [
+      "Cursed Flame",
+      "Fire Punch",
+      "Flame Thrower",
+      "Fire Spin",
+      "Fire Punch",
+      "Flame Thrower",
+      "Fire Spin",
+      "Will-o-wisp",
+      "Flame Thrower",
+      "Heat Wave",
+      "Fire Spin",
+      "Will-o-wisp",
+      "Flame Thrower",
+      "Heat Wave",
+      "Fire Spin",
+      "Will-o-wisp",
+      "Fire Punch",
+      "Flame Thrower",
+      "Fire Spin",
+      "Will-o-wisp",
+      "Eruption",
+      "Flame Thrower",
+      "Fire Spin",
+      "Will-o-wisp"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Fire Gem",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Shauntal",
+    "sprite": "Shauntal",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "FOSSIL",
+    "pokemon": [
+      "Yanmega",
+      "Relicanth",
+      "Sigilyph",
+      "Cradily",
+      "Claydol",
+      "Regirock"
+    ],
+    "attacks": [
+      "Ancient Power",
+      "Ancient Energy",
+      "Air Slash",
+      "Swarming Strike",
+      "Ancient Power",
+      "Ancient Energy",
+      "Hydro Pump",
+      "Waterfall",
+      "Ancient Power",
+      "Ancient Energy",
+      "Air Slash",
+      "Expanding Force",
+      "Ancient Power",
+      "Ancient Energy",
+      "Earth Power",
+      "Leech Seed",
+      "Ancient Power",
+      "Ancient Energy",
+      "Earthquake",
+      "Earth Power",
+      "Ancient Force",
+      "Ancient Power",
+      "Ancient Energy",
+      "Divine Wrath"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Agatha",
+    "sprite": "Agatha",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "GHOST",
+    "pokemon": [
+      "Ceruledge",
+      "Dusknoir",
+      "Gengar",
+      "Skeledirge",
+      "Typhlosion",
+      "Giratina"
+    ],
+    "attacks": [
+      "Cursed Flame",
+      "Ghastly Grip",
+      "Leech Seed",
+      "Mind Break",
+      "Ghastly Grip",
+      "Leech Seed",
+      "Mind Break",
+      "Shadow Ball",
+      "Ghastly Grip",
+      "Leech Seed",
+      "Mind Break",
+      "Shadow Ball",
+      "Cursed Flame",
+      "Leech Seed",
+      "Mind Break",
+      "Shadow Ball",
+      "Cursed Flame",
+      "Leech Seed",
+      "Mind Break",
+      "Shadow Ball",
+      "Leech Seed",
+      "Mind Break",
+      "Shadow Ball",
+      "Curse"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Will",
+    "sprite": "Will",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "GOURMET",
+    "pokemon": [
+      "Annihilape",
+      "Snorlax",
+      "Infernape",
+      "Rillaboom",
+      "Exeggutor",
+      "Lickilicky"
+    ],
+    "attacks": [
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up",
+      "Chomp",
+      "Burp",
+      "Espresso Shot",
+      "Snack Up"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Alder",
+    "sprite": "Alder",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "GRASS",
+    "pokemon": [
+      "Exeggutor",
+      "Meganium",
+      "Chesnaut",
+      "Sawsbuck",
+      "Decidueye",
+      "Celebi"
+    ],
+    "attacks": [
+      "Earth Power",
+      "Leech Seed",
+      "Razor Leaf",
+      "Decay",
+      "Earth Power",
+      "Leech Seed",
+      "Razor Leaf",
+      "Nature's Blessing",
+      "Vine Whip",
+      "Earth Power",
+      "Leech Seed",
+      "Razor Leaf",
+      "Earth Power",
+      "Leech Seed",
+      "Razor Leaf",
+      "Sleep Powder",
+      "Earth Power",
+      "Leech Seed",
+      "Razor Leaf",
+      "Sleep Powder",
+      "Earth Power",
+      "Leech Seed",
+      "Razor Leaf",
+      "Decay"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Grass Gem",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Bertha",
+    "sprite": "Bertha",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "GROUND",
+    "pokemon": [
+      "Swampert",
+      "Seismitoad",
+      "Whiscash",
+      "Gastrodon",
+      "Quagsire",
+      "Garchomp"
+    ],
+    "attacks": [
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze",
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze",
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze",
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze",
+      "Earthquake",
+      "Muddy Water",
+      "Earth Power",
+      "Bulldoze",
+      "Earthquake",
+      "Earth Power",
+      "Bulldoze",
+      "Dragon Claw"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Cynthia",
+    "sprite": "Cynthia",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "HUMAN",
+    "pokemon": [
+      "Ceruledge",
+      "Pawmot",
+      "Blaziken",
+      "Electivire",
+      "Magmortar",
+      "Gengar"
+    ],
+    "attacks": [
+      "Mega Punch",
+      "Fire Punch",
+      "Ghastly Grip",
+      "Power-up Punch",
+      "Mega Punch",
+      "Thunder Punch",
+      "Power-up Punch",
+      "Meditate",
+      "Mega Punch",
+      "Fire Punch",
+      "Power-up Punch",
+      "Meditate",
+      "Mega Punch",
+      "Thunder Punch",
+      "Power-up Punch",
+      "Meditate",
+      "Mega Punch",
+      "Fire Punch",
+      "Power-up Punch",
+      "Meditate",
+      "Mega Punch",
+      "Ghastly Grip",
+      "Power-up Punch",
+      "Meditate"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Blue",
+    "sprite": "Blue",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "NORMAL",
+    "pokemon": [
+      "Blissey",
+      "Ursaluna",
+      "Braviary",
+      "Sawsbuck",
+      "Farigiraf",
+      "Regigigas"
+    ],
+    "attacks": [
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Moon Blast",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Earthquake",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Air Slash",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Earth Power",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Expanding Force",
+      "Body Slam",
+      "Inspiring Noise",
+      "Protect",
+      "Divine Wrath"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Janine",
+    "sprite": "Janine",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "POISON",
+    "pokemon": [
+      "Crobat",
+      "Gliscor",
+      "Drapion",
+      "Scolipede",
+      "Sneasler",
+      "Venomoth"
+    ],
+    "attacks": [
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic",
+      "Sludge Strike",
+      "Sludge Bomb",
+      "Ooze",
+      "Toxic"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Poison Gem",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Lucian",
+    "sprite": "Lucian",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "PSYCHIC",
+    "pokemon": [
+      "Exeggutor",
+      "Alakazam",
+      "Malamar",
+      "Venomoth",
+      "Farigiraf",
+      "Mewtwo"
+    ],
+    "attacks": [
+      "Expanding Force",
+      "Mind Break",
+      "Decay",
+      "Future Sight",
+      "Expanding Force",
+      "Mind Break",
+      "Future Sight",
+      "Protect",
+      "Expanding Force",
+      "Mind Break",
+      "Future Sight",
+      "Protect",
+      "Expanding Force",
+      "Mind Break",
+      "Future Sight",
+      "Protect",
+      "Expanding Force",
+      "Mind Break",
+      "Future Sight",
+      "Protect",
+      "Shatter Reality",
+      "Expanding Force",
+      "Mind Break",
+      "Future Sight"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Psychic Gem",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Bruno",
+    "sprite": "Bruno",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "ROCK",
+    "pokemon": [
+      "Tyranitar",
+      "Drednaw",
+      "Steelix",
+      "Aggron",
+      "Probopass",
+      "Terrakion"
+    ],
+    "attacks": [
+      "Stone Edge",
+      "Titanic Boulder",
+      "Rock Slide",
+      "Stone Wall",
+      "Stone Edge",
+      "Titanic Boulder",
+      "Rock Slide",
+      "Stone Wall",
+      "Stone Edge",
+      "Rock Slide",
+      "Rock Polish",
+      "Stone Wall",
+      "Stone Edge",
+      "Rock Slide",
+      "Rock Polish",
+      "Stone Wall",
+      "Stone Edge",
+      "Rock Slide",
+      "Rock Polish",
+      "Stone Wall",
+      "Stone Edge",
+      "Rock Slide",
+      "Stone Wall",
+      "Divine Wrath"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Steven",
+    "sprite": "Steven",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "STEEL",
+    "pokemon": [
+      "Magnezone",
+      "Scizor",
+      "Steelix",
+      "Escavalier",
+      "Aggron",
+      "Registeel"
+    ],
+    "attacks": [
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Magnetize",
+      "Iron Head",
+      "Flash Cannon",
+      "Bullet Punch",
+      "Iron Defense",
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Rock Polish",
+      "Iron Head",
+      "Flash Cannon",
+      "Bullet Punch",
+      "Iron Defense",
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Rock Polish",
+      "Iron Head",
+      "Flash Cannon",
+      "Iron Defense",
+      "Swords Dance"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Liechi Berry",
+      "Withdraw Wand",
+      "Withdraw Wand"
+    ]
+  },
+  {
+    "name": "Karen",
+    "sprite": "Karen",
+    "cash": 600,
+    "rank": "Elite",
+    "typeSpecialization": "MONSTER",
+    "pokemon": [
+      "Tyranitar",
+      "Drednaw",
+      "Gyarados",
+      "Hydreigon",
+      "Blastoise",
+      "Darkrai"
+    ],
+    "attacks": [
+      "Titanic Boulder",
+      "Crippling Crunch",
+      "Violent Smash",
+      "Crunch",
+      "Titanic Boulder",
+      "Violent Smash",
+      "Crunch",
+      "Raging River",
+      "Violent Smash",
+      "Crunch",
+      "Raging River",
+      "Angered Roar",
+      "Crippling Crunch",
+      "Violent Smash",
+      "Crunch",
+      "Angered Roar",
+      "Violent Smash",
+      "Crunch",
+      "Raging River",
+      "Angered Roar",
+      "Violent Smash",
+      "Crunch",
+      "Nightmare",
+      "Angered Roar"
+    ],
+    "items": [
+      "Sitrus Berry",
+      "Lum Berry",
+      "Salac Berry",
+      "Dark Gem",
+      "Withdraw Wand",
       "Withdraw Wand"
     ]
   }

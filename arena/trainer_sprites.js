@@ -8,6 +8,11 @@
 
     const SPRITES = Object.freeze([
             {
+                    "name": "Aaron",
+                    "source": "OTHER",
+                    "file": "Aaron.png"
+            },
+            {
                     "name": "Ace Trainer F",
                     "source": "B2W2",
                     "file": "Ace Trainer F B2W2.png"
@@ -161,6 +166,11 @@
                     "name": "Benga",
                     "source": "B2W2",
                     "file": "Benga.png"
+            },
+            {
+                    "name": "Bertha",
+                    "source": "OTHER",
+                    "file": "Bertha.png"
             },
             {
                     "name": "Bianca",
@@ -713,6 +723,11 @@
                     "file": "Flannery.png"
             },
             {
+                    "name": "Flint",
+                    "source": "OTHER",
+                    "file": "Flint.png"
+            },
+            {
                     "name": "Gamer",
                     "source": "OTHER",
                     "file": "Gamer.png"
@@ -968,6 +983,11 @@
                     "file": "Juggler.png"
             },
             {
+                    "name": "Karen",
+                    "source": "OTHER",
+                    "file": "Karen.png"
+            },
+            {
                     "name": "Kindler",
                     "source": "RS",
                     "file": "Kindler.png"
@@ -1076,6 +1096,11 @@
                     "name": "Lt Surge",
                     "source": "FRLG",
                     "file": "Lt Surge.png"
+            },
+            {
+                    "name": "Lucian",
+                    "source": "OTHER",
+                    "file": "Lucian.png"
             },
             {
                     "name": "Lucy",
@@ -1708,6 +1733,11 @@
                     "file": "Sis and Bro RS.png"
             },
             {
+                    "name": "Skier",
+                    "source": "OTHER",
+                    "file": "Skier.png"
+            },
+            {
                     "name": "Skyla",
                     "source": "B2W2",
                     "file": "Skyla B2W2.png"
@@ -2021,6 +2051,11 @@
                     "name": "Whitney",
                     "source": "B2W2",
                     "file": "Whitney.png"
+            },
+            {
+                    "name": "Will",
+                    "source": "OTHER",
+                    "file": "Will.png"
             },
             {
                     "name": "Winona",

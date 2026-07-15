@@ -33,31 +33,31 @@ and `node tests/run_all.js` is green. Ends green.
 
 ## Steps
 
-- [ ] 1. **`trainers.json`** — add **at least 4** new **Ace** trainers (recommend ~6 for a
+- [x] 1. **`trainers.json`** — add **at least 4** new **Ace** trainers (recommend ~6 for a
   healthy pool) using generic-class sprites from the list above, so Ace totals **≥6**. Each:
   `rank: "Ace"`, `cash: 300` (or 320), a distinct valid `typeSpecialization`, **4 Pokémon / 16
   attacks / ~5 items**, all type-valid, unique `name`. Spread the `typeSpecialization`s across
   types not already well-covered at Ace.
-- [ ] 2. **`trainers.json`** — (recommended) top up **Elite** to ~6 for variety: add 1–2 new
+- [x] 2. **`trainers.json`** — (recommended) top up **Elite** to ~6 for variety: add 1–2 new
   Elite trainers using **real Elite Four names** from the unused list (they fit the Elite rank
   thematically; gym leaders do not). Each: `rank: "Elite"`, `cash: 750`, valid
   `typeSpecialization`, **6 Pokémon / 24 attacks / 6 items**, type-valid. (Skip if you prefer to
   leave Elite at the phase-23 count of 4 — the test still passes; note the choice.)
-- [ ] 3. **`trainers.json` / `arena/trainer_sprites.js`** — fix the pre-existing gap: the
+- [x] 3. **`trainers.json` / `arena/trainer_sprites.js`** — fix the pre-existing gap: the
   Standard trainer `Skier` references a sprite name absent from the manifest. First check
   `assets/sprites/` for a matching Skier file; if one exists, add its `{name:"Skier", source, file}`
   entry to the manifest; if not, repoint that trainer's `sprite` to an existing generic sprite
   (e.g. `Worker`, `Hiker`, or `Ace Trainer M`). Keep the trainer's `name` as-is.
-- [ ] 4. **Validate types** — for every new deck, confirm each attack is usable by one of the
+- [x] 4. **Validate types** — for every new deck, confirm each attack is usable by one of the
   Pokémon per `pokemon.json`. Fix off-type pairings so no attack sits dead.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — including the `≥6 Ace` / `≥4 Elite` seeded-roster test
+- [x] `node tests/run_all.js` green — including the `≥6 Ace` / `≥4 Elite` seeded-roster test
   and the well-formedness cross-reference test (all names resolve, unique, valid ranks &
   typeSpecializations).
-- [ ] Counts: Ace ≥ 6, Elite ≥ 4; every new Ace = 4pk/16at, every new Elite = 6pk/24at.
-- [ ] `verify` skill (serve on 8931) OR a scripted run through the `map/locations.js` selection:
+- [x] Counts: Ace ≥ 6, Elite ≥ 4; every new Ace = 4pk/16at, every new Elite = 6pk/24at.
+- [x] `verify` skill (serve on 8931) OR a scripted run through the `map/locations.js` selection:
   Ace-tier battles now surface generic-class trainers (no gym-leader names), and boss nodes
   surface the gym leaders promoted in phase 23. `Skier` renders a real sprite.
 
