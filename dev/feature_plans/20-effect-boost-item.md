@@ -37,22 +37,28 @@ multi-hit toward more hits. Ends green + playable.
 
 ## Steps
 
-- [ ] 1. **`items.json` + `arena/arena_data.js`** — add the item to both (mirror the gems at
+- [x] 1. **`items.json` + `arena/arena_data.js`** — add the item to both (mirror the gems at
   arena_data ~`:273`). Shape: `{ "name": "<pick a unique name, e.g. Effect Amplifier>",
   "target": "SIDE", "status": ["EFFECT_BOOST"], "statChanges": [] }`. Register `EFFECT_BOOST`
   as a battle status (so `isBattleStatus` accepts it) but keep it OUT of the
   `DRAGON_GEM_EFFECTS_BY_STATUS` gem map — it is not a gem.
-- [ ] 2. **`arena/arena_model.js`** — add a per-side boost store analogous to `dragonGems`
+  - Done as "Effect Amplifier". Added `EFFECT_BOOST` to `scripts/data_options.js` `Status`
+    (the item-status validator reads that enum). **Deviation:** did NOT make it a battle
+    status — `isBattleStatus` requires `showsToken:true`, but the item never becomes a
+    per-Pokémon status entry (it sets a side flag), so its `STATUS_DEFINITIONS` entry is
+    `showsToken:false` (per step 6). Kept out of the gem map as specified. Also set an
+    `imagePath` on the item so the card art resolves (no `EFFECT_AMPLIFIER.png` exists).
+- [x] 2. **`arena/arena_model.js`** — add a per-side boost store analogous to `dragonGems`
   (e.g. `player.effectBoost = true`) plus helpers: an application call (set the flag) and
   `hasEffectBoost(playerId)` (read it). Include the field in player init/normalize (~`:129`,
   `:368`) so it round-trips. The boost persists for the rest of the battle.
-- [ ] 3. **`arena/arena_controller.js`** — route the new item. In `applyItemCard` add a branch
+- [x] 3. **`arena/arena_controller.js`** — route the new item. In `applyItemCard` add a branch
   (mirror the gem branch at ~`:1981`) that detects the effect-boost item (by its `EFFECT_BOOST`
   status + `SIDE` target) and sets the side flag instead of resolving per-target. Ensure it
   plays **without target selection** the way the gem does (a SIDE item has no per-Pokémon
   target — mirror the gem's no-target handling in the targeting/`usePendingItem` path). The
   physical card **discards normally** (only gems are no-discard — that's phase 19).
-- [ ] 4. **`arena/arena_controller.js`** — apply the boost at the three roll sites. Compute
+- [x] 4. **`arena/arena_controller.js`** — apply the boost at the three roll sites. Compute
   `const boosted = model.hasEffectBoost(action.owner);` in `resolveQueuedAttack` and thread it
   in:
   - `maybeApplyAttackStatuses`: use `boosted ? Math.min(1, STATUS_TRIGGER_CHANCE * 2) : STATUS_TRIGGER_CHANCE`.
@@ -61,25 +67,25 @@ multi-hit toward more hits. Ends green + playable.
     index-aligned to hits `[2,3,4,5,6]`: unboosted `[4,4,2,1,1]`, boosted `[1,2,4,4,3]`
     (tune to taste; boosted must clearly favor 4–5). Pass `boosted` from `resolveMultiAttackDamage`
     (it has `attacker`; get the owner from `action.owner` at the call site).
-- [ ] 5. **`arena/arena_controller.js`** — let the opponent AI play it in `chooseOpponentItem`
+- [x] 5. **`arena/arena_controller.js`** — let the opponent AI play it in `chooseOpponentItem`
   (~`:1293`): return the effect-boost item as a no-target side play (like the gem branch) when
   the opponent's side isn't already boosted.
-- [ ] 6. **Icon + indicator** — hand-author `assets/status-icons/EFFECT_BOOST.svg` (simple
+- [x] 6. **Icon + indicator** — hand-author `assets/status-icons/EFFECT_BOOST.svg` (simple
   monochrome glyph matching `assets/status-icons/BURN.svg`'s viewBox/weight) and add a
   `STATUS_DEFINITIONS` entry (`showsToken:false`, mirror `MULTI_ATTACK` at ~`:74`). Show the
   active boost on the owning side (mirror the dragon-gem tray marker) so players can see it's up.
-- [ ] 7. **`tests/`** — add Node tests (`require('./tests/helpers/arena_env')`): stub
+- [x] 7. **`tests/`** — add Node tests (`require('./tests/helpers/arena_env')`): stub
   `Math.random` to prove a low-chance status/stat-change triggers under boost where it wouldn't
   unboosted; and assert the weighted multi-hit distribution trends higher when boosted than
   when not (sample many rolls with a seeded/stubbed RNG).
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill (serve on 8931): play the item, then attack with a move that has a
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill (serve on 8931): play the item, then attack with a move that has a
   secondary effect (e.g. a burn-chance attack) → the effect lands far more often; the side
   shows a boost indicator; a multi-hit attack trends toward 4–5+ hits.
-- [ ] The opponent AI can play the item and gets the same boost on its side.
+- [x] The opponent AI can play the item and gets the same boost on its side.
 
 ## Out of scope / do not touch
 

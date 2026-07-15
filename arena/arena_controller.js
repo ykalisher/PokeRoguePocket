@@ -431,6 +431,18 @@
             return;
         }
 
+        if (model.isEffectBoostItemCard(itemCard)) {
+            if (!canUseEffectBoostItem('player')) {
+                showPopup(`${model.getCardName(itemCard)} is already active.`);
+                state.selectedCardId = cardId;
+                render();
+                return;
+            }
+
+            useEffectBoostItemFromHand('player', cardId);
+            return;
+        }
+
         const targets = model.getTargetOptionsForAction(itemCard, 'player', null);
 
         if (targets.length === 0) {
@@ -661,6 +673,57 @@
         if (!effect) return false;
 
         return !model.getDragonGemEffects(ownerId).some(activeEffect => activeEffect.status === effect.status);
+    }
+
+    function canUseEffectBoostItem(ownerId) {
+        return !model.hasEffectBoost(ownerId);
+    }
+
+    /**
+     * Plays the standalone effect-boost item without target selection (like a gem),
+     * but unlike a gem the physical card discards normally afterward.
+     */
+    async function useEffectBoostItemFromHand(ownerId, cardId) {
+        const owner = state.players[ownerId];
+
+        if (!owner) return false;
+
+        const itemCard = model.findHandCard(owner, cardId);
+
+        if (!model.isEffectBoostItemCard(itemCard) || !canUseEffectBoostItem(ownerId)) return false;
+
+        const sourceCenter = getHandCardCenter(ownerId, cardId);
+        const removedCard = model.removeCardFromHand(owner, cardId);
+
+        if (!removedCard) return false;
+
+        removedCard.faceUp = true;
+        model.markItemUsed(ownerId);
+
+        if (ownerId === 'player') {
+            clearPendingAction();
+            state.phase = 'turn';
+            state.isResolving = true;
+        }
+
+        render();
+
+        const impactCenter = await animateEffectBoostCard(removedCard, sourceCenter, ownerId);
+
+        applyEffectBoostItemEffect(removedCard, ownerId);
+        render();
+        await model.sleep(180);
+
+        await animateDiscardCard(ownerId, removedCard, impactCenter || sourceCenter);
+
+        owner.discard.unshift(removedCard);
+
+        if (ownerId === 'player') {
+            state.isResolving = false;
+        }
+
+        render();
+        return true;
     }
 
     /**
@@ -937,6 +1000,10 @@
                 return { kind: 'dragon-gem' };
             }
 
+            if (model.isEffectBoostItemCard(card) && boardOwner === 'player' && canUseEffectBoostItem('player')) {
+                return { kind: 'effect-boost' };
+            }
+
             const options = model.getTargetOptionsForAction(card, 'player', null);
 
             if (model.targetOptionsIncludeCard(options, boardOwner, boardCardId)) {
@@ -977,6 +1044,12 @@
         if (model.isDragonGemItemCard(card)) {
             return groupOwner === 'player' && canUseDragonGemItem('player', card)
                 ? { kind: 'dragon-gem' }
+                : null;
+        }
+
+        if (model.isEffectBoostItemCard(card)) {
+            return groupOwner === 'player' && canUseEffectBoostItem('player')
+                ? { kind: 'effect-boost' }
                 : null;
         }
 
@@ -1069,6 +1142,11 @@
 
         if (candidate.kind === 'dragon-gem') {
             useDragonGemItemFromHand('player', cardId);
+            return;
+        }
+
+        if (candidate.kind === 'effect-boost') {
+            useEffectBoostItemFromHand('player', cardId);
         }
     }
 
@@ -1242,6 +1320,10 @@
             return canUseDragonGemItem(playerId, itemCard);
         }
 
+        if (model.isEffectBoostItemCard(itemCard)) {
+            return canUseEffectBoostItem(playerId);
+        }
+
         return model.getTargetOptionsForAction(itemCard, playerId, null).length > 0;
     }
 
@@ -1260,6 +1342,10 @@
 
         if (itemPlan.dragonGem) {
             return useDragonGemItemFromHand('opponent', itemPlan.card.id);
+        }
+
+        if (itemPlan.effectBoost) {
+            return useEffectBoostItemFromHand('opponent', itemPlan.card.id);
         }
 
         const sourceCenter = getHandCardCenter('opponent', itemPlan.card.id);
@@ -1296,6 +1382,11 @@
         for (const itemCard of opponent.hand.filter(model.isItemCard)) {
             if (model.isDragonGemItemCard(itemCard)) {
                 if (canUseDragonGemItem('opponent', itemCard)) return { card: itemCard, dragonGem: true, selection: null };
+                continue;
+            }
+
+            if (model.isEffectBoostItemCard(itemCard)) {
+                if (canUseEffectBoostItem('opponent')) return { card: itemCard, effectBoost: true, selection: null };
                 continue;
             }
 
@@ -1871,6 +1962,7 @@
         const isDamaging = isDamagingAttack(action.card);
         const isMultiAttack = statuses.includes('MULTI_ATTACK');
         const dragonGemStatuses = getDragonGemStatusesForAttack(action.owner, action.card, isDamaging);
+        const boosted = model.hasEffectBoost(action.owner);
         let handledEffect = false;
 
         showPopup(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}.`);
@@ -1891,7 +1983,7 @@
 
             if (isDamaging) {
                 if (isMultiAttack) {
-                    await resolveMultiAttackDamage(action.card, targets, attacker);
+                    await resolveMultiAttackDamage(action.card, targets, attacker, boosted);
                 } else {
                     const damageResults = targets.map(target => damagePokemon(target.owner, target.card, attacker, action.card));
 
@@ -1906,10 +1998,11 @@
                 action.card,
                 getStatChangeTargets(action, attacker, targets),
                 isDamaging,
-                isMultiAttack ? MULTI_ATTACK_STAT_CHANGE_TRIGGER_CHANCE : STAT_CHANGE_TRIGGER_CHANCE
+                isMultiAttack ? MULTI_ATTACK_STAT_CHANGE_TRIGGER_CHANCE : STAT_CHANGE_TRIGGER_CHANCE,
+                boosted
             ) || handledEffect;
             handledEffect = applyStatRevertEffects(statuses, targets) || handledEffect;
-            handledEffect = maybeApplyAttackStatuses(action.card, targets, isDamaging, dragonGemStatuses) || handledEffect;
+            handledEffect = maybeApplyAttackStatuses(action.card, targets, isDamaging, dragonGemStatuses, boosted) || handledEffect;
         }
 
         if (!handledEffect && statChanges.length === 0) {
@@ -1972,6 +2065,12 @@
         return animateActionCardToTarget(itemCard, sourceCenter, targetCenter, 'item-animation-card');
     }
 
+    async function animateEffectBoostCard(itemCard, sourceCenter, ownerId) {
+        const targetCenter = getEffectBoostAnchorCenter(ownerId) || getArenaCenter();
+
+        return animateActionCardToTarget(itemCard, sourceCenter, targetCenter, 'item-animation-card');
+    }
+
     /**
      * Applies an item's actual effects after the player/opponent item animation.
      * Items share the same healing, status, stat, switch, and targeting helpers
@@ -1980,6 +2079,10 @@
     async function applyItemCard(itemCard, selection, actorId) {
         if (model.isDragonGemItemCard(itemCard)) {
             return applyDragonGemItemEffect(itemCard, actorId);
+        }
+
+        if (model.isEffectBoostItemCard(itemCard)) {
+            return applyEffectBoostItemEffect(itemCard, actorId);
         }
 
         const targets = model.getCardsForTargetSelection(selection);
@@ -2037,6 +2140,27 @@
 
         logEvent(`${actor.name}'s Dragon attacks can now apply ${result.effect.statusLabel}.`);
         showPopup(`${result.effect.label}: Dragon attacks may apply ${result.effect.statusLabel}.`);
+        return true;
+    }
+
+    /**
+     * Applies the standalone effect-boost item: sets a persistent per-side flag so
+     * the side's attacks trigger their secondary effects more often and bias
+     * multi-hit toward more hits for the rest of the battle.
+     */
+    function applyEffectBoostItemEffect(itemCard, actorId) {
+        const actor = state.players[actorId];
+        const applied = model.applyEffectBoost(actorId);
+
+        if (!actor || !applied) {
+            logEvent(`${model.getCardName(itemCard)} had no immediate effect.`);
+            showPopup(`${model.getCardName(itemCard)} had no immediate effect.`);
+            return false;
+        }
+
+        logEvent(`${actor.name} used ${model.getCardName(itemCard)}.`);
+        logEvent(`${actor.name}'s attacks now trigger their effects more often.`);
+        showPopup(`${model.getCardName(itemCard)}: effect chances boosted for the battle.`);
         return true;
     }
 
@@ -2162,8 +2286,8 @@
      * Resolves MULTI_ATTACK damage, rolling one hit count and applying normal
      * attack damage repeatedly to targets that remain active and alive.
      */
-    async function resolveMultiAttackDamage(actionCard, targets, attacker) {
-        const hitCount = getRandomMultiAttackHitCount();
+    async function resolveMultiAttackDamage(actionCard, targets, attacker, boosted = false) {
+        const hitCount = getRandomMultiAttackHitCount(boosted);
         let executedHits = 0;
 
         for (let hitIndex = 0; hitIndex < hitCount; hitIndex += 1) {
@@ -2185,10 +2309,25 @@
         logEvent(`${model.getCardName(actionCard)} hit ${executedHits} ${executedHits === 1 ? 'time' : 'times'}.`);
     }
 
-    function getRandomMultiAttackHitCount() {
+    /**
+     * Rolls the number of hits for a MULTI_ATTACK. The unboosted baseline leans
+     * toward the low end (2-3 hits); an active effect boost shifts the weight
+     * toward the high end (4-5+ hits). Weights are index-aligned to hit counts
+     * across MULTI_ATTACK_MIN_HITS..MULTI_ATTACK_MAX_HITS (2..6).
+     */
+    function getRandomMultiAttackHitCount(boosted = false) {
+        const weights = boosted ? [1, 2, 4, 4, 3] : [4, 4, 2, 1, 1];
         const hitRange = MULTI_ATTACK_MAX_HITS - MULTI_ATTACK_MIN_HITS + 1;
+        const totalWeight = weights.slice(0, hitRange).reduce((sum, weight) => sum + weight, 0);
+        let roll = Math.random() * totalWeight;
 
-        return MULTI_ATTACK_MIN_HITS + Math.floor(Math.random() * hitRange);
+        for (let index = 0; index < hitRange; index += 1) {
+            roll -= weights[index];
+
+            if (roll < 0) return MULTI_ATTACK_MIN_HITS + index;
+        }
+
+        return MULTI_ATTACK_MAX_HITS;
     }
 
     /**
@@ -2279,12 +2418,14 @@
      * Applies persistent battle statuses from an attack. Damaging attacks roll
      * the global status trigger chance; non-damaging attacks always apply.
      */
-    function maybeApplyAttackStatuses(actionCard, targets, isDamaging, extraStatuses = []) {
+    function maybeApplyAttackStatuses(actionCard, targets, isDamaging, extraStatuses = [], boosted = false) {
         const statuses = getBattleStatuses(actionCard, extraStatuses);
 
         if (statuses.length === 0) return false;
 
-        if (isDamaging && Math.random() >= STATUS_TRIGGER_CHANCE) {
+        const triggerChance = boosted ? Math.min(1, STATUS_TRIGGER_CHANCE * 2) : STATUS_TRIGGER_CHANCE;
+
+        if (isDamaging && Math.random() >= triggerChance) {
             logEvent(`${model.getCardName(actionCard)} status did not activate.`);
             return false;
         }
@@ -2457,12 +2598,14 @@
      * Applies attack stat changes after damage. Damaging attacks roll the given
      * trigger chance; non-damaging attacks always apply their listed changes.
      */
-    function maybeApplyAttackStatChanges(actionCard, targets, isDamaging, triggerChance = STAT_CHANGE_TRIGGER_CHANCE) {
+    function maybeApplyAttackStatChanges(actionCard, targets, isDamaging, triggerChance = STAT_CHANGE_TRIGGER_CHANCE, boosted = false) {
         const statChanges = model.getActionStatChanges(actionCard);
 
         if (statChanges.length === 0) return false;
 
-        if (isDamaging && Math.random() >= triggerChance) {
+        const effectiveChance = boosted ? Math.min(1, triggerChance * 2) : triggerChance;
+
+        if (isDamaging && Math.random() >= effectiveChance) {
             logEvent(`${model.getCardName(actionCard)} stat changes did not activate.`);
             return false;
         }
@@ -3103,6 +3246,12 @@
         return { x, y };
     }
 
+    function getEffectBoostAnchorCenter(ownerId) {
+        const trayElement = document.querySelector(`.side-panel--${ownerId} .effect-boost-tray`);
+
+        return trayElement ? getElementCenter(trayElement) : getDragonGemAnchorCenter(ownerId);
+    }
+
     function getElementCenter(element) {
         const rect = element.getBoundingClientRect();
 
@@ -3183,6 +3332,11 @@
         handleCardDrop,
         handleArenaClick,
         resetPrototype,
-        useDragonGemItemFromHand
+        useDragonGemItemFromHand,
+        useEffectBoostItemFromHand,
+        // Exposed for tests: effect-boost roll sites (phase 20).
+        getRandomMultiAttackHitCount,
+        maybeApplyAttackStatuses,
+        maybeApplyAttackStatChanges
     };
 })(window.CardArena = window.CardArena || {});

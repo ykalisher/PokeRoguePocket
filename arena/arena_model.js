@@ -59,6 +59,7 @@
         BURN: { iconPath: 'assets/status-icons/BURN.svg', label: 'Burn', showsToken: true, statMultipliers: { attack: 0.5 } },
         CONFUSION: { iconPath: 'assets/status-icons/CONFUSION.svg', label: 'Confusion', showsToken: true },
         DRAGON_GEM: { iconPath: 'assets/status-icons/DRAGON_GEM.svg', label: 'Dragon Gem', showsToken: false },
+        EFFECT_BOOST: { iconPath: 'assets/status-icons/EFFECT_BOOST.svg', label: 'Effect Boost', showsToken: false },
         FATIGUE: {
             durationTurns: 3,
             iconPath: 'assets/status-icons/FATIGUE.png',
@@ -127,6 +128,7 @@
             deck: decks.mainDeck,
             discard: [],
             dragonGems: [],
+            effectBoost: false,
             hand: [],
             handSize: HAND_SIZE,
             id,
@@ -366,6 +368,7 @@
             deck,
             discard,
             dragonGems: normalizeDragonGemEffects(normalizedPlayer.dragonGems),
+            effectBoost: Boolean(normalizedPlayer.effectBoost),
             hand,
             handSize: Number.isFinite(normalizedPlayer.handSize) ? normalizedPlayer.handSize : HAND_SIZE,
             id,
@@ -929,6 +932,31 @@
         player.dragonGems = normalizeDragonGemEffects(player.dragonGems);
 
         return player.dragonGems;
+    }
+
+    /**
+     * Standalone effect-boost item (NOT a dragon gem): a SIDE item carrying the
+     * EFFECT_BOOST status. It sets a per-side flag that persists for the battle.
+     */
+    function isEffectBoostItemCard(card) {
+        if (!isItemCard(card)) return false;
+
+        return getActionTarget(card) === 'SIDE' && getActionStatuses(card).includes('EFFECT_BOOST');
+    }
+
+    function applyEffectBoost(playerId) {
+        const player = state.players[playerId];
+
+        if (!player || player.effectBoost) return false;
+
+        player.effectBoost = true;
+        return true;
+    }
+
+    function hasEffectBoost(playerId) {
+        const player = state.players[playerId];
+
+        return Boolean(player && player.effectBoost);
     }
 
     function normalizeDragonGemEffects(effects) {
@@ -1780,6 +1808,9 @@
         getCardsForTargetSelection,
         getDragonGemEffectForItem,
         getDragonGemEffects,
+        applyEffectBoost,
+        hasEffectBoost,
+        isEffectBoostItemCard,
         getEffectiveKnockoutLimit,
         getHealthPercent,
         getPokemonEffectiveStat,

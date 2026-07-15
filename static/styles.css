@@ -503,6 +503,24 @@ body {
     object-fit: contain;
 }
 
+/* Effect-boost side marker mirrors the gem tray and stacks just inside it so the
+   two persistent side markers form one column and never overlap the piles. */
+.effect-boost-tray {
+    position: absolute;
+    left: 4px;
+    z-index: 4;
+    display: flex;
+    pointer-events: none;
+}
+
+.effect-boost-tray--player {
+    top: 40px;
+}
+
+.effect-boost-tray--opponent {
+    bottom: 40px;
+}
+
 /* Generic pile wrapper used for deck/discard/KO columns. */
 .pile {
     min-width: 0;

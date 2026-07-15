@@ -31,6 +31,7 @@ const Status = Object.freeze({
     BURN: 'BURN',
     CONFUSION: 'CONFUSION',
     DRAGON_GEM: 'DRAGON_GEM',
+    EFFECT_BOOST: 'EFFECT_BOOST',
     FATIGUE: 'FATIGUE',
     FLINCH: 'FLINCH',
     FULL_HEAL: 'FULL_HEAL',

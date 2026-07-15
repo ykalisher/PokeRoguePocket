@@ -302,6 +302,13 @@
                 target: 'SIDE',
                 status: ['DRAGON_GEM', 'POISON'],
                 statChanges: []
+            },
+            {
+                name: 'Effect Amplifier',
+                target: 'SIDE',
+                status: ['EFFECT_BOOST'],
+                statChanges: [],
+                imagePath: 'assets/items/EFFECT_AMPLIFIER.svg'
             }
         ],
         trainers: [],

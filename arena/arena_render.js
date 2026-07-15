@@ -135,6 +135,7 @@
                 ${handFirst}
                 <div class="battle-row">
                     ${renderDragonGemTray(player)}
+                    ${renderEffectBoostTray(player)}
                     ${renderPile('Pkmn', player.pokemonDeck.length, 'pokemon-deck', player.id)}
                     ${renderPile('Action', player.deck.length, 'deck', player.id)}
                     ${renderPlayedSlots(player)}
@@ -158,6 +159,21 @@
                         <img src="${effect.iconPath}" alt="${effect.label}">
                     </span>
                 `).join('')}
+            </div>
+        `;
+    }
+
+    function renderEffectBoostTray(player) {
+        if (!arena.Model.hasEffectBoost(player.id)) return '';
+
+        const definition = arena.Model.getStatusIconPath('EFFECT_BOOST');
+        const title = 'Effect Boost: attacks trigger their effects more often';
+
+        return `
+            <div class="effect-boost-tray effect-boost-tray--${player.id}" aria-label="${player.name} Effect Boost">
+                <span class="dragon-gem-token" title="${title}">
+                    <img src="${definition}" alt="Effect Boost">
+                </span>
             </div>
         `;
     }
