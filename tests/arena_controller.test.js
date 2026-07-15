@@ -192,3 +192,43 @@ test('playing a Dragon Gem removes it from play instead of discarding it', async
         delete globalThis.document;
     }
 });
+
+test('sleep applied after a Pokemon has acted still blocks its own next-turn attack', () => {
+    const state = arena.state;
+
+    state.elements = { popup: { hidden: false } };
+    state.log = [];
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const sleeper = makePokemonCard('opponent', ['WATER']);
+    state.players.opponent.board[0] = sleeper;
+
+    // Sleep is applied on a turn where the Pokemon already acted (or is on
+    // the defending side), so the same turn's end-of-turn tick must not
+    // advance the wake ladder.
+    state.turnNumber = 5;
+    const applied = Model.applyStatus(sleeper, 'SLEEP');
+    assert.equal(applied.added, true);
+
+    Controller.tickSleepTimersWithoutAttack();
+    assert.equal(Model.getPokemonStatusEntry(sleeper, 'SLEEP').wakeAttempts, 0);
+
+    // Its own next turn: the first real wake attempt always fails.
+    state.turnNumber += 1;
+    const firstAttempt = Controller.resolveSleepAttempt(sleeper);
+    assert.equal(firstAttempt.blocked, true);
+    assert.equal(Model.getPokemonStatusEntry(sleeper, 'SLEEP').wakeAttempts, 1);
+    assert.equal(Model.hasPokemonStatus(sleeper, 'SLEEP'), true);
+
+    // Keep attempting on later turns; the ladder guarantees a wake by the
+    // 4th attempt (SLEEP_GUARANTEED_WAKE_ATTEMPT) at the latest.
+    for (let i = 0; i < arena.Constants.SLEEP_GUARANTEED_WAKE_ATTEMPT && Model.hasPokemonStatus(sleeper, 'SLEEP'); i += 1) {
+        state.turnNumber += 1;
+        Controller.resolveSleepAttempt(sleeper);
+    }
+
+    assert.equal(Model.hasPokemonStatus(sleeper, 'SLEEP'), false);
+});

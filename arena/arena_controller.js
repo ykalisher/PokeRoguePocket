@@ -3337,6 +3337,9 @@
         // Exposed for tests: effect-boost roll sites (phase 20).
         getRandomMultiAttackHitCount,
         maybeApplyAttackStatuses,
-        maybeApplyAttackStatChanges
+        maybeApplyAttackStatChanges,
+        // Exposed for tests: sleep wake-ladder timing (phase 21).
+        resolveSleepAttempt,
+        tickSleepTimersWithoutAttack
     };
 })(window.CardArena = window.CardArena || {});

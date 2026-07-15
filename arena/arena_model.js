@@ -1024,6 +1024,10 @@
 
         const statusEntry = createStatusEntry(normalizedStatus);
 
+        if (normalizedStatus === 'SLEEP') {
+            statusEntry.lastWakeAttemptTurn = state.turnNumber;
+        }
+
         currentStatuses.push(statusEntry);
 
         return createStatusResult(statusEntry, { added: true });

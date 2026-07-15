@@ -37,23 +37,23 @@ wake). Ends green.
 
 ## Steps
 
-- [ ] 1. **`arena/arena_model.js`** — when SLEEP is applied via `applyStatus`, stamp the new
+- [x] 1. **`arena/arena_model.js`** — when SLEEP is applied via `applyStatus`, stamp the new
   status entry's `lastWakeAttemptTurn` with the current `state.turnNumber` (only for SLEEP;
   leave other statuses untouched). This makes `tickSleepTimersWithoutAttack` skip the freshly
   slept Pokémon on its application turn.
-- [ ] 2. **`arena/arena_controller.js`** — verify `resolveSleepAttempt` (~`:1693`) and
+- [x] 2. **`arena/arena_controller.js`** — verify `resolveSleepAttempt` (~`:1693`) and
   `tickSleepTimersWithoutAttack` (~`:1724`) need no further change with the stamp in place
   (they already key off `lastWakeAttemptTurn === state.turnNumber`). Do not weaken the
   `wakeAttempts > 1` first-fail rule.
-- [ ] 3. **`tests/`** — add a Node regression test (`require('./tests/helpers/arena_env')`):
+- [x] 3. **`tests/`** — add a Node regression test (`require('./tests/helpers/arena_env')`):
   put a Pokémon to sleep on a turn where it has already acted (or is on the defending side),
   advance to its next turn, and assert its queued attack is **blocked** by sleep (does not
   fire). Add a second assertion that after the guaranteed-wake threshold it does wake.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill (serve on 8931): apply Sleep to the rival's active Pokémon; confirm it
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill (serve on 8931): apply Sleep to the rival's active Pokémon; confirm it
   cannot attack on its immediate next turn (log shows "fast asleep", no damage dealt), and can
   eventually wake on a later turn.
 
