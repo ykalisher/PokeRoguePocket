@@ -39,31 +39,41 @@ then backfills Ace/Elite so `node tests/run_all.js` is green again.)
 
 ## Steps
 
-- [ ] 1. **`trainers.json`** — promote the six Ace gym leaders (Marlon, Chili, Cilan, Tate,
+- [x] 1. **`trainers.json`** — promote the six Ace gym leaders (Marlon, Chili, Cilan, Tate,
   Clair, Candice): set `rank: "Boss"`, `cash: 500`, and grow each to **5 Pokémon / 20 attacks**
   (add one on-type Pokémon from `pokemon.json` and four attacks it can use), keeping ~5 items.
-  Preserve each trainer's `typeSpecialization`.
-- [ ] 2. **`trainers.json`** — promote the three Elite gym leaders (Flannery, Gardenia, Iris):
+  Preserve each trainer's `typeSpecialization`. **Done:** +Ludicolo (Marlon), +Arcanine (Chili),
+  +Rillaboom (Cilan), +Lunatone (Tate), +Kingdra (Clair), +Froslass (Candice); four on-type
+  attacks each.
+- [x] 2. **`trainers.json`** — promote the three Elite gym leaders (Flannery, Gardenia, Iris):
   set `rank: "Boss"`, `cash: 500`, and **shrink** each to **5 Pokémon / 20 attacks** (remove one
-  Pokémon and its four attacks; keep the deck type-valid and coherent), ~5 items.
-- [ ] 3. **`trainers.json`** — move Sidney to `rank: "Elite"` (Elite Four, not a gym leader).
+  Pokémon and its four attacks; keep the deck type-valid and coherent), ~5 items. **Done:**
+  −Charizard (Flannery), −Meganium (Gardenia), −Kingdra (Iris); dropped 4 attacks + Babiri Berry
+  (→ 5 items) each.
+- [x] 3. **`trainers.json`** — move Sidney to `rank: "Elite"` (Elite Four, not a gym leader).
   Either grow to 6pk/24at/6it, `cash: 750` here, or leave the sizing to phase 24 — but its rank
-  must end as `Elite`.
-- [ ] 4. **`trainers.json`** — add a short comment/PR-note (in the phase, not the JSON) recording
+  must end as `Elite`. **Done:** grew here to 6pk/24at/6it, `cash: 750` (+Sharpedo, +Hydreigon,
+  +Babiri Berry) — phase 24 keeps Sidney as-is, so it must be sized now.
+- [x] 4. **`trainers.json`** — add a short comment/PR-note (in the phase, not the JSON) recording
   the Giovanni decision (stays Special). Leave the 8 existing Kanto bosses and the generic Ace
-  pair (Gamer, Rocker) untouched.
-- [ ] 5. **Validate types** — for every deck you changed, confirm each attack is usable by one of
+  pair (Gamer, Rocker) untouched. **Note:** Giovanni left `Special` (his distinct final-boss /
+  Rocket-leader role, per the taxonomy); Kanto bosses and Gamer/Rocker untouched (verified in diff).
+- [x] 5. **Validate types** — for every deck you changed, confirm each attack is usable by one of
   the trainer's Pokémon per `pokemon.json` types + `full_type_requirements`. Fix any off-type
-  pairing.
+  pairing. **Done:** validator over `pokemon.json` types confirms zero dead attacks in all 10 decks.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` — the well-formedness test passes (valid ranks, all
+- [x] `node tests/run_all.js` — the well-formedness test passes (valid ranks, all
   pokemon/attacks/items resolve, unique names). Note: the `≥6 Ace` minimum will still be RED
   until phase 24; that is expected mid-batch — do not "fix" it here by keeping gym leaders at
-  Ace. Run 24 immediately after so the suite is green.
-- [ ] Spot-check counts: every promoted Boss has exactly 5 Pokémon and 20 attacks; Sidney is
-  `Elite`; no gym leader remains at `Ace` or `Elite`.
+  Ace. Run 24 immediately after so the suite is green. **Result:** 74 pass / 2 fail; both fails
+  are the expected Ace-depletion reds (`≥6 Ace` seeded-roster minimum, and the run-progression
+  L3 Ace rank-floor which needs on-type Aces) — no well-formedness or type failures. Phase 24
+  restores both.
+- [x] Spot-check counts: every promoted Boss has exactly 5 Pokémon and 20 attacks; Sidney is
+  `Elite`; no gym leader remains at `Ace` or `Elite`. **Verified:** all 9 promoted bosses =
+  5pk/20at; Sidney = Elite 6pk/24at; only Gamer & Rocker (generic classes) remain at Ace.
 
 ## Out of scope / do not touch
 

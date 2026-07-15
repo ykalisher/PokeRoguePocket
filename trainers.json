@@ -1142,16 +1142,15 @@
   {
     "name": "Flannery",
     "sprite": "Flannery",
-    "cash": 750,
-    "rank": "Elite",
+    "cash": 500,
+    "rank": "Boss",
     "typeSpecialization": "FIRE",
     "pokemon": [
       "Arcanine",
       "Camerupt",
       "Solrock",
       "Armarouge",
-      "Marowak",
-      "Charizard"
+      "Marowak"
     ],
     "attacks": [
       "Flame Thrower",
@@ -1173,34 +1172,28 @@
       "Flame Thrower",
       "Shadow Ball",
       "Fire Spin",
-      "Mind Break",
-      "Flame Thrower",
-      "Rock Slide",
-      "Stone Edge",
-      "Fire Spin"
+      "Mind Break"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Babiri Berry"
+      "Withdraw Wand"
     ]
   },
   {
     "name": "Gardenia",
     "sprite": "Gardenia",
-    "cash": 750,
-    "rank": "Elite",
+    "cash": 500,
+    "rank": "Boss",
     "typeSpecialization": "GRASS",
     "pokemon": [
       "Vileplume",
       "Venusaur",
       "Victreebel",
       "Roserade",
-      "Cradily",
-      "Meganium"
+      "Cradily"
     ],
     "attacks": [
       "Sleep Powder",
@@ -1222,19 +1215,14 @@
       "Ancient Power",
       "Earth Power",
       "Razor Leaf",
-      "Leech Seed",
-      "Sleep Powder",
-      "Leech Seed",
-      "Sludge Bomb",
-      "Toxic"
+      "Leech Seed"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Babiri Berry"
+      "Withdraw Wand"
     ]
   },
   {
@@ -1338,15 +1326,14 @@
   {
     "name": "Iris",
     "sprite": "Iris",
-    "cash": 750,
-    "rank": "Elite",
+    "cash": 500,
+    "rank": "Boss",
     "typeSpecialization": "DRAGON",
     "pokemon": [
       "Altaria",
       "Dragonite",
       "Appletun",
       "Gyarados",
-      "Kingdra",
       "Salamence"
     ],
     "attacks": [
@@ -1369,32 +1356,28 @@
       "Tailwind",
       "Dragon Rage",
       "Sparkling Breeze",
-      "Dragon Claw",
-      "Chomp",
-      "Burp",
-      "Dragon's Breath",
-      "Stockpile"
+      "Dragon Claw"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Babiri Berry"
+      "Withdraw Wand"
     ]
   },
   {
     "name": "Marlon",
     "sprite": "Marlon",
-    "cash": 320,
-    "rank": "Ace",
+    "cash": 500,
+    "rank": "Boss",
     "typeSpecialization": "WATER",
     "pokemon": [
       "Sharpedo",
       "Whiscash",
       "Poliwrath",
-      "Blastoise"
+      "Blastoise",
+      "Ludicolo"
     ],
     "attacks": [
       "Hydro Pump",
@@ -1412,7 +1395,11 @@
       "Hydro Pump",
       "Waterfall",
       "Rain Dance",
-      "Surf"
+      "Surf",
+      "Hydro Pump",
+      "Surf",
+      "Waterfall",
+      "Rain Dance"
     ],
     "items": [
       "Sitrus Berry",
@@ -1425,14 +1412,15 @@
   {
     "name": "Chili",
     "sprite": "Chili",
-    "cash": 320,
-    "rank": "Ace",
+    "cash": 500,
+    "rank": "Boss",
     "typeSpecialization": "FIRE",
     "pokemon": [
       "Cinderace",
       "Ceruledge",
       "Skeledirge",
-      "Charizard"
+      "Charizard",
+      "Arcanine"
     ],
     "attacks": [
       "Flame Thrower",
@@ -1450,7 +1438,11 @@
       "Flame Thrower",
       "Mega Punch",
       "Meditate",
-      "Power-up Punch"
+      "Power-up Punch",
+      "Flame Thrower",
+      "Fire Spin",
+      "Will-o-wisp",
+      "Rock Slide"
     ],
     "items": [
       "Sitrus Berry",
@@ -1463,14 +1455,15 @@
   {
     "name": "Cilan",
     "sprite": "Cilan",
-    "cash": 320,
-    "rank": "Ace",
+    "cash": 500,
+    "rank": "Boss",
     "typeSpecialization": "GRASS",
     "pokemon": [
       "Sceptile",
       "Serperior",
       "Torterra",
-      "Venusaur"
+      "Venusaur",
+      "Rillaboom"
     ],
     "attacks": [
       "Sleep Powder",
@@ -1488,7 +1481,11 @@
       "Sleep Powder",
       "Leech Seed",
       "Dragon Rage",
-      "Dragon Claw"
+      "Dragon Claw",
+      "Razor Leaf",
+      "Leech Seed",
+      "Sleep Powder",
+      "Earth Power"
     ],
     "items": [
       "Sitrus Berry",
@@ -1501,14 +1498,15 @@
   {
     "name": "Tate",
     "sprite": "Tate",
-    "cash": 320,
-    "rank": "Ace",
+    "cash": 500,
+    "rank": "Boss",
     "typeSpecialization": "PSYCHIC",
     "pokemon": [
       "Butterfree",
       "Venomoth",
       "Orbeetle",
-      "Alakazam"
+      "Alakazam",
+      "Lunatone"
     ],
     "attacks": [
       "Swarming Strike",
@@ -1526,7 +1524,11 @@
       "Swarming Strike",
       "Buzz Up",
       "Expanding Force",
-      "Mind Break"
+      "Mind Break",
+      "Expanding Force",
+      "Mind Break",
+      "Future Sight",
+      "Protect"
     ],
     "items": [
       "Sitrus Berry",
@@ -1539,14 +1541,16 @@
   {
     "name": "Sidney",
     "sprite": "Sidney",
-    "cash": 320,
-    "rank": "Ace",
+    "cash": 750,
+    "rank": "Elite",
     "typeSpecialization": "DARK",
     "pokemon": [
       "Greninja",
       "Kingambit",
       "Zoroark",
-      "Feraligatr"
+      "Feraligatr",
+      "Sharpedo",
+      "Hydreigon"
     ],
     "attacks": [
       "Crunch",
@@ -1564,27 +1568,37 @@
       "Crunch",
       "Sucker Punch",
       "Murky Water",
-      "Trick"
+      "Trick",
+      "Crunch",
+      "Sucker Punch",
+      "Murky Water",
+      "Crippling Crunch",
+      "Crunch",
+      "Sucker Punch",
+      "Dragon Claw",
+      "Waterfall"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
       "Liechi Berry",
-      "Withdraw Wand"
+      "Withdraw Wand",
+      "Babiri Berry"
     ]
   },
   {
     "name": "Clair",
     "sprite": "Clair",
-    "cash": 320,
-    "rank": "Ace",
+    "cash": 500,
+    "rank": "Boss",
     "typeSpecialization": "DRAGON",
     "pokemon": [
       "Altaria",
       "Dragonite",
       "Appletun",
-      "Gyarados"
+      "Gyarados",
+      "Kingdra"
     ],
     "attacks": [
       "Air Slash",
@@ -1602,7 +1616,11 @@
       "Air Slash",
       "Dragon Dance",
       "Moon Blast",
-      "Dragon's Breath"
+      "Dragon's Breath",
+      "Dragon Claw",
+      "Dragon's Breath",
+      "Dragon Rage",
+      "Dragon Dance"
     ],
     "items": [
       "Sitrus Berry",
@@ -1615,14 +1633,15 @@
   {
     "name": "Candice",
     "sprite": "Candice",
-    "cash": 320,
-    "rank": "Ace",
+    "cash": 500,
+    "rank": "Boss",
     "typeSpecialization": "ICE",
     "pokemon": [
       "Empoleon",
       "Beartic",
       "Avalugg",
-      "Mamoswine"
+      "Mamoswine",
+      "Froslass"
     ],
     "attacks": [
       "Waterfall",
@@ -1640,7 +1659,11 @@
       "Waterfall",
       "Flash Cannon",
       "Ice Beam",
-      "Freeze-Dry"
+      "Freeze-Dry",
+      "Ice Beam",
+      "Freeze-Dry",
+      "Slush Rush",
+      "Shadow Ball"
     ],
     "items": [
       "Sitrus Berry",
