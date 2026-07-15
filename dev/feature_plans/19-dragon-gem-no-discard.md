@@ -31,29 +31,29 @@ one-gem-per-status rule are unchanged. Ends green + playable.
 
 ## Steps
 
-- [ ] 1. **`arena/arena_controller.js`** — in `useDragonGemItemFromHand`, replace the discard
+- [x] 1. **`arena/arena_controller.js`** — in `useDragonGemItemFromHand`, replace the discard
   tail (the `animateDiscardCard(...)` call **and** `owner.discard.unshift(removedCard)`) with a
   remove-from-play: `model.removeCardFromPlay(owner, removedCard);`. Keep the preceding
   `applyDragonGemItemEffect(...)`, `render()`, and `sleep` calls. For the fly-out animation,
   reuse `animateArtificialAttackCard(removedCard, impactCenter || sourceCenter, ownerId)` so the
   spent gem visibly leaves play (mirror the artificial-attack flow); confirm that helper's
   signature before wiring it.
-- [ ] 2. **`arena/arena_controller.js`** — audit for anything that assumed gems live in the
+- [x] 2. **`arena/arena_controller.js`** — audit for anything that assumed gems live in the
   discard pile: grep for `discard` around gem handling and check the discard-count/pile UI and
   `shuffleDiscardIntoDeck` (deck-recycling). A one-time-use gem must NOT reappear via a discard
   reshuffle. Fix or note any interaction.
-- [ ] 3. **`tests/`** — add (or extend an existing arena test) a Node test that plays a gem via
+- [x] 3. **`tests/`** — add (or extend an existing arena test) a Node test that plays a gem via
   the engine and asserts the card lands in `owner.removed` and is absent from `owner.discard`,
   while the gem's side effect is still registered (`model.getDragonGemEffects(ownerId)` still
   reflects it). Use `require('./tests/helpers/arena_env')` to boot the engine in Node.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill (serve on 8931): play a Dragon Gem in a battle → the card flies out and
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill (serve on 8931): play a Dragon Gem in a battle → the card flies out and
   does **not** appear in the discard pile; the gem's tray marker shows and a matching DRAGON
   attack still applies the paired status. Playing the same gem type again is still blocked.
-- [ ] The opponent AI playing a gem behaves the same (no discard), since both paths share
+- [x] The opponent AI playing a gem behaves the same (no discard), since both paths share
   `useDragonGemItemFromHand`.
 
 ## Out of scope / do not touch

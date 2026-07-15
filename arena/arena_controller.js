@@ -643,9 +643,9 @@
         render();
         await model.sleep(180);
 
-        await animateDiscardCard(ownerId, removedCard, impactCenter || sourceCenter);
+        await animateArtificialAttackCard(removedCard, impactCenter || sourceCenter, ownerId);
 
-        owner.discard.unshift(removedCard);
+        model.removeCardFromPlay(owner, removedCard);
 
         if (ownerId === 'player') {
             state.isResolving = false;
@@ -3182,6 +3182,7 @@
         getDropActionForTargetGroup,
         handleCardDrop,
         handleArenaClick,
-        resetPrototype
+        resetPrototype,
+        useDragonGemItemFromHand
     };
 })(window.CardArena = window.CardArena || {});

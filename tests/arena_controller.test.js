@@ -30,6 +30,16 @@ function makePokemonCard(owner, types) {
     };
 }
 
+function makeItemCard(owner, itemRecord) {
+    return {
+        faceUp: true,
+        id: `TEST-ITEM-${owner}-${Math.random().toString(36).slice(2)}`,
+        item: itemRecord,
+        kind: 'item',
+        owner
+    };
+}
+
 function makeAttackCard(owner, types) {
     return {
         attack: {
@@ -139,4 +149,46 @@ test('tapping an unusable attack card again clears its highlight while phase sta
     assert.equal(state.selectedCardId, null);
 
     clearTimeout(state.popupTimer);
+});
+
+test('playing a Dragon Gem removes it from play instead of discarding it', async () => {
+    const state = arena.state;
+
+    // No real DOM in Node: stub document/board rect so the fly-out animation
+    // helpers take their "no element found" branch instead of throwing.
+    globalThis.document = {
+        body: { appendChild: () => {} },
+        querySelector: () => null
+    };
+    state.elements = {
+        board: { getBoundingClientRect: () => ({ height: 100, left: 0, top: 0, width: 100 }) },
+        popup: { hidden: false }
+    };
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const gemRecord = arena.GameData.items.find(item => item.status.includes('DRAGON_GEM'));
+    const gemCard = makeItemCard('player', gemRecord);
+
+    state.players.player.hand = [gemCard];
+    state.phase = 'turn';
+    state.currentPlayer = 'player';
+    state.isResolving = false;
+
+    try {
+        const played = await Controller.useDragonGemItemFromHand('player', gemCard.id);
+
+        assert.equal(played, true);
+        assert.ok(state.players.player.removed.some(card => card.id === gemCard.id));
+        assert.ok(!state.players.player.discard.some(card => card.id === gemCard.id));
+        assert.ok(!state.players.player.hand.some(card => card.id === gemCard.id));
+
+        const gemEffect = gemRecord.status.find(status => status !== 'DRAGON_GEM');
+
+        assert.ok(Model.getDragonGemEffects('player').some(effect => effect.status === gemEffect));
+    } finally {
+        delete globalThis.document;
+    }
 });
