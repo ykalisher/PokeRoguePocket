@@ -32,13 +32,13 @@ of the current 2-letter text fallback. Ends green + visibly iconed.
 
 ## Steps
 
-- [ ] 1. **`assets/status-icons/`** — hand-author four SVG icons, filenames exactly:
+- [x] 1. **`assets/status-icons/`** — hand-author four SVG icons, filenames exactly:
   `EXTRA_ATTACK.svg`, `EXTRA_ITEM.svg`, `INCREASE_CAPACITY.svg`, `REFRESH_DECK.svg`. Keep them
   simple, monochrome, and sized like `BURN.svg` (consistent viewBox / visual weight). Pick
   legible metaphors, e.g.: Extra Attack → a "＋" over a fist/burst; Extra Item → a "＋" over a
   bag/potion; Increase Capacity → up-arrow into a hand/box; Refresh Deck → a recycle/refresh
   arrow-loop over a card stack. Author the SVG markup directly (no external image tool).
-- [ ] 2. **`arena/arena_model.js`** — add one `STATUS_DEFINITIONS` entry per token in the
+- [x] 2. **`arena/arena_model.js`** — add one `STATUS_DEFINITIONS` entry per token in the
   `:58-82` block, mirroring `MULTI_ATTACK`:
   ```js
   EXTRA_ATTACK:      { iconPath: 'assets/status-icons/EXTRA_ATTACK.svg',      label: 'Extra Attack',      showsToken: false },
@@ -48,13 +48,13 @@ of the current 2-letter text fallback. Ends green + visibly iconed.
   ```
   `showsToken:false` keeps them off the on-Pokémon persistent-token row (they are action-card
   effect badges, like `MULTI_ATTACK`).
-- [ ] 3. **Sanity** — confirm no other code special-cased these tokens' text badge; the badge
+- [x] 3. **Sanity** — confirm no other code special-cased these tokens' text badge; the badge
   now becomes an `<img>` automatically through `renderActionStatusIcons`.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill (serve on 8931): view the four artificial attacks (Energize, Recycle,
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill (serve on 8931): view the four artificial attacks (Energize, Recycle,
   Increase Capacity, Refresh) in hand / card detail → each shows its new icon, not the
   `EA`/`EI`/`IC`/`RD` text badge. Icons read clearly at the small badge size (screenshot to
   scratchpad). The on-Pokémon status row is unchanged.
