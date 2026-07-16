@@ -82,7 +82,19 @@
         const escapedPath = `<code>${escapeHtml(path)}</code>`;
         pathEl.innerHTML = hasImage
             ? escapedPath
-            : `${escapedPath}<br><span class="editor-badge editor-badge--warning">image missing (uploads arrive in phase 34)</span>`;
+            : `${escapedPath}<br><span class="editor-badge editor-badge--warning">image missing</span> ` +
+              '<button type="button" class="editor-btn editor-btn--small" data-role="upload-image-btn">Upload…</button>' +
+              '<input type="file" accept="image/png" data-role="upload-image-input" hidden>';
+
+        // Fresh elements every paint (innerHTML above), so no listener buildup.
+        if (!hasImage) {
+            const input = pathEl.querySelector('[data-role="upload-image-input"]');
+            pathEl.querySelector('[data-role="upload-image-btn"]').addEventListener('click', () => input.click());
+            input.addEventListener('change', () => {
+                if (!input.files[0]) return;
+                EditorApp.uploadAsset('items', draft.name, input.files[0]).then(() => paintPreview(el, draft)).catch(() => {});
+            });
+        }
     }
 
     function renderPreview(el, draft) {

@@ -329,6 +329,12 @@
     background: transparent;
 }
 
+.editor-btn--small {
+    padding: 3px 10px;
+    font-size: 0.85rem;
+    font-weight: 620;
+}
+
 .editor-dirty-dot {
     display: inline-block;
     width: 8px;

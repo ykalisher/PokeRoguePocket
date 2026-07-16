@@ -1,9 +1,10 @@
 /**
  * window.EditorApp: store, tab registry, tab switching, the issues badge,
- * and (phase 29) the generic detail-editor framework: openEditor/saveFile/
- * requestDelete, the dirty guard, jump-links, toasts, and blocking dialogs.
- * Per-type knowledge (forms, previews, columns) lives in the tab_*.js
- * modules; this file stays type-agnostic. Uploads arrive in phase 34.
+ * the generic detail-editor framework (openEditor/saveFile/requestDelete,
+ * the dirty guard, jump-links, toasts, blocking dialogs), and the shared
+ * asset-upload helper used by the Issues tab and the in-editor "Upload…"
+ * buttons (phase 34). Per-type knowledge (forms, previews, columns) lives
+ * in the tab_*.js modules; this file stays type-agnostic.
  */
 (function (EditorApp) {
     'use strict';
@@ -63,8 +64,23 @@
             }
             return payload;
         },
-        async upload() {
-            throw new Error('TODO(phase 34): EditorApp.api.upload is not implemented yet');
+        async upload(dir, key, file) {
+            const res = await fetch(`/api/assets/${dir}/${encodeURIComponent(key)}`, {
+                method: 'POST',
+                body: file
+            });
+            let payload = {};
+            try {
+                payload = await res.json();
+            } catch (err) {
+                payload = {};
+            }
+            if (!res.ok) {
+                const err = new Error(payload.error || `upload to ${dir}/${key} failed (${res.status})`);
+                err.status = res.status;
+                throw err;
+            }
+            return payload;
         }
     };
 
@@ -145,6 +161,37 @@
         if (typeof tab.onShow === 'function') tab.onShow();
     }
 
+    function assetIndexFrom(assets) {
+        return {
+            portraits: new Set(assets.portraits),
+            sprites: new Set(assets.sprites),
+            items: new Set(assets.items),
+            backgrounds: new Set(assets.backgrounds)
+        };
+    }
+
+    // Shared upload flow (25-data-editor-overview.md's Upload table / phase
+    // 34): POST the file, re-fetch /api/assets so the returned assetIndex
+    // reflects the new file, recompute issues (repaints the tab badge), and
+    // toast the result either way. Callers await this to also repaint their
+    // own UI (the Issues tab list, or an in-editor preview).
+    async function uploadAsset(dir, key, file) {
+        try {
+            const payload = await EditorApp.api.upload(dir, key, file);
+            const assets = await fetch('/api/assets').then((res) => res.json());
+            EditorApp.store.assets = assets;
+            EditorApp.store.assetIndex = assetIndexFrom(assets);
+            EditorApp.computeIssues();
+            showToast(`Uploaded ${payload.path}`);
+            return payload;
+        } catch (err) {
+            showToast(`Upload failed: ${err.message}`, 'error');
+            throw err;
+        }
+    }
+
+    EditorApp.uploadAsset = uploadAsset;
+
     function showErrorBanner(err) {
         const banner = document.getElementById('editor-error-banner');
         if (!banner) return;
@@ -163,12 +210,7 @@
             EditorApp.store.data = data;
             EditorApp.store.enums = enums;
             EditorApp.store.assets = assets;
-            EditorApp.store.assetIndex = {
-                portraits: new Set(assets.portraits),
-                sprites: new Set(assets.sprites),
-                items: new Set(assets.items),
-                backgrounds: new Set(assets.backgrounds)
-            };
+            EditorApp.store.assetIndex = assetIndexFrom(assets);
             EditorApp.store.engineRefs = Object.assign({}, enums.engineRefs, {
                 resolveSpriteFile: (name, explicitSprite) =>
                     window.PokeRogue.TrainerSprites.resolveSprite(name, explicitSprite).file

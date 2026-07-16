@@ -123,7 +123,20 @@
         const path = `assets/portraits/${EditorListView.escapeHtml(portraitFile)}`;
         pathEl.innerHTML = hasPortrait
             ? `<code>${path}</code>`
-            : `<code>${path}</code><br><span class="editor-badge editor-badge--warning">portrait missing (uploads arrive in phase 34)</span>`;
+            : `<code>${path}</code><br><span class="editor-badge editor-badge--warning">portrait missing</span> ` +
+              '<button type="button" class="editor-btn editor-btn--small" data-role="upload-portrait-btn">Upload…</button>' +
+              '<input type="file" accept="image/png" data-role="upload-portrait-input" hidden>';
+
+        // Elements are recreated by the innerHTML assignment above on every
+        // paint, so these listeners never accumulate across re-paints.
+        if (!hasPortrait) {
+            const input = pathEl.querySelector('[data-role="upload-portrait-input"]');
+            pathEl.querySelector('[data-role="upload-portrait-btn"]').addEventListener('click', () => input.click());
+            input.addEventListener('change', () => {
+                if (!input.files[0]) return;
+                EditorApp.uploadAsset('portraits', draft.name, input.files[0]).then(() => paintPreview(el, draft)).catch(() => {});
+            });
+        }
     }
 
     function renderPreview(el, draft) {

@@ -50,21 +50,21 @@ is complete.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/tab_issues.js`** — upgrade per the context: severity filter
+- [x] 1. **`dev/editor/tab_issues.js`** — upgrade per the context: severity filter
   (all/errors/warnings), grouping by file, jump-links on record-owned rows, Upload buttons
   on the four missing-asset codes, orphan rows rendered informational (no actions).
-- [ ] 2. **`dev/editor/app.js`** — add the shared `EditorApp.uploadAsset(dir, key, file)`
+- [x] 2. **`dev/editor/app.js`** — add the shared `EditorApp.uploadAsset(dir, key, file)`
   client helper (POST + refresh assets + recompute issues + toast) used by the Issues tab
   and the in-editor buttons.
-- [ ] 3. **`dev/editor/tab_pokemon.js` / `tab_trainers.js` / `tab_locations.js` /
+- [x] 3. **`dev/editor/tab_pokemon.js` / `tab_trainers.js` / `tab_locations.js` /
   `tab_items.js`** — turn the existing missing-asset notes/badges into "Upload…" buttons
   calling `uploadAsset` (portrait / sprite / background / item image respectively).
-- [ ] 4. **`dev/verify/drive_editor.py`** — the smoke driver per the context (own server
+- [x] 4. **`dev/verify/drive_editor.py`** — the smoke driver per the context (own server
   spawn on 8933, tab walk, preview-card assert, inline-edit round-trip + git restore,
   screenshot, clean exit codes, server killed in `finally`).
-- [ ] 5. **`CLAUDE.md`** — the two doc edits (dev/ row mention + trainer count fix).
+- [x] 5. **`CLAUDE.md`** — the two doc edits (dev/ row mention + trainer count fix).
   Confirm the `AGENTS.md` sentence from phase 27 exists; add it only if missing.
-- [ ] 6. **Upload round-trip check** (part of the work): with the server running, use the
+- [x] 6. **Upload round-trip check** (part of the work): with the server running, use the
   Issues tab to upload a PNG (use an existing repo PNG as the source file, e.g.
   `assets/card-backs/POKEMON_CARD_BACK.png`) for one location background → file appears at
   `assets/backgrounds/<id>.png`, the warning row disappears, the badge count drops. Then
@@ -73,17 +73,17 @@ is complete.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] The step-6 upload round-trip behaved exactly as described, and the uploaded file was
+- [x] `node tests/run_all.js` green.
+- [x] The step-6 upload round-trip behaved exactly as described, and the uploaded file was
   removed afterwards (`git status` clean, `assets/backgrounds/` empty again).
-- [ ] `dev/verify/.cache/venv/bin/python dev/verify/drive_editor.py` exits 0 and writes
+- [x] `dev/verify/.cache/venv/bin/python dev/verify/drive_editor.py` exits 0 and writes
   `dev/verify/editor_smoke.png` showing the editor with a rendered card in the preview
   pane; `pokemon.json` is unchanged afterwards.
-- [ ] An `assets.orphan-portrait` row (Linoone.png) renders with no action buttons; a
+- [x] An `assets.orphan-portrait` row (Linoone.png) renders with no action buttons; a
   `trainers.*` error row (introduce one transiently by editing a copy? — simpler: verify
   jump-links using a warning row with a recordKey, e.g. a missing item image jumps to that
   item) navigates to the right tab + record.
-- [ ] `CLAUDE.md` diff is exactly the two documented edits; `bash
+- [x] `CLAUDE.md` diff is exactly the two documented edits; `bash
   dev/feature_plans/status.sh` reports the whole 25-batch DONE once every box above is
   ticked.
 

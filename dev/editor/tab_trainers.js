@@ -146,8 +146,20 @@
         const pathEl = el.querySelector('[data-role="sprite-path"]');
         const escapedPath = `<code>${escapeHtml(resolved.path)}</code>`;
         pathEl.innerHTML = missing
-            ? `${escapedPath}<br><span class="editor-badge editor-badge--warning">sprite file missing</span>`
+            ? `${escapedPath}<br><span class="editor-badge editor-badge--warning">sprite file missing</span> ` +
+              '<button type="button" class="editor-btn editor-btn--small" data-role="upload-sprite-btn">Upload…</button>' +
+              '<input type="file" accept="image/png" data-role="upload-sprite-input" hidden>'
             : escapedPath;
+
+        // Fresh elements every paint (innerHTML above), so no listener buildup.
+        if (missing) {
+            const input = pathEl.querySelector('[data-role="upload-sprite-input"]');
+            pathEl.querySelector('[data-role="upload-sprite-btn"]').addEventListener('click', () => input.click());
+            input.addEventListener('change', () => {
+                if (!input.files[0]) return;
+                EditorApp.uploadAsset('sprites', draft.name, input.files[0]).then(() => paintSprite(el, draft)).catch(() => {});
+            });
+        }
     }
 
     function previewDeckSectionHtml(spec, draft) {

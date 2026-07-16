@@ -120,7 +120,9 @@
         return `
             <div class="editor-location-bg-placeholder">
                 <code>${escapeHtml(path)}</code><br>
-                <span class="editor-badge editor-badge--warning">missing file (uploads arrive in phase 34)</span>
+                <span class="editor-badge editor-badge--warning">missing file</span>
+                <button type="button" class="editor-btn editor-btn--small" data-role="upload-background-btn" ${draft.id ? '' : 'disabled'}>Upload…</button>
+                <input type="file" accept="image/png" data-role="upload-background-input" hidden>
             </div>
         `;
     }
@@ -142,8 +144,20 @@
         panel.querySelector('.editor-location-name').textContent = draft.name || '(unnamed)';
         panel.querySelector('.editor-location-terrain').textContent = draft.terrain || '';
         panel.querySelector('.editor-location-types').innerHTML = (draft.types || []).map(EditorPreview.typeIconHtml).join('');
-        panel.querySelector('.editor-location-bg').innerHTML = backgroundBlockHtml(draft);
+        const bgEl = panel.querySelector('.editor-location-bg');
+        bgEl.innerHTML = backgroundBlockHtml(draft);
         panel.querySelector('.editor-location-swatches').innerHTML = swatchLabelsHtml(theme);
+
+        // Fresh elements every paint (innerHTML above), so no listener buildup.
+        const uploadBtn = bgEl.querySelector('[data-role="upload-background-btn"]');
+        if (uploadBtn && draft.id) {
+            const input = bgEl.querySelector('[data-role="upload-background-input"]');
+            uploadBtn.addEventListener('click', () => input.click());
+            input.addEventListener('change', () => {
+                if (!input.files[0]) return;
+                EditorApp.uploadAsset('backgrounds', draft.id, input.files[0]).then(() => paintPreview(el, draft)).catch(() => {});
+            });
+        }
     }
 
     function renderPreview(el, draft) {
