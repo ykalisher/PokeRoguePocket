@@ -18,6 +18,6 @@ The project should remain simple, portable, and easy to understand. Prefer clear
 
 - Use plain JavaScript, HTML, and CSS.
 
-- Do not use third-party libraries, frameworks, build tools, package managers, CDNs, or external runtime dependencies unless explicitly approved. This governs everything the game itself loads in the browser. Dev-only tooling that never ships with the game is exempt where approved: `tests/` (Node built-ins only) and `dev/verify/` (Python + Playwright browser verification, approved July 2026).
+- Do not use third-party libraries, frameworks, build tools, package managers, CDNs, or external runtime dependencies unless explicitly approved. This governs everything the game itself loads in the browser. Dev-only tooling that never ships with the game is exempt where approved: `tests/` (Node built-ins only), `dev/verify/` (Python + Playwright browser verification, approved July 2026), and `dev/editor/` (local data-editor server + GUI, Node built-ins only, approved July 2026).
 
 - The game should run directly in a modern browser from local files or a simple static server.
