@@ -649,6 +649,231 @@
     justify-content: flex-end;
 }
 
+/* --- Trainers detail editor: sprite + deck preview (phase 31) --- */
+
+.editor-trainer-preview {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+    justify-self: stretch;
+}
+
+.editor-trainer-sprite-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+}
+
+.editor-trainer-sprite {
+    max-width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+}
+
+.editor-trainer-sprite-path {
+    margin: 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    word-break: break-all;
+}
+
+.editor-trainer-sprite-path code {
+    color: #fbf6e8;
+}
+
+.editor-trainer-deck-sections {
+    display: grid;
+    gap: 18px;
+}
+
+.editor-trainer-deck-title {
+    margin: 0 0 8px;
+    font-size: 0.92rem;
+    color: #fbf6e8;
+}
+
+.editor-trainer-deck-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.editor-trainer-tile {
+    position: relative;
+    display: flex;
+}
+
+.editor-trainer-unknown-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--card-w);
+    height: var(--card-h);
+    padding: 4px;
+    border-radius: 8px;
+    border: 2px solid color-mix(in srgb, var(--coral, #d85f4f) 70%, transparent);
+    background: rgba(216, 95, 79, 0.22);
+    color: #fff6f3;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-align: center;
+    word-break: break-word;
+    overflow: hidden;
+}
+
+.editor-count-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    z-index: 2;
+    padding: 1px 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background-color: var(--gold, #e0b84f);
+    color: #1c1310;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.editor-trainer-advisory {
+    margin-top: 8px;
+    font-size: 0.82rem;
+}
+
+/* --- Trainers detail editor: deck builder (phase 31) --- */
+
+.editor-deck-builder {
+    display: grid;
+    gap: 18px;
+}
+
+.editor-deck-builder-section h4 {
+    margin: 0 0 6px;
+    font-size: 0.92rem;
+    color: #fbf6e8;
+}
+
+.editor-hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+}
+
+.editor-hint code {
+    color: var(--gold);
+}
+
+.editor-picker {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.editor-picker-input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 246, 232, 0.24);
+    background: var(--panel-deep, rgba(0, 0, 0, 0.24));
+    color: #fbf6e8;
+    font: inherit;
+    font-size: 0.9rem;
+}
+
+.editor-picker-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    max-height: 220px;
+    overflow: auto;
+    margin: 4px 0 0;
+    padding: 4px;
+    list-style: none;
+    border-radius: 8px;
+    border: 1px solid rgba(251, 246, 232, 0.24);
+    background: var(--panel-bg);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.editor-picker-results li {
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: #fbf6e8;
+    font-size: 0.86rem;
+    cursor: pointer;
+}
+
+.editor-picker-results li:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.editor-deck-rows {
+    display: grid;
+    gap: 6px;
+    max-height: 260px;
+    overflow: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.editor-deck-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.14);
+}
+
+.editor-deck-row-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #fbf6e8;
+    font-size: 0.86rem;
+}
+
+.editor-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+}
+
+.editor-stepper-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 246, 232, 0.24);
+    background: rgba(0, 0, 0, 0.22);
+    color: #fbf6e8;
+    font: inherit;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.editor-stepper-btn:hover {
+    border-color: rgba(251, 246, 232, 0.5);
+}
+
+.editor-stepper-count {
+    min-width: 18px;
+    text-align: center;
+    color: var(--gold);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
 /* --- Toasts --- */
 
 .editor-toast {

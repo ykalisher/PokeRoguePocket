@@ -46,30 +46,30 @@ Ends green with byte-clean no-op saves.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/tab_trainers.js`** — the full editor per the context: sprite pane,
+- [x] 1. **`dev/editor/tab_trainers.js`** — the full editor per the context: sprite pane,
   three mini-card deck sections with count badges + unknown-name placeholders, the scalar
   form with datalist sprite input, the deck-builder pickers/steppers, add-new, delete.
-- [ ] 2. **`dev/editor/editor.css`** — mini-card grid + `×N` count badge overlay
+- [x] 2. **`dev/editor/editor.css`** — mini-card grid + `×N` count badge overlay
   (absolute-positioned pill on the card corner), red placeholder tile, picker dropdown,
   stepper buttons, advisory banner. Card size comes from `--card-w: 48px` on the section
   wrapper — no transforms.
-- [ ] 3. **Round-trip check** (part of the work): open `Gamer`, Save with zero edits →
+- [x] 3. **Round-trip check** (part of the work): open `Gamer`, Save with zero edits →
   `git diff trainers.json` empty; add one `Sitrus Berry` via the picker, Save → diff is
   exactly one inserted line in Gamer's `items` array; restore with `git checkout --
   trainers.json`.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] Browser: open `Gamer` — sprite image renders; the Attacks section shows a mini
+- [x] `node tests/run_all.js` green.
+- [x] Browser: open `Gamer` — sprite image renders; the Attacks section shows a mini
   `Mind Break` card with a `×2` badge; section counts read 4 / 16 / 5; no advisory (16 =
   4×4). The mini cards are real renders (type icons + PWR visible at 48px).
-- [ ] `+` on `Mind Break` → badge reads ×3, count 17, advisory appears (17 ≠ 16); `−`
+- [x] `+` on `Mind Break` → badge reads ×3, count 17, advisory appears (17 ≠ 16); `−`
   twice → ×1; Revert restores the original deck and preview.
-- [ ] Changing the `sprite` field to a manifest name updates the "resolves to" hint and the
+- [x] Changing the `sprite` field to a manifest name updates the "resolves to" hint and the
   image live; an off-manifest value shows the missing badge (resolveSprite falls back to
   `<name>.png`).
-- [ ] Setting rank to Elite with an empty spec shows the live warning; deleting `Mecha Cop`
+- [x] Setting rank to Elite with an empty spec shows the live warning; deleting `Mecha Cop`
   is blocked listing `events.json / rogue-mecha-cop`; add-new trainer saves and deletes
   cleanly. End with `git status` clean of data files; kill the server.
 
