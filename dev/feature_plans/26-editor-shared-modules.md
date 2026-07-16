@@ -84,14 +84,14 @@ const SD = window.PokeLocations.STARTER_DECKS;             // { water|grass|fire
 
 ## Steps
 
-- [ ] 1. **`dev/editor/format_json.js`** — implement `formatDataFile(fileName, data) ->
+- [x] 1. **`dev/editor/format_json.js`** — implement `formatDataFile(fileName, data) ->
   string` using the overview's reference implementation: `pokemon|attacks|items|trainers`
   → `JSON.stringify(data, null, 2) + '\n'`; `events|locations` → the smart formatter
   (WIDTH 110, primitive-only arrays inline, record-level objects always expanded, deeper
   objects inline when they fit); unknown file name → throw. Accept both `"events"` and
   `"events.json"` spellings. Export via the overview's dual-export snippet as
   `window.EditorFormat` / `module.exports`.
-- [ ] 2. **`tests/editor_format.test.js`** — (a) byte-exact roundtrip: for `events.json` and
+- [x] 2. **`tests/editor_format.test.js`** — (a) byte-exact roundtrip: for `events.json` and
   `locations.json`, `formatDataFile(name, JSON.parse(fs.readFileSync(file,'utf8')))` strictly
   equals the raw file text; (b) for the other four files, output equals
   `JSON.stringify(parsed, null, 2) + '\n'` AND equals the raw text once the raw text is
@@ -99,13 +99,13 @@ const SD = window.PokeLocations.STARTER_DECKS;             // { water|grass|fire
   wraps one-per-line; a short array containing an object still wraps; `[]`/`{}` stay
   inline; a record object (depth 1) with two keys expands even though it would fit; key
   order is preserved.
-- [ ] 3. **`dev/editor/validate.js`** — implement `validateAll` and `findReferences` per the
+- [x] 3. **`dev/editor/validate.js`** — implement `validateAll` and `findReferences` per the
   overview and the code list above, porting every rule from `tests/data_validation.test.js`.
   Every issue: `{ severity, file, recordKey, field?, code, message }` with `file` one of the
   six `<name>.json` strings, `"engine"`, or `"assets"`. Keep each per-file check in its own
   small function (`validatePokemon(data, enums)` etc.) so phase sessions can navigate it.
   Dual-export as `window.EditorValidation`.
-- [ ] 4. **`tests/editor_validation.test.js`** — (a) **live-data parity**: run `validateAll`
+- [x] 4. **`tests/editor_validation.test.js`** — (a) **live-data parity**: run `validateAll`
   over the six real files with real enums/assetIndex/engineRefs → **zero `error` issues**;
   warnings include `assets.missing-background` for every enabled location id (12 today —
   assert ≥ 8, not an exact count) and `assets.orphan-portrait` with `recordKey`
@@ -120,7 +120,7 @@ const SD = window.PokeLocations.STARTER_DECKS;             // { water|grass|fire
   engineRefs)` includes the default deck AND the water starter deck; `findReferences(data,
   'trainer','Mecha Cop', …)` includes `events.json`/`rogue-mecha-cop`; a freshly invented
   name returns `[]`.
-- [ ] 5. **Dual-export smoke** — `node -e "globalThis.window = globalThis;
+- [x] 5. **Dual-export smoke** — `node -e "globalThis.window = globalThis;
   require('./dev/editor/format_json.js'); require('./dev/editor/validate.js');
   console.log(!!window.EditorFormat.formatDataFile, !!window.EditorValidation.validateAll)"`
   prints `true true`. (This also proves no stray top-level `require` snuck into
@@ -128,12 +128,12 @@ const SD = window.PokeLocations.STARTER_DECKS;             // { water|grass|fire
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — including the two new test files.
-- [ ] The byte-exact roundtrip assertions pass against the **live** `events.json` and
+- [x] `node tests/run_all.js` green — including the two new test files.
+- [x] The byte-exact roundtrip assertions pass against the **live** `events.json` and
   `locations.json` (not fixtures).
-- [ ] Live-data `validateAll` reports 0 errors; warning set includes the 12 missing
+- [x] Live-data `validateAll` reports 0 errors; warning set includes the 12 missing
   backgrounds and the Linoone orphan.
-- [ ] Step-5 smoke prints `true true`.
+- [x] Step-5 smoke prints `true true`.
 
 ## Out of scope / do not touch
 
