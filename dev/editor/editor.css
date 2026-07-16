@@ -1,0 +1,296 @@
+/* Data editor chrome, layered on top of static/styles.css's game theme.
+   Loaded after styles.css; reuses its theme variables (--gold, --panel-bg,
+   --ink, --paper, --muted, ...) so the tool looks like the game. */
+
+.editor-page {
+    display: block;
+}
+
+.editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 18px clamp(14px, 3vw, 34px);
+    border-bottom: 1px solid rgba(251, 246, 232, 0.16);
+    background: var(--panel-bg);
+}
+
+.editor-title {
+    margin: 0;
+    font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #fbf6e8;
+}
+
+.editor-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.editor-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid rgba(251, 246, 232, 0.18);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.18);
+    color: var(--muted);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.editor-tab:hover {
+    color: #fbf6e8;
+    border-color: rgba(251, 246, 232, 0.32);
+}
+
+.editor-tab.is-active {
+    background: color-mix(in srgb, var(--gold) 30%, transparent);
+    border-color: var(--gold);
+    color: #fbf6e8;
+}
+
+.editor-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #1c1310;
+}
+
+.editor-tab-badge--error {
+    background-color: var(--coral, #d85f4f);
+    color: #fff6f3;
+}
+
+.editor-tab-badge--warning {
+    background-color: var(--gold, #e0b84f);
+}
+
+.editor-error-banner {
+    margin: 14px clamp(14px, 3vw, 34px) 0;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(216, 95, 79, 0.5);
+    background: rgba(216, 95, 79, 0.16);
+    color: #fbf6e8;
+}
+
+.editor-view {
+    padding: 18px clamp(14px, 3vw, 34px) 48px;
+}
+
+/* --- Toolbar (search, filters, record count) --- */
+
+.editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.editor-search,
+.editor-filter {
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 246, 232, 0.24);
+    background: var(--panel-deep, rgba(0, 0, 0, 0.24));
+    color: #fbf6e8;
+    font: inherit;
+    font-size: 0.9rem;
+}
+
+.editor-search {
+    min-width: 200px;
+    flex: 0 1 260px;
+}
+
+.editor-count {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 0.84rem;
+    white-space: nowrap;
+}
+
+/* --- Data table --- */
+
+.editor-table-wrap {
+    max-height: 68vh;
+    overflow: auto;
+    border: 1px solid rgba(251, 246, 232, 0.16);
+    border-radius: 8px;
+}
+
+.editor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.editor-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 9px 10px;
+    background: var(--panel-bg);
+    color: #fbf6e8;
+    text-align: left;
+    font-weight: 800;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(251, 246, 232, 0.22);
+}
+
+.editor-table th.is-sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.editor-table th.is-sortable:hover {
+    color: var(--gold);
+}
+
+.editor-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(251, 246, 232, 0.08);
+    vertical-align: middle;
+}
+
+.editor-table td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.editor-row {
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.editor-row:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.editor-row.is-selected {
+    background: color-mix(in srgb, var(--gold) 22%, transparent);
+}
+
+.editor-row-empty td {
+    text-align: center;
+    color: var(--muted);
+    padding: 18px 10px;
+}
+
+.editor-thumb {
+    display: block;
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.22);
+}
+
+/* --- Small shared bits: badges, dots, swatches --- */
+
+.editor-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.22);
+    color: var(--muted);
+}
+
+.editor-badge--error {
+    background-color: color-mix(in srgb, var(--coral, #d85f4f) 32%, transparent);
+    color: #fff6f3;
+}
+
+.editor-badge--warning {
+    background-color: color-mix(in srgb, var(--gold, #e0b84f) 32%, transparent);
+    color: #fbf6e8;
+}
+
+.editor-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.editor-dot--on {
+    background-color: var(--aqua, #4ab0a5);
+}
+
+.editor-dot--off {
+    background-color: var(--coral, #d85f4f);
+}
+
+.editor-swatch-strip {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.editor-swatch {
+    width: 12px;
+    height: 18px;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.editor-muted {
+    color: var(--muted);
+}
+
+.editor-empty {
+    color: var(--muted);
+}
+
+/* --- Issues tab grouping --- */
+
+.editor-issue-group {
+    margin-bottom: 24px;
+}
+
+.editor-issue-group-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+    color: #fbf6e8;
+}
+
+/* --- Two-pane detail scaffold (wired up starting phase 29) --- */
+
+.editor-split {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) 2fr;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 760px) {
+    .editor-split {
+        grid-template-columns: 1fr;
+    }
+
+    .editor-count {
+        margin-left: 0;
+    }
+}

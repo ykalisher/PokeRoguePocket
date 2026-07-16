@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokeRoguePocket Data Editor</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/dev/editor/editor.css">
+</head>
+<body class="game-page editor-page">
+    <header class="editor-header">
+        <h1 class="editor-title">Data Editor</h1>
+        <nav id="editor-tabs" class="editor-tabs" aria-label="Data type tabs"></nav>
+    </header>
+    <div id="editor-error-banner" class="editor-error-banner" hidden></div>
+    <main id="editor-view" class="editor-view" aria-live="polite"></main>
+
+    <script src="/arena/trainer_sprites.js"></script>
+    <script src="/arena/arena_data.js"></script>
+    <script src="/arena/arena_model.js"></script>
+    <script src="/arena/arena_render.js"></script>
+    <script src="/dev/editor/validate.js"></script>
+    <script src="/dev/editor/preview.js"></script>
+    <script src="/dev/editor/list_view.js"></script>
+    <script src="/dev/editor/app.js"></script>
+    <script src="/dev/editor/tab_pokemon.js"></script>
+    <script src="/dev/editor/tab_attacks.js"></script>
+    <script src="/dev/editor/tab_items.js"></script>
+    <script src="/dev/editor/tab_trainers.js"></script>
+    <script src="/dev/editor/tab_events.js"></script>
+    <script src="/dev/editor/tab_locations.js"></script>
+    <script src="/dev/editor/tab_issues.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.EditorApp.init();
+        });
+    </script>
+</body>
+</html>
