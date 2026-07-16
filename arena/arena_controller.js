@@ -19,7 +19,8 @@
  *      for the rest of the battle instead of being discarded.
  *    - Dragon Gem items resolve as side effects immediately; other item cards
  *      select/drag to a legal target and resolve through usePendingItem() ->
- *      applyItemCard().
+ *      applyItemCard(). Every item is single-use: after resolving it is removed
+ *      from play for the rest of the battle instead of being discarded.
  *    - Unused hand cards can be discarded by button or by dragging to discard.
  * 5. endPlayerTurn() locks input, asks the opponent to act with runOpponentTurn(),
  *    then resolves all queued attacks with resolveQueuedAttacks().
@@ -591,7 +592,8 @@
 
     /**
      * Resolves a player item after target selection. Items animate, apply their
-     * effects immediately, move to discard, and mark the player's item use spent.
+     * effects immediately, are removed from play for the rest of the battle, and
+     * mark the player's item use spent. Every item is single-use.
      */
     async function usePendingItem(selection) {
         const player = state.players.player;
@@ -617,9 +619,10 @@
         render();
         await model.sleep(180);
 
-        await animateDiscardCard('player', itemCard, impactCenter || sourceCenter);
+        await animateArtificialAttackCard(itemCard, impactCenter || sourceCenter, 'player');
 
-        player.discard.unshift(itemCard);
+        model.removeCardFromPlay(player, itemCard);
+        logEvent(`${model.getCardName(itemCard)} was removed from play for the rest of the battle.`);
         state.isResolving = false;
         render();
     }
@@ -680,8 +683,9 @@
     }
 
     /**
-     * Plays the standalone effect-boost item without target selection (like a gem),
-     * but unlike a gem the physical card discards normally afterward.
+     * Plays the standalone effect-boost item without target selection (like a gem).
+     * Like every item, the physical card is single-use: it is removed from play for
+     * the rest of the battle after resolving.
      */
     async function useEffectBoostItemFromHand(ownerId, cardId) {
         const owner = state.players[ownerId];
@@ -714,9 +718,10 @@
         render();
         await model.sleep(180);
 
-        await animateDiscardCard(ownerId, removedCard, impactCenter || sourceCenter);
+        await animateArtificialAttackCard(removedCard, impactCenter || sourceCenter, ownerId);
 
-        owner.discard.unshift(removedCard);
+        model.removeCardFromPlay(owner, removedCard);
+        logEvent(`${model.getCardName(removedCard)} was removed from play for the rest of the battle.`);
 
         if (ownerId === 'player') {
             state.isResolving = false;
@@ -1364,9 +1369,10 @@
         render();
         await model.sleep(180);
 
-        await animateDiscardCard('opponent', itemCard, impactCenter || sourceCenter);
+        await animateArtificialAttackCard(itemCard, impactCenter || sourceCenter, 'opponent');
 
-        opponent.discard.unshift(itemCard);
+        model.removeCardFromPlay(opponent, itemCard);
+        logEvent(`${model.getCardName(itemCard)} was removed from play for the rest of the battle.`);
         render();
         await model.sleep(180);
 
@@ -3332,6 +3338,7 @@
         handleCardDrop,
         handleArenaClick,
         resetPrototype,
+        usePendingItem,
         useDragonGemItemFromHand,
         useEffectBoostItemFromHand,
         // Exposed for tests: effect-boost roll sites (phase 20).

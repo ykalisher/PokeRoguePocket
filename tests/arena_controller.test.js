@@ -193,6 +193,49 @@ test('playing a Dragon Gem removes it from play instead of discarding it', async
     }
 });
 
+test('using a normal item removes it from play instead of discarding it', async () => {
+    const state = arena.state;
+
+    // No real DOM in Node: stub document/board rect so the fly-out animation
+    // helpers take their "no element found" branch instead of throwing.
+    globalThis.document = {
+        body: { appendChild: () => {} },
+        querySelector: () => null
+    };
+    state.elements = {
+        board: { getBoundingClientRect: () => ({ height: 100, left: 0, top: 0, width: 100 }) },
+        popup: { hidden: false }
+    };
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const target = makePokemonCard('player', ['FIRE']);
+
+    target.currentHealth = 10;
+    state.players.player.board[0] = target;
+
+    const healRecord = arena.GameData.items.find(item => Array.isArray(item.status) && item.status.includes('HEAL'));
+    const itemCard = makeItemCard('player', healRecord);
+
+    state.players.player.hand = [itemCard];
+    state.phase = 'selecting-item-target';
+    state.currentPlayer = 'player';
+    state.isResolving = false;
+    state.pendingActionCardId = itemCard.id;
+
+    try {
+        await Controller.usePendingItem({ kind: 'single', owner: 'player', cardId: target.id });
+
+        assert.ok(state.players.player.removed.some(card => card.id === itemCard.id));
+        assert.ok(!state.players.player.discard.some(card => card.id === itemCard.id));
+        assert.ok(!state.players.player.hand.some(card => card.id === itemCard.id));
+    } finally {
+        delete globalThis.document;
+    }
+});
+
 test('sleep applied after a Pokemon has acted still blocks its own next-turn attack', () => {
     const state = arena.state;
 

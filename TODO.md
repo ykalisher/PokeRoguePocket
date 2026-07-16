@@ -2,8 +2,6 @@
 This file is intended primarily for humans. Agents should not act on this file unless explicitly requested to mark something as complete or add a  new item, and should not use the contents of this file for anything.
 ## Next Big Task
 1. Events need to all be redone because they're bad
-2. Figure out better progression system for increasing difficulty and actually getting stronger. Also more teambuilding options.
-3. Fix trainers, lots of gym leaders and elite trainers are just ace instead of being bosses and elite
 ## Data
 - [x] Decide on type specializations for attacks
 	ARTIFICIAL: Interacts with the deck and hand; Attacks to increase the number of cards in your hand or prevent the next card you play from being discarded or replay a discarded card etc.

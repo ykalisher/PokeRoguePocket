@@ -110,7 +110,7 @@ test('the Effect Amplifier item is registered as a standalone (non-gem) SIDE ite
     assert.equal(Model.isDragonGemItemCard(card), false);
 });
 
-test('playing the Effect Amplifier sets the side boost flag and discards the card', async () => {
+test('playing the Effect Amplifier sets the side boost flag and removes the card from play', async () => {
     setupBattle();
 
     const player = arena.state.players.player;
@@ -124,9 +124,9 @@ test('playing the Effect Amplifier sets the side boost flag and discards the car
 
     assert.equal(played, true);
     assert.equal(Model.hasEffectBoost('player'), true);
-    // Standalone item discards normally (unlike gems, which are removed from play).
-    assert.ok(player.discard.some(card => card.id === itemCard.id));
-    assert.ok(!player.removed.some(card => card.id === itemCard.id));
+    // Every item is single-use: it is removed from play, not sent to discard.
+    assert.ok(player.removed.some(card => card.id === itemCard.id));
+    assert.ok(!player.discard.some(card => card.id === itemCard.id));
     assert.ok(!player.hand.some(card => card.id === itemCard.id));
     // The opponent side is unaffected.
     assert.equal(Model.hasEffectBoost('opponent'), false);
