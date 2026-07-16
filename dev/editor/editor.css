@@ -1209,3 +1209,96 @@
 .editor-events-trainer-pick input {
     flex: 1;
 }
+
+/* --- Locations themed preview panel (phase 33) --- */
+
+.editor-location-panel {
+    display: grid;
+    gap: 14px;
+    width: 100%;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--loc-accent, var(--gold)) 40%, transparent);
+    background: linear-gradient(150deg, var(--loc-bg-mid, var(--panel-deep)), var(--loc-bg-deep, #10161f) 70%);
+}
+
+.editor-location-header {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--loc-surface, var(--felt));
+}
+
+.editor-location-name {
+    margin: 0;
+    color: var(--loc-accent, var(--gold));
+    font-size: 1.2rem;
+}
+
+.editor-location-terrain {
+    margin: 4px 0 0;
+    color: var(--loc-glow, var(--aqua));
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.editor-location-types {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.editor-location-bg-placeholder {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px dashed color-mix(in srgb, var(--loc-accent, var(--gold)) 45%, transparent);
+    background: rgba(0, 0, 0, 0.22);
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-align: center;
+    align-content: center;
+}
+
+.editor-location-bg img {
+    display: block;
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.editor-location-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.editor-location-swatch {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: var(--muted);
+}
+
+.editor-location-swatch-chip {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.editor-form-row input[type="color"] {
+    width: 48px;
+    height: 34px;
+    padding: 2px;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 246, 232, 0.24);
+    background: var(--panel-deep, rgba(0, 0, 0, 0.24));
+    cursor: pointer;
+}

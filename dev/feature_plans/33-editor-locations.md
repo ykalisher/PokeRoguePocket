@@ -45,31 +45,31 @@ location graph rules. Ends green with byte-clean no-op saves.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/tab_locations.js`** — the full editor per the context: themed
+- [x] 1. **`dev/editor/tab_locations.js`** — the full editor per the context: themed
   preview panel, form, canonical-background button, graph-rule live warnings, add-new,
   delete.
-- [ ] 2. **`dev/editor/editor.css`** — the preview panel styling (theme-variable-driven
+- [x] 2. **`dev/editor/editor.css`** — the preview panel styling (theme-variable-driven
   gradient/surface/accent layout, swatch labels for the five colors, missing-background
   placeholder). Reuse chip/picker styles.
-- [ ] 3. **Round-trip check** (part of the work): open `tidepool-coast` and `meadow-market`,
+- [x] 3. **Round-trip check** (part of the work): open `tidepool-coast` and `meadow-market`,
   Save with zero edits → `git diff locations.json` empty (this exercises the inline
   `types` array and inline `theme` object formatting). Then change one theme color, Save,
   confirm the diff is that single line, and restore with `git checkout -- locations.json`.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] Browser: open `tidepool-coast` — the preview panel shows its gold-on-teal theme;
+- [x] `node tests/run_all.js` green.
+- [x] Browser: open `tidepool-coast` — the preview panel shows its gold-on-teal theme;
   dragging the `accent` color input repaints the panel live; type icons show WATER + ICE;
   the background row shows the canonical path with a missing-file placeholder.
-- [ ] Disable `tidepool-coast`, `murkwater-marsh`, and `harbor-boardwalk` in sequence
+- [x] Disable `tidepool-coast`, `murkwater-marsh`, and `harbor-boardwalk` in sequence
   (without saving the last one): the `locations.starter-coverage` warning appears naming
   WATER; attempting Save is refused by the 409 dialog; re-enable, confirm the warning
   clears, Revert to be safe.
-- [ ] Add a new location (template theme, 2 types), save, confirm the guard passes and the
+- [x] Add a new location (template theme, 2 types), save, confirm the guard passes and the
   list shows 13 rows with its swatch strip; delete it again. `git diff locations.json`
   empty at the end; kill the server.
-- [ ] The step-3 no-op saves left no diff.
+- [x] The step-3 no-op saves left no diff.
 
 ## Out of scope / do not touch
 
