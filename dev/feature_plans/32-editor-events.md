@@ -70,31 +70,31 @@ unedited produces an empty diff.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/tab_events.js`** — the full editor per the context: preview pane,
+- [x] 1. **`dev/editor/tab_events.js`** — the full editor per the context: preview pane,
   the three form zones, the reusable effects + requirements editors, choice reordering,
   add-new templates, delete via `requestDelete('event', …)` (events are never referenced —
   deletes only confirm; the guard still blocks deleting the last trainer event).
-- [ ] 2. **`dev/editor/editor.css`** — event-editor styling: choice blocks (card-like
+- [x] 2. **`dev/editor/editor.css`** — event-editor styling: choice blocks (card-like
   panels with reorder/remove controls), effect rows, requirement rows, the flagged-state
   (dangling `selectionId`) highlight, preview text block. Reuse existing chip/picker styles
   from earlier phases.
-- [ ] 3. **Round-trip check** (part of the work, before any real edits): open **each of the
+- [x] 3. **Round-trip check** (part of the work, before any real edits): open **each of the
   6 events** and Save with zero edits → `git diff events.json` stays **empty** after all
   six. This proves unknown-key + key-order + alias preservation end to end. Any diff =
   stop and fix the mutation discipline.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] The step-3 six-event no-op round-trip leaves `git diff events.json` empty.
-- [ ] Browser, `wandering-trader`: the choice blocks render with their effects; the
+- [x] `node tests/run_all.js` green.
+- [x] The step-3 six-event no-op round-trip leaves `git diff events.json` empty.
+- [x] Browser, `wandering-trader`: the choice blocks render with their effects; the
   `trade-random-pokemon` row shows its `replacement` types editor; swapping the two
   choices with `↓`/`↑` then Save → diff shows only the reordered blocks; restore via
   `git checkout -- events.json`.
-- [ ] `rogue-mecha-cop`: preview shows the Mecha Cop sprite, `rewardCash` 400, and a mini
+- [x] `rogue-mecha-cop`: preview shows the Mecha Cop sprite, `rewardCash` 400, and a mini
   Porygon2 card; changing `trainerName` via the picker updates the sprite live; an invalid
   (cleared) trainer flags the field and Save surfaces the 409.
-- [ ] Create a new choice event end-to-end: one choice with a `requires` entry
+- [x] Create a new choice event end-to-end: one choice with a `requires` entry
   (`cardKind: pokemon`) + a `trade-selected-pokemon` effect whose `selectionId` select
   offers exactly that requirement id; save it (guard passes), confirm it appears in the
   list, then delete it. End with `git status` clean of data files; kill the server.

@@ -900,3 +900,312 @@
     transform: translate(-50%, 0);
     opacity: 1;
 }
+
+/* --- Events detail editor (phase 32) --- */
+
+/* Preview pane: the event as the player meets it (text block + per-action
+   effect summaries with mini cards). The shared .editor-preview centers its
+   items; the event preview is a full-width, left-aligned document instead. */
+.editor-events-preview {
+    width: 100%;
+    text-align: left;
+    display: grid;
+    gap: 14px;
+}
+
+.editor-events-preview-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.editor-events-preview-gates {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.editor-events-preview-text {
+    display: grid;
+    gap: 4px;
+}
+
+.editor-events-preview-kicker {
+    margin: 0;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+}
+
+.editor-events-preview-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #fbf6e8;
+}
+
+.editor-events-preview-subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fbf6e8;
+}
+
+.editor-events-preview-body {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--muted);
+    white-space: pre-wrap;
+}
+
+.editor-events-preview-actions {
+    display: grid;
+    gap: 10px;
+}
+
+.editor-events-preview-action {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(251, 246, 232, 0.14);
+    background: rgba(0, 0, 0, 0.16);
+}
+
+.editor-events-preview-action h4 {
+    margin: 0 0 6px;
+    font-size: 0.9rem;
+    color: #fbf6e8;
+}
+
+.editor-events-preview-desc {
+    margin: 0 0 6px;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.editor-events-preview-effects {
+    --card-w: 48px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+}
+
+.editor-events-preview-effect {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: #fbf6e8;
+}
+
+.editor-events-preview-effect > span:first-child {
+    flex: 1;
+}
+
+.editor-events-preview-cardslot {
+    flex: 0 0 auto;
+}
+
+.editor-events-preview-trainer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.editor-events-preview-sprite {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.editor-events-preview-sprite--missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 8px;
+    border: 2px solid color-mix(in srgb, var(--coral, #d85f4f) 70%, transparent);
+    background: rgba(216, 95, 79, 0.22);
+    color: #fff6f3;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-align: center;
+    word-break: break-word;
+}
+
+.editor-events-preview-trainer-meta {
+    display: grid;
+    gap: 2px;
+}
+
+.editor-events-preview-trainer-meta strong {
+    color: #fbf6e8;
+}
+
+.editor-events-preview-cash {
+    font-size: 0.8rem;
+    color: var(--gold);
+    font-weight: 700;
+}
+
+/* Form pane: zones, choice blocks, effect/requirement rows. */
+.editor-events-form {
+    display: grid;
+    gap: 18px;
+}
+
+.editor-events-zone {
+    display: grid;
+    gap: 14px;
+}
+
+.editor-events-zone-title {
+    margin: 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(251, 246, 232, 0.16);
+    font-size: 1rem;
+    color: var(--gold);
+}
+
+.editor-events-subzone {
+    display: grid;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(251, 246, 232, 0.14);
+    background: rgba(0, 0, 0, 0.14);
+}
+
+.editor-events-choice {
+    display: grid;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(251, 246, 232, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.editor-events-choice-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.editor-events-choice-label {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #fbf6e8;
+}
+
+.editor-events-choice-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.editor-events-subsection {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.editor-events-subsection h4 {
+    margin: 0;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.editor-events-rows {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.editor-events-req-row,
+.editor-events-eff-row {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(251, 246, 232, 0.16);
+    background: var(--panel-deep, rgba(0, 0, 0, 0.24));
+}
+
+.editor-events-eff-row--flagged {
+    border-color: color-mix(in srgb, var(--coral, #d85f4f) 70%, transparent);
+    background: rgba(216, 95, 79, 0.14);
+}
+
+.editor-events-eff-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.editor-events-eff-head select {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 246, 232, 0.24);
+    background: rgba(0, 0, 0, 0.24);
+    color: #fbf6e8;
+    font: inherit;
+    font-size: 0.9rem;
+}
+
+.editor-events-eff-fields {
+    margin: 0;
+}
+
+.editor-events-row-remove {
+    flex: 0 0 auto;
+    align-self: start;
+}
+
+.editor-events-flag {
+    display: block;
+    margin: 2px 0 0;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: color-mix(in srgb, var(--coral, #d85f4f) 85%, #fbf6e8);
+}
+
+.editor-events-replacement {
+    flex: 1 1 100%;
+    display: grid;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px dashed rgba(251, 246, 232, 0.24);
+}
+
+.editor-events-replacement-title {
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.editor-events-trainer-pick {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.editor-events-trainer-pick input {
+    flex: 1;
+}

@@ -388,21 +388,25 @@
     // --------------------------------------------------------- delete flow
 
     async function requestDelete(kind, fileName, record) {
+        // Reference lookups key on the record's `name`; records without one
+        // (events key on id/title) are never referenced, so findReferences
+        // ignores the key and we only need a display label for the dialogs.
         const name = record.name;
+        const displayName = record.name || record.id || record.title || '(record)';
         const refs = window.EditorValidation.findReferences(EditorApp.store.data, kind, name, EditorApp.store.engineRefs);
         if (refs.length > 0) {
-            showReferencesDialog(name, refs);
+            showReferencesDialog(displayName, refs);
             return;
         }
 
-        if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
+        if (!window.confirm(`Delete "${displayName}"? This cannot be undone.`)) return;
 
         const arr = EditorApp.store.data[fileName].filter((candidate) => candidate !== record);
         try {
             await EditorApp.api.putData(fileName, arr);
         } catch (err) {
             if (err.status === 409) {
-                showReferencesDialog(name, err.issues || []);
+                showReferencesDialog(displayName, err.issues || []);
                 return;
             }
             showToast(`Delete failed: ${err.message}`, 'error');
@@ -411,7 +415,7 @@
 
         EditorApp.store.data[fileName] = arr;
         EditorApp.computeIssues();
-        showToast(`Deleted ${name}`);
+        showToast(`Deleted ${displayName}`);
 
         currentEditor = null;
         showTab(activeTab);
