@@ -449,6 +449,12 @@
     font-weight: 700;
 }
 
+.editor-form-row label.editor-form-checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
 .editor-form-row input[type="text"],
 .editor-form-row input[type="number"],
 .editor-form-row select {
@@ -468,6 +474,82 @@
 
 .editor-form-bst strong {
     color: var(--gold);
+}
+
+/* --- Chip lists (attacks/items statChanges + status, phase 30) --- */
+
+.editor-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.editor-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px 3px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--aqua) 26%, transparent);
+    border: 1px solid color-mix(in srgb, var(--aqua) 55%, transparent);
+    color: #fbf6e8;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.editor-chip--legacy {
+    background: color-mix(in srgb, var(--gold) 26%, transparent);
+    border-color: color-mix(in srgb, var(--gold) 55%, transparent);
+}
+
+.editor-chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.28);
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.editor-chip-remove:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.editor-chip-add {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 246, 232, 0.24);
+    background: var(--panel-deep, rgba(0, 0, 0, 0.24));
+    color: #fbf6e8;
+    font: inherit;
+    font-size: 0.82rem;
+}
+
+/* --- Inline warning banner (ARTIFICIAL guardrails, phase 30) --- */
+
+.editor-warning-banner {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(224, 184, 79, 0.5);
+    background: rgba(224, 184, 79, 0.14);
+    color: #fbf6e8;
+    font-size: 0.86rem;
+}
+
+.editor-warning-banner p {
+    margin: 0 0 4px;
+}
+
+.editor-warning-banner p:last-child {
+    margin-bottom: 0;
 }
 
 /* --- Editable list cells (inline stat editing) --- */

@@ -45,32 +45,32 @@ Ends green with byte-clean no-op saves.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/tab_attacks.js`** — replace the read-only `onSelect` with the full
+- [x] 1. **`dev/editor/tab_attacks.js`** — replace the read-only `onSelect` with the full
   editor: form + live preview + add-new + delete, per the field spec and guardrails above.
-- [ ] 2. **`dev/editor/tab_items.js`** — same for items, including the legacy-chip
+- [x] 2. **`dev/editor/tab_items.js`** — same for items, including the legacy-chip
   handling and the read-only image-path note.
-- [ ] 3. **`dev/editor/editor.css`** — chip-list styling (chip, remove ×, "legacy" variant,
+- [x] 3. **`dev/editor/editor.css`** — chip-list styling (chip, remove ×, "legacy" variant,
   add-select) and the inline warning banner used by the ARTIFICIAL guardrails; reuse theme
   variables.
-- [ ] 4. **Round-trip check** (part of the work): open `Heat Wave` and `Fire Gem`, Save with
+- [x] 4. **Round-trip check** (part of the work): open `Heat Wave` and `Fire Gem`, Save with
   zero edits → `git diff attacks.json items.json` is empty (except the one-time
   `attacks.json` EOF newline, if this is its first-ever save); then make one real edit each,
   verify the diff is only that line, and restore both files with `git checkout`.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] Browser: open `Heat Wave` — the action card renders left with FIRE+FLYING icons;
+- [x] `node tests/run_all.js` green.
+- [x] Browser: open `Heat Wave` — the action card renders left with FIRE+FLYING icons;
   switching `type2` to WATER repaints the icons before saving; setting `basePower` 55→90
   updates the PWR badge live.
-- [ ] Setting an attack's `type1` to ARTIFICIAL with `target: OPPONENT` shows the guardrail
+- [x] Setting an attack's `type1` to ARTIFICIAL with `target: OPPONENT` shows the guardrail
   warning; attempting Save surfaces the server 409 with `attacks.artificial-rule` in the
   dialog; fixing target to TRAINER + an artificial status clears it (then Revert — don't
   keep the change).
-- [ ] Open `Lum Berry` — the `HEAL_STATUS` chip renders marked "legacy"; a no-edit Save
+- [x] Open `Lum Berry` — the `HEAL_STATUS` chip renders marked "legacy"; a no-edit Save
   leaves `git diff items.json` empty. `Effect Amplifier` shows its `.svg` path with no
   missing-file note.
-- [ ] Add a new item, save, delete it again; try deleting `Sitrus Berry` → blocked dialog
+- [x] Add a new item, save, delete it again; try deleting `Sitrus Berry` → blocked dialog
   lists trainer + engine-deck references. End with `git status` clean of data files; kill
   the server.
 
