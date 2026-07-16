@@ -62,7 +62,7 @@
     }
 
     function render(root) {
-        EditorListView.createListView({
+        return EditorListView.createListView({
             root,
             columns: columns(),
             records: EditorApp.store.data.attacks,

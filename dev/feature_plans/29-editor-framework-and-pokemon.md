@@ -57,40 +57,40 @@ Ends green; a stat edit round-trips to disk with a one-line git diff.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/app.js`** — the framework per the context: `openEditor`, `saveFile`
+- [x] 1. **`dev/editor/app.js`** — the framework per the context: `openEditor`, `saveFile`
   (real PUT + 409 dialog), `requestDelete` (+ jump-links), dirty guard, toasts. Keep it
   type-agnostic — pokemon specifics stay in the tab file.
-- [ ] 2. **`dev/editor/editor.css`** — detail-pane styling: `.editor-split` two-pane grid
+- [x] 2. **`dev/editor/editor.css`** — detail-pane styling: `.editor-split` two-pane grid
   (preview left, form right), form rows/labels/selects in the game theme, Save button dirty
   dot, blocking-dialog + toast styling, invalid-cell flash for inline edits.
-- [ ] 3. **`dev/editor/list_view.js`** — implement the `editable` cell behavior
+- [x] 3. **`dev/editor/list_view.js`** — implement the `editable` cell behavior
   (input on click, Enter/blur commit, Escape revert, error flash) and a
   `selectRecord(key)` method so jump-links can land on a record.
-- [ ] 4. **`dev/editor/tab_pokemon.js`** — wire it all: `onSelect` → `openEditor` with the
+- [x] 4. **`dev/editor/tab_pokemon.js`** — wire it all: `onSelect` → `openEditor` with the
   pokemon form/preview renderers; "Add pokemon" button (template + id suggestion); "Delete"
   button in the editor → `requestDelete`; stat columns become `editable` (parse Number,
   validate finite > 0) committing via `saveFile`; keep BST live (recompute cell on commit).
-- [ ] 5. **Manual data round-trip check** (part of the work, not just verification): with
+- [x] 5. **Manual data round-trip check** (part of the work, not just verification): with
   the server running, edit one stat inline, confirm the PUT lands, then `git diff
   pokemon.json` shows ONLY that stat line (plus, the first time, the end-of-file newline),
   then restore with `git checkout -- pokemon.json`.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] Browser at `http://127.0.0.1:8932/`: selecting Venusaur opens the split view — the
+- [x] `node tests/run_all.js` green.
+- [x] Browser at `http://127.0.0.1:8932/`: selecting Venusaur opens the split view — the
   in-game card renders on the LEFT (portrait, GRASS/POISON icons, stat grid); changing
   `type2` to FIRE in the form repaints the card's type icons **before** saving; Revert
   restores; Save persists and the list row updates.
-- [ ] Inline path: double-click Venusaur's ATK cell, type a new value, Enter → toast, `git
+- [x] Inline path: double-click Venusaur's ATK cell, type a new value, Enter → toast, `git
   diff pokemon.json` shows exactly that line changed (± the one-time EOF newline); Escape
   during an edit leaves the file untouched. Restore afterwards (`git checkout -- pokemon.json`).
-- [ ] Add-new: "Add pokemon" suggests id `1001`, a filled form saves, the record appears in
+- [x] Add-new: "Add pokemon" suggests id `1001`, a filled form saves, the record appears in
   the list with correct BST; deleting that same record succeeds after its confirm.
-- [ ] Blocked delete: deleting `Blastoise` is refused with a dialog listing at least the
+- [x] Blocked delete: deleting `Blastoise` is refused with a dialog listing at least the
   engine default-deck and water-starter references (plus any trainers), each a working
   jump-link. `pokemon.json` unchanged afterwards.
-- [ ] Dirty guard: edit a field, click another record → prompt appears; cancel keeps the
+- [x] Dirty guard: edit a field, click another record → prompt appears; cancel keeps the
   draft. Kill the server; `git status` shows no data-file changes at the end.
 
 ## Out of scope / do not touch
