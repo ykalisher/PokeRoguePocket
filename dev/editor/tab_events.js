@@ -40,6 +40,7 @@
         'lose-cash': ['amount'],
         'gain-card': ['cardKind', 'name', 'count'],
         'gain-random-card': ['cardKind', 'count', 'types', 'excludeName'],
+        'gain-random-baby': [],
         'lose-random-cards': ['cardKind', 'count', 'strict'],
         'lose-random-pokemon': ['count', 'strict'],
         'remove-selected-card': ['selectionId'],
@@ -331,6 +332,7 @@
             case 'replace-random-card': return `Replace ${getCount(effect)} random ${kind} → ${replName}`;
             case 'trade-selected-pokemon': return `Trade selected Pokemon → ${replName}`;
             case 'trade-random-pokemon': return `Trade a random Pokemon → ${replName}`;
+            case 'gain-random-baby': return 'Gain a random baby Pokemon';
             default: return effect.type || '(unknown effect)';
         }
     }

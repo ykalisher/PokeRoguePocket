@@ -30,11 +30,26 @@
 
     function chooseEvent(gameData, run) {
         const locationTypes = run && run.location ? run.location.types : undefined;
-        const events = getAvailableEvents(gameData, locationTypes);
+        const events = getAvailableEvents(gameData, locationTypes).filter(event => poolSatisfied(event, gameData));
 
         if (events.length === 0) return null;
 
         return events[randomInt(0, events.length - 1)];
+    }
+
+    // Gates events whose pool-backed reward could otherwise be offered with
+    // nothing to grant. Kept separate from getAvailableEvents/getEventById so
+    // an already-saved encounter still resolves even if the pool empties.
+    function poolSatisfied(event, gameData) {
+        if (event.requiresPool === 'baby') return getBabyPool(gameData).length > 0;
+
+        return true;
+    }
+
+    function getBabyPool(gameData) {
+        return global.PokeLocations && typeof global.PokeLocations.getBabyPokemonPool === 'function'
+            ? global.PokeLocations.getBabyPokemonPool(gameData)
+            : [];
     }
 
     function getEventById(gameData, eventId) {
@@ -225,6 +240,10 @@
             if (!record) return `${effect.name} is not available.`;
         }
 
+        if (effect.type === 'gain-random-baby' && getBabyPool(context.gameData).length === 0) {
+            return 'No baby Pokemon are available.';
+        }
+
         return '';
     }
 
@@ -247,6 +266,8 @@
                 return gainNamedCards(run, runStore, gameData, cardKind, effect.name, amount);
             case 'gain-random-card':
                 return gainRandomCards(run, runStore, gameData, cardKind, amount, effect);
+            case 'gain-random-baby':
+                return gainRandomBaby(run, runStore, gameData);
             case 'lose-random-cards':
                 return loseRandomCards(run, cardKind, amount, { keepOnePokemon: cardKind === 'pokemon' });
             case 'lose-random-pokemon':
@@ -309,6 +330,20 @@
         }
 
         return summarizeNames('Gained', gainedNames);
+    }
+
+    function gainRandomBaby(run, runStore, gameData) {
+        const pool = getBabyPool(gameData);
+
+        if (pool.length === 0) return [];
+
+        const record = pool[randomInt(0, pool.length - 1)];
+        const card = createCardsFromRecord(run, runStore, 'pokemon', record, 1)[0];
+
+        if (!card) return [];
+
+        addCardToRun(run, runStore, card);
+        return [`Gained ${getRecordName(record)}.`];
     }
 
     function getEffectTypes(source) {

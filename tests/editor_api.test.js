@@ -175,12 +175,12 @@ test('POST /api/data/x returns 405', async () => {
 
 // -------------------------------------------------------------- /api/enums
 
-test('GET /api/enums returns the five ranks, 13 effect types, and non-empty engine refs', async () => {
+test('GET /api/enums returns the five ranks, 14 effect types, and non-empty engine refs', async () => {
     const res = await fetch(`${sharedUrl}/api/enums`);
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.deepEqual(body.Rank, ['Standard', 'Ace', 'Special', 'Boss', 'Elite']);
-    assert.equal(body.effectTypes.length, 13);
+    assert.equal(body.effectTypes.length, 14);
     assert.ok(body.engineRefs.defaultDeck.pokemon.length > 0);
 });
 

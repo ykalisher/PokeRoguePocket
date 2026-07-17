@@ -173,7 +173,7 @@ test('the roster has enough seeded Elite and Ace trainers with specializations',
 // The effect vocabulary the event engine dispatches on
 // (map/event_effects.js applyEffect switch). Keep in sync when adding effects.
 const VALID_EFFECT_TYPES = new Set([
-    'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card',
+    'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card', 'gain-random-baby',
     'lose-random-cards', 'lose-random-pokemon', 'remove-selected-card',
     'duplicate-selected-card', 'duplicate-random-card', 'replace-selected-card',
     'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon'

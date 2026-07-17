@@ -88,5 +88,20 @@
     "kicker": "get a salac berry",
     "actionTitle": "Grab a salac berry!",
     "rewardText": "You got a salac berry!"
+  },
+  {
+    "type": "gift",
+    "title": "Nursery Surprise",
+    "id": "nursery-egg",
+    "body": "A day-care worker presses a warm, wobbling egg into your hands. Before you can even ask, it cracks open right there!",
+    "buttonText": "Take the egg!",
+    "effects": [
+      { "type": "gain-random-baby" }
+    ],
+    "enabled": true,
+    "kicker": "A mysterious egg",
+    "actionTitle": "Accept the egg",
+    "rewardText": "The egg hatched into a baby Pokemon!",
+    "requiresPool": "baby"
   }
 ]

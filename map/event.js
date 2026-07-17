@@ -598,6 +598,7 @@
         if (effect.type === 'replace-random-card') return `Replace ${amount} random ${cardKind} card${amount === 1 ? '' : 's'}`;
         if (effect.type === 'trade-selected-pokemon') return 'Trade the selected Pokemon';
         if (effect.type === 'trade-random-pokemon') return 'Trade a random Pokemon';
+        if (effect.type === 'gain-random-baby') return 'Gain a random baby Pokemon';
 
         return '';
     }

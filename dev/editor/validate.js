@@ -22,7 +22,7 @@
 
     // Mirrors VALID_EFFECT_TYPES / VALID_EVENT_TYPES in the same test file.
     const DEFAULT_EFFECT_TYPES = [
-        'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card',
+        'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card', 'gain-random-baby',
         'lose-random-cards', 'lose-random-pokemon', 'remove-selected-card',
         'duplicate-selected-card', 'duplicate-random-card', 'replace-selected-card',
         'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon'

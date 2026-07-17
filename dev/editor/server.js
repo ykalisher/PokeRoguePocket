@@ -56,7 +56,7 @@ function buildEngineRefs() {
 const ENGINE_REFS = buildEngineRefs();
 
 const EFFECT_TYPES = [
-    'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card',
+    'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card', 'gain-random-baby',
     'lose-random-cards', 'lose-random-pokemon', 'remove-selected-card',
     'duplicate-selected-card', 'duplicate-random-card', 'replace-selected-card',
     'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon'
