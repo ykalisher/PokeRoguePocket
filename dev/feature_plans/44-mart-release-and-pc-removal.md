@@ -34,15 +34,15 @@ available only while the player owns ≥4 pokemon (active + bench).
 
 ## Steps
 
-- [ ] 1. **`map/run_state.js`** — delete the PC storage API and its exports; in the
+- [x] 1. **`map/run_state.js`** — delete the PC storage API and its exports; in the
   storage-availability-guarded module init (near `loadRunState`/storage helpers), add a
   one-time `try { localStorage.removeItem('pokemon-rogue-pocket-pc'); } catch {}`
   cleanup with a comment naming the owner decision. `normalizeMartEncounters`: add
   `releaseUsed: Boolean(encounter.releaseUsed)`.
-- [ ] 2. **`map/mart.js`** — remove all PC state, handlers, drag machinery, and
+- [x] 2. **`map/mart.js`** — remove all PC state, handlers, drag machinery, and
   `data-pc-action` click branches; update the header message to services wording (e.g.
   `'Buy cards, use the services, then continue.'`).
-- [ ] 3. **`map/mart.js`** — replace `renderPcPanel` with `renderServicesPanel`: keeps
+- [x] 3. **`map/mart.js`** — replace `renderPcPanel` with `renderServicesPanel`: keeps
   the "Your Pokemon" grid + Continue button; adds a "Services" section with a
   **Release** row — label "Release a Pokemon", requirement text ("Needs at least 4
   Pokemon"), a button (`data-mart-service="release"`) disabled unless
@@ -51,17 +51,17 @@ available only while the player owns ≥4 pokemon (active + bench).
   whichever collection holds it, `balancePokemonCollections` +
   `rebuildActionDeckForActivePokemon`, set `state.encounter.releaseUsed = true`,
   `saveRunState`, message `Released <name>.`, clear the selection, re-render.
-- [ ] 4. **`mart.html` / `static/mart.css`** — retitle "Pokemon PC" → "Services"
+- [x] 4. **`mart.html` / `static/mart.css`** — retitle "Pokemon PC" → "Services"
   wherever the markup/styles reference it; rename or repurpose `.mart-pc-*` styles for
   the services rows; drop deposit-drag affordance styles. Keep the visual language of
   the existing panel.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `grep -rn "pokemon-rogue-pocket-pc" --include=*.js .` → exactly one hit: the
+- [x] `node tests/run_all.js` green.
+- [x] `grep -rn "pokemon-rogue-pocket-pc" --include=*.js .` → exactly one hit: the
   cleanup line.
-- [ ] `verify` skill: (a) run with 3 pokemon → Release button disabled with requirement
+- [x] `verify` skill: (a) run with 3 pokemon → Release button disabled with requirement
   text; (b) run with ≥4 → releasing removes the card (deck counter drops by 1), button
   flips to used, re-entering the same mart keeps it used, a different mart offers it
   fresh; (c) seed `localStorage['pokemon-rogue-pocket-pc']` with junk before load →

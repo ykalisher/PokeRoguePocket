@@ -11,10 +11,18 @@
     const DEFAULT_STARTER_ID = 'water';
     const MIN_LEVEL = 1;
     const MAX_LEVEL = 4;
-    const PC_STORAGE_KEY = 'pokemon-rogue-pocket-pc';
-    const PC_STORAGE_VERSION = 1;
     const ACTIVE_POKEMON_LIMIT = 6;
     const STARTING_CASH = 100;
+
+    // Owner decision (phase 44): the Pokemon PC is deleted outright, and any
+    // pokemon an old save left stored there is discarded, not migrated.
+    try {
+        if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('pokemon-rogue-pocket-pc');
+        }
+    } catch (error) {
+        // Storage unavailable or blocked; nothing to clean up.
+    }
 
     function createRunState({ area, collections, location, starterId, level, bossNodeId }) {
         const locationSnapshot = normalizeLocationSnapshot(location);
@@ -116,62 +124,6 @@
 
     function hasSavedRun() {
         return Boolean(loadRunState());
-    }
-
-    function loadPcPokemon() {
-        if (!canUseStorage()) return null;
-
-        try {
-            const rawState = localStorage.getItem(PC_STORAGE_KEY);
-
-            if (!rawState) return null;
-
-            const parsedState = JSON.parse(rawState);
-
-            if (!parsedState || parsedState.version !== PC_STORAGE_VERSION) {
-                clearPcPokemon();
-                return null;
-            }
-
-            return normalizePcPokemonCard(parsedState.card);
-        } catch (error) {
-            console.warn('Could not load PC Pokemon.', error);
-            clearPcPokemon();
-            return null;
-        }
-    }
-
-    function savePcPokemon(card) {
-        if (!canUseStorage()) return false;
-
-        try {
-            const normalizedCard = normalizePcPokemonCard(card);
-
-            if (!normalizedCard) return clearPcPokemon();
-
-            localStorage.setItem(PC_STORAGE_KEY, JSON.stringify({
-                card: normalizedCard,
-                savedAt: new Date().toISOString(),
-                version: PC_STORAGE_VERSION
-            }));
-
-            return true;
-        } catch (error) {
-            console.warn('Could not save PC Pokemon.', error);
-            return false;
-        }
-    }
-
-    function clearPcPokemon() {
-        if (!canUseStorage()) return false;
-
-        try {
-            localStorage.removeItem(PC_STORAGE_KEY);
-            return true;
-        } catch (error) {
-            console.warn('Could not clear PC Pokemon.', error);
-            return false;
-        }
     }
 
     function getActiveCaptureEncounter(run) {
@@ -501,7 +453,8 @@
                 completedAt: encounter.completedAt || null,
                 createdAt: encounter.createdAt || null,
                 itemNames: normalizeNameList(encounter.itemNames),
-                nodeId: encounter.nodeId || nodeId
+                nodeId: encounter.nodeId || nodeId,
+                releaseUsed: Boolean(encounter.releaseUsed)
             }]));
     }
 
@@ -637,12 +590,6 @@
         return Boolean(card && (card.kind === 'attack' || card.attack));
     }
 
-    function normalizePcPokemonCard(card) {
-        if (!card || typeof card !== 'object' || card.kind !== 'pokemon' || !card.pokemon) return null;
-
-        return createPokemonCard(card.pokemon, 'player', 'pc-pokemon');
-    }
-
     function normalizeNameList(names) {
         if (!Array.isArray(names)) return [];
 
@@ -670,14 +617,12 @@
 
     global.PokeRun = {
         ACTIVE_POKEMON_LIMIT,
-        PC_STORAGE_KEY,
         STORAGE_KEY,
         STORAGE_VERSION,
         addActionCard,
         addPokemonCard,
         allocateCardId,
         balancePokemonCollections,
-        clearPcPokemon,
         clearRunState,
         createAttackCard,
         createItemCard,
@@ -688,11 +633,9 @@
         getActiveEventEncounter,
         getActiveMartEncounter,
         hasSavedRun,
-        loadPcPokemon,
         loadRunState,
         normalizeLocationSnapshot,
         rebuildActionDeckForActivePokemon,
-        savePcPokemon,
         saveRunState,
         swapBenchPokemon
     };

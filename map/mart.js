@@ -16,14 +16,11 @@
 
     const state = {
         cardWindow: null,
-        drag: null,
         elements: {},
         encounter: null,
         message: '',
-        pcPokemon: null,
         run: null,
-        selectedPokemonId: null,
-        suppressNextClick: false
+        selectedPokemonId: null
     };
 
     document.addEventListener('DOMContentLoaded', init);
@@ -33,10 +30,6 @@
 
         state.elements.root = document.getElementById('mart-root');
         state.elements.root.addEventListener('click', handleMartClick);
-        state.elements.root.addEventListener('pointerdown', handleMartPointerDown);
-        window.addEventListener('pointermove', handleMartPointerMove);
-        window.addEventListener('pointerup', handleMartPointerUp);
-        window.addEventListener('pointercancel', handleMartPointerCancel);
         window.addEventListener('keydown', handleKeyDown);
 
         await arena.Data.loadGameData();
@@ -59,16 +52,10 @@
             runStore.saveRunState(state.run);
         }
 
-        refreshPcPokemon();
         render();
     }
 
     function handleMartClick(event) {
-        if (state.suppressNextClick) {
-            state.suppressNextClick = false;
-            return;
-        }
-
         const closeButton = event.target.closest('[data-close-card-window]');
 
         if (closeButton) {
@@ -102,10 +89,10 @@
             return;
         }
 
-        const pcActionButton = event.target.closest('[data-pc-action]');
+        const serviceButton = event.target.closest('[data-mart-service]');
 
-        if (pcActionButton) {
-            handlePcAction(pcActionButton.dataset.pcAction);
+        if (serviceButton) {
+            handleMartService(serviceButton.dataset.martService);
             return;
         }
 
@@ -113,165 +100,6 @@
 
         if (martActionButton && martActionButton.dataset.martAction === 'continue') {
             completeMartAndReturnToMap();
-        }
-    }
-
-    /**
-     * Pointer-based drag for depositing a Pokemon into the PC. iOS Safari ignores
-     * the HTML5 drag API entirely, so the shop drag uses Pointer Events instead —
-     * the same approach as the arena drag engine (movement threshold, floating
-     * ghost, elementFromPoint drop detection). Tapping a card still selects it;
-     * only crossing the movement threshold begins a drag.
-     */
-    function handleMartPointerDown(event) {
-        if (event.button !== undefined && event.button !== 0) return;
-
-        const pokemonButton = event.target.closest('[data-pokemon-card-id]');
-        if (!pokemonButton) return;
-
-        state.drag = {
-            cardId: pokemonButton.dataset.pokemonCardId,
-            ghost: null,
-            isDragging: false,
-            offsetX: 0,
-            offsetY: 0,
-            pointerId: event.pointerId,
-            sourceElement: pokemonButton,
-            startX: event.clientX,
-            startY: event.clientY
-        };
-    }
-
-    function handleMartPointerMove(event) {
-        const drag = state.drag;
-        if (!drag || drag.pointerId !== event.pointerId) return;
-
-        const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
-        if (!drag.isDragging && distance < 8) return;
-
-        if (!drag.isDragging) startMartDrag(event);
-
-        event.preventDefault();
-        positionMartGhost(event.clientX, event.clientY);
-        highlightPcDropTarget(event.clientX, event.clientY);
-    }
-
-    function handleMartPointerUp(event) {
-        const drag = state.drag;
-        if (!drag || drag.pointerId !== event.pointerId) return;
-
-        if (drag.isDragging) {
-            event.preventDefault();
-            const droppedOnPc = Boolean(pcSlotFromPoint(event.clientX, event.clientY));
-            const cardId = drag.cardId;
-
-            // Suppress the click the browser synthesizes after the drag so it does
-            // not also toggle the card's selection.
-            state.suppressNextClick = true;
-            setTimeout(() => {
-                state.suppressNextClick = false;
-            }, 0);
-            cleanupMartDrag();
-
-            if (droppedOnPc && cardId) {
-                depositPokemonById(cardId);
-            }
-            return;
-        }
-
-        releasePointer(drag.sourceElement, drag.pointerId);
-        state.drag = null;
-    }
-
-    function handleMartPointerCancel(event) {
-        if (state.drag && event.pointerId !== state.drag.pointerId) return;
-
-        cleanupMartDrag();
-    }
-
-    function startMartDrag(event) {
-        const drag = state.drag;
-        const rect = drag.sourceElement.getBoundingClientRect();
-        const ghost = drag.sourceElement.cloneNode(true);
-
-        drag.isDragging = true;
-        drag.offsetX = event.clientX - rect.left;
-        drag.offsetY = event.clientY - rect.top;
-        drag.ghost = ghost;
-        drag.sourceElement.classList.add('is-source-dragging');
-        capturePointer(drag.sourceElement, event);
-
-        ghost.classList.add('drag-ghost', 'mart-drag-ghost');
-        ghost.removeAttribute('data-pokemon-card-id');
-        ghost.style.width = `${rect.width}px`;
-        ghost.style.height = `${rect.height}px`;
-        document.body.appendChild(ghost);
-
-        positionMartGhost(event.clientX, event.clientY);
-    }
-
-    function positionMartGhost(clientX, clientY) {
-        const drag = state.drag;
-        if (!drag || !drag.ghost) return;
-
-        drag.ghost.style.left = `${clientX - drag.offsetX}px`;
-        drag.ghost.style.top = `${clientY - drag.offsetY}px`;
-    }
-
-    function pcSlotFromPoint(clientX, clientY) {
-        const element = document.elementFromPoint(clientX, clientY);
-
-        return element ? element.closest('.mart-pc-current') : null;
-    }
-
-    function highlightPcDropTarget(clientX, clientY) {
-        const pcSlot = document.querySelector('.mart-pc-current');
-        if (!pcSlot) return;
-
-        pcSlot.classList.toggle('is-drop-target', Boolean(pcSlotFromPoint(clientX, clientY)));
-    }
-
-    function cleanupMartDrag() {
-        const pcSlot = document.querySelector('.mart-pc-current');
-        if (pcSlot) pcSlot.classList.remove('is-drop-target');
-
-        if (state.drag && state.drag.ghost) {
-            state.drag.ghost.remove();
-        }
-        if (state.drag && state.drag.sourceElement) {
-            releasePointer(state.drag.sourceElement, state.drag.pointerId);
-            state.drag.sourceElement.classList.remove('is-source-dragging');
-        }
-        state.drag = null;
-    }
-
-    /**
-     * Binds the pointer to the drag source so the gesture keeps receiving
-     * pointermove/up even if the finger drifts off the card; iOS Safari can
-     * otherwise lose the pointer stream mid-drag. Called only once a drag begins
-     * (startMartDrag), never on pointerdown — capturing in pointerdown suppresses
-     * the synthesized click on iOS Safari and would break tap-to-select. Invalid
-     * pointer ids throw and are harmless.
-     */
-    function capturePointer(element, event) {
-        if (!element || typeof element.setPointerCapture !== 'function') return;
-
-        try {
-            element.setPointerCapture(event.pointerId);
-        } catch (error) {
-            // Pointer already released or not capturable.
-        }
-    }
-
-    function releasePointer(element, pointerId) {
-        if (!element || pointerId === undefined || typeof element.releasePointerCapture !== 'function') return;
-
-        try {
-            if (typeof element.hasPointerCapture !== 'function' || element.hasPointerCapture(pointerId)) {
-                element.releasePointerCapture(pointerId);
-            }
-        } catch (error) {
-            // Already released.
         }
     }
 
@@ -326,79 +154,38 @@
         render();
     }
 
-    function handlePcAction(action) {
-        if (action === 'withdraw') {
-            withdrawPcPokemon();
-        } else if (action === 'deposit') {
-            depositSelectedPokemon();
+    function handleMartService(service) {
+        if (service === 'release') {
+            releaseSelectedPokemon();
         }
     }
 
-    function withdrawPcPokemon() {
-        if (!state.pcPokemon) return;
-
-        const withdrawnCard = createRunPokemonCard(state.pcPokemon);
-
-        const result = runStore.addPokemonCard(state.run, withdrawnCard);
-        runStore.clearPcPokemon();
-        state.selectedPokemonId = null;
-        refreshPcPokemon();
-        runStore.rebuildActionDeckForActivePokemon(state.run);
-        runStore.saveRunState(state.run);
-
-        state.run = runStore.loadRunState();
-        state.encounter = runStore.getActiveMartEncounter(state.run);
-
-        setMessage(result.zone === 'bench'
-            ? `Withdrew ${withdrawnCard.pokemon.name} to the bench.`
-            : `Withdrew ${withdrawnCard.pokemon.name}.`);
-    }
-
-    function depositSelectedPokemon() {
+    function releaseSelectedPokemon() {
         const selectedCard = getPokemonCardById(state.selectedPokemonId);
-        performDeposit(selectedCard);
-    }
 
-    function depositPokemonById(cardId) {
-        const selectedCard = getPokemonCardById(cardId);
-        performDeposit(selectedCard);
-    }
-
-    function performDeposit(selectedCard) {
-        if (!selectedCard) return;
-
-        const hasPcPokemon = Boolean(state.pcPokemon);
-
-        const totalPokemonCount = state.run.collections.pokemon.length + 
-                                 state.run.collections.bench.pokemon.length;
-
-        if (!hasPcPokemon && totalPokemonCount <= 1) {
-            setMessage('Keep at least one Pokemon in your deck.');
-            return;
-        }
-
-        const pcName = hasPcPokemon ? state.pcPokemon.pokemon.name : null;
+        if (!canReleasePokemon()) return;
 
         state.run.collections.pokemon = state.run.collections.pokemon
             .filter(card => card.id !== selectedCard.id);
-
         state.run.collections.bench.pokemon = state.run.collections.bench.pokemon
             .filter(card => card.id !== selectedCard.id);
 
-        if (hasPcPokemon) {
-            runStore.addPokemonCard(state.run, createRunPokemonCard(state.pcPokemon));
-        } else {
-            runStore.balancePokemonCollections(state.run);
-        }
-
-        runStore.savePcPokemon(selectedCard);
-        refreshPcPokemon();
-        state.selectedPokemonId = null;
+        runStore.balancePokemonCollections(state.run);
         runStore.rebuildActionDeckForActivePokemon(state.run);
+        state.encounter.releaseUsed = true;
         runStore.saveRunState(state.run);
-        setMessage(pcName
-            ? `Swapped ${selectedCard.pokemon.name} with ${pcName}.`
-            : `Deposited ${selectedCard.pokemon.name}.`);
+        state.selectedPokemonId = null;
+        setMessage(`Released ${selectedCard.pokemon.name}.`);
+    }
+
+    function canReleasePokemon() {
+        return Boolean(getPokemonCardById(state.selectedPokemonId)) &&
+            !state.encounter.releaseUsed &&
+            getTotalPokemonCount() >= 4;
+    }
+
+    function getTotalPokemonCount() {
+        return state.run.collections.pokemon.length + state.run.collections.bench.pokemon.length;
     }
 
     function completeMartAndReturnToMap() {
@@ -415,7 +202,7 @@
                 <div class="mart-title-group">
                     <span class="mart-kicker">Shop</span>
                     <h1>Card Mart</h1>
-                    <span class="mart-message" role="status" aria-live="polite">${state.message || 'Choose cards, manage the PC, then continue.'}</span>
+                    <span class="mart-message" role="status" aria-live="polite">${state.message || 'Buy cards, use the services, then continue.'}</span>
                 </div>
                 <div class="mart-hud" aria-label="Run cards and cash">
                     ${renderMoney()}
@@ -423,12 +210,12 @@
                     ${renderDeckCounter('actions', 'Action deck', state.run.collections.actions.length)}
                 </div>
             </header>
-            <section class="mart-stage" aria-label="Mart offers and PC">
+            <section class="mart-stage" aria-label="Mart offers and services">
                 <div class="mart-offers">
                     ${renderOfferSection('Attacks', 'attack', getOfferRecords('attack'), ATTACK_COST)}
                     ${renderOfferSection('Items', 'item', getOfferRecords('item'), ITEM_COST)}
                 </div>
-                ${renderPcPanel()}
+                ${renderServicesPanel()}
             </section>
             ${state.cardWindow ? renderCardWindow() : ''}
         `;
@@ -485,31 +272,19 @@
         `;
     }
 
-    function renderPcPanel() {
-        const selectedCard = getPokemonCardById(state.selectedPokemonId);
-        const depositText = state.pcPokemon ? 'Swap Selected' : 'Deposit Selected';
-        const depositDisabled = selectedCard && (state.pcPokemon || state.run.collections.pokemon.length > 1) ? '' : 'disabled';
-
+    function renderServicesPanel() {
         const allPokemon = [
             ...state.run.collections.pokemon,
             ...state.run.collections.bench.pokemon
         ];
 
         return `
-            <aside class="mart-pc-panel" aria-label="Pokemon PC">
+            <aside class="mart-services-panel" aria-label="Mart services">
                 <header class="mart-section-header">
-                    <h2>Pokemon PC</h2>
-                    <span>${state.pcPokemon ? '1 stored' : 'Empty'}</span>
+                    <h2>Services</h2>
                 </header>
-                <div class="mart-pc-current">
-                    ${state.pcPokemon
-                        ? arena.Render.renderCardPreview(state.pcPokemon, { className: 'mart-pc-card' })
-                        : '<div class="mart-pc-empty">No Pokemon stored</div>'
-                    }
-                </div>
-                <div class="mart-pc-actions">
-                    <button class="mart-pc-button" type="button" data-pc-action="withdraw" ${state.pcPokemon ? '' : 'disabled'}>Withdraw</button>
-                    <button class="mart-pc-button" type="button" data-pc-action="deposit" ${depositDisabled}>${depositText}</button>
+                <div class="mart-service-list">
+                    ${renderReleaseService()}
                 </div>
                 <section class="mart-pokemon-deck" aria-label="Pokemon deck">
                     <header class="mart-mini-header">
@@ -522,6 +297,22 @@
                 </section>
                 <button class="mart-continue-button" type="button" data-mart-action="continue">Continue</button>
             </aside>
+        `;
+    }
+
+    function renderReleaseService() {
+        const used = Boolean(state.encounter.releaseUsed);
+        const disabled = used || !canReleasePokemon() ? 'disabled' : '';
+        const buttonText = used ? 'Used' : 'Release';
+
+        return `
+            <article class="mart-service-row ${used ? 'is-used' : ''}">
+                <div class="mart-service-info">
+                    <h3>Release a Pokemon</h3>
+                    <span class="mart-service-requirement">Needs at least 4 Pokemon</span>
+                </div>
+                <button class="mart-service-button" type="button" data-mart-service="release" ${disabled}>${buttonText}</button>
+            </article>
         `;
     }
 
@@ -681,29 +472,6 @@
         return kind === 'attack'
             ? runStore.createAttackCard(record, 'player', `mart-attack-${formatId(record.name)}`)
             : runStore.createItemCard(record, 'player', `mart-item-${formatId(record.name)}`);
-    }
-
-    function createRunPokemonCard(sourceCard) {
-        const species = findGameRecord('pokemon', sourceCard.pokemon.name) || sourceCard.pokemon;
-
-        return runStore.createPokemonCard(
-            species,
-            'player',
-            runStore.allocateCardId(state.run, 'pokemon', species.name)
-        );
-    }
-
-    function refreshPcPokemon() {
-        const storedCard = runStore.loadPcPokemon();
-
-        if (!storedCard) {
-            state.pcPokemon = null;
-            return;
-        }
-
-        const species = findGameRecord('pokemon', storedCard.pokemon.name) || storedCard.pokemon;
-
-        state.pcPokemon = runStore.createPokemonCard(species, 'player', 'pc-pokemon');
     }
 
     function getPokemonCardById(cardId) {

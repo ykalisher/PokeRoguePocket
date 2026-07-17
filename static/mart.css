@@ -5,8 +5,6 @@
     --mart-panel-deep: var(--panel-deep);
     --card-w: clamp(72px, 7vw, 96px);
     --card-h: calc(var(--card-w) * 1.52);
-    --pc-card-w: clamp(82px, 9vw, 112px);
-    --pc-card-h: calc(var(--pc-card-w) * 1.52);
 
     min-height: 100dvh;
     height: auto;
@@ -52,7 +50,7 @@
 
 .mart-topbar,
 .mart-stage,
-.mart-pc-panel {
+.mart-services-panel {
     border: 1px solid rgba(251, 246, 232, 0.16);
     border-radius: 8px;
     box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.12), 0 16px 34px rgba(0, 0, 0, 0.22);
@@ -96,8 +94,7 @@
     font-weight: 760;
 }
 
-.mart-hud,
-.mart-pc-actions {
+.mart-hud {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -274,7 +271,7 @@
 }
 
 .mart-buy-button,
-.mart-pc-button,
+.mart-service-button,
 .mart-continue-button {
     min-height: 34px;
     display: inline-flex;
@@ -297,8 +294,8 @@
 
 .mart-buy-button:hover:not(:disabled),
 .mart-buy-button:focus-visible:not(:disabled),
-.mart-pc-button:hover:not(:disabled),
-.mart-pc-button:focus-visible:not(:disabled),
+.mart-service-button:hover:not(:disabled),
+.mart-service-button:focus-visible:not(:disabled),
 .mart-continue-button:hover,
 .mart-continue-button:focus-visible {
     outline: 2px solid color-mix(in srgb, var(--gold) 72%, transparent);
@@ -307,13 +304,13 @@
 }
 
 .mart-buy-button:disabled,
-.mart-pc-button:disabled {
+.mart-service-button:disabled {
     cursor: not-allowed;
     opacity: 0.58;
     background-color: rgba(0, 0, 0, 0.26);
 }
 
-.mart-pc-panel {
+.mart-services-panel {
     min-width: 0;
     display: grid;
     align-content: start;
@@ -322,46 +319,47 @@
     background: var(--mart-panel);
 }
 
-.mart-pc-current {
-    min-height: calc(var(--pc-card-h) + 24px);
+.mart-service-list {
     display: grid;
-    place-items: center;
-    padding: 12px;
+    gap: 8px;
+}
+
+.mart-service-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
     border: 1px solid rgba(251, 246, 232, 0.12);
     border-radius: 8px;
     background-color: rgba(0, 0, 0, 0.2);
-    transition: border-color 0.12s ease, background-color 0.12s ease;
 }
 
-/* Highlight the PC slot while a Pokemon card is dragged over it. */
-.mart-pc-current.is-drop-target {
-    border-color: color-mix(in srgb, var(--gold) 72%, transparent);
-    background-color: color-mix(in srgb, var(--gold) 14%, rgba(0, 0, 0, 0.2));
+.mart-service-row.is-used {
+    opacity: 0.58;
 }
 
-.mart-pc-card {
-    --card-w: var(--pc-card-w);
-    --card-h: var(--pc-card-h);
-    width: var(--card-w);
-    height: var(--card-h);
-}
-
-.mart-pc-empty {
-    width: var(--pc-card-w);
-    min-height: var(--pc-card-h);
+.mart-service-info {
+    min-width: 0;
     display: grid;
-    place-items: center;
-    padding: 10px;
-    border: 1px dashed rgba(251, 246, 232, 0.26);
-    border-radius: 8px;
-    color: var(--muted);
-    font-size: 0.86rem;
-    font-weight: 760;
-    text-align: center;
+    gap: 2px;
 }
 
-.mart-pc-actions {
-    justify-content: center;
+.mart-service-info h3 {
+    margin: 0;
+    color: #fbf6e8;
+    font-size: 0.92rem;
+    line-height: 1.15;
+}
+
+.mart-service-requirement {
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 760;
+}
+
+.mart-service-button {
+    flex-shrink: 0;
 }
 
 .mart-pokemon-grid {
@@ -381,17 +379,6 @@
     background: transparent;
     color: inherit;
     cursor: pointer;
-    /* Own the touch gesture so a drag doesn't scroll the page, and stop the iOS
-       long-press callout from hijacking the pointer-based deposit drag. */
-    touch-action: none;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-}
-
-/* Fade the original card while its drag ghost is active (the ghost is a clone). */
-.mart-pokemon-choice.is-source-dragging {
-    opacity: 0.42;
 }
 
 .mart-pokemon-choice .playing-card {
@@ -470,7 +457,7 @@
     }
 
     .mart-stage,
-    .mart-pc-panel {
+    .mart-services-panel {
         padding: 10px;
     }
 
