@@ -52,3 +52,6 @@ Binding rules for all agents (imported):
   `bash dev/feature_plans/status.sh --current` to find the active phase, then implement
   exactly that one phase per the README, ticking each checkbox as you go.
 - `TODO.md` is the owner's planning file — never act on it unless explicitly asked.
+- UI text says "Gym Leader" and "Wild Pokemon Encounter", but internals keep the old
+  names (node types `'boss'`/`'capture'`, rank `'Boss'`, `bossNodeId`, CSS classes) —
+  never rename internals to match the UI.

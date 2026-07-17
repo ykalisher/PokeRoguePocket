@@ -365,7 +365,7 @@
 
         if (rewardSummary.length === 0) {
             return isFinalNodeBattle()
-                ? '<p>The area boss stepped aside.</p>'
+                ? '<p>The Gym Leader stepped aside.</p>'
                 : '<p>The trainer stepped aside.</p>';
         }
 
@@ -396,7 +396,7 @@
             return isFinal ? 'Final Battle' : 'Elite Battle';
         }
 
-        return isFinal ? 'Boss Battle' : 'Trainer Battle';
+        return isFinal ? 'Gym Leader Battle' : 'Trainer Battle';
     }
 
     // The final node of an area is the one whose id matches the run's bossNodeId.

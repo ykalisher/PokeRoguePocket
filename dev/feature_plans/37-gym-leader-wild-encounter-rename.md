@@ -28,26 +28,26 @@ the naming split is documented in `CLAUDE.md`.
 
 ## Steps
 
-- [ ] 1. **`map/area.js`** — apply the string changes listed above:
+- [x] 1. **`map/area.js`** — apply the string changes listed above:
   `'Boss'`→`'Gym Leader'` (label), `'Capture Spot'`→`'Wild Pokemon Encounter'`,
   `'No Boss trainers are available.'`→`'No Gym Leader trainers are available.'`,
   `'Area boss reached'`→`'Gym Leader reached'`, aria `'boss battle'`→`'gym leader
   battle'`, `'the Boss'`→`'the Gym Leader'`.
-- [ ] 2. **`arena/game.js`** — `'The area boss stepped aside.'`→`'The Gym Leader stepped
+- [x] 2. **`arena/game.js`** — `'The area boss stepped aside.'`→`'The Gym Leader stepped
   aside.'`; kicker `'Boss Battle'`→`'Gym Leader Battle'`.
-- [ ] 3. **Drift sweep** — `grep -rn "Boss\|Capture Spot" map/ arena/ *.html` and fix any
+- [x] 3. **Drift sweep** — `grep -rn "Boss\|Capture Spot" map/ arena/ *.html` and fix any
   *user-facing string* not listed above (there should be none); leave every internal
   identifier and `trainers.json`/test occurrence alone.
-- [ ] 4. **`CLAUDE.md`** — add one short bullet under "Task pointers": UI text says
+- [x] 4. **`CLAUDE.md`** — add one short bullet under "Task pointers": UI text says
   "Gym Leader" and "Wild Pokemon Encounter", but internals keep the old names (node
   types `'boss'`/`'capture'`, rank `'Boss'`, `bossNodeId`, CSS classes) — never rename
   internals to match the UI.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green (tests assert internal names only; if one fails you
+- [x] `node tests/run_all.js` green (tests assert internal names only; if one fails you
   renamed an internal — revert it).
-- [ ] `verify` skill: load `area.html` on a fresh run — legend shows "Gym Leader" and
+- [x] `verify` skill: load `area.html` on a fresh run — legend shows "Gym Leader" and
   "Wild Pokemon Encounter"; screenshot. Optionally check the battle kicker via the
   boss-battle driver.
 

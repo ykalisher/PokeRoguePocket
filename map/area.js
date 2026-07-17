@@ -9,8 +9,8 @@
     const DEFAULT_BOSS_NODE_ID = 'boss-12';
     const LOCATION_LABELS = Object.freeze({
         battle: 'Trainer Battle',
-        boss: 'Boss',
-        capture: 'Capture Spot',
+        boss: 'Gym Leader',
+        capture: 'Wild Pokemon Encounter',
         event: 'Event',
         shop: 'Shop',
         start: 'Entrance'
@@ -227,7 +227,7 @@
                 state.traveledPathKeys.delete(getPathKey(previousNodeId, node.id));
                 render();
                 showPopup(node.type === 'boss'
-                    ? 'No Boss trainers are available.'
+                    ? 'No Gym Leader trainers are available.'
                     : 'No trainers are available.');
                 return;
             }
@@ -362,7 +362,7 @@
 
         if (isRunComplete()) return 'Run complete — Champion!';
         if (isAreaComplete()) return 'Area complete';
-        if (!currentNode || currentNode.id === getBossNodeId()) return 'Area boss reached';
+        if (!currentNode || currentNode.id === getBossNodeId()) return 'Gym Leader reached';
 
         return `${nextNodes.length} path${nextNodes.length === 1 ? '' : 's'} available`;
     }
@@ -1507,7 +1507,7 @@
     function getNodeAriaLabel(node, current, selectable) {
         const trainer = isTrainerNodeType(node.type) ? getBattleNodeTrainer(node) : null;
         const parts = [trainer
-            ? `${getTrainerDisplayName(trainer)} ${node.type === 'boss' ? 'boss battle' : 'battle'}`
+            ? `${getTrainerDisplayName(trainer)} ${node.type === 'boss' ? 'gym leader battle' : 'battle'}`
             : LOCATION_LABELS[node.type]];
 
         if (node.step > 0) parts.push(`location ${node.step}`);
@@ -1522,7 +1522,7 @@
     }
 
     function getEnteredLocationText(node) {
-        if (node.type === 'boss') return 'the Boss';
+        if (node.type === 'boss') return 'the Gym Leader';
         if (node.type === 'event') return 'an Event';
 
         return `a ${LOCATION_LABELS[node.type]}`;
