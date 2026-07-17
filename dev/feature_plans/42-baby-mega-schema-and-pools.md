@@ -35,40 +35,40 @@ inert and green while zero baby data exists (owner authors the cards later).
 
 ## Steps
 
-- [ ] 1. **`map/locations.js`** — add and export pure helpers:
+- [x] 1. **`map/locations.js`** — add and export pure helpers:
   `findPokemonByNameOrId(gameData, ref)` (exact name match, else exact id match, else
   `null`); `isBabyPokemon(record)` (`getRecordTypes(record).includes('BABY')`);
   `getMegaTargetKeys(gameData)` (a `Set` of the name AND id of every record resolved
   from any baby's `evolvesInto`); `isMegaPokemon(record, gameData)`;
   `getBabyPokemonPool(gameData)`; `isObtainablePokemon(record, gameData)` — not
   LEGENDARY-typed, not baby, not mega; `getObtainablePokemonPool(gameData)`.
-- [ ] 2. **`map/locations.js`** — `getWildPokemonPool`: route its filtering through
+- [x] 2. **`map/locations.js`** — `getWildPokemonPool`: route its filtering through
   `isObtainablePokemon` (keep unique-by-name and the location-type match; the non-empty
   fallback becomes "all obtainable" instead of "all non-legendary").
-- [ ] 3. **`map/area.js`** and **`map/capture.js`** — in the legendary-capture pokemon
+- [x] 3. **`map/area.js`** and **`map/capture.js`** — in the legendary-capture pokemon
   pools, additionally exclude megas: `!PokeLocations.isMegaPokemon(record, gameData)`
   (each file already has the game data in scope at those sites; keep babies out too —
   they can't be LEGENDARY-typed *and* obtainable, but the explicit check is cheap:
   filter through `isObtainablePokemon`-style logic minus the LEGENDARY clause, or simply
   exclude `isMegaPokemon || isBabyPokemon`).
-- [ ] 4. **`map/event_effects.js`** — in `chooseRandomRecord`, when `cardKind ===
+- [x] 4. **`map/event_effects.js`** — in `chooseRandomRecord`, when `cardKind ===
   'pokemon'`, filter the candidate records through
   `global.PokeLocations && global.PokeLocations.isObtainablePokemon` (skip the filter if
   `PokeLocations` is absent so the module keeps working standalone).
-- [ ] 5. **`tests/data_validation.test.js`** — add rules over the real data: every
+- [x] 5. **`tests/data_validation.test.js`** — add rules over the real data: every
   `evolvesInto` value resolves to an existing record by name or id; every BABY-typed
   pokemon has ≥1 non-BABY type; no attack in `attacks.json` uses `BABY` in any type
   slot. (`evolvesInto` stays *optional* even on babies — runtime code guards its
   absence; state that in a comment.) Mirror the same three rules in
   **`dev/editor/validate.js`**.
-- [ ] 6. **`dev/editor`** — verify the pokemon tab round-trips unknown fields: grep the
+- [x] 6. **`dev/editor`** — verify the pokemon tab round-trips unknown fields: grep the
   save path (`dev/editor/` server + `tab_pokemon` code) for field allowlists that would
   drop `evolvesInto`; only if it is actually dropped, add a minimal passthrough.
-- [ ] 7. **`.claude/skills/data/SKILL.md`** — document `evolvesInto` (optional,
+- [x] 7. **`.claude/skills/data/SKILL.md`** — document `evolvesInto` (optional,
   name-or-id string, defines the baby→mega link), the BABY rules (≥1 other type, never
   on attacks, excluded from wild/random pools), and that megas are excluded from all
   generic pools.
-- [ ] 8. **`tests/pokemon_pools.test.js`** (new) — load `map/locations.js` via
+- [x] 8. **`tests/pokemon_pools.test.js`** (new) — load `map/locations.js` via
   `tests/helpers/arena_env.js` (imitate `tests/run_progression.test.js`). Fixture
   gameData containing a baby (with `evolvesInto` a fixture mega), the mega, a legendary,
   and a plain species: assert `isObtainablePokemon` verdicts; `getWildPokemonPool`
@@ -81,10 +81,10 @@ inert and green while zero baby data exists (owner authors the cards later).
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `node -e` spot-check: wild pool size over real data is unchanged (160) and
+- [x] `node tests/run_all.js` green.
+- [x] `node -e` spot-check: wild pool size over real data is unchanged (160) and
   `getBabyPokemonPool(realData).length === 0`.
-- [ ] No browser check needed (live behavior is intentionally identical today).
+- [x] No browser check needed (live behavior is intentionally identical today).
 
 ## Out of scope / do not touch
 Authoring any baby/mega card data (owner's job); the baby-grant event (phase 47); the

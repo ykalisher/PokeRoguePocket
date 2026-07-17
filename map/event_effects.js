@@ -587,9 +587,14 @@
     function chooseRandomRecord(gameData, cardKind, excludeName = null, types = null) {
         const collectionKey = getRecordCollectionKey(cardKind);
         const records = getUniqueRecords(gameData && gameData[collectionKey]);
-        const filteredRecords = excludeName
-            ? records.filter(record => getRecordName(record) !== excludeName)
+        // Pokemon picks never include babies, megas, or legendaries. Guarded
+        // because this module has no hard dependency on map/locations.js.
+        const obtainableRecords = cardKind === 'pokemon' && global.PokeLocations && typeof global.PokeLocations.isObtainablePokemon === 'function'
+            ? records.filter(record => global.PokeLocations.isObtainablePokemon(record, gameData))
             : records;
+        const filteredRecords = excludeName
+            ? obtainableRecords.filter(record => getRecordName(record) !== excludeName)
+            : obtainableRecords;
 
         if (Array.isArray(types) && types.length > 0) {
             const typeSet = new Set(types);
@@ -598,7 +603,7 @@
             return typedRecords.length > 0 ? typedRecords[randomInt(0, typedRecords.length - 1)] : null;
         }
 
-        const choices = filteredRecords.length > 0 ? filteredRecords : records;
+        const choices = filteredRecords.length > 0 ? filteredRecords : obtainableRecords;
 
         if (choices.length === 0) return null;
 

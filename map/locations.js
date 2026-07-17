@@ -684,18 +684,80 @@
     }
 
     /**
-     * Wild pokemon pool for a location: unique-by-name, non-legendary species
-     * with at least one type slot in the location's types. Falls back to all
-     * non-legendaries so the pool is never empty.
+     * Wild pokemon pool for a location: unique-by-name, obtainable species
+     * (not legendary, not a baby, not a mega target) with at least one type
+     * slot in the location's types. Falls back to all obtainable species so
+     * the pool is never empty.
      */
     function getWildPokemonPool(gameData, locationTypes) {
         const pokemon = gameData && Array.isArray(gameData.pokemon) ? gameData.pokemon : [];
         const unique = uniqueByName(pokemon);
-        const nonLegendary = unique.filter(species => !getRecordTypes(species).includes('LEGENDARY'));
+        const obtainable = unique.filter(species => isObtainablePokemon(species, gameData));
         const types = Array.isArray(locationTypes) ? locationTypes : [];
 
-        const matched = nonLegendary.filter(species => getRecordTypes(species).some(type => types.includes(type)));
-        return matched.length > 0 ? matched : nonLegendary;
+        const matched = obtainable.filter(species => getRecordTypes(species).some(type => types.includes(type)));
+        return matched.length > 0 ? matched : obtainable;
+    }
+
+    // --- Baby/mega pokemon (phase 42) -------------------------------------
+    // There is no mega type: a "mega" is any record referenced by some
+    // baby's evolvesInto (name or id). Zero baby data exists today, so
+    // these are inert until the owner authors baby/mega cards.
+
+    /**
+     * Resolves a pokemon reference (as used by `evolvesInto`) to a record by
+     * exact name match, else exact id match, else null.
+     */
+    function findPokemonByNameOrId(gameData, ref) {
+        if (!ref) return null;
+        const pokemon = gameData && Array.isArray(gameData.pokemon) ? gameData.pokemon : [];
+        return pokemon.find(record => record && record.name === ref) ||
+            pokemon.find(record => record && record.id === ref) ||
+            null;
+    }
+
+    function isBabyPokemon(record) {
+        return getRecordTypes(record).includes('BABY');
+    }
+
+    // Set of every name AND id resolved from any baby's evolvesInto, so
+    // isMegaPokemon can match a record by either key.
+    function getMegaTargetKeys(gameData) {
+        const pokemon = gameData && Array.isArray(gameData.pokemon) ? gameData.pokemon : [];
+        const keys = new Set();
+
+        pokemon.filter(isBabyPokemon).forEach(baby => {
+            const mega = findPokemonByNameOrId(gameData, baby.evolvesInto);
+            if (!mega) return;
+            keys.add(mega.name);
+            keys.add(mega.id);
+        });
+
+        return keys;
+    }
+
+    function isMegaPokemon(record, gameData) {
+        if (!record) return false;
+        const keys = getMegaTargetKeys(gameData);
+        return keys.has(record.name) || keys.has(record.id);
+    }
+
+    function getBabyPokemonPool(gameData) {
+        const pokemon = gameData && Array.isArray(gameData.pokemon) ? gameData.pokemon : [];
+        return uniqueByName(pokemon).filter(isBabyPokemon);
+    }
+
+    function isObtainablePokemon(record, gameData) {
+        if (!record) return false;
+        if (getRecordTypes(record).includes('LEGENDARY')) return false;
+        if (isBabyPokemon(record)) return false;
+        if (isMegaPokemon(record, gameData)) return false;
+        return true;
+    }
+
+    function getObtainablePokemonPool(gameData) {
+        const pokemon = gameData && Array.isArray(gameData.pokemon) ? gameData.pokemon : [];
+        return uniqueByName(pokemon).filter(record => isObtainablePokemon(record, gameData));
     }
 
     global.PokeLocations = {
@@ -709,10 +771,17 @@
         chooseTrainer,
         createAreaGraph,
         createLocationSnapshot,
+        findPokemonByNameOrId,
+        getBabyPokemonPool,
         getLocationById,
         getLocations,
+        getMegaTargetKeys,
+        getObtainablePokemonPool,
         getWildPokemonPool,
         isAllowedTrainerRank,
+        isBabyPokemon,
+        isMegaPokemon,
+        isObtainablePokemon,
         listAllPaths
     };
 })(window);

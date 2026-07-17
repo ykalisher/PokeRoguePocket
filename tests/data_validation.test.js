@@ -62,6 +62,25 @@ test('pokemon.json entries are well-formed', () => {
     });
 });
 
+// evolvesInto (baby -> mega) stays optional even on babies — runtime code
+// (map/locations.js isMegaPokemon/getMegaTargetKeys) guards its absence.
+test('BABY pokemon have a non-BABY type and evolvesInto resolves to a real record', () => {
+    const pokemonByName = new Set(pokemon.map(record => record.name));
+    const pokemonById = new Set(pokemon.map(record => record.id));
+
+    pokemon.forEach(record => {
+        const types = [record.type1, record.type2, record.type3].filter(type => type && type !== 'NONE');
+        if (types.includes('BABY')) {
+            assert.ok(types.some(type => type !== 'BABY'), `${record.name}: BABY pokemon needs >=1 non-BABY type`);
+        }
+
+        if (record.evolvesInto !== undefined) {
+            const resolves = pokemonByName.has(record.evolvesInto) || pokemonById.has(record.evolvesInto);
+            assert.ok(resolves, `${record.name}: evolvesInto "${record.evolvesInto}" does not resolve to a real pokemon`);
+        }
+    });
+});
+
 test('attacks.json entries are well-formed', () => {
     assertUniqueNames(attacks, 'attacks.json');
     attacks.forEach(record => {
@@ -69,6 +88,8 @@ test('attacks.json entries are well-formed', () => {
             assert.ok(VALID_TYPES.has(record[slot]), `${record.name}: bad ${slot} ${record[slot]}`);
         });
         assert.notEqual(record.type1, 'NONE', `${record.name}: type1 must be a real type`);
+        assert.notEqual(record.type1, 'BABY', `${record.name}: BABY is not a valid attack type`);
+        assert.notEqual(record.type2, 'BABY', `${record.name}: BABY is not a valid attack type`);
         assert.ok(Number.isFinite(record.basePower) && record.basePower >= 0, `${record.name}: bad basePower`);
         assert.ok(VALID_ATTACK_STATUSES.has(record.status), `${record.name}: bad status ${record.status}`);
         assert.ok(VALID_ATTACK_TARGETS.has(record.target), `${record.name}: bad target ${record.target}`);

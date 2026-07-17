@@ -1142,7 +1142,9 @@
     }
 
     function getAvailableLegendaryPokemon() {
-        return getUniqueGameRecords('pokemon').filter(isLegendaryPokemon);
+        return getUniqueGameRecords('pokemon')
+            .filter(isLegendaryPokemon)
+            .filter(record => !locations.isMegaPokemon(record, arena.GameData) && !locations.isBabyPokemon(record));
     }
 
     function sanitizeCaptureEncounters() {

@@ -83,6 +83,11 @@
         const issues = [];
         const validTypes = new Set(Object.values((enums && enums.PokeType) || {}));
         const seen = new Set();
+        const namesAndIds = new Set();
+        pokemon.forEach((record) => {
+            if (record.name) namesAndIds.add(record.name);
+            if (record.id) namesAndIds.add(record.id);
+        });
 
         pokemon.forEach((record) => {
             const key = record.name || '(unnamed pokemon)';
@@ -107,6 +112,16 @@
             });
             if (!/^\d{4}$/.test(String(record.id))) {
                 issues.push(err('pokemon.json', key, 'pokemon.bad-id', `${key}: bad id ${record.id}`, 'id'));
+            }
+
+            // evolvesInto stays optional even on babies — runtime code
+            // (map/locations.js isMegaPokemon/getMegaTargetKeys) guards its absence.
+            const types = [record.type1, record.type2, record.type3].filter((type) => type && type !== 'NONE');
+            if (types.includes('BABY') && !types.some((type) => type !== 'BABY')) {
+                issues.push(err('pokemon.json', key, 'pokemon.baby-needs-other-type', `${key}: BABY pokemon needs >=1 non-BABY type`, 'type1'));
+            }
+            if (record.evolvesInto !== undefined && !namesAndIds.has(record.evolvesInto)) {
+                issues.push(err('pokemon.json', key, 'pokemon.bad-evolves-into', `${key}: evolvesInto "${record.evolvesInto}" does not resolve to a real pokemon`, 'evolvesInto'));
             }
         });
 
@@ -144,6 +159,9 @@
             });
             if (record.type1 === 'NONE') {
                 issues.push(err('attacks.json', key, 'attacks.none-primary-type', `${key}: type1 must be a real type`, 'type1'));
+            }
+            if (record.type1 === 'BABY' || record.type2 === 'BABY') {
+                issues.push(err('attacks.json', key, 'attacks.baby-type-forbidden', `${key}: BABY is not a valid attack type`, record.type1 === 'BABY' ? 'type1' : 'type2'));
             }
             if (!(Number.isFinite(record.basePower) && record.basePower >= 0)) {
                 issues.push(err('attacks.json', key, 'attacks.bad-power', `${key}: bad basePower`, 'basePower'));
