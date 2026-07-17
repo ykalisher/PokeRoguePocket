@@ -35,7 +35,7 @@ return to the map. Refresh-safe; silently inert when no baby data exists.
 
 ## Steps
 
-- [ ] 1. **`map/run_state.js`** — add + export pure helpers:
+- [x] 1. **`map/run_state.js`** — add + export pure helpers:
   `getPendingMegaEvolutions(run, gameData)` → for each card in
   `run.collections.pokemon` whose `.pokemon` record is BABY-typed AND whose
   `evolvesInto` resolves via `findPokemonByNameOrId`, return
@@ -45,13 +45,13 @@ return to the map. Refresh-safe; silently inert when no baby data exists.
   index** with a new card from `megaRecord`, then
   `rebuildActionDeckForActivePokemon(run)`; return a summary array
   (`{ babyName, megaName }`).
-- [ ] 2. **`tests/run_progression.test.js`** (or a new `tests/mega_evolution.test.js`) —
+- [x] 2. **`tests/run_progression.test.js`** (or a new `tests/mega_evolution.test.js`) —
   fixture run + gameData: a baby whose `evolvesInto` is a mega *name*, another
   referencing a mega *id*, one with a bad reference, and a baby on the bench. Assert:
   pending list covers only the active-deck resolvable babies; after apply, the deck
   holds the megas at the same positions, babies gone, action deck rebuilt; a run with no
   babies yields an empty list and zero mutation.
-- [ ] 3. **`arena/game.js`** — in the `'continue'` flow: when the gate above holds,
+- [x] 3. **`arena/game.js`** — in the `'continue'` flow: when the gate above holds,
   compute `getPendingMegaEvolutions(activeRun, arena.GameData)`; if non-empty,
   `applyMegaEvolutions` + `runStore.saveRunState(activeRun)`, then
   `playEvolutionSequence(evolutions)` and only afterwards
@@ -60,18 +60,18 @@ return to the map. Refresh-safe; silently inert when no baby data exists.
   "Evolution", headline `<Baby> is evolving!`, the baby card with a rotate/shine
   animation, a timed (or animationend-driven) swap to the mega card + `…evolved into
   <Mega>!`, and a Continue button to advance to the next evolution / finish.
-- [ ] 4. **`static/styles.css`** — new section for the evolution overlay reusing the
+- [x] 4. **`static/styles.css`** — new section for the evolution overlay reusing the
   battle-flow overlay look, plus a keyframe animation (e.g. `rotateY` spin with a
   brightness/glow pulse, ~1.5–2s) on the card; keep mobile sizing consistent with the
   battle result windows (check at 390×844).
-- [ ] 5. **Guard sweep** — confirm by reading the diff: zero behavior change when no
+- [x] 5. **Guard sweep** — confirm by reading the diff: zero behavior change when no
   babies are in the active deck; the loss path, non-boss wins, and the final-victory
   path are untouched.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill with **injected fixture data** (no real baby cards exist yet):
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill with **injected fixture data** (no real baby cards exist yet):
   serve the game, drive to a boss-node win with the committed drivers, then before
   clicking Continue use `page.evaluate` to (a) push a fixture baby record (BABY+FIRE,
   `evolvesInto` pointing at a fixture mega record also pushed) into
@@ -79,7 +79,12 @@ return to the map. Refresh-safe; silently inert when no baby data exists.
   `collections.pokemon`. Click Continue: the cutscene plays; screenshot it (desktop and
   390×844). Afterwards the run in localStorage holds the mega at the same slot.
   Reload mid-sequence: lands on `area.html` with the mega persisted.
-- [ ] Win a boss battle with NO baby in the deck: flow identical to before (straight to
+  <!-- Verified 2026-07-17: overlay "Emberling is evolving!" -> "Emberling evolved into
+  Mega Blazelord!"; deck mutated+saved BEFORE the animation (mutate-first); final
+  Continue -> area.html. Reload mid-spin returns to the recoverable win overlay (game.html)
+  with the mega already persisted and no re-evolution — faithful to Step 3's mutate-save-then-
+  complete order; the "lands on area.html" wording holds only after the next Continue. -->
+- [x] Win a boss battle with NO baby in the deck: flow identical to before (straight to
   the map).
 
 ## Out of scope / do not touch

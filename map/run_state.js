@@ -302,6 +302,63 @@
         };
     }
 
+    // --- Baby -> mega evolution (phase 48) ---------------------------------
+    // Pure helpers driving the post-gym-leader cutscene. getPendingMegaEvolutions
+    // inspects only the ACTIVE deck (bench babies never evolve) and skips babies
+    // whose evolvesInto reference does not resolve. applyMegaEvolutions swaps each
+    // baby card for a fresh mega card in place, then rebuilds the action deck
+    // because the mega's types can change which attacks are usable.
+    function getPendingMegaEvolutions(run, gameData) {
+        const locations = global.PokeLocations;
+
+        if (!run || !locations ||
+            typeof locations.isBabyPokemon !== 'function' ||
+            typeof locations.findPokemonByNameOrId !== 'function') {
+            return [];
+        }
+
+        ensureCollections(run);
+
+        const pending = [];
+
+        run.collections.pokemon.forEach((card, index) => {
+            if (!isPokemonCard(card) || !card.pokemon) return;
+            if (!locations.isBabyPokemon(card.pokemon)) return;
+
+            const megaRecord = locations.findPokemonByNameOrId(gameData, card.pokemon.evolvesInto);
+
+            if (!megaRecord) return;
+
+            pending.push({ index, babyCard: card, megaRecord });
+        });
+
+        return pending;
+    }
+
+    function applyMegaEvolutions(run, evolutions) {
+        if (!run || !Array.isArray(evolutions) || evolutions.length === 0) return [];
+
+        ensureCollections(run);
+
+        const summary = [];
+
+        evolutions.forEach(({ index, babyCard, megaRecord }) => {
+            if (!megaRecord || !run.collections.pokemon[index]) return;
+
+            const megaCard = createPokemonCard(megaRecord, 'player', allocateCardId(run, 'pokemon', megaRecord.name));
+
+            run.collections.pokemon[index] = megaCard;
+            summary.push({
+                babyName: babyCard && babyCard.pokemon ? babyCard.pokemon.name : '',
+                megaName: megaRecord.name
+            });
+        });
+
+        rebuildActionDeckForActivePokemon(run);
+
+        return summary;
+    }
+
     function swapBenchPokemon(run, activePokemonId, benchPokemonId) {
         if (!run || !activePokemonId || !benchPokemonId) return null;
 
@@ -626,6 +683,7 @@
         addActionCard,
         addPokemonCard,
         allocateCardId,
+        applyMegaEvolutions,
         balancePokemonCollections,
         clearRunState,
         createAttackCard,
@@ -636,6 +694,7 @@
         getActiveCaptureEncounter,
         getActiveEventEncounter,
         getActiveMartEncounter,
+        getPendingMegaEvolutions,
         hasSavedRun,
         loadRunState,
         normalizeLocationSnapshot,

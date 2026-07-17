@@ -2280,6 +2280,79 @@ button.playing-card:focus-visible {
     gap: 10px;
 }
 
+/* --- Mega evolution cutscene (phase 48) -------------------------------- */
+/* Reuses the battle-flow overlay + battle-result-window look; the baby card
+   spins and shines, then swaps to the mega. */
+.evolution-window {
+    gap: 18px;
+}
+
+.evolution-headline {
+    min-height: 1.9rem;
+}
+
+/* Enlarged card stage; a local --card-w makes the previewed card read big and
+   central on both desktop and narrow phones. */
+.evolution-stage {
+    --card-w: clamp(120px, 34vw, 168px);
+    display: grid;
+    place-items: center;
+    perspective: 900px;
+    min-height: calc(var(--card-w) * 1.52 + 16px);
+    padding: 8px 0;
+}
+
+.evolution-card {
+    transform-style: preserve-3d;
+    will-change: transform, filter;
+}
+
+/* Baby card mid-evolution: a slow rotateY spin with a brightness/glow pulse. */
+.evolution-card--spinning {
+    animation: evolution-spin 1.9s ease-in-out both;
+}
+
+/* Mega card reveal: a brief settle-in pop. */
+.evolution-card--revealed {
+    animation: evolution-reveal 0.55s ease-out both;
+}
+
+@keyframes evolution-spin {
+    0% {
+        transform: rotateY(0deg) scale(1);
+        filter: brightness(1) drop-shadow(0 0 0 rgba(232, 194, 102, 0));
+    }
+    50% {
+        transform: rotateY(540deg) scale(1.08);
+        filter: brightness(2.1) drop-shadow(0 0 22px rgba(232, 194, 102, 0.85));
+    }
+    100% {
+        transform: rotateY(1080deg) scale(1);
+        filter: brightness(1.35) drop-shadow(0 0 14px rgba(232, 194, 102, 0.5));
+    }
+}
+
+@keyframes evolution-reveal {
+    0% {
+        transform: scale(0.7);
+        filter: brightness(2) drop-shadow(0 0 24px rgba(232, 194, 102, 0.9));
+    }
+    60% {
+        transform: scale(1.08);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1) drop-shadow(0 0 0 rgba(232, 194, 102, 0));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .evolution-card--spinning,
+    .evolution-card--revealed {
+        animation-duration: 0.01ms;
+    }
+}
+
 /* Scrollable content area inside the reference window. */
 .rules-reference-body {
     min-height: 0;

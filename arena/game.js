@@ -9,6 +9,10 @@
     let activeBattleEncounter = null;
     let activeTrainer = null;
 
+    // How long the baby card spins/shines before it swaps to the mega (phase 48).
+    // Kept in sync with the .evolution-card animation in static/styles.css.
+    const EVOLUTION_ANIMATION_MS = 1900;
+
     document.addEventListener('DOMContentLoaded', initGame);
 
     /**
@@ -67,7 +71,7 @@
         if (action === 'start') {
             startRunBattle();
         } else if (action === 'continue') {
-            completeBattleAndReturnToMap();
+            continueFromWin();
         } else if (action === 'start-over') {
             startOver();
         } else if (action === 'main-menu') {
@@ -245,6 +249,95 @@
                 </div>
             </section>
         `;
+    }
+
+    // The Continue button on a gym-leader win. Any BABY pokemon in the ACTIVE
+    // deck evolves into its mega before the map returns. Locked decision:
+    // mutate + save the run FIRST, then play the cutscene, so a refresh
+    // mid-animation loses only the visuals, never the evolution. The final run
+    // victory takes a different button path and must never reach here with
+    // evolutions pending.
+    function continueFromWin() {
+        if (!activeRun || !activeBattleEncounter) {
+            completeBattleAndReturnToMap();
+            return;
+        }
+
+        const canEvolve = activeBattleEncounter.outcome === 'win' && isFinalNodeBattle() && !isRunVictory() &&
+            runStore && typeof runStore.getPendingMegaEvolutions === 'function';
+        const evolutions = canEvolve ? runStore.getPendingMegaEvolutions(activeRun, arena.GameData) : [];
+
+        if (evolutions.length === 0) {
+            completeBattleAndReturnToMap();
+            return;
+        }
+
+        runStore.applyMegaEvolutions(activeRun, evolutions);
+        runStore.saveRunState(activeRun);
+        playEvolutionSequence(evolutions);
+    }
+
+    // Plays one full-screen overlay per evolution in order; the last Continue
+    // hands off to completeBattleAndReturnToMap().
+    function playEvolutionSequence(evolutions) {
+        let index = 0;
+
+        function playNext() {
+            if (index >= evolutions.length) {
+                completeBattleAndReturnToMap();
+                return;
+            }
+
+            const current = evolutions[index];
+
+            index += 1;
+            renderEvolutionOverlay(current, playNext);
+        }
+
+        playNext();
+    }
+
+    // One "<Baby> is evolving!" step: the baby card spins/shines, then swaps to
+    // the mega with "<Baby> evolved into <Mega>!" and a Continue button that
+    // invokes onDone (the next step, or the map return).
+    function renderEvolutionOverlay(evolution, onDone) {
+        removeBattleFlowOverlay();
+
+        const babyCard = evolution.babyCard;
+        const babyName = babyCard && babyCard.pokemon ? babyCard.pokemon.name : '';
+        const megaName = evolution.megaRecord ? evolution.megaRecord.name : '';
+        const megaCard = runStore.createPokemonCard(evolution.megaRecord, 'player', `evolution-preview-${evolution.index}`);
+
+        const overlay = document.createElement('div');
+
+        overlay.className = 'battle-flow-overlay evolution-overlay';
+        overlay.innerHTML = `
+            <section class="battle-result-window evolution-window" role="dialog" aria-modal="true" aria-labelledby="evolution-title">
+                <span class="battle-flow-kicker">Evolution</span>
+                <h1 id="evolution-title" class="evolution-headline">${escapeHtml(babyName)} is evolving!</h1>
+                <div class="evolution-stage">
+                    ${arena.Render.renderCardPreview(babyCard, { className: 'evolution-card evolution-card--spinning' })}
+                </div>
+                <button class="arena-button battle-flow-primary evolution-continue" type="button" hidden>Continue</button>
+            </section>
+        `;
+        document.body.appendChild(overlay);
+
+        const stage = overlay.querySelector('.evolution-stage');
+        const headline = overlay.querySelector('.evolution-headline');
+        const continueButton = overlay.querySelector('.evolution-continue');
+
+        continueButton.addEventListener('click', () => {
+            overlay.remove();
+            onDone();
+        });
+
+        window.setTimeout(() => {
+            stage.innerHTML = arena.Render.renderCardPreview(megaCard, { className: 'evolution-card evolution-card--revealed' });
+            headline.textContent = `${babyName} evolved into ${megaName}!`;
+            continueButton.hidden = false;
+            continueButton.focus();
+        }, EVOLUTION_ANIMATION_MS);
     }
 
     function completeBattleAndReturnToMap() {
