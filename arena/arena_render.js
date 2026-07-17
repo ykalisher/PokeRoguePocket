@@ -143,11 +143,6 @@
                 <header class="side-status">
                     <h2 class="side-title" title="${player.name}">${player.name}</h2>
                     <div class="side-stats">
-                        <span class="stat-pill">Pokemon left ${player.pokemonLeft}</span>
-                        <span class="stat-pill">Pkmn deck ${player.pokemonDeck.length}</span>
-                        <span class="stat-pill">Action deck ${player.deck.length}</span>
-                        <span class="stat-pill">Hand ${player.hand.length}/${arena.Model.getPlayerHandSize(player)}</span>
-                        <span class="stat-pill">Discard ${player.discard.length}</span>
                         <span class="stat-pill">KO ${player.knockoutCount}/${arena.Model.getEffectiveKnockoutLimit(player)}</span>
                     </div>
                 </header>

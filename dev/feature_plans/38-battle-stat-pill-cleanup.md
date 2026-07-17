@@ -24,15 +24,15 @@ opponent alike.
 
 ## Steps
 
-- [ ] 1. **`arena/arena_render.js`** — in `renderSide()`, delete the five spans
+- [x] 1. **`arena/arena_render.js`** — in `renderSide()`, delete the five spans
   `Pokemon left`, `Pkmn deck`, `Action deck`, `Hand`, `Discard`. Keep the KO span, its
   `.stat-pill` class, and the surrounding wrapper element unchanged. Do not touch
   `renderPile` or the pile row.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green (no test asserts pill text).
-- [ ] `verify` skill: start a battle with the committed driver; screenshot both side
+- [x] `node tests/run_all.js` green (no test asserts pill text).
+- [x] `verify` skill: start a battle with the committed driver; screenshot both side
   headers — exactly one pill ("KO n/m") per side; pile widgets still show their counts.
 
 ## Out of scope / do not touch
