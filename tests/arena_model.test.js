@@ -161,6 +161,36 @@ test('stat stages multiply effective stats per the stage table', () => {
     assert.equal(Model.getPokemonEffectiveStat(card, 'speed'), 80);
 });
 
+test('getStatChangesForPokemon: NORMAL overrides HUMAN stat-change precedence', () => {
+    const humanCard = makePokemonCard(['HUMAN']);
+    assert.deepEqual(
+        Model.getStatChangesForPokemon(humanCard, ['ATTACK_UP']),
+        ['ATTACK_UP', 'ATTACK_UP'],
+        'HUMAN-only doubles the net delta'
+    );
+
+    const normalHumanCard = makePokemonCard(['NORMAL', 'HUMAN']);
+    assert.deepEqual(
+        Model.getStatChangesForPokemon(normalHumanCard, ['ATTACK_UP']),
+        ['ATTACK_UP'],
+        'NORMAL suppresses the HUMAN doubling entirely'
+    );
+
+    const normalCard = makePokemonCard(['NORMAL']);
+    assert.deepEqual(
+        Model.getStatChangesForPokemon(normalCard, ['ATTACK_DOWN', 'ATTACK_DOWN']),
+        ['ATTACK_DOWN'],
+        'NORMAL clamps a net -2 delta to a single stage'
+    );
+
+    const plainCard = makePokemonCard(['WATER']);
+    assert.deepEqual(
+        Model.getStatChangesForPokemon(plainCard, ['ATTACK_UP']),
+        ['ATTACK_UP'],
+        'pokemon with neither type pass tokens through unchanged'
+    );
+});
+
 test('applyStatus adds one persistent status and blocks a second', () => {
     const card = makePokemonCard(['WATER']);
 

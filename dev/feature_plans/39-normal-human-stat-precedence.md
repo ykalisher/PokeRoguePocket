@@ -33,7 +33,7 @@ HUMAN ability is skipped entirely, not merely clamped afterwards); NORMAL stays 
 
 ## Steps
 
-- [ ] 1. **`arena/arena_model.js`** — restructure `getAdjustedStatChangeDelta`:
+- [x] 1. **`arena/arena_model.js`** — restructure `getAdjustedStatChangeDelta`:
   ```js
   function getAdjustedStatChangeDelta(card, delta) {
       if (pokemonHasType(card, 'NORMAL')) return clampNormalStatChangeDelta(delta);
@@ -42,7 +42,7 @@ HUMAN ability is skipped entirely, not merely clamped afterwards); NORMAL stays 
   }
   ```
   Update the nearby comment to state the precedence rule (NORMAL suppresses HUMAN).
-- [ ] 2. **`tests/arena_model.test.js`** — add a test block near the existing stage tests
+- [x] 2. **`tests/arena_model.test.js`** — add a test block near the existing stage tests
   (~135–163) exercising `Model.getStatChangesForPokemon`:
   (a) HUMAN-only card: `['ATTACK_UP']` → two `ATTACK_UP` tokens;
   (b) NORMAL+HUMAN card: `['ATTACK_UP']` → exactly one `ATTACK_UP` (no doubling);
@@ -52,8 +52,8 @@ HUMAN ability is skipped entirely, not merely clamped afterwards); NORMAL stays 
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green, including the four new assertions.
-- [ ] No browser check required (pure model math); optional sanity: stat-change floats in
+- [x] `node tests/run_all.js` green, including the four new assertions.
+- [x] No browser check required (pure model math); optional sanity: stat-change floats in
   a real battle still appear.
 
 ## Out of scope / do not touch

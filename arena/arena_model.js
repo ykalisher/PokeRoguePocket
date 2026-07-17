@@ -1302,7 +1302,8 @@
     /**
      * Applies type-specific stat-change rules before the controller mutates
      * stages: HUMAN doubles each net stat delta; NORMAL clamps each net stat
-     * delta to +/-1.
+     * delta to +/-1. NORMAL overrides HUMAN — a NORMAL+HUMAN pokemon is
+     * clamped and never doubled.
      */
     function getStatChangesForPokemon(card, statChanges) {
         const validStatChanges = (Array.isArray(statChanges) ? statChanges : [])
@@ -1327,13 +1328,9 @@
     }
 
     function getAdjustedStatChangeDelta(card, delta) {
-        const humanAdjustedDelta = pokemonHasType(card, 'HUMAN')
-            ? delta * HUMAN_STAT_CHANGE_MULTIPLIER
-            : delta;
-
-        return pokemonHasType(card, 'NORMAL')
-            ? clampNormalStatChangeDelta(humanAdjustedDelta)
-            : humanAdjustedDelta;
+        if (pokemonHasType(card, 'NORMAL')) return clampNormalStatChangeDelta(delta);
+        if (pokemonHasType(card, 'HUMAN')) return delta * HUMAN_STAT_CHANGE_MULTIPLIER;
+        return delta;
     }
 
     function clampNormalStatChangeDelta(delta) {
