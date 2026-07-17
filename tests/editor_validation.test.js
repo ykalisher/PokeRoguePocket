@@ -132,7 +132,7 @@ test('trainers: bad rank', () => {
 
 test('events: unknown effect type', () => {
     const data = withEvents((events) => {
-        const giftEvent = events.find((event) => event.id === 'berry-cache');
+        const giftEvent = events.find((event) => event.id === 'sitrus-berry-tree');
         giftEvent.effects[0].type = 'not-a-real-effect';
     });
     const issues = validateAll(data, { enums: live.enums });

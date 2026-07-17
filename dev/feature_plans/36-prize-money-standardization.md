@@ -20,15 +20,18 @@ Ace 100, Special 150, Boss 200, Elite 250. Data-only change; ends green.
 
 ## Steps
 
-- [ ] 1. **`trainers.json`** — for all 95 records, set `cash` from `rank`:
+- [x] 1. **`trainers.json`** — for all 95 records, set `cash` from `rank`:
   Standard→50, Ace→100, Special→150, Boss→200, Elite→250. Because the current values are
   also rank-uniform, this is five global substitutions — but verify with the snippet
   below rather than assuming. Change no other field.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] Exact-map check prints `OK`:
+- [x] `node tests/run_all.js` green. (Fixed one pre-existing, unrelated failure found
+  along the way: `tests/editor_validation.test.js` referenced the removed event id
+  `berry-cache`, stale after the prior "Change events" commit renamed it to
+  `sitrus-berry-tree`; updated the test id, no data files touched.)
+- [x] Exact-map check prints `OK`:
   ```bash
   node -e "
   const t=require('./trainers.json');
