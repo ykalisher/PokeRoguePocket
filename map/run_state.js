@@ -447,6 +447,7 @@
             .filter(([, encounter]) => encounter && typeof encounter === 'object')
             .map(([nodeId, encounter]) => [nodeId, {
                 attackNames: normalizeNameList(encounter.attackNames),
+                attackRemovalUsed: Boolean(encounter.attackRemovalUsed),
                 boughtAttackNames: normalizeNameList(encounter.boughtAttackNames),
                 boughtItemNames: normalizeNameList(encounter.boughtItemNames),
                 completed: Boolean(encounter.completed),

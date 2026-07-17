@@ -362,14 +362,16 @@
     flex-shrink: 0;
 }
 
-.mart-pokemon-grid {
+.mart-pokemon-grid,
+.mart-attack-picker-grid {
     min-width: 0;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
     gap: 10px;
 }
 
-.mart-pokemon-choice {
+.mart-pokemon-choice,
+.mart-attack-choice {
     min-width: 0;
     display: grid;
     justify-items: center;
@@ -381,7 +383,8 @@
     cursor: pointer;
 }
 
-.mart-pokemon-choice .playing-card {
+.mart-pokemon-choice .playing-card,
+.mart-attack-choice .playing-card {
     /* Re-scope the card tokens so the interior (portrait, name, stats)
        shrinks with the mini card instead of overflowing into overlap. */
     --card-w: 72px;
@@ -393,22 +396,28 @@
 }
 
 /* Compact interior text for the 72px picker cards. */
-.mart-pokemon-choice .card-portrait {
+.mart-pokemon-choice .card-portrait,
+.mart-attack-choice .card-portrait {
     width: calc(var(--card-w) * 0.58);
 }
 
-.mart-pokemon-choice .card-name {
+.mart-pokemon-choice .card-name,
+.mart-attack-choice .card-name {
     font-size: 0.5rem;
 }
 
 .mart-pokemon-choice .health-row,
-.mart-pokemon-choice .stat-grid {
+.mart-pokemon-choice .stat-grid,
+.mart-attack-choice .health-row,
+.mart-attack-choice .stat-grid {
     font-size: 0.46rem;
 }
 
 .mart-pokemon-choice:hover .playing-card,
 .mart-pokemon-choice:focus-visible .playing-card,
-.mart-pokemon-choice.is-selected .playing-card {
+.mart-pokemon-choice.is-selected .playing-card,
+.mart-attack-choice:hover .playing-card,
+.mart-attack-choice:focus-visible .playing-card {
     outline: 3px solid color-mix(in srgb, var(--gold) 82%, transparent);
     outline-offset: 3px;
     transform: translateY(-4px);

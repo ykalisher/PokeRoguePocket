@@ -9,12 +9,14 @@
     const ITEM_COUNT = 4;
     const ATTACK_COST = 70;
     const ITEM_COST = 90;
+    const ATTACK_REMOVAL_COST = 50;
     const CARD_BACKS = Object.freeze({
         actions: 'assets/card-backs/ACTION_CARD_BACK.png',
         pokemon: 'assets/card-backs/POKEMON_CARD_BACK.png'
     });
 
     const state = {
+        attackRemovalPicker: false,
         cardWindow: null,
         elements: {},
         encounter: null,
@@ -75,6 +77,25 @@
             return;
         }
 
+        const closeAttackRemovalButton = event.target.closest('[data-close-attack-removal]');
+
+        if (closeAttackRemovalButton) {
+            closeAttackRemovalPicker();
+            return;
+        }
+
+        if (event.target.matches('[data-attack-removal-overlay]')) {
+            closeAttackRemovalPicker();
+            return;
+        }
+
+        const removeAttackButton = event.target.closest('[data-remove-attack-id]');
+
+        if (removeAttackButton) {
+            removeAttackCard(removeAttackButton.dataset.removeAttackId);
+            return;
+        }
+
         const offerButton = event.target.closest('[data-buy-offer]');
 
         if (offerButton) {
@@ -104,8 +125,12 @@
     }
 
     function handleKeyDown(event) {
-        if (event.key === 'Escape' && state.cardWindow) {
+        if (event.key !== 'Escape') return;
+
+        if (state.cardWindow) {
             closeCardWindow();
+        } else if (state.attackRemovalPicker) {
+            closeAttackRemovalPicker();
         }
     }
 
@@ -157,6 +182,8 @@
     function handleMartService(service) {
         if (service === 'release') {
             releaseSelectedPokemon();
+        } else if (service === 'remove-attack') {
+            openAttackRemovalPicker();
         }
     }
 
@@ -186,6 +213,48 @@
 
     function getTotalPokemonCount() {
         return state.run.collections.pokemon.length + state.run.collections.bench.pokemon.length;
+    }
+
+    function openAttackRemovalPicker() {
+        if (!canRemoveAttack()) return;
+
+        state.attackRemovalPicker = true;
+        render();
+    }
+
+    function closeAttackRemovalPicker() {
+        state.attackRemovalPicker = false;
+        render();
+    }
+
+    function removeAttackCard(cardId) {
+        const card = getOwnedAttackCards().find(attackCard => attackCard.id === cardId);
+
+        if (!card || !canRemoveAttack()) return;
+
+        state.run.collections.actions = state.run.collections.actions
+            .filter(attackCard => attackCard.id !== cardId);
+        state.run.collections.bench.actions = state.run.collections.bench.actions
+            .filter(attackCard => attackCard.id !== cardId);
+
+        state.run.cash = getCash() - ATTACK_REMOVAL_COST;
+        runStore.rebuildActionDeckForActivePokemon(state.run);
+        state.encounter.attackRemovalUsed = true;
+        runStore.saveRunState(state.run);
+        state.attackRemovalPicker = false;
+        setMessage(`Removed ${card.attack.name}.`);
+    }
+
+    function canRemoveAttack() {
+        return !state.encounter.attackRemovalUsed &&
+            getCash() >= ATTACK_REMOVAL_COST &&
+            getOwnedAttackCards().length > 0;
+    }
+
+    function getOwnedAttackCards() {
+        const activeAttacks = state.run.collections.actions.filter(arena.Model.isAttackCard);
+
+        return [...activeAttacks, ...getBenchedAttackCards()];
     }
 
     function completeMartAndReturnToMap() {
@@ -218,6 +287,7 @@
                 ${renderServicesPanel()}
             </section>
             ${state.cardWindow ? renderCardWindow() : ''}
+            ${state.attackRemovalPicker ? renderAttackRemovalPicker() : ''}
         `;
     }
 
@@ -285,6 +355,7 @@
                 </header>
                 <div class="mart-service-list">
                     ${renderReleaseService()}
+                    ${renderAttackRemovalService()}
                 </div>
                 <section class="mart-pokemon-deck" aria-label="Pokemon deck">
                     <header class="mart-mini-header">
@@ -313,6 +384,60 @@
                 </div>
                 <button class="mart-service-button" type="button" data-mart-service="release" ${disabled}>${buttonText}</button>
             </article>
+        `;
+    }
+
+    function renderAttackRemovalService() {
+        const used = Boolean(state.encounter.attackRemovalUsed);
+        const ownedCount = getOwnedAttackCards().length;
+        const disabled = used || getCash() < ATTACK_REMOVAL_COST || ownedCount === 0 ? 'disabled' : '';
+        const buttonText = used
+            ? 'Used'
+            : getCash() < ATTACK_REMOVAL_COST
+                ? `Need ${ATTACK_REMOVAL_COST}`
+                : ownedCount === 0
+                    ? 'No attacks'
+                    : `Remove ${ATTACK_REMOVAL_COST}`;
+
+        return `
+            <article class="mart-service-row ${used ? 'is-used' : ''}">
+                <div class="mart-service-info">
+                    <h3>Remove an Attack</h3>
+                    <span class="mart-service-requirement">Permanently remove one attack card</span>
+                </div>
+                <button class="mart-service-button" type="button" data-mart-service="remove-attack" ${disabled}>${buttonText}</button>
+            </article>
+        `;
+    }
+
+    function renderAttackRemovalPicker() {
+        const cards = getOwnedAttackCards().slice().sort(compareCardsByName);
+
+        return `
+            <div class="area-overlay" data-attack-removal-overlay>
+                <section class="area-card-window" role="dialog" aria-modal="true" aria-labelledby="attack-removal-title">
+                    <header class="area-card-window-header">
+                        <div>
+                            <h2 class="area-card-window-title" id="attack-removal-title">Remove an Attack</h2>
+                            <span class="area-card-window-count">Choose one to remove for ${ATTACK_REMOVAL_COST} coins</span>
+                        </div>
+                        <button class="area-card-window-close" type="button" data-close-attack-removal aria-label="Cancel">x</button>
+                    </header>
+                    <div class="area-card-window-body">
+                        <div class="mart-attack-picker-grid">
+                            ${cards.map(renderAttackRemovalChoice).join('')}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        `;
+    }
+
+    function renderAttackRemovalChoice(card) {
+        return `
+            <button class="mart-attack-choice" type="button" data-remove-attack-id="${card.id}" aria-label="Remove ${card.attack.name}">
+                ${arena.Render.renderCardPreview(card, { className: 'mart-pokemon-card' })}
+            </button>
         `;
     }
 

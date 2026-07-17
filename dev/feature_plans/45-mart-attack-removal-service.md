@@ -26,25 +26,25 @@ attack card chosen from the action deck or bench.
 
 ## Steps
 
-- [ ] 1. **`map/run_state.js`** — `normalizeMartEncounters`: add
+- [x] 1. **`map/run_state.js`** — `normalizeMartEncounters`: add
   `attackRemovalUsed: Boolean(encounter.attackRemovalUsed)`.
-- [ ] 2. **`map/mart.js`** — add a "Remove an Attack — 50 coins" row to the Services
+- [x] 2. **`map/mart.js`** — add a "Remove an Attack — 50 coins" row to the Services
   section: button (`data-mart-service="remove-attack"`) disabled when
   `state.encounter.attackRemovalUsed`, `getCash() < 50`, or the player owns zero attack
   cards; disabled states show why ("Used" / "Need 50" / "No attacks").
-- [ ] 3. **`map/mart.js`** — clicking it opens a picker overlay listing every owned
+- [x] 3. **`map/mart.js`** — clicking it opens a picker overlay listing every owned
   attack card (active + bench) as selectable buttons (`data-remove-attack-id`);
   selecting one deducts 50 coins, removes that card from its collection,
   sets `state.encounter.attackRemovalUsed = true`, rebuilds the action deck, saves,
   closes the overlay, and shows `Removed <name>.` A cancel/close control backs out with
   no charge.
-- [ ] 4. **`static/mart.css`** — minimal picker styles reusing the existing overlay and
+- [x] 4. **`static/mart.css`** — minimal picker styles reusing the existing overlay and
   selection look (`.mart-pokemon-choice`-style highlighting).
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill: with ≥50 coins, use the service — cash drops by exactly 50, the
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill: with ≥50 coins, use the service — cash drops by exactly 50, the
   chosen attack disappears from the deck counters, the row shows used and stays used on
   re-entry; with <50 coins the button is disabled; cancelling the picker charges
   nothing.
