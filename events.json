@@ -17,5 +17,76 @@
       { "type": "gain-card", "cardKind": "pokemon", "name": "Porygon2", "count": 1 }
     ],
     "enabled": true
+  },
+  {
+    "type": "gift",
+    "title": "A Sitrus Berry Tree!",
+    "id": "sitrus-berry-tree",
+    "body": "You found a sitrus berry tree! Take one!",
+    "buttonText": "Yoink!",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "item", "count": 1, "name": "Sitrus Berry" }
+    ],
+    "enabled": true,
+    "kicker": "Get a berry",
+    "actionTitle": "Grab a berry",
+    "rewardText": "You got a sitrus berry!",
+    "requires": []
+  },
+  {
+    "type": "gift",
+    "title": "A Babiri Berry Tree!",
+    "id": "babiri-berry-tree",
+    "body": "You found a babiri berry tree! Take one!",
+    "buttonText": "Yoink!",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "item", "count": 1, "name": "Babiri Berry" }
+    ],
+    "enabled": true,
+    "kicker": "Get a babiri berry",
+    "actionTitle": "Grab a berry",
+    "rewardText": "You got a babiri berry!"
+  },
+  {
+    "type": "gift",
+    "title": "You found a Lum Berry Tree!",
+    "id": "lum-berry-tree",
+    "body": "You found a lum berry tree! Take one!",
+    "buttonText": "Yoink!",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "item", "count": 1, "name": "Lum Berry" }
+    ],
+    "enabled": true,
+    "kicker": "get a lum berry",
+    "actionTitle": "Grab a lum berry!",
+    "rewardText": "You got a lum berry!"
+  },
+  {
+    "type": "gift",
+    "title": "You found a liechi berry tree!",
+    "id": "liechi-berry-tree",
+    "body": "You found a liechi berry tree! Take one!",
+    "buttonText": "Yoink!",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "item", "count": 1, "name": "Liechi Berry" }
+    ],
+    "enabled": true,
+    "kicker": "get a liechi berry",
+    "actionTitle": "Grab a liechi berry!",
+    "rewardText": "You got a liechi berry!"
+  },
+  {
+    "type": "gift",
+    "title": "You found a Salac Berry Tree!",
+    "id": "salac-berry-tree",
+    "body": "You found a salac berry tree! Take one!",
+    "buttonText": "Yoink!",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "item", "count": 1, "name": "Salac Berry" }
+    ],
+    "enabled": true,
+    "kicker": "get a salac berry",
+    "actionTitle": "Grab a salac berry!",
+    "rewardText": "You got a salac berry!"
   }
 ]
