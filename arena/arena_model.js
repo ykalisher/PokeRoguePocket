@@ -433,14 +433,35 @@
     }
 
     /**
-     * Defeat check shared by the controller, render, and page flow. Teams
-     * larger than the knockout limit also lose when their Pokemon deck cannot
-     * supply a replacement.
+     * Counts knockout-pile Fossils that can still revive during end-of-turn
+     * replacement: FOSSIL-typed, revival unused, and not the most recent
+     * knockout (a Fossil only revives after another ally is knocked out).
+     * Must stay in sync with the eligibility scan in the controller's
+     * reviveFossilPokemonFromKnockout().
+     */
+    function countPendingFossilRevivals(player) {
+        if (!player || !Array.isArray(player.knockout)) return 0;
+
+        return player.knockout.filter((card, index) => (
+            index > 0 &&
+            isPokemonCard(card) &&
+            getCardTypes(card).includes('FOSSIL') &&
+            !card.hasUsedFossilRevival
+        )).length;
+    }
+
+    /**
+     * Defeat check shared by the controller, render, and page flow. Knockouts
+     * that a pending Fossil revival can refund do not count toward the limit,
+     * so the battle never ends while an eligible Fossil could still revive at
+     * end of turn. Teams larger than the knockout limit also lose when their
+     * Pokemon deck cannot supply a replacement.
      */
     function isPlayerDefeated(player) {
         if (!player) return false;
 
-        const knockoutDefeat = (Number(player.knockoutCount) || 0) >= getEffectiveKnockoutLimit(player);
+        const countedKnockouts = (Number(player.knockoutCount) || 0) - countPendingFossilRevivals(player);
+        const knockoutDefeat = countedKnockouts >= getEffectiveKnockoutLimit(player);
         const deckEmptyDefeat = getInitialPokemonCount(player) > KNOCKOUT_LIMIT && Boolean(player.lostByPokemonDeck);
 
         return knockoutDefeat || deckEmptyDefeat;
@@ -654,7 +675,6 @@
             kind: 'pokemon',
             owner,
             pokemon,
-            statChanges: [],
             statStages: createDefaultStatStages()
         };
     }
@@ -1426,7 +1446,6 @@
         const stages = ensureStatStages(card);
         const hadChanges = Object.keys(STAT_LABELS).some(stat => stages[stat] !== 0);
 
-        card.statChanges = [];
         card.statStages = createDefaultStatStages();
 
         return hadChanges;

@@ -25,7 +25,6 @@ function makePokemonCard(owner, types) {
             name: 'Testmon',
             types
         },
-        statChanges: [],
         statStages: undefined
     };
 }
@@ -274,4 +273,75 @@ test('sleep applied after a Pokemon has acted still blocks its own next-turn att
     }
 
     assert.equal(Model.hasPokemonStatus(sleeper, 'SLEEP'), false);
+});
+
+test('overkill damage is capped at remaining HP for the log and damage float', () => {
+    const state = arena.state;
+
+    state.elements = { popup: { hidden: false } };
+    state.log = [];
+    state.pendingPokemonReplacements = [];
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const attacker = makePokemonCard('player', ['FIRE']);
+    const target = makePokemonCard('opponent', ['WATER']);
+
+    // basePower 50 with equal stats always rolls 18-23 raw damage, far past
+    // the target's 5 remaining HP.
+    target.currentHealth = 5;
+    state.players.player.board[0] = attacker;
+    state.players.opponent.board[0] = target;
+
+    const result = Controller.damagePokemon('opponent', target, attacker, makeAttackCard('player', ['FIRE']));
+
+    assert.equal(result.damage, 5);
+    assert.equal(result.damagePercent, 10);
+    assert.equal(target.currentHealth, 0);
+    assert.ok(state.players.opponent.knockout.some(card => card.id === target.id));
+});
+
+test('a knockout at the limit still queues a replacement when a Fossil can revive', () => {
+    const state = arena.state;
+
+    state.elements = { popup: { hidden: false } };
+    state.log = [];
+    state.pendingPokemonReplacements = [];
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const player = state.players.player;
+    const limit = Model.getEffectiveKnockoutLimit(player);
+    const fossil = makePokemonCard('player', ['FOSSIL', 'ROCK']);
+    const victim = makePokemonCard('player', ['WATER']);
+
+    player.board[0] = victim;
+    player.knockout = [fossil];
+    player.knockoutCount = limit - 1;
+
+    Controller.knockOutPokemon('player', victim);
+
+    // The knockout reaches the limit, but the revivable Fossil defers defeat
+    // and the vacated slot still gets an end-of-turn replacement queued.
+    assert.equal(player.knockoutCount, limit);
+    assert.equal(Model.isPlayerDefeated(player), false);
+    assert.ok(state.pendingPokemonReplacements.some(replacement => (
+        replacement.ownerId === 'player' && replacement.slotIndex === 0
+    )));
+
+    // Once the Fossil's revival is spent, the next knockout is a real defeat
+    // and no replacement is queued.
+    state.pendingPokemonReplacements = [];
+    fossil.hasUsedFossilRevival = true;
+    const secondVictim = makePokemonCard('player', ['WATER']);
+    player.board[1] = secondVictim;
+
+    Controller.knockOutPokemon('player', secondVictim);
+
+    assert.equal(Model.isPlayerDefeated(player), true);
+    assert.equal(state.pendingPokemonReplacements.length, 0);
 });

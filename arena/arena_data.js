@@ -540,10 +540,13 @@
     /**
      * Fetches a JSON data file for boot. On any load/parse/HTTP failure, it logs
      * the problem and returns the built-in fallback data for that file.
+     * 'no-cache' revalidates with the server so data edits show up on the next
+     * page load, while still allowing 304 responses instead of the full
+     * re-download that 'no-store' forced on every page navigation.
      */
     async function loadJson(path, fallback) {
         try {
-            const response = await fetch(path, { cache: 'no-store' });
+            const response = await fetch(path, { cache: 'no-cache' });
 
             if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
 

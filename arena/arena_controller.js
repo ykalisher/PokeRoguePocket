@@ -2201,10 +2201,11 @@
         const attackBaseDamage = Number(actionCard.attack.basePower) || 0;
         const statRatio = targetDefense > 0 ? attackerAttack / targetDefense : attackerAttack;
         const damage = Math.max(1, Math.ceil(statRatio * attackBaseDamage * getDamageVarianceMultiplier()));
-        const damagePercent = Math.ceil((damage / pokemonCard.pokemon.baseHealth) * 100);
+        const actualDamage = Math.min(pokemonCard.currentHealth, damage);
+        const damagePercent = Math.ceil((actualDamage / pokemonCard.pokemon.baseHealth) * 100);
 
-        pokemonCard.currentHealth = Math.max(0, pokemonCard.currentHealth - damage);
-        logEvent(`${model.getCardName(pokemonCard)} took ${damage} damage.`);
+        pokemonCard.currentHealth = Math.max(0, pokemonCard.currentHealth - actualDamage);
+        logEvent(`${model.getCardName(pokemonCard)} took ${actualDamage} damage.`);
 
         if (pokemonCard.currentHealth === 0) {
             knockOutPokemon(ownerId, pokemonCard);
@@ -2212,7 +2213,7 @@
 
         return {
             cardId: pokemonCard.id,
-            damage,
+            damage: actualDamage,
             damagePercent,
             ownerId
         };
@@ -2733,6 +2734,9 @@
      * Removes a Pokemon at 0 HP, moves it to the knockout pile, increments the
      * owner's knockout count, then queues replacement for end-of-turn. Delaying
      * replacement keeps later queued attacks from hitting a newly drawn Pokemon.
+     * The defeat check counts pending Fossil revivals, so a knockout at the
+     * limit still queues a replacement when a Fossil refund can keep the owner
+     * in the battle.
      */
     function knockOutPokemon(ownerId, pokemonCard) {
         const owner = state.players[ownerId];
@@ -2747,8 +2751,7 @@
         model.updatePokemonLeft(owner);
         logEvent(`${model.getCardName(removedCard)} was knocked out.`);
 
-        const effectiveLimit = model.getEffectiveKnockoutLimit(owner);
-        if (owner.knockoutCount >= effectiveLimit) return;
+        if (model.isPlayerDefeated(owner)) return;
 
         queuePokemonReplacement(ownerId, slotIndex);
     }
@@ -3347,6 +3350,10 @@
         maybeApplyAttackStatChanges,
         // Exposed for tests: sleep wake-ladder timing (phase 21).
         resolveSleepAttempt,
-        tickSleepTimersWithoutAttack
+        tickSleepTimersWithoutAttack,
+        // Exposed for tests: overkill damage capping and Fossil-aware
+        // knockout-limit deferral.
+        damagePokemon,
+        knockOutPokemon
     };
 })(window.CardArena = window.CardArena || {});

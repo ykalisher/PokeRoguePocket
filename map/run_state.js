@@ -224,7 +224,6 @@
             kind: 'pokemon',
             owner,
             pokemon,
-            statChanges: [],
             statStages: {
                 attack: 0,
                 defense: 0,

@@ -101,19 +101,38 @@
      * Public full-board render called after meaningful state changes.
      */
     function render() {
+        const pendingAction = getPendingActionContext();
+
         state.elements.board.innerHTML = `
-            ${renderSide('opponent')}
-            ${renderStatus()}
-            ${renderSide('player')}
+            ${renderSide('opponent', pendingAction)}
+            ${renderStatus(pendingAction)}
+            ${renderSide('player', pendingAction)}
             ${state.rulesWindowOpen ? renderRulesReferenceWindow() : ''}
             ${state.pileWindow ? renderPileWindow() : ''}
         `;
     }
 
     /**
+     * Resolves the player's pending action card and its legal target options
+     * once per render pass; board-slot flags, group-target checks, and the
+     * status bar reuse it instead of re-deriving the same lookup per slot.
+     */
+    function getPendingActionContext() {
+        const player = state.players.player;
+        const pendingCard = player ? arena.Model.findHandCard(player, state.pendingActionCardId) : null;
+
+        return {
+            pendingCard,
+            targetOptions: pendingCard
+                ? arena.Model.getTargetOptionsForAction(pendingCard, 'player', state.pendingUserCardId)
+                : []
+        };
+    }
+
+    /**
      * Renders one player's hand, board slots, piles, and counters.
      */
-    function renderSide(playerId) {
+    function renderSide(playerId, pendingAction) {
         const player = state.players[playerId];
         const isOpponent = playerId === 'opponent';
         const handFirst = isOpponent ? renderHand(player) : '';
@@ -138,7 +157,7 @@
                     ${renderEffectBoostTray(player)}
                     ${renderPile('Pkmn', player.pokemonDeck.length, 'pokemon-deck', player.id)}
                     ${renderPile('Action', player.deck.length, 'deck', player.id)}
-                    ${renderPlayedSlots(player)}
+                    ${renderPlayedSlots(player, pendingAction)}
                     ${renderPile('Discard', player.discard.length, 'discard', player.id)}
                     ${renderPile('KO', player.knockout.length, 'knockout', player.id)}
                 </div>
@@ -178,15 +197,15 @@
         `;
     }
 
-    function renderPlayedSlots(player) {
-        const isGroupTarget = isGroupTargetOption(player.id);
+    function renderPlayedSlots(player, pendingAction) {
+        const isGroupTarget = isGroupTargetOption(player.id, pendingAction);
         const groupClass = isGroupTarget ? ' is-group-target' : '';
         const groupAttributes = isGroupTarget ? `data-target-group-owner="${player.id}" role="button" tabindex="0"` : '';
 
         return `
             <div class="played-slots${groupClass}" aria-label="${player.name} played Pokemon" ${groupAttributes}>
-                        ${renderBoardSlot(player, 0)}
-                        ${renderBoardSlot(player, 1)}
+                        ${renderBoardSlot(player, 0, pendingAction)}
+                        ${renderBoardSlot(player, 1, pendingAction)}
                     </div>
         `;
     }
@@ -339,11 +358,11 @@
      * Renders a board slot with targeting/user/queued state derived from the
      * current controller phase.
      */
-    function renderBoardSlot(player, slotIndex) {
+    function renderBoardSlot(player, slotIndex, pendingAction) {
         const card = player.board[slotIndex];
-        const flags = getBoardCardFlags(player.id, card);
+        const flags = getBoardCardFlags(player.id, card, pendingAction);
         const queued = card && arena.Model.hasQueuedAttack(player.id, card.id);
-        const pendingAttackHover = card ? renderPendingAttackHover(player.id, card) : '';
+        const pendingAttackHover = card ? renderPendingAttackHover(player.id, card, pendingAction) : '';
 
         return `
             <div class="board-slot" data-slot-owner="${player.id}" data-slot-index="${slotIndex}">
@@ -358,7 +377,7 @@
      * During attack target selection, renders the pending attack card floating
      * over its selected user so it can be dragged to a target.
      */
-    function renderPendingAttackHover(playerId, card) {
+    function renderPendingAttackHover(playerId, card, pendingAction) {
         if (
             state.phase !== 'selecting-attack-target' ||
             playerId !== 'player' ||
@@ -367,7 +386,7 @@
             return '';
         }
 
-        const attackCard = arena.Model.findHandCard(state.players.player, state.pendingActionCardId);
+        const attackCard = pendingAction.pendingCard;
 
         if (!arena.Model.isAttackCard(attackCard)) return '';
 
@@ -379,10 +398,10 @@
     }
 
     /**
-     * Computes UI flags for board cards based on pending action state and model
-     * target options. These flags become classes and clickable attributes.
+     * Computes UI flags for board cards from the render pass's shared pending
+     * action context. These flags become classes and clickable attributes.
      */
-    function getBoardCardFlags(playerId, card) {
+    function getBoardCardFlags(playerId, card, pendingAction) {
         if (!card) {
             return {
                 actionTarget: false,
@@ -392,17 +411,13 @@
             };
         }
 
-        const pendingCard = arena.Model.findHandCard(state.players.player, state.pendingActionCardId);
-        const targetOptions = pendingCard
-            ? arena.Model.getTargetOptionsForAction(pendingCard, 'player', state.pendingUserCardId)
-            : [];
-        const singleTarget = isTargetingPhase() && arena.Model.targetOptionsIncludeCard(targetOptions, playerId, card.id);
-        const groupTarget = isTargetingPhase() && arena.Model.targetOptionsIncludeGroup(targetOptions, playerId);
+        const singleTarget = isTargetingPhase() && arena.Model.targetOptionsIncludeCard(pendingAction.targetOptions, playerId, card.id);
+        const groupTarget = isTargetingPhase() && arena.Model.targetOptionsIncludeGroup(pendingAction.targetOptions, playerId);
         const userOption = (
             state.phase === 'selecting-attack-user' &&
             playerId === 'player' &&
-            arena.Model.isAttackCard(pendingCard) &&
-            arena.Model.canPokemonUseAttackNow('player', card, pendingCard)
+            arena.Model.isAttackCard(pendingAction.pendingCard) &&
+            arena.Model.canPokemonUseAttackNow('player', card, pendingAction.pendingCard)
         );
 
         return {
@@ -798,9 +813,9 @@
      * Renders the central turn/status controls. Buttons expose data-action
      * values that Controller.handleArenaClick() routes.
      */
-    function renderStatus() {
+    function renderStatus(pendingAction) {
         const player = state.players.player;
-        const pendingActionCard = player.hand.find(card => card.id === state.pendingActionCardId);
+        const pendingActionCard = pendingAction.pendingCard;
         const selectedCard = player.hand.find(card => card.id === state.selectedCardId);
         const selectedText = renderSelectedText(pendingActionCard, selectedCard);
         const canEnd = arena.Controller.canPlayerEndTurn();
@@ -906,15 +921,10 @@
      * Checks whether the side panel should become a group target during an
      * attack/item target phase.
      */
-    function isGroupTargetOption(playerId) {
+    function isGroupTargetOption(playerId, pendingAction) {
         if (!isTargetingPhase()) return false;
 
-        const pendingCard = arena.Model.findHandCard(state.players.player, state.pendingActionCardId);
-        const targetOptions = pendingCard
-            ? arena.Model.getTargetOptionsForAction(pendingCard, 'player', state.pendingUserCardId)
-            : [];
-
-        return arena.Model.targetOptionsIncludeGroup(targetOptions, playerId);
+        return arena.Model.targetOptionsIncludeGroup(pendingAction.targetOptions, playerId);
     }
 
     function isTargetingPhase() {

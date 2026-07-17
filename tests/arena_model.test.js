@@ -23,7 +23,6 @@ function makePokemonCard(types, overrides = {}) {
             types,
             ...overrides
         },
-        statChanges: [],
         statStages: undefined
     };
 }
@@ -236,4 +235,29 @@ test('saveBattleState/restoreSavedBattleState round-trips and rolls back unsafe 
 
     assert.equal(Model.clearSavedBattleState(), true);
     assert.equal(storageMap.has(storageKey), false);
+});
+
+test('isPlayerDefeated defers the knockout limit while an eligible Fossil can revive', () => {
+    const player = Model.createPlayer('player', 'You');
+    const limit = Model.getEffectiveKnockoutLimit(player);
+    const latestKnockout = makePokemonCard(['WATER']);
+    const fossil = makePokemonCard(['FOSSIL', 'ROCK']);
+
+    fossil.hasUsedFossilRevival = false;
+
+    // The Fossil sits below the most recent knockout, so an end-of-turn
+    // revival can refund one knockout and the battle must not end yet.
+    player.knockout = [latestKnockout, fossil];
+    player.knockoutCount = limit;
+    assert.equal(Model.isPlayerDefeated(player), false);
+
+    // The most recent knockout itself never revives this turn, so a Fossil
+    // at the top of the pile cannot defer defeat.
+    player.knockout = [fossil, latestKnockout];
+    assert.equal(Model.isPlayerDefeated(player), true);
+
+    // A Fossil that already used its revival cannot defer defeat either.
+    fossil.hasUsedFossilRevival = true;
+    player.knockout = [latestKnockout, fossil];
+    assert.equal(Model.isPlayerDefeated(player), true);
 });

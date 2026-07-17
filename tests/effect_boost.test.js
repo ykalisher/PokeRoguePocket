@@ -25,7 +25,6 @@ function makePokemonCard(owner, types) {
             name: 'Testmon',
             types
         },
-        statChanges: [],
         statStages: undefined
     };
 }

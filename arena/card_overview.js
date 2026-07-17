@@ -60,7 +60,6 @@
             kind: 'pokemon',
             owner: 'overview',
             pokemon,
-            statChanges: [],
             statStages: {
                 attack: 0,
                 defense: 0,

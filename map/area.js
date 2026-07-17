@@ -1405,7 +1405,6 @@
             kind: 'pokemon',
             owner: 'player',
             pokemon,
-            statChanges: [],
             statStages: {
                 attack: 0,
                 defense: 0,
