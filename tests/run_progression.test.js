@@ -71,7 +71,7 @@ test('LEVEL_CONFIG matches the spec table verbatim', () => {
     assert.deepEqual(P.LEVEL_CONFIG[2].battleRanks, [{ rank: 'Standard', weight: 60 }, { rank: 'Ace', weight: 40 }]);
 
     assert.deepEqual(P.LEVEL_CONFIG[3].weights, { battle: 52, capture: 16, event: 20, shop: 12 });
-    assert.deepEqual(P.LEVEL_CONFIG[3].caps, { capture: 2, shop: 1 });
+    assert.deepEqual(P.LEVEL_CONFIG[3].caps, { capture: 3, shop: 1 });
     assert.deepEqual(P.LEVEL_CONFIG[3].battleRanks, [{ rank: 'Ace', weight: 100 }]);
 
     assert.equal(P.LEVEL_CONFIG[1].nodeCount, 12);
@@ -410,7 +410,10 @@ test('bossNodeIdForLevel matches the generated graph', () => {
     });
 });
 
-test('branching graphs honor forced node types and never exceed caps', () => {
+test('branching graphs honor forced node types and the shop cap', () => {
+    // Capture guarantees (phase 41) may push the capture count past
+    // `caps.capture` by design, so that cap is no longer asserted here; the
+    // shop cap is untouched by the guarantee pass and still holds.
     [1, 2, 3].forEach(level => {
         const config = P.LEVEL_CONFIG[level];
         for (let seed = 0; seed < 300; seed++) {
@@ -427,7 +430,6 @@ test('branching graphs honor forced node types and never exceed caps', () => {
             });
 
             const counts = countTypes(graph.nodes);
-            assert.ok((counts.capture || 0) <= config.caps.capture, `L${level}: capture cap`);
             assert.ok((counts.shop || 0) <= config.caps.shop, `L${level}: shop cap`);
         }
     });
@@ -440,6 +442,84 @@ test('includeEvents:false produces zero event nodes on every branching level', (
             assert.equal(countTypes(graph.nodes).event || 0, 0, `L${level}: no events`);
         }
     });
+});
+
+// --- Phase 41: map generation guarantees for levels 1-3 --------------------
+
+function isQualifyingCapture(node, config) {
+    return node.type === 'capture' && !(config.forcedTypes && config.forcedTypes[node.step] === 'capture');
+}
+
+function nodesById(graph) {
+    const byId = {};
+    graph.nodes.forEach(node => { byId[node.id] = node; });
+    return byId;
+}
+
+test('levels 1-3 always generate at least 3 total capture nodes', () => {
+    [1, 2, 3].forEach(level => {
+        for (let seed = 0; seed < 300; seed++) {
+            const graph = P.createAreaGraph(level, { includeEvents: true });
+            const counts = countTypes(graph.nodes);
+            assert.ok((counts.capture || 0) >= 3, `L${level}: expected >=3 total captures, got ${counts.capture || 0}`);
+        }
+    });
+});
+
+test('every start->boss path has a qualifying capture and (with events on) an event', () => {
+    [1, 2, 3].forEach(level => {
+        const config = P.LEVEL_CONFIG[level];
+        for (let seed = 0; seed < 300; seed++) {
+            const graph = P.createAreaGraph(level, { includeEvents: true });
+            const byId = nodesById(graph);
+            const paths = P.listAllPaths(graph);
+            assert.ok(paths.length > 0, `L${level}: at least one start->boss path`);
+
+            paths.forEach(path => {
+                const nodes = path.map(id => byId[id]);
+                assert.ok(
+                    nodes.some(node => isQualifyingCapture(node, config)),
+                    `L${level}: path ${path.join(',')} has no qualifying capture`
+                );
+                assert.ok(
+                    nodes.some(node => node.type === 'event'),
+                    `L${level}: path ${path.join(',')} has no event`
+                );
+            });
+        }
+    });
+});
+
+test('includeEvents:false keeps zero events while every path still has a qualifying capture', () => {
+    [1, 2, 3].forEach(level => {
+        const config = P.LEVEL_CONFIG[level];
+        for (let seed = 0; seed < 300; seed++) {
+            const graph = P.createAreaGraph(level, { includeEvents: false });
+            const counts = countTypes(graph.nodes);
+            assert.equal(counts.event || 0, 0, `L${level}: no events`);
+            assert.ok((counts.capture || 0) >= 3, `L${level}: still >=3 total captures`);
+
+            const byId = nodesById(graph);
+            P.listAllPaths(graph).forEach(path => {
+                const nodes = path.map(id => byId[id]);
+                assert.ok(
+                    nodes.some(node => isQualifyingCapture(node, config)),
+                    `L${level}: path ${path.join(',')} has no qualifying capture with events disabled`
+                );
+            });
+        }
+    });
+});
+
+test('L1 forced steps 1-2 stay captures and step 3 a battle after guarantee conversions', () => {
+    for (let seed = 0; seed < 200; seed++) {
+        const graph = P.createAreaGraph(1, { includeEvents: true });
+        const byStep = {};
+        graph.columns.forEach((column, step) => { if (column.length === 1) byStep[step] = column[0]; });
+        assert.equal(byStep[1].type, 'capture');
+        assert.equal(byStep[2].type, 'capture');
+        assert.equal(byStep[3].type, 'battle');
+    }
 });
 
 test('level 4 is a strictly linear 6-node single-lane gauntlet', () => {

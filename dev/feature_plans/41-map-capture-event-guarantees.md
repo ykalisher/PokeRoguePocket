@@ -32,13 +32,13 @@ Locked by iterated generation tests.
 
 ## Steps
 
-- [ ] 1. **`map/locations.js`** — `LEVEL_CONFIG`: raise level-3 `caps.capture` from 2
+- [x] 1. **`map/locations.js`** — `LEVEL_CONFIG`: raise level-3 `caps.capture` from 2
   to 3. Leave every other level/field alone.
-- [ ] 2. **`map/locations.js`** — add pure helpers: `listAllPaths(graph)` (DFS over
+- [x] 2. **`map/locations.js`** — add pure helpers: `listAllPaths(graph)` (DFS over
   `graph.edges` from the start node to the boss node returning arrays of node ids; these
   maps have ≲30 paths) and a private `everyPathHas(graph, predicate)`. Export
   `listAllPaths` (tests use it).
-- [ ] 3. **`map/locations.js`** — add `enforceBranchingGuarantees(graph, config,
+- [x] 3. **`map/locations.js`** — add `enforceBranchingGuarantees(graph, config,
   includeEvents)` called at the end of `createBranchingGraph` (NOT for gauntlets):
   1. If not every path has a qualifying capture: convert one eligible **mandatory node**
      to `'capture'`. Eligible = a node in a single-node column (on every path), not the
@@ -54,7 +54,7 @@ Locked by iterated generation tests.
      (branch lanes eligible) to `'capture'`.
   Add a short comment: guarantee conversions run after the weighted rolls and may exceed
   `caps` by design.
-- [ ] 4. **`tests/run_progression.test.js`** — add tests beside the existing graph tests
+- [x] 4. **`tests/run_progression.test.js`** — add tests beside the existing graph tests
   (~394–447), ~300 iterations per level for levels 1–3: (a) total captures ≥ 3;
   (b) every path (via `listAllPaths`) contains ≥1 qualifying capture (for L1 that means a
   capture at a non-forced step) and, with `includeEvents: true`, ≥1 event; (c) with
@@ -65,9 +65,9 @@ Locked by iterated generation tests.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — including the pre-existing
+- [x] `node tests/run_all.js` green — including the pre-existing
   `includeEvents:false produces zero event nodes` test.
-- [ ] `verify` skill (light): start a new run, screenshot `area.html` — the map visibly
+- [x] `verify` skill (light): start a new run, screenshot `area.html` — the map visibly
   contains ≥3 "Wild Pokemon Encounter" nodes and an event node reachable on the trunk.
 
 ## Out of scope / do not touch

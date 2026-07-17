@@ -27,7 +27,7 @@
              bossRanks: [{ rank: 'Boss', weight: 100 }] },
         3: { nodeCount: 12, layout: 'branching', forcedTypes: {},
              weights: { battle: 52, capture: 16, event: 20, shop: 12 },
-             caps: { capture: 2, shop: 1 },
+             caps: { capture: 3, shop: 1 },
              battleRanks: [{ rank: 'Ace', weight: 100 }],
              bossRanks: [{ rank: 'Boss', weight: 100 }] },
         4: { nodeCount: 5, layout: 'gauntlet',
@@ -322,7 +322,133 @@
             segmentIndex += 1;
         }
 
-        return graphFromColumns(columns, edges);
+        const graph = graphFromColumns(columns, edges);
+        enforceBranchingGuarantees(graph, config, includeEvents);
+        return graph;
+    }
+
+    /**
+     * Levels 1-3 must have >=3 total capture nodes, and every start->boss
+     * path must pass through >=1 qualifying capture (a capture not on a
+     * config-forced step) and, when events are enabled, >=1 event. Runs
+     * after the weighted rolls and forced steps are already placed, so
+     * these conversions may push the capture count past `caps.capture` -
+     * per-path coverage takes priority over the roll cap by design.
+     */
+    function enforceBranchingGuarantees(graph, config, includeEvents) {
+        const isQualifyingCapture = node => node.type === 'capture' &&
+            !(config.forcedTypes && config.forcedTypes[node.step] === 'capture');
+        const isEvent = node => node.type === 'event';
+        const exclude = { nodeId: null, branchStep: -1 };
+
+        if (!everyPathHas(graph, isQualifyingCapture)) {
+            const converted = convertMandatoryNodeType(graph, config, 'capture', ['battle', 'shop', 'event'], exclude);
+            if (converted) {
+                exclude.nodeId = converted.nodeId;
+                exclude.branchStep = converted.branchStep;
+            }
+        }
+
+        if (includeEvents && !everyPathHas(graph, isEvent)) {
+            convertMandatoryNodeType(graph, config, 'event', ['battle', 'shop'], exclude);
+        }
+
+        while (countGraphType(graph, 'capture') < 3) {
+            if (!convertRandomBattleNode(graph)) break;
+        }
+    }
+
+    /**
+     * Converts one node that lies on every start->boss path (a single-node
+     * column, excluding start/boss/forced steps) to `targetType`, preferring
+     * the first type in `preferredTypesInOrder` that has an eligible
+     * candidate. `exclude` skips a node/branch-step already converted by an
+     * earlier guarantee pass in the same call, so the two passes never
+     * fight over the same conversion. Falls back to converting every lane of
+     * the earliest branch segment when no single mandatory node qualifies.
+     */
+    function convertMandatoryNodeType(graph, config, targetType, preferredTypesInOrder, exclude) {
+        const mandatory = mandatoryNodes(graph, config).filter(node => node.id !== exclude.nodeId);
+
+        for (const type of preferredTypesInOrder) {
+            const candidates = mandatory.filter(node => node.type === type);
+            if (candidates.length > 0) {
+                const chosen = randomPick(candidates);
+                chosen.type = targetType;
+                return { nodeId: chosen.id, branchStep: -1 };
+            }
+        }
+
+        const branchStep = findBranchStep(graph, exclude.branchStep);
+        if (branchStep === -1) return null;
+
+        graph.columns[branchStep].forEach(node => { node.type = targetType; });
+        return { nodeId: graph.columns[branchStep][0].id, branchStep };
+    }
+
+    // Nodes in a single-node column lie on every start->boss path.
+    function mandatoryNodes(graph, config) {
+        const nodeCount = config.nodeCount;
+        return graph.columns
+            .filter(column => column.length === 1)
+            .map(column => column[0])
+            .filter(node => node.step !== 0 && node.step !== nodeCount)
+            .filter(node => !(config.forcedTypes && config.forcedTypes[node.step]));
+    }
+
+    function findBranchStep(graph, excludeStep) {
+        for (let step = 0; step < graph.columns.length; step += 1) {
+            if (step === excludeStep) continue;
+            if (graph.columns[step].length > 1) return step;
+        }
+        return -1;
+    }
+
+    function countGraphType(graph, type) {
+        return graph.nodes.filter(node => node.type === type).length;
+    }
+
+    function convertRandomBattleNode(graph) {
+        const battleNodes = graph.nodes.filter(node => node.type === 'battle');
+        if (battleNodes.length === 0) return false;
+
+        randomPick(battleNodes).type = 'capture';
+        return true;
+    }
+
+    /**
+     * Every start->boss path through the graph, as arrays of node ids. Pure
+     * DFS over `graph.edges`; branching maps have at most a few dozen paths.
+     */
+    function listAllPaths(graph) {
+        const boss = graph.nodes.find(node => node.type === 'boss');
+        if (!boss) return [];
+
+        const adjacency = {};
+        graph.edges.forEach(edge => {
+            if (!adjacency[edge.from]) adjacency[edge.from] = [];
+            adjacency[edge.from].push(edge.to);
+        });
+
+        const paths = [];
+        const walk = (nodeId, path) => {
+            const nextPath = path.concat(nodeId);
+            if (nodeId === boss.id) {
+                paths.push(nextPath);
+                return;
+            }
+            (adjacency[nodeId] || []).forEach(nextId => walk(nextId, nextPath));
+        };
+
+        walk(START_NODE_ID, []);
+        return paths;
+    }
+
+    function everyPathHas(graph, predicate) {
+        const byId = {};
+        graph.nodes.forEach(node => { byId[node.id] = node; });
+
+        return listAllPaths(graph).every(path => path.some(nodeId => predicate(byId[nodeId])));
     }
 
     function makeStepNode(step, lane, id, config, counts, includeEvents, nodeCount) {
@@ -586,6 +712,7 @@
         getLocationById,
         getLocations,
         getWildPokemonPool,
-        isAllowedTrainerRank
+        isAllowedTrainerRank,
+        listAllPaths
     };
 })(window);
