@@ -975,6 +975,7 @@
             return existingEncounter;
         }
 
+        const tradeTypes = locations.rollMartTradeTypes(state.run, arena.GameData);
         const encounter = {
             attackNames: chooseMartCardNames('attacks', 8),
             boughtAttackNames: [],
@@ -983,7 +984,10 @@
             completedAt: null,
             createdAt: new Date().toISOString(),
             itemNames: chooseMartCardNames('items', 4),
-            nodeId: node.id
+            nodeId: node.id,
+            tradeAcceptedType: tradeTypes ? tradeTypes.acceptedType : null,
+            tradeOfferedType: tradeTypes ? tradeTypes.offeredType : null,
+            tradeUsed: false
         };
 
         state.run.martEncounters[node.id] = encounter;
@@ -1039,15 +1043,39 @@
     function sanitizeMartEncounter(encounter) {
         const attackNames = sanitizeMartCardNames('attacks', encounter.attackNames, 8);
         const itemNames = sanitizeMartCardNames('items', encounter.itemNames, 4);
-        const changed = didNameListChange(encounter.attackNames, attackNames) ||
+        const namesChanged = didNameListChange(encounter.attackNames, attackNames) ||
             didNameListChange(encounter.itemNames, itemNames);
+        const tradeChanged = sanitizeMartTradeTypes(encounter);
 
         encounter.attackNames = attackNames;
         encounter.itemNames = itemNames;
         encounter.boughtAttackNames = sanitizeBoughtNames(encounter.boughtAttackNames, attackNames);
         encounter.boughtItemNames = sanitizeBoughtNames(encounter.boughtItemNames, itemNames);
 
-        return changed;
+        return namesChanged || tradeChanged;
+    }
+
+    /**
+     * Re-rolls the mart's trade types when stale: old saves missing the
+     * fields, the player no longer owning a pokemon of tradeAcceptedType, or
+     * the offered type's obtainable pool having gone empty. No-op once used.
+     */
+    function sanitizeMartTradeTypes(encounter) {
+        if (encounter.tradeUsed) return false;
+
+        const stillValid = Boolean(encounter.tradeAcceptedType) &&
+            Boolean(encounter.tradeOfferedType) &&
+            locations.getRunPokemonRecords(state.run)
+                .some(record => getRecordTypes(record).includes(encounter.tradeAcceptedType)) &&
+            locations.getObtainablePokemonPool(arena.GameData)
+                .some(record => getRecordTypes(record).includes(encounter.tradeOfferedType));
+
+        if (stillValid) return false;
+
+        const rolled = locations.rollMartTradeTypes(state.run, arena.GameData);
+        encounter.tradeAcceptedType = rolled ? rolled.acceptedType : null;
+        encounter.tradeOfferedType = rolled ? rolled.offeredType : null;
+        return true;
     }
 
     function sanitizeMartCardNames(collectionKey, names, count) {

@@ -161,3 +161,113 @@ test('eligible runs can still draw the full range, including legendary attacks a
     assert.equal(legalAttacks.length, gameData.attacks.length);
     assert.equal(legalItems.length, gameData.items.length);
 });
+
+// --- Mart trade service (phase 46) ------------------------------------------
+
+function makePokemon(name, id, types, extra) {
+    return Object.assign({
+        name,
+        id,
+        type1: types[0] || 'NONE',
+        type2: types[1] || 'NONE',
+        type3: types[2] || 'NONE',
+        baseHealth: 10,
+        baseAttack: 10,
+        baseDefense: 10,
+        baseSpeed: 10
+    }, extra || {});
+}
+
+function getRecordTypes(record) {
+    return [record.type1, record.type2, record.type3].filter(type => type && type !== 'NONE');
+}
+
+// A baby (evolvesInto a fixture mega), the mega, a legendary, and two
+// obtainable species per type — enough to exercise every trade branch:
+// uniform accepted/offered type rolls and the exclude-when-possible rule.
+function fixtureTradeGameData() {
+    const mega = makePokemon('Trade Mega', '9102', ['FIRE', 'DRAGON']);
+    const baby = makePokemon('Trade Baby', '9101', ['FIRE', 'BABY'], { evolvesInto: 'Trade Mega' });
+    const legendary = makePokemon('Trade Legend', '9103', ['LEGENDARY']);
+    const waterA = makePokemon('Trade Water A', '9104', ['WATER']);
+    const waterB = makePokemon('Trade Water B', '9105', ['WATER']);
+    const grassA = makePokemon('Trade Grass A', '9106', ['GRASS']);
+    return { pokemon: [baby, mega, legendary, waterA, waterB, grassA] };
+}
+
+test('rollMartTradeTypes: accepted is uniform over the run\'s owned types, offered always has an obtainable species', () => {
+    const gameData = fixtureTradeGameData();
+    const [, , legendary, waterA] = gameData.pokemon;
+    const run = emptyRun();
+    addPokemon(run, waterA);
+    addPokemon(run, legendary, true);
+
+    for (let iteration = 0; iteration < 200; iteration += 1) {
+        const rolled = P.rollMartTradeTypes(run, gameData);
+
+        assert.ok(rolled, 'expected a roll since the run owns pokemon');
+        assert.ok(['WATER', 'LEGENDARY'].includes(rolled.acceptedType), `unexpected acceptedType: ${rolled.acceptedType}`);
+        assert.ok(['WATER', 'GRASS'].includes(rolled.offeredType), `unexpected offeredType: ${rolled.offeredType}`);
+    }
+});
+
+test('rollMartTradeTypes returns null when the run owns no pokemon', () => {
+    const gameData = fixtureTradeGameData();
+    const run = emptyRun();
+    assert.equal(P.rollMartTradeTypes(run, gameData), null);
+});
+
+test('chooseTradeResultRecord: never a legendary/baby/mega, always matches the offered type, over 200 rolls', () => {
+    const gameData = fixtureTradeGameData();
+
+    for (let iteration = 0; iteration < 200; iteration += 1) {
+        const waterResult = P.chooseTradeResultRecord(gameData, 'WATER', null);
+        const grassResult = P.chooseTradeResultRecord(gameData, 'GRASS', null);
+
+        assert.ok(['Trade Water A', 'Trade Water B'].includes(waterResult.name), `unexpected WATER result: ${waterResult.name}`);
+        assert.ok(getRecordTypes(waterResult).includes('WATER'));
+        assert.equal(grassResult.name, 'Trade Grass A');
+        assert.ok(getRecordTypes(grassResult).includes('GRASS'));
+    }
+});
+
+test('chooseTradeResultRecord excludes the traded-away name when another match exists', () => {
+    const gameData = fixtureTradeGameData();
+
+    for (let iteration = 0; iteration < 200; iteration += 1) {
+        const result = P.chooseTradeResultRecord(gameData, 'WATER', 'Trade Water A');
+        assert.equal(result.name, 'Trade Water B');
+    }
+});
+
+test('chooseTradeResultRecord falls back to the excluded name when it is the only match', () => {
+    const gameData = fixtureTradeGameData();
+
+    for (let iteration = 0; iteration < 200; iteration += 1) {
+        const result = P.chooseTradeResultRecord(gameData, 'GRASS', 'Trade Grass A');
+        assert.equal(result.name, 'Trade Grass A');
+    }
+});
+
+test('a simulated trade keeps total pokemon count constant', () => {
+    const gameData = fixtureTradeGameData();
+    const [, , , waterA, waterB, grassA] = gameData.pokemon;
+    const run = emptyRun();
+    addPokemon(run, waterA);
+    addPokemon(run, waterB, true);
+    addPokemon(run, grassA, true);
+
+    const totalBefore = run.collections.pokemon.length + run.collections.bench.pokemon.length;
+    const tradedAwayCard = run.collections.pokemon[0];
+    const resultRecord = P.chooseTradeResultRecord(gameData, 'GRASS', tradedAwayCard.pokemon.name);
+    assert.ok(resultRecord);
+
+    run.collections.pokemon = run.collections.pokemon.filter(card => card.id !== tradedAwayCard.id);
+    run.collections.bench.pokemon = run.collections.bench.pokemon.filter(card => card.id !== tradedAwayCard.id);
+    const newCard = R.createPokemonCard(resultRecord, 'player', R.allocateCardId(run, 'pokemon', resultRecord.name));
+    R.addPokemonCard(run, newCard);
+    R.balancePokemonCollections(run);
+
+    const totalAfter = run.collections.pokemon.length + run.collections.bench.pokemon.length;
+    assert.equal(totalAfter, totalBefore);
+});

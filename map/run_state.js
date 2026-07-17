@@ -455,7 +455,10 @@
                 createdAt: encounter.createdAt || null,
                 itemNames: normalizeNameList(encounter.itemNames),
                 nodeId: encounter.nodeId || nodeId,
-                releaseUsed: Boolean(encounter.releaseUsed)
+                releaseUsed: Boolean(encounter.releaseUsed),
+                tradeAcceptedType: encounter.tradeAcceptedType || null,
+                tradeOfferedType: encounter.tradeOfferedType || null,
+                tradeUsed: Boolean(encounter.tradeUsed)
             }]));
     }
 

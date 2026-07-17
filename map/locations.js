@@ -814,6 +814,51 @@
         return true;
     }
 
+    // --- Mart trade service (phase 46) --------------------------------------
+    // Both types are rolled once, when the encounter is created, and persist
+    // until the trade is used or the roll goes stale (see sanitizeMartEncounter
+    // in map/area.js).
+
+    function getDistinctRecordTypes(records) {
+        const types = new Set();
+        records.forEach(record => getRecordTypes(record).forEach(type => types.add(type)));
+        return Array.from(types);
+    }
+
+    /**
+     * Rolls the mart trade's two types: `acceptedType` uniform over the
+     * distinct types present on the player's active+bench pokemon (what the
+     * player may trade away), `offeredType` uniform over the distinct types
+     * that have at least one obtainable species (what the player may
+     * receive). Returns null if the player owns no pokemon.
+     */
+    function rollMartTradeTypes(run, gameData) {
+        const ownedTypes = getDistinctRecordTypes(getRunPokemonRecords(run));
+        if (ownedTypes.length === 0) return null;
+
+        const offerableTypes = getDistinctRecordTypes(getObtainablePokemonPool(gameData));
+        if (offerableTypes.length === 0) return null;
+
+        return {
+            acceptedType: randomPick(ownedTypes),
+            offeredType: randomPick(offerableTypes)
+        };
+    }
+
+    /**
+     * Uniform pick over obtainable species whose types include offeredType,
+     * excluding excludeName when possible (falls back to including it if
+     * it's the only match, since the pool is never empty on a valid roll).
+     */
+    function chooseTradeResultRecord(gameData, offeredType, excludeName) {
+        const matching = getObtainablePokemonPool(gameData)
+            .filter(record => getRecordTypes(record).includes(offeredType));
+        const withoutExcluded = matching.filter(record => record.name !== excludeName);
+        const candidates = withoutExcluded.length > 0 ? withoutExcluded : matching;
+
+        return candidates.length > 0 ? randomPick(candidates) : null;
+    }
+
     global.PokeLocations = {
         LEVEL_CONFIG,
         STARTER_DECKS,
@@ -822,6 +867,7 @@
         applyLocationTheme,
         bossNodeIdForLevel,
         chooseNextLocation,
+        chooseTradeResultRecord,
         chooseTrainer,
         createAreaGraph,
         createLocationSnapshot,
@@ -840,6 +886,7 @@
         isMegaPokemon,
         isObtainablePokemon,
         listAllPaths,
+        rollMartTradeTypes,
         runHasDragonGemPrereqs,
         runOwnsLegendaryPokemon
     };

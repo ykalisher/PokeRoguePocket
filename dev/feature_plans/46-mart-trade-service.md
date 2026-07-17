@@ -28,7 +28,7 @@ obtainable species of the mart's "offered" type. Pokemon count is unchanged (1:1
 
 ## Steps
 
-- [ ] 1. **`map/locations.js`** — add and export pure helpers:
+- [x] 1. **`map/locations.js`** — add and export pure helpers:
   `rollMartTradeTypes(run, gameData)` → `{ acceptedType, offeredType }` (accepted:
   uniform over the distinct type set of the player's active+bench pokemon — reuse
   `getRunPokemonRecords` from 43; offered: uniform over the set of types having ≥1
@@ -36,16 +36,16 @@ obtainable species of the mart's "offered" type. Pokemon count is unchanged (1:1
   `chooseTradeResultRecord(gameData, offeredType, excludeName)` → uniform over
   obtainable species whose types include `offeredType`, excluding `excludeName` when
   possible (fall back to including it if it's the only match).
-- [ ] 2. **`map/area.js`** — `getOrCreateMartEncounter`: stamp
+- [x] 2. **`map/area.js`** — `getOrCreateMartEncounter`: stamp
   `tradeAcceptedType` / `tradeOfferedType` (from `rollMartTradeTypes`) and
   `tradeUsed: false` on new encounters. `sanitizeMartEncounter`: when `tradeUsed` is
   false and either field is missing (old saves) or the player no longer owns a pokemon
   of `tradeAcceptedType` or the offered type's obtainable pool is empty (data changed),
   re-roll both via `rollMartTradeTypes`.
-- [ ] 3. **`map/run_state.js`** — `normalizeMartEncounters`: defaults
+- [x] 3. **`map/run_state.js`** — `normalizeMartEncounters`: defaults
   `tradeAcceptedType: encounter.tradeAcceptedType || null`, same for
   `tradeOfferedType`, and `tradeUsed: Boolean(encounter.tradeUsed)`.
-- [ ] 4. **`map/mart.js`** — add a "Trade" row to the Services section showing both
+- [x] 4. **`map/mart.js`** — add a "Trade" row to the Services section showing both
   types up front (e.g. `Wanted: WATER → Offered: FIRE`); button
   (`data-mart-service="trade"`) enabled when `!tradeUsed` and the *selected* pokemon's
   types include the accepted type; helper text when the selected pokemon doesn't match
@@ -55,7 +55,7 @@ obtainable species of the mart's "offered" type. Pokemon count is unchanged (1:1
   `Traded <old> for <new>.`, re-render. If the accepted type became orphaned mid-visit
   (e.g. the matching pokemon was just released), re-run the sanitize re-roll instead of
   dead-ending.
-- [ ] 5. **`tests/mart_stock.test.js`** (extend, fixture gameData incl. a
+- [x] 5. **`tests/mart_stock.test.js`** (extend, fixture gameData incl. a
   baby/mega/legendary) — `rollMartTradeTypes`: accepted ∈ the run's owned types, offered
   always has ≥1 obtainable species; `chooseTradeResultRecord` over ~200 rolls never
   returns a legendary/baby/mega and always matches the offered type; a simulated trade
@@ -63,8 +63,8 @@ obtainable species of the mart's "offered" type. Pokemon count is unchanged (1:1
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill: mart shows both types before any commitment; selecting a
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill: mart shows both types before any commitment; selecting a
   non-matching pokemon keeps the button disabled; trading swaps exactly one pokemon
   (counter unchanged), the received pokemon's types include the offered type; the
   service is used on re-entry; a different mart rolls fresh types.
