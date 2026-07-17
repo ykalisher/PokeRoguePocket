@@ -760,6 +760,60 @@
         return uniqueByName(pokemon).filter(record => isObtainablePokemon(record, gameData));
     }
 
+    // --- Mart stock eligibility (phase 43) ---------------------------------
+    // No LEGENDARY-typed attack in stock without an owned LEGENDARY pokemon;
+    // no dragon-gem item in stock without both a DRAGON attack and a DRAGON
+    // pokemon owned. "Owned" = active or bench.
+
+    function getRunPokemonRecords(run) {
+        const collections = run && run.collections;
+        if (!collections) return [];
+        const active = Array.isArray(collections.pokemon) ? collections.pokemon : [];
+        const bench = collections.bench && Array.isArray(collections.bench.pokemon) ? collections.bench.pokemon : [];
+        return [...active, ...bench].map(card => card && card.pokemon).filter(Boolean);
+    }
+
+    function getRunAttackRecords(run) {
+        const collections = run && run.collections;
+        if (!collections) return [];
+        const active = Array.isArray(collections.actions) ? collections.actions : [];
+        const bench = collections.bench && Array.isArray(collections.bench.actions) ? collections.bench.actions : [];
+        return [...active, ...bench]
+            .filter(card => card && card.kind === 'attack')
+            .map(card => card.attack)
+            .filter(Boolean);
+    }
+
+    function runOwnsLegendaryPokemon(run) {
+        return getRunPokemonRecords(run).some(record => getRecordTypes(record).includes('LEGENDARY'));
+    }
+
+    function runHasDragonGemPrereqs(run) {
+        const hasDragonAttack = getRunAttackRecords(run).some(record => getRecordTypes(record).includes('DRAGON'));
+        const hasDragonPokemon = getRunPokemonRecords(run).some(record => getRecordTypes(record).includes('DRAGON'));
+        return hasDragonAttack && hasDragonPokemon;
+    }
+
+    function itemIsDragonGem(item) {
+        return Boolean(item && Array.isArray(item.status) && item.status.includes('DRAGON_GEM'));
+    }
+
+    /**
+     * Whether a candidate record may appear in mart stock for the given
+     * collection. Evaluated at encounter creation/repair time only — gaining
+     * a legendary/dragon prereq later does not retro-upgrade existing stock.
+     */
+    function isMartOfferAllowed(record, collectionKey, run) {
+        if (!record) return false;
+        if (collectionKey === 'attacks') {
+            return !(getRecordTypes(record).includes('LEGENDARY') && !runOwnsLegendaryPokemon(run));
+        }
+        if (collectionKey === 'items') {
+            return !(itemIsDragonGem(record) && !runHasDragonGemPrereqs(run));
+        }
+        return true;
+    }
+
     global.PokeLocations = {
         LEVEL_CONFIG,
         STARTER_DECKS,
@@ -777,11 +831,16 @@
         getLocations,
         getMegaTargetKeys,
         getObtainablePokemonPool,
+        getRunAttackRecords,
+        getRunPokemonRecords,
         getWildPokemonPool,
         isAllowedTrainerRank,
         isBabyPokemon,
+        isMartOfferAllowed,
         isMegaPokemon,
         isObtainablePokemon,
-        listAllPaths
+        listAllPaths,
+        runHasDragonGemPrereqs,
+        runOwnsLegendaryPokemon
     };
 })(window);

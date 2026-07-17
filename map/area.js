@@ -1051,7 +1051,11 @@
     }
 
     function sanitizeMartCardNames(collectionKey, names, count) {
-        const availableNames = new Set(getUniqueGameRecords(collectionKey).map(record => record.name));
+        const availableNames = new Set(
+            getUniqueGameRecords(collectionKey)
+                .filter(record => locations.isMartOfferAllowed(record, collectionKey, state.run))
+                .map(record => record.name)
+        );
         const seenNames = new Set();
         const validNames = Array.isArray(names)
             ? names.filter(name => {
@@ -1092,7 +1096,10 @@
     }
 
     function chooseMartCardNames(collectionKey, count) {
-        return shuffleRecords(getUniqueGameRecords(collectionKey))
+        const eligibleRecords = getUniqueGameRecords(collectionKey)
+            .filter(record => locations.isMartOfferAllowed(record, collectionKey, state.run));
+
+        return shuffleRecords(eligibleRecords)
             .slice(0, count)
             .map(record => record.name);
     }

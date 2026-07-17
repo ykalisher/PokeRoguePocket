@@ -30,7 +30,7 @@ creation and every repair/sanitize path.
 
 ## Steps
 
-- [ ] 1. **`map/locations.js`** — add pure, run-aware helpers (exported):
+- [x] 1. **`map/locations.js`** — add pure, run-aware helpers (exported):
   `getRunPokemonRecords(run)` and `getRunAttackRecords(run)` (active + bench);
   `runOwnsLegendaryPokemon(run)`; `runHasDragonGemPrereqs(run)` (≥1 DRAGON-typed attack
   AND ≥1 DRAGON-typed pokemon); `isMartOfferAllowed(record, collectionKey, run)` — for
@@ -38,13 +38,13 @@ creation and every repair/sanitize path.
   `!runOwnsLegendaryPokemon(run)`; for `'items'`: allowed unless the item's `status`
   includes `'DRAGON_GEM'` and `!runHasDragonGemPrereqs(run)`; other collections always
   allowed. Reuse `getRecordTypes`.
-- [ ] 2. **`map/area.js`** — `chooseMartCardNames` and `sanitizeMartCardNames`: filter
+- [x] 2. **`map/area.js`** — `chooseMartCardNames` and `sanitizeMartCardNames`: filter
   the candidate records / replacement names through
   `locations.isMartOfferAllowed(record, collectionKey, state.run)`. Walk the existing
   sanitize logic carefully so bought names are preserved exactly as today.
-- [ ] 3. **`map/mart.js`** — `chooseOfferNames` and `repairOfferNames`: apply the same
+- [x] 3. **`map/mart.js`** — `chooseOfferNames` and `repairOfferNames`: apply the same
   filter with `state.run`.
-- [ ] 4. **`tests/mart_stock.test.js`** (new) — load `map/locations.js` via
+- [x] 4. **`tests/mart_stock.test.js`** (new) — load `map/locations.js` via
   `tests/helpers/arena_env.js` with the real JSON data: build fixture runs (a) with and
   without a LEGENDARY pokemon, (b) with and without DRAGON attack+pokemon; assert
   `isMartOfferAllowed` verdicts on a known LEGENDARY attack (e.g. `Hyper Beam`), a
@@ -54,11 +54,14 @@ creation and every repair/sanitize path.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill: fresh run (starter decks have no legendary and, unless fire/water
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill: fresh run (starter decks have no legendary and, unless fire/water
   luck says otherwise, check the actual deck for DRAGON prereqs) → enter a shop node;
   read the offer names from the DOM and assert none is a LEGENDARY-typed attack or a
   dragon gem; leave and re-enter the same mart — stock identical and still compliant.
+  Verified via `dev/verify/phase43_mart_stock_filters.py` (water starter, forced
+  start→shop graph): first-visit and repaired-re-entry offer names identical, none a
+  LEGENDARY attack or dragon-gem item; screenshot `phase43_mart_shop.png`.
 
 ## Out of scope / do not touch
 Prices and stock counts (8×70 / 4×90); the capture-reward dragon-gem logic in
