@@ -50,7 +50,7 @@
     "type3": "NONE",
     "id": "0064",
     "baseHealth": 55,
-    "baseAttack": 130,
+    "baseAttack": 125,
     "baseDefense": 60,
     "baseSpeed": 120
   },
@@ -93,9 +93,9 @@
     "type2": "DRAGON",
     "type3": "MONSTER",
     "id": "0130",
-    "baseHealth": 95,
-    "baseAttack": 125,
-    "baseDefense": 85,
+    "baseHealth": 90,
+    "baseAttack": 120,
+    "baseDefense": 80,
     "baseSpeed": 80
   },
   {
@@ -104,7 +104,7 @@
     "type2": "NONE",
     "type3": "NONE",
     "id": "0143",
-    "baseHealth": 160,
+    "baseHealth": 140,
     "baseAttack": 110,
     "baseDefense": 80,
     "baseSpeed": 30
@@ -148,10 +148,10 @@
     "type2": "FLYING",
     "type3": "FAIRY",
     "id": "0149",
-    "baseHealth": 97,
+    "baseHealth": 85,
     "baseAttack": 130,
-    "baseDefense": 97,
-    "baseSpeed": 80
+    "baseDefense": 85,
+    "baseSpeed": 70
   },
   {
     "name": "Mewtwo",
@@ -159,10 +159,10 @@
     "type2": "ARTIFICIAL",
     "type3": "LEGENDARY",
     "id": "0150",
-    "baseHealth": 100,
-    "baseAttack": 150,
-    "baseDefense": 95,
-    "baseSpeed": 130
+    "baseHealth": 80,
+    "baseAttack": 140,
+    "baseDefense": 70,
+    "baseSpeed": 120
   },
   {
     "name": "Meganium",
@@ -203,9 +203,9 @@
     "type2": "FIGHTING",
     "type3": "NONE",
     "id": "0166",
-    "baseHealth": 50,
-    "baseAttack": 90,
-    "baseDefense": 50,
+    "baseHealth": 60,
+    "baseAttack": 95,
+    "baseDefense": 55,
     "baseSpeed": 120
   },
   {
@@ -214,9 +214,9 @@
     "type2": "FLYING",
     "type3": "NONE",
     "id": "0169",
-    "baseHealth": 85,
+    "baseHealth": 70,
     "baseAttack": 90,
-    "baseDefense": 80,
+    "baseDefense": 70,
     "baseSpeed": 130
   },
   {
@@ -237,7 +237,7 @@
     "type3": "NONE",
     "id": "0212",
     "baseHealth": 70,
-    "baseAttack": 130,
+    "baseAttack": 120,
     "baseDefense": 100,
     "baseSpeed": 65
   },
@@ -261,7 +261,7 @@
     "baseHealth": 90,
     "baseAttack": 115,
     "baseDefense": 75,
-    "baseSpeed": 115
+    "baseSpeed": 110
   },
   {
     "name": "Entei",
@@ -269,7 +269,7 @@
     "type2": "LEGENDARY",
     "type3": "NONE",
     "id": "0244",
-    "baseHealth": 115,
+    "baseHealth": 110,
     "baseAttack": 115,
     "baseDefense": 75,
     "baseSpeed": 90
@@ -280,7 +280,7 @@
     "type2": "LEGENDARY",
     "type3": "NONE",
     "id": "0245",
-    "baseHealth": 115,
+    "baseHealth": 110,
     "baseAttack": 90,
     "baseDefense": 115,
     "baseSpeed": 75
@@ -303,9 +303,9 @@
     "type3": "LEGENDARY",
     "id": "0251",
     "baseHealth": 100,
-    "baseAttack": 100,
-    "baseDefense": 100,
-    "baseSpeed": 100
+    "baseAttack": 95,
+    "baseDefense": 95,
+    "baseSpeed": 95
   },
   {
     "name": "Mamoswine",
@@ -313,8 +313,8 @@
     "type2": "GROUND",
     "type3": "NONE",
     "id": "0473",
-    "baseHealth": 110,
-    "baseAttack": 130,
+    "baseHealth": 100,
+    "baseAttack": 110,
     "baseDefense": 70,
     "baseSpeed": 80
   },
@@ -326,17 +326,17 @@
     "id": "0462",
     "baseHealth": 70,
     "baseAttack": 130,
-    "baseDefense": 105,
+    "baseDefense": 100,
     "baseSpeed": 60
   },
   {
     "name": "Lickilicky",
     "type1": "GOURMET",
-    "type2": "NONE",
+    "type2": "NORMAL",
     "type3": "NONE",
     "id": "0463",
-    "baseHealth": 110,
-    "baseAttack": 85,
+    "baseHealth": 115,
+    "baseAttack": 90,
     "baseDefense": 95,
     "baseSpeed": 50
   },
@@ -348,7 +348,7 @@
     "id": "0464",
     "baseHealth": 90,
     "baseAttack": 120,
-    "baseDefense": 120,
+    "baseDefense": 110,
     "baseSpeed": 40
   },
   {
@@ -358,7 +358,7 @@
     "type3": "NONE",
     "id": "0466",
     "baseHealth": 75,
-    "baseAttack": 120,
+    "baseAttack": 115,
     "baseDefense": 75,
     "baseSpeed": 95
   },
@@ -369,7 +369,7 @@
     "type3": "NONE",
     "id": "0467",
     "baseHealth": 75,
-    "baseAttack": 120,
+    "baseAttack": 115,
     "baseDefense": 75,
     "baseSpeed": 95
   },
@@ -379,9 +379,9 @@
     "type2": "FLYING",
     "type3": "NONE",
     "id": "0468",
-    "baseHealth": 85,
-    "baseAttack": 115,
-    "baseDefense": 110,
+    "baseHealth": 80,
+    "baseAttack": 100,
+    "baseDefense": 100,
     "baseSpeed": 80
   },
   {
@@ -390,9 +390,9 @@
     "type2": "FLYING",
     "type3": "FOSSIL",
     "id": "0469",
-    "baseHealth": 86,
-    "baseAttack": 116,
-    "baseDefense": 70,
+    "baseHealth": 50,
+    "baseAttack": 105,
+    "baseDefense": 50,
     "baseSpeed": 105
   },
   {
@@ -402,9 +402,9 @@
     "type3": "HUMAN",
     "id": "0475",
     "baseHealth": 70,
-    "baseAttack": 100,
-    "baseDefense": 85,
-    "baseSpeed": 75
+    "baseAttack": 105,
+    "baseDefense": 90,
+    "baseSpeed": 80
   },
   {
     "name": "Probopass",
@@ -412,7 +412,7 @@
     "type2": "STEEL",
     "type3": "NONE",
     "id": "0476",
-    "baseHealth": 60,
+    "baseHealth": 75,
     "baseAttack": 65,
     "baseDefense": 150,
     "baseSpeed": 40
@@ -435,9 +435,9 @@
     "type3": "LEGENDARY",
     "id": "0483",
     "baseHealth": 100,
-    "baseAttack": 150,
-    "baseDefense": 110,
-    "baseSpeed": 90
+    "baseAttack": 140,
+    "baseDefense": 100,
+    "baseSpeed": 70
   },
   {
     "name": "Palkia",
@@ -446,9 +446,9 @@
     "type3": "LEGENDARY",
     "id": "0484",
     "baseHealth": 100,
-    "baseAttack": 150,
-    "baseDefense": 110,
-    "baseSpeed": 90
+    "baseAttack": 140,
+    "baseDefense": 100,
+    "baseSpeed": 70
   },
   {
     "name": "Giratina",
@@ -457,9 +457,9 @@
     "type3": "LEGENDARY",
     "id": "0487",
     "baseHealth": 100,
-    "baseAttack": 110,
-    "baseDefense": 150,
-    "baseSpeed": 90
+    "baseAttack": 100,
+    "baseDefense": 140,
+    "baseSpeed": 70
   },
   {
     "name": "Quagsire",
@@ -467,9 +467,9 @@
     "type2": "GROUND",
     "type3": "NORMAL",
     "id": "0195",
-    "baseHealth": 95,
-    "baseAttack": 85,
-    "baseDefense": 95,
+    "baseHealth": 105,
+    "baseAttack": 95,
+    "baseDefense": 105,
     "baseSpeed": 35
   },
   {
@@ -478,9 +478,9 @@
     "type2": "FIGHTING",
     "type3": "NONE",
     "id": "0214",
-    "baseHealth": 80,
-    "baseAttack": 100,
-    "baseDefense": 80,
+    "baseHealth": 85,
+    "baseAttack": 110,
+    "baseDefense": 85,
     "baseSpeed": 60
   },
   {
@@ -489,10 +489,10 @@
     "type2": "DRAGON",
     "type3": "NONE",
     "id": "0230",
-    "baseHealth": 95,
-    "baseAttack": 95,
-    "baseDefense": 95,
-    "baseSpeed": 95
+    "baseHealth": 90,
+    "baseAttack": 90,
+    "baseDefense": 90,
+    "baseSpeed": 100
   },
   {
     "name": "Blissey",
@@ -500,10 +500,10 @@
     "type2": "FAIRY",
     "type3": "NONE",
     "id": "0242",
-    "baseHealth": 255,
+    "baseHealth": 200,
     "baseAttack": 50,
-    "baseDefense": 65,
-    "baseSpeed": 55
+    "baseDefense": 60,
+    "baseSpeed": 50
   },
   {
     "name": "Lugia",
@@ -513,7 +513,7 @@
     "id": "0249",
     "baseHealth": 100,
     "baseAttack": 100,
-    "baseDefense": 115,
+    "baseDefense": 120,
     "baseSpeed": 90
   },
   {
@@ -523,7 +523,7 @@
     "type3": "LEGENDARY",
     "id": "0250",
     "baseHealth": 100,
-    "baseAttack": 115,
+    "baseAttack": 120,
     "baseDefense": 100,
     "baseSpeed": 90
   },
@@ -533,10 +533,10 @@
     "type2": "FAIRY",
     "type3": "HUMAN",
     "id": "0282",
-    "baseHealth": 70,
+    "baseHealth": 75,
     "baseAttack": 100,
-    "baseDefense": 70,
-    "baseSpeed": 90
+    "baseDefense": 75,
+    "baseSpeed": 95
   },
   {
     "name": "Slaking",
@@ -555,9 +555,9 @@
     "type2": "ROCK",
     "type3": "NONE",
     "id": "0306",
-    "baseHealth": 70,
+    "baseHealth": 80,
     "baseAttack": 100,
-    "baseDefense": 110,
+    "baseDefense": 115,
     "baseSpeed": 40
   },
   {
@@ -566,10 +566,10 @@
     "type2": "DARK",
     "type3": "NONE",
     "id": "0319",
-    "baseHealth": 70,
-    "baseAttack": 100,
-    "baseDefense": 45,
-    "baseSpeed": 100
+    "baseHealth": 75,
+    "baseAttack": 105,
+    "baseDefense": 50,
+    "baseSpeed": 105
   },
   {
     "name": "Altaria",
@@ -577,10 +577,10 @@
     "type2": "FAIRY",
     "type3": "FLYING",
     "id": "0334",
-    "baseHealth": 80,
-    "baseAttack": 75,
-    "baseDefense": 95,
-    "baseSpeed": 80
+    "baseHealth": 100,
+    "baseAttack": 80,
+    "baseDefense": 100,
+    "baseSpeed": 90
   },
   {
     "name": "Cradily",
@@ -589,8 +589,8 @@
     "type3": "NONE",
     "id": "0346",
     "baseHealth": 90,
-    "baseAttack": 85,
-    "baseDefense": 100,
+    "baseAttack": 80,
+    "baseDefense": 95,
     "baseSpeed": 45
   },
   {
@@ -600,7 +600,7 @@
     "type3": "NONE",
     "id": "0348",
     "baseHealth": 70,
-    "baseAttack": 105,
+    "baseAttack": 110,
     "baseDefense": 90,
     "baseSpeed": 40
   },
@@ -612,7 +612,7 @@
     "id": "0344",
     "baseHealth": 70,
     "baseAttack": 70,
-    "baseDefense": 105,
+    "baseDefense": 100,
     "baseSpeed": 70
   },
   {
@@ -632,10 +632,10 @@
     "type2": "DARK",
     "type3": "FLYING",
     "id": "0373",
-    "baseHealth": 90,
-    "baseAttack": 130,
-    "baseDefense": 80,
-    "baseSpeed": 97
+    "baseHealth": 80,
+    "baseAttack": 125,
+    "baseDefense": 70,
+    "baseSpeed": 95
   },
   {
     "name": "Regirock",
@@ -644,7 +644,7 @@
     "type3": "LEGENDARY",
     "id": "0377",
     "baseHealth": 80,
-    "baseAttack": 75,
+    "baseAttack": 80,
     "baseDefense": 120,
     "baseSpeed": 50
   },
@@ -655,7 +655,7 @@
     "type3": "LEGENDARY",
     "id": "0378",
     "baseHealth": 80,
-    "baseAttack": 75,
+    "baseAttack": 80,
     "baseDefense": 120,
     "baseSpeed": 50
   },
@@ -666,7 +666,7 @@
     "type3": "LEGENDARY",
     "id": "0379",
     "baseHealth": 80,
-    "baseAttack": 75,
+    "baseAttack": 80,
     "baseDefense": 120,
     "baseSpeed": 50
   },
@@ -678,7 +678,7 @@
     "id": "0486",
     "baseHealth": 110,
     "baseAttack": 120,
-    "baseDefense": 75,
+    "baseDefense": 90,
     "baseSpeed": 30
   },
   {
@@ -687,7 +687,7 @@
     "type2": "MONSTER",
     "type3": "LEGENDARY",
     "id": "0491",
-    "baseHealth": 70,
+    "baseHealth": 75,
     "baseAttack": 130,
     "baseDefense": 70,
     "baseSpeed": 115
@@ -698,7 +698,7 @@
     "type2": "FAIRY",
     "type3": "NONE",
     "id": "0429",
-    "baseHealth": 60,
+    "baseHealth": 75,
     "baseAttack": 105,
     "baseDefense": 60,
     "baseSpeed": 105
@@ -712,7 +712,7 @@
     "baseHealth": 105,
     "baseAttack": 95,
     "baseDefense": 70,
-    "baseSpeed": 60
+    "baseSpeed": 75
   },
   {
     "name": "Conkeldurr",
@@ -742,10 +742,10 @@
     "type2": "GROUND",
     "type3": "NONE",
     "id": "0423",
-    "baseHealth": 110,
-    "baseAttack": 70,
-    "baseDefense": 90,
-    "baseSpeed": 45
+    "baseHealth": 115,
+    "baseAttack": 75,
+    "baseDefense": 100,
+    "baseSpeed": 50
   },
   {
     "name": "Darmanitan",
@@ -767,7 +767,7 @@
     "baseHealth": 70,
     "baseAttack": 100,
     "baseDefense": 30,
-    "baseSpeed": 100
+    "baseSpeed": 110
   },
   {
     "name": "Gothitelle",
@@ -776,9 +776,9 @@
     "type3": "NONE",
     "id": "0576",
     "baseHealth": 80,
-    "baseAttack": 75,
+    "baseAttack": 80,
     "baseDefense": 100,
-    "baseSpeed": 70
+    "baseSpeed": 75
   },
   {
     "name": "Chandelure",
@@ -822,7 +822,7 @@
     "baseHealth": 90,
     "baseAttack": 110,
     "baseDefense": 90,
-    "baseSpeed": 95
+    "baseSpeed": 80
   },
   {
     "name": "Cobalion",
@@ -887,8 +887,8 @@
     "id": "0646",
     "baseHealth": 100,
     "baseAttack": 110,
-    "baseDefense": 105,
-    "baseSpeed": 105
+    "baseDefense": 100,
+    "baseSpeed": 100
   },
   {
     "name": "Keldeo",
@@ -907,10 +907,10 @@
     "type2": "FIGHTING",
     "type3": "HUMAN",
     "id": "0652",
-    "baseHealth": 90,
-    "baseAttack": 80,
-    "baseDefense": 80,
-    "baseSpeed": 70
+    "baseHealth": 100,
+    "baseAttack": 90,
+    "baseDefense": 85,
+    "baseSpeed": 75
   },
   {
     "name": "Delphox",
@@ -918,10 +918,10 @@
     "type2": "PSYCHIC",
     "type3": "HUMAN",
     "id": "0655",
-    "baseHealth": 80,
-    "baseAttack": 90,
-    "baseDefense": 70,
-    "baseSpeed": 80
+    "baseHealth": 90,
+    "baseAttack": 95,
+    "baseDefense": 80,
+    "baseSpeed": 85
   },
   {
     "name": "Greninja",
@@ -929,10 +929,10 @@
     "type2": "DARK",
     "type3": "HUMAN",
     "id": "0658",
-    "baseHealth": 80,
-    "baseAttack": 80,
+    "baseHealth": 85,
+    "baseAttack": 90,
     "baseDefense": 70,
-    "baseSpeed": 90
+    "baseSpeed": 105
   },
   {
     "name": "Dragalge",
@@ -941,8 +941,8 @@
     "type3": "POISON",
     "id": "0691",
     "baseHealth": 100,
-    "baseAttack": 80,
-    "baseDefense": 105,
+    "baseAttack": 95,
+    "baseDefense": 110,
     "baseSpeed": 65
   },
   {
@@ -952,7 +952,7 @@
     "type3": "NONE",
     "id": "0697",
     "baseHealth": 50,
-    "baseAttack": 100,
+    "baseAttack": 105,
     "baseDefense": 65,
     "baseSpeed": 90
   },
@@ -962,7 +962,7 @@
     "type2": "FOSSIL",
     "type3": "NONE",
     "id": "0699",
-    "baseHealth": 70,
+    "baseHealth": 75,
     "baseAttack": 90,
     "baseDefense": 105,
     "baseSpeed": 40
@@ -984,10 +984,10 @@
     "type2": "LEGENDARY",
     "type3": "NONE",
     "id": "0716",
-    "baseHealth": 110,
-    "baseAttack": 105,
-    "baseDefense": 105,
-    "baseSpeed": 70
+    "baseHealth": 115,
+    "baseAttack": 110,
+    "baseDefense": 110,
+    "baseSpeed": 75
   },
   {
     "name": "Yveltal",
@@ -995,10 +995,10 @@
     "type2": "LEGENDARY",
     "type3": "NONE",
     "id": "0717",
-    "baseHealth": 100,
-    "baseAttack": 105,
-    "baseDefense": 80,
-    "baseSpeed": 105
+    "baseHealth": 105,
+    "baseAttack": 110,
+    "baseDefense": 85,
+    "baseSpeed": 110
   },
   {
     "name": "Crabominable",
@@ -1050,18 +1050,18 @@
     "type2": "ELECTRIC",
     "type3": "NONE",
     "id": "0738",
-    "baseHealth": 70,
+    "baseHealth": 80,
     "baseAttack": 120,
     "baseDefense": 85,
-    "baseSpeed": 50
+    "baseSpeed": 55
   },
   {
     "name": "Rotom",
     "type1": "ELECTRIC",
     "type2": "GHOST",
-    "type3": "NONE",
+    "type3": "ARTIFICIAL",
     "id": "0479",
-    "baseHealth": 50,
+    "baseHealth": 60,
     "baseAttack": 110,
     "baseDefense": 60,
     "baseSpeed": 115
@@ -1094,9 +1094,9 @@
     "type2": "POISON",
     "type3": "HUMAN",
     "id": "0849",
-    "baseHealth": 75,
+    "baseHealth": 80,
     "baseAttack": 105,
-    "baseDefense": 70,
+    "baseDefense": 80,
     "baseSpeed": 75
   },
   {
@@ -1105,10 +1105,10 @@
     "type2": "MONSTER",
     "type3": "NONE",
     "id": "0604",
-    "baseHealth": 85,
+    "baseHealth": 90,
     "baseAttack": 110,
-    "baseDefense": 85,
-    "baseSpeed": 50
+    "baseDefense": 90,
+    "baseSpeed": 55
   },
   {
     "name": "Staraptor",
@@ -1127,9 +1127,9 @@
     "type2": "GROUND",
     "type3": "NONE",
     "id": "0901",
-    "baseHealth": 125,
-    "baseAttack": 130,
-    "baseDefense": 90,
+    "baseHealth": 110,
+    "baseAttack": 120,
+    "baseDefense": 80,
     "baseSpeed": 50
   },
   {
@@ -1194,9 +1194,9 @@
     "type3": "LEGENDARY",
     "id": "0637",
     "baseHealth": 90,
-    "baseAttack": 120,
+    "baseAttack": 115,
     "baseDefense": 95,
-    "baseSpeed": 100
+    "baseSpeed": 90
   },
   {
     "name": "Armarouge",
@@ -1226,10 +1226,10 @@
     "type2": "GROUND",
     "type3": "NONE",
     "id": "0323",
-    "baseHealth": 100,
-    "baseAttack": 100,
-    "baseDefense": 70,
-    "baseSpeed": 40
+    "baseHealth": 115,
+    "baseAttack": 115,
+    "baseDefense": 65,
+    "baseSpeed": 45
   },
   {
     "name": "Marowak",
@@ -1237,10 +1237,10 @@
     "type2": "GHOST",
     "type3": "GROUND",
     "id": "0105",
-    "baseHealth": 75,
-    "baseAttack": 85,
+    "baseHealth": 80,
+    "baseAttack": 95,
     "baseDefense": 115,
-    "baseSpeed": 45
+    "baseSpeed": 50
   },
   {
     "name": "Arcanine",
@@ -1270,10 +1270,10 @@
     "type2": "FIGHTING",
     "type3": "HUMAN",
     "id": "0257",
-    "baseHealth": 70,
-    "baseAttack": 95,
+    "baseHealth": 80,
+    "baseAttack": 100,
     "baseDefense": 70,
-    "baseSpeed": 90
+    "baseSpeed": 100
   },
   {
     "name": "Infernape",
@@ -1468,21 +1468,21 @@
     "type2": "PSYCHIC",
     "type3": "NONE",
     "id": "0080",
-    "baseHealth": 95,
-    "baseAttack": 85,
-    "baseDefense": 100,
+    "baseHealth": 100,
+    "baseAttack": 95,
+    "baseDefense": 110,
     "baseSpeed": 30
   },
   {
     "name": "Lapras",
     "type1": "WATER",
     "type2": "ICE",
-    "type3": "NONE",
+    "type3": "FAIRY",
     "id": "0131",
-    "baseHealth": 130,
+    "baseHealth": 120,
     "baseAttack": 85,
-    "baseDefense": 85,
-    "baseSpeed": 60
+    "baseDefense": 90,
+    "baseSpeed": 65
   },
   {
     "name": "Ludicolo",
@@ -1501,10 +1501,10 @@
     "type2": "GROUND",
     "type3": "DRAGON",
     "id": "0340",
-    "baseHealth": 110,
-    "baseAttack": 80,
-    "baseDefense": 75,
-    "baseSpeed": 70
+    "baseHealth": 130,
+    "baseAttack": 85,
+    "baseDefense": 80,
+    "baseSpeed": 75
   },
   {
     "name": "Relicanth",
@@ -1512,9 +1512,9 @@
     "type2": "FOSSIL",
     "type3": "NONE",
     "id": "0369",
-    "baseHealth": 100,
-    "baseAttack": 90,
-    "baseDefense": 110,
+    "baseHealth": 70,
+    "baseAttack": 85,
+    "baseDefense": 100,
     "baseSpeed": 55
   },
   {
@@ -1545,7 +1545,7 @@
     "type2": "STEEL",
     "type3": "NONE",
     "id": "0598",
-    "baseHealth": 80,
+    "baseHealth": 90,
     "baseAttack": 85,
     "baseDefense": 120,
     "baseSpeed": 35
@@ -1556,10 +1556,10 @@
     "type2": "POISON",
     "type3": "NONE",
     "id": "0045",
-    "baseHealth": 80,
-    "baseAttack": 100,
+    "baseHealth": 85,
+    "baseAttack": 105,
     "baseDefense": 85,
-    "baseSpeed": 50
+    "baseSpeed": 55
   },
   {
     "name": "Victreebel",
@@ -1589,7 +1589,7 @@
     "type2": "POISON",
     "type3": "NONE",
     "id": "0407",
-    "baseHealth": 60,
+    "baseHealth": 70,
     "baseAttack": 115,
     "baseDefense": 80,
     "baseSpeed": 90
@@ -1600,10 +1600,10 @@
     "type2": "DRAGON",
     "type3": "GOURMET",
     "id": "0842",
-    "baseHealth": 110,
-    "baseAttack": 95,
-    "baseDefense": 85,
-    "baseSpeed": 45
+    "baseHealth": 120,
+    "baseAttack": 100,
+    "baseDefense": 100,
+    "baseSpeed": 50
   },
   {
     "name": "Trevenant",
@@ -1611,10 +1611,10 @@
     "type2": "GHOST",
     "type3": "NONE",
     "id": "0709",
-    "baseHealth": 85,
+    "baseHealth": 86,
     "baseAttack": 105,
-    "baseDefense": 78,
-    "baseSpeed": 60
+    "baseDefense": 84,
+    "baseSpeed": 75
   },
   {
     "name": "Golem",
@@ -1667,9 +1667,9 @@
     "type3": "MONSTER",
     "id": "0034",
     "baseHealth": 80,
-    "baseAttack": 100,
+    "baseAttack": 105,
     "baseDefense": 75,
-    "baseSpeed": 85
+    "baseSpeed": 90
   },
   {
     "name": "Dugtrio",
@@ -1677,10 +1677,10 @@
     "type2": "STEEL",
     "type3": "NONE",
     "id": "0051",
-    "baseHealth": 45,
-    "baseAttack": 90,
+    "baseHealth": 55,
+    "baseAttack": 100,
     "baseDefense": 60,
-    "baseSpeed": 110
+    "baseSpeed": 115
   },
   {
     "name": "Steelix",
@@ -1688,8 +1688,8 @@
     "type2": "ROCK",
     "type3": "GROUND",
     "id": "0208",
-    "baseHealth": 80,
-    "baseAttack": 80,
+    "baseHealth": 95,
+    "baseAttack": 85,
     "baseDefense": 140,
     "baseSpeed": 30
   },
@@ -1699,9 +1699,9 @@
     "type2": "BUG",
     "type3": "DRAGON",
     "id": "0330",
-    "baseHealth": 80,
+    "baseHealth": 85,
     "baseAttack": 100,
-    "baseDefense": 80,
+    "baseDefense": 85,
     "baseSpeed": 100
   },
   {
@@ -1710,9 +1710,9 @@
     "type2": "GROUND",
     "type3": "MONSTER",
     "id": "0445",
-    "baseHealth": 90,
+    "baseHealth": 75,
     "baseAttack": 120,
-    "baseDefense": 90,
+    "baseDefense": 80,
     "baseSpeed": 95
   },
   {
@@ -1723,8 +1723,8 @@
     "id": "0472",
     "baseHealth": 80,
     "baseAttack": 95,
-    "baseDefense": 115,
-    "baseSpeed": 90
+    "baseDefense": 110,
+    "baseSpeed": 85
   },
   {
     "name": "Excadrill",
@@ -1743,9 +1743,9 @@
     "type2": "POISON",
     "type3": "NONE",
     "id": "0199",
-    "baseHealth": 95,
-    "baseAttack": 85,
-    "baseDefense": 100,
+    "baseHealth": 100,
+    "baseAttack": 100,
+    "baseDefense": 105,
     "baseSpeed": 30
   },
   {
@@ -1755,9 +1755,9 @@
     "type3": "WATER",
     "id": "0687",
     "baseHealth": 90,
-    "baseAttack": 94,
-    "baseDefense": 93,
-    "baseSpeed": 86
+    "baseAttack": 92,
+    "baseDefense": 92,
+    "baseSpeed": 84
   },
   {
     "name": "Hatterene",
@@ -1765,7 +1765,7 @@
     "type2": "FAIRY",
     "type3": "NONE",
     "id": "0858",
-    "baseHealth": 70,
+    "baseHealth": 90,
     "baseAttack": 95,
     "baseDefense": 115,
     "baseSpeed": 40
@@ -1776,10 +1776,10 @@
     "type2": "ICE",
     "type3": "MONSTER",
     "id": "0998",
-    "baseHealth": 115,
-    "baseAttack": 120,
-    "baseDefense": 90,
-    "baseSpeed": 85
+    "baseHealth": 95,
+    "baseAttack": 115,
+    "baseDefense": 85,
+    "baseSpeed": 75
   },
   {
     "name": "Beautifly",
@@ -1853,7 +1853,7 @@
     "type2": "STEEL",
     "type3": "NONE",
     "id": "0589",
-    "baseHealth": 70,
+    "baseHealth": 75,
     "baseAttack": 115,
     "baseDefense": 105,
     "baseSpeed": 35
@@ -1897,10 +1897,10 @@
     "type2": "PSYCHIC",
     "type3": "FOSSIL",
     "id": "0561",
-    "baseHealth": 72,
-    "baseAttack": 100,
-    "baseDefense": 80,
-    "baseSpeed": 97
+    "baseHealth": 70,
+    "baseAttack": 85,
+    "baseDefense": 75,
+    "baseSpeed": 80
   },
   {
     "name": "Talonflame",
@@ -1911,7 +1911,7 @@
     "baseHealth": 80,
     "baseAttack": 80,
     "baseDefense": 80,
-    "baseSpeed": 120
+    "baseSpeed": 110
   },
   {
     "name": "Corviknight",
@@ -1941,7 +1941,7 @@
     "type2": "FLYING",
     "type3": "NONE",
     "id": "0426",
-    "baseHealth": 150,
+    "baseHealth": 120,
     "baseAttack": 80,
     "baseDefense": 65,
     "baseSpeed": 80
@@ -1963,10 +1963,10 @@
     "type2": "GHOST",
     "type3": "NONE",
     "id": "0887",
-    "baseHealth": 88,
-    "baseAttack": 110,
-    "baseDefense": 75,
-    "baseSpeed": 130
+    "baseHealth": 75,
+    "baseAttack": 105,
+    "baseDefense": 70,
+    "baseSpeed": 120
   },
   {
     "name": "Annihilape",
@@ -1974,10 +1974,10 @@
     "type2": "GHOST",
     "type3": "GOURMET",
     "id": "0979",
-    "baseHealth": 110,
-    "baseAttack": 115,
-    "baseDefense": 85,
-    "baseSpeed": 90
+    "baseHealth": 100,
+    "baseAttack": 100,
+    "baseDefense": 80,
+    "baseSpeed": 80
   },
   {
     "name": "Gholdengo",
@@ -1985,10 +1985,10 @@
     "type2": "STEEL",
     "type3": "NONE",
     "id": "1000",
-    "baseHealth": 87,
-    "baseAttack": 95,
-    "baseDefense": 115,
-    "baseSpeed": 75
+    "baseHealth": 75,
+    "baseAttack": 90,
+    "baseDefense": 100,
+    "baseSpeed": 65
   },
   {
     "name": "Beartic",
@@ -2041,9 +2041,9 @@
     "type3": "HUMAN",
     "id": "0983",
     "baseHealth": 100,
-    "baseAttack": 125,
-    "baseDefense": 115,
-    "baseSpeed": 45
+    "baseAttack": 110,
+    "baseDefense": 110,
+    "baseSpeed": 40
   },
   {
     "name": "Grimmsnarl",
@@ -2063,7 +2063,7 @@
     "type3": "NONE",
     "id": "0959",
     "baseHealth": 85,
-    "baseAttack": 85,
+    "baseAttack": 75,
     "baseDefense": 90,
     "baseSpeed": 95
   }
