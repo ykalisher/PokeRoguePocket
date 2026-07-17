@@ -41,12 +41,12 @@ Attack — except paralysis, which targets the highest Speed. All covered by uni
 
 ## Steps
 
-- [ ] 1. **`arena/arena_controller.js`** — extract the deterministic core of
+- [x] 1. **`arena/arena_controller.js`** — extract the deterministic core of
   `damagePokemon` into a pure `computeAttackDamage(attackerCard, targetCard, actionCard,
   varianceMultiplier)`: same stat selection and formula, parameterized variance, **no**
   mutation, no Protect check, no clamping to remaining HP. Rewire `damagePokemon` to call
   it with `getDamageVarianceMultiplier()` — resulting battle behavior must be identical.
-- [ ] 2. **`arena/arena_controller.js`** — rewrite only the single-target branch of
+- [x] 2. **`arena/arena_controller.js`** — rewrite only the single-target branch of
   `chooseOpponentTarget`, keeping the group preference and the `options[0]`/`null`
   fallbacks exactly as they are. Build `candidates` = single options with
   `owner === 'player'` resolved to their cards (skip unresolvable). Then:
@@ -67,9 +67,9 @@ Attack — except paralysis, which targets the highest Speed. All covered by uni
     `Infinity` just keep board order).
   Return the *option* corresponding to the chosen card. Update the module header comment
   (~28) that describes the AI.
-- [ ] 3. **`arena/arena_controller.js`** — export `chooseOpponentTarget` and
+- [x] 3. **`arena/arena_controller.js`** — export `chooseOpponentTarget` and
   `computeAttackDamage` in the `// Exposed for tests:` block.
-- [ ] 4. **`tests/arena_controller.test.js`** — add targeting tests with the existing
+- [x] 4. **`tests/arena_controller.test.js`** — add targeting tests with the existing
   fixture helpers (`makePokemonCard`/`makeAttackCard`, seeded boards): (a) a 5-HP target
   is chosen over a healthy one (guaranteed KO); (b) with no KO available, a frail
   low-defense target beats a high-defense tank; (c) a basePower-0 sleep attack targets
@@ -81,8 +81,8 @@ Attack — except paralysis, which targets the highest Speed. All covered by uni
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `verify` skill: run a battle with the committed autoplay driver
+- [x] `node tests/run_all.js` green.
+- [x] `verify` skill: run a battle with the committed autoplay driver
   (`dev/verify/`); via the battle log / `window.CardArena.state`, confirm an opponent
   attack lands on a weakened (non-leftmost) pokemon at least once.
 

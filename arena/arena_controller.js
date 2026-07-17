@@ -25,7 +25,9 @@
  * 5. endPlayerTurn() locks input, asks the opponent to act with runOpponentTurn(),
  *    then resolves all queued attacks with resolveQueuedAttacks().
  * 6. runOpponentTurn() refills the rival hand, queues attacks through
- *    chooseOpponentAttacks(), uses one item immediately through
+ *    chooseOpponentAttacks() (first usable attack per Pokemon, targeted via
+ *    chooseOpponentTarget() for a guaranteed kill, else lowest hits-to-kill,
+ *    else the best status target), uses one item immediately through
  *    useOpponentItem() -> applyItemCard(), then discards unplayable cards.
  * 7. resolveQueuedAttacks() creates one action per queued attack, sorts them by
  *    priority, effective Speed, then random tie breaker, and resolves each live
@@ -1599,15 +1601,73 @@
 
     /**
      * Chooses attack targets for opponent queued attacks, preferring player
-     * group targets, then player single targets, then the first legal fallback.
+     * group targets, then an intelligently scored player single target, then
+     * the first legal fallback. Single-target scoring: pure status attacks
+     * (no base power) aim at the highest-Attack non-statused Pokemon, except
+     * Paralysis which aims at the highest Speed; damaging attacks prefer a
+     * guaranteed kill (highest Attack among lethal targets), else the target
+     * closest to dying relative to this hit.
      */
     function chooseOpponentTarget(attackCard, userCard) {
         const options = model.getTargetOptionsForAction(attackCard, 'opponent', userCard.id);
         const preferredGroup = options.find(option => option.kind === 'group' && option.owner === 'player');
-        const preferredSingle = options.find(option => option.kind === 'single' && option.owner === 'player');
+        const preferredSingle = chooseOpponentAttackSingleTarget(attackCard, userCard, options);
         const fallback = options[0];
 
         return preferredGroup || preferredSingle || fallback || null;
+    }
+
+    /**
+     * Scores the legal single player targets of a queued opponent attack. See
+     * chooseOpponentTarget for the rules; PROTECT-ed Pokemon are skipped by
+     * the status rule (never statusless) and treated as un-KO-able/worst by
+     * the damage rule.
+     */
+    function chooseOpponentAttackSingleTarget(attackCard, userCard, options) {
+        const candidates = options
+            .filter(option => option.kind === 'single' && option.owner === 'player')
+            .map(option => ({ card: model.getBoardCardById(option.owner, option.cardId), option }))
+            .filter(candidate => candidate.card);
+
+        if (candidates.length === 0) return null;
+
+        const basePower = Number(attackCard.attack.basePower) || 0;
+        const inflictedStatuses = getBattleStatuses(attackCard);
+
+        if (inflictedStatuses.length > 0 && basePower === 0) {
+            const statuslessCandidates = candidates.filter(candidate => model.getPokemonStatuses(candidate.card).length === 0);
+
+            if (statuslessCandidates.length > 0) {
+                const scoreFn = inflictedStatuses.includes('PARALYSIS')
+                    ? candidate => model.getPokemonSpeed(candidate.card)
+                    : candidate => model.getPokemonEffectiveStat(candidate.card, 'attack');
+
+                return pickHighestScoringCandidate(statuslessCandidates, scoreFn).option;
+            }
+        }
+
+        const koCandidates = candidates.filter(candidate => (
+            !model.hasPokemonStatus(candidate.card, 'PROTECT') &&
+            computeAttackDamage(userCard, candidate.card, attackCard, 0.35) >= candidate.card.currentHealth
+        ));
+
+        if (koCandidates.length > 0) {
+            return pickHighestScoringCandidate(koCandidates, candidate => model.getPokemonEffectiveStat(candidate.card, 'attack')).option;
+        }
+
+        return pickLowestScoringCandidate(candidates, candidate => (
+            model.hasPokemonStatus(candidate.card, 'PROTECT')
+                ? Infinity
+                : candidate.card.currentHealth / computeAttackDamage(userCard, candidate.card, attackCard, 0.40)
+        )).option;
+    }
+
+    function pickHighestScoringCandidate(candidates, scoreFn) {
+        return candidates.reduce((best, candidate) => (scoreFn(candidate) > scoreFn(best) ? candidate : best));
+    }
+
+    function pickLowestScoringCandidate(candidates, scoreFn) {
+        return candidates.reduce((best, candidate) => (scoreFn(candidate) < scoreFn(best) ? candidate : best));
     }
 
     /**
@@ -2186,21 +2246,7 @@
             };
         }
 
-        const attackerDamageStat = attackUsesDefenseAsDamageStat(actionCard) ? 'defense' : 'attack';
-        let attackerAttack;
-        let targetDefense;
-
-        if (attackUsesBaseStatsOnly(actionCard)) {
-            attackerAttack = getPokemonBaseStat(attackerCard, attackerDamageStat);
-            targetDefense = getPokemonBaseStat(pokemonCard, 'defense');
-        } else {
-            attackerAttack = getBattleStat(attackerCard, attackerDamageStat);
-            targetDefense = getBattleStat(pokemonCard, 'defense');
-        }
-
-        const attackBaseDamage = Number(actionCard.attack.basePower) || 0;
-        const statRatio = targetDefense > 0 ? attackerAttack / targetDefense : attackerAttack;
-        const damage = Math.max(1, Math.ceil(statRatio * attackBaseDamage * getDamageVarianceMultiplier()));
+        const damage = computeAttackDamage(attackerCard, pokemonCard, actionCard, getDamageVarianceMultiplier());
         const actualDamage = Math.min(pokemonCard.currentHealth, damage);
         const damagePercent = Math.ceil((actualDamage / pokemonCard.pokemon.baseHealth) * 100);
 
@@ -2217,6 +2263,30 @@
             damagePercent,
             ownerId
         };
+    }
+
+    /**
+     * Pure damage-formula core shared by damagePokemon and the opponent AI's
+     * target scoring: same stat selection and formula, but takes an explicit
+     * variance multiplier and never mutates HP or checks Protect.
+     */
+    function computeAttackDamage(attackerCard, targetCard, actionCard, varianceMultiplier) {
+        const attackerDamageStat = attackUsesDefenseAsDamageStat(actionCard) ? 'defense' : 'attack';
+        let attackerAttack;
+        let targetDefense;
+
+        if (attackUsesBaseStatsOnly(actionCard)) {
+            attackerAttack = getPokemonBaseStat(attackerCard, attackerDamageStat);
+            targetDefense = getPokemonBaseStat(targetCard, 'defense');
+        } else {
+            attackerAttack = getBattleStat(attackerCard, attackerDamageStat);
+            targetDefense = getBattleStat(targetCard, 'defense');
+        }
+
+        const attackBaseDamage = Number(actionCard.attack.basePower) || 0;
+        const statRatio = targetDefense > 0 ? attackerAttack / targetDefense : attackerAttack;
+
+        return Math.max(1, Math.ceil(statRatio * attackBaseDamage * varianceMultiplier));
     }
 
     function getBattleStatMultiplier(pokemonCard, stat) {
@@ -3354,6 +3424,10 @@
         // Exposed for tests: overkill damage capping and Fossil-aware
         // knockout-limit deferral.
         damagePokemon,
-        knockOutPokemon
+        knockOutPokemon,
+        // Exposed for tests: KO-aware/status-aware opponent attack targeting
+        // (phase 40).
+        chooseOpponentTarget,
+        computeAttackDamage
     };
 })(window.CardArena = window.CardArena || {});

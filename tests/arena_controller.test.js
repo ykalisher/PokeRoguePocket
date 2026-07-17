@@ -345,3 +345,190 @@ test('a knockout at the limit still queues a replacement when a Fossil can reviv
     assert.equal(Model.isPlayerDefeated(player), true);
     assert.equal(state.pendingPokemonReplacements.length, 0);
 });
+
+test('a damaging attack targets a guaranteed-KO Pokemon over a healthy one', () => {
+    const state = arena.state;
+
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+    const healthy = makePokemonCard('player', ['NORMAL']);
+    const frail = makePokemonCard('player', ['NORMAL']);
+
+    frail.currentHealth = 5;
+
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = healthy;
+    state.players.player.board[1] = frail;
+
+    const selection = Controller.chooseOpponentTarget(makeAttackCard('opponent', ['NORMAL']), attacker);
+
+    assert.equal(selection.cardId, frail.id);
+});
+
+test('with no guaranteed kill available, a frail low-defense target beats a high-defense tank', () => {
+    const state = arena.state;
+
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+    const tank = makePokemonCard('player', ['NORMAL']);
+    const frail = makePokemonCard('player', ['NORMAL']);
+
+    tank.pokemon.baseDefense = 200;
+    tank.pokemon.baseHealth = 100;
+    tank.currentHealth = 100;
+    frail.pokemon.baseDefense = 50;
+
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = tank;
+    state.players.player.board[1] = frail;
+
+    const selection = Controller.chooseOpponentTarget(makeAttackCard('opponent', ['NORMAL']), attacker);
+
+    assert.equal(selection.cardId, frail.id);
+});
+
+test('a basePower-0 sleep attack targets the highest-Attack non-statused Pokemon and skips a statused one', () => {
+    const state = arena.state;
+
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+    state.turnNumber = 1;
+
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+    const statusedHighAttack = makePokemonCard('player', ['NORMAL']);
+    const statuslessHighAttack = makePokemonCard('player', ['NORMAL']);
+    const statuslessLowAttack = makePokemonCard('player', ['NORMAL']);
+
+    statusedHighAttack.pokemon.baseAttack = 200;
+    statuslessHighAttack.pokemon.baseAttack = 150;
+    statuslessLowAttack.pokemon.baseAttack = 100;
+    Model.applyStatus(statusedHighAttack, 'BURN');
+
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = statusedHighAttack;
+    state.players.player.board[1] = statuslessHighAttack;
+    state.players.player.board[2] = statuslessLowAttack;
+
+    const attackCard = makeAttackCard('opponent', ['NORMAL']);
+
+    attackCard.attack.basePower = 0;
+    attackCard.attack.status = ['SLEEP'];
+
+    const selection = Controller.chooseOpponentTarget(attackCard, attacker);
+
+    assert.equal(selection.cardId, statuslessHighAttack.id);
+});
+
+test('a basePower-0 paralysis attack targets the highest-Speed Pokemon regardless of Attack', () => {
+    const state = arena.state;
+
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+    const highAttackLowSpeed = makePokemonCard('player', ['NORMAL']);
+    const lowAttackHighSpeed = makePokemonCard('player', ['NORMAL']);
+
+    highAttackLowSpeed.pokemon.baseAttack = 200;
+    highAttackLowSpeed.pokemon.baseSpeed = 80;
+    lowAttackHighSpeed.pokemon.baseAttack = 50;
+    lowAttackHighSpeed.pokemon.baseSpeed = 150;
+
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = highAttackLowSpeed;
+    state.players.player.board[1] = lowAttackHighSpeed;
+
+    const attackCard = makeAttackCard('opponent', ['NORMAL']);
+
+    attackCard.attack.basePower = 0;
+    attackCard.attack.status = ['PARALYSIS'];
+
+    const selection = Controller.chooseOpponentTarget(attackCard, attacker);
+
+    assert.equal(selection.cardId, lowAttackHighSpeed.id);
+});
+
+test('a Protect-ed target is avoided when a legal alternative exists', () => {
+    const state = arena.state;
+
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+    const protectedTarget = makePokemonCard('player', ['NORMAL']);
+    const alternative = makePokemonCard('player', ['NORMAL']);
+
+    protectedTarget.currentHealth = 5;
+    Model.applyStatus(protectedTarget, 'PROTECT');
+
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = protectedTarget;
+    state.players.player.board[1] = alternative;
+
+    const selection = Controller.chooseOpponentTarget(makeAttackCard('opponent', ['NORMAL']), attacker);
+
+    assert.equal(selection.cardId, alternative.id);
+});
+
+test('a status attack still returns a target when every candidate is already statused', () => {
+    const state = arena.state;
+
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+    state.turnNumber = 1;
+
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+    const first = makePokemonCard('player', ['NORMAL']);
+    const second = makePokemonCard('player', ['NORMAL']);
+
+    second.currentHealth = 10;
+    Model.applyStatus(first, 'BURN');
+    Model.applyStatus(second, 'BURN');
+
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = first;
+    state.players.player.board[1] = second;
+
+    const attackCard = makeAttackCard('opponent', ['NORMAL']);
+
+    attackCard.attack.basePower = 0;
+    attackCard.attack.status = ['SLEEP'];
+
+    const selection = Controller.chooseOpponentTarget(attackCard, attacker);
+
+    assert.ok(selection);
+    assert.equal(selection.cardId, second.id);
+});
+
+test('chooseOpponentTarget returns null when no legal single target resolves', () => {
+    const state = arena.state;
+
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+
+    state.players.opponent.board[0] = attacker;
+
+    const selection = Controller.chooseOpponentTarget(makeAttackCard('opponent', ['NORMAL']), attacker);
+
+    assert.equal(selection, null);
+});
