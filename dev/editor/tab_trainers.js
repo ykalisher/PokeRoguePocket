@@ -41,7 +41,7 @@
             {
                 key: 'sprite',
                 label: '',
-                render: (record) => `<img class="editor-thumb" src="${EditorPreview.spritePathFor(record)}" alt="">`
+                render: (record) => `<img class="editor-thumb" loading="lazy" decoding="async" src="${EditorPreview.spritePathFor(record)}" alt="">`
             },
             {
                 key: 'name',

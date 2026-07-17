@@ -203,6 +203,29 @@ test('GET /arena/arena_render.js serves the static file with a JS-ish content ty
     assert.ok((await res.text()).length > 0);
 });
 
+test('static responses carry revalidation headers and honor If-None-Match with a 304', async () => {
+    const res = await fetch(`${sharedUrl}/arena/arena_render.js`);
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get('cache-control'), 'no-cache');
+    assert.ok(res.headers.get('last-modified'));
+    const etag = res.headers.get('etag');
+    assert.match(etag, /^".+"$/);
+    assert.equal(Number(res.headers.get('content-length')), Buffer.byteLength(await res.text()));
+
+    const revalidated = await fetch(`${sharedUrl}/arena/arena_render.js`, {
+        headers: { 'If-None-Match': etag }
+    });
+    assert.equal(revalidated.status, 304);
+    assert.equal(await revalidated.text(), '');
+    assert.equal(revalidated.headers.get('etag'), etag);
+
+    const missed = await fetch(`${sharedUrl}/arena/arena_render.js`, {
+        headers: { 'If-None-Match': '"stale-etag"' }
+    });
+    assert.equal(missed.status, 200);
+    assert.ok((await missed.text()).length > 0);
+});
+
 test('an encoded ../ traversal path is rejected without leaking file contents', async () => {
     const res = await fetch(`${sharedUrl}/..%2f..%2fetc%2fpasswd`);
     assert.ok([400, 404].includes(res.status));

@@ -131,58 +131,62 @@
             `;
         }
 
-        function attachListeners() {
-            const searchInput = root.querySelector('.editor-search');
-            if (searchInput) {
-                searchInput.addEventListener('input', (event) => {
-                    searchQuery = event.target.value.trim().toLowerCase();
-                    const caret = event.target.selectionStart;
-                    render();
-                    const restored = root.querySelector('.editor-search');
-                    if (restored) {
-                        restored.focus();
-                        restored.setSelectionRange(caret, caret);
-                    }
-                });
-            }
-
-            root.querySelectorAll('.editor-filter').forEach((select) => {
-                select.addEventListener('change', (event) => {
-                    filterValues[event.target.dataset.filterKey] = event.target.value;
-                    render();
-                });
+        // All interaction is delegated once onto `root` (createListView gets
+        // a fresh root per tab render, so listeners never stack). Search,
+        // filter, sort, selection, and inline-edit commits then only replace
+        // the table (renderBody) — the toolbar DOM survives, which keeps the
+        // search input's focus and caret without any restore dance.
+        function wireListeners() {
+            root.addEventListener('input', (event) => {
+                if (!event.target.classList.contains('editor-search')) return;
+                searchQuery = event.target.value.trim().toLowerCase();
+                renderBody();
             });
 
-            root.querySelectorAll('th.is-sortable').forEach((th) => {
-                th.addEventListener('click', () => {
+            root.addEventListener('change', (event) => {
+                if (!event.target.classList.contains('editor-filter')) return;
+                filterValues[event.target.dataset.filterKey] = event.target.value;
+                renderBody();
+            });
+
+            root.addEventListener('click', (event) => {
+                const th = event.target.closest('th.is-sortable');
+                if (th) {
                     const key = th.dataset.sortKey;
                     if (sortState && sortState.key === key) {
                         sortState = { key, direction: sortState.direction === 'desc' ? 'asc' : 'desc' };
                     } else {
                         sortState = { key, direction: 'desc' };
                     }
-                    render();
-                });
-            });
+                    renderBody();
+                    return;
+                }
 
-            root.querySelectorAll('tr.editor-row').forEach((tr) => {
-                tr.addEventListener('click', () => {
-                    const key = tr.dataset.key;
-                    const record = records.find((candidate) => String(getKey(candidate)) === key);
+                const cell = event.target.closest('td.is-editable');
+                if (cell) {
+                    beginCellEdit(cell);
+                    return;
+                }
+
+                const tr = event.target.closest('tr.editor-row');
+                if (tr) {
+                    const record = records.find((candidate) => String(getKey(candidate)) === tr.dataset.key);
                     if (!record) return;
                     selectedKey = getKey(record);
-                    render();
+                    paintSelection();
                     if (typeof onSelect === 'function') onSelect(record);
-                });
+                }
             });
+        }
 
-            root.querySelectorAll('td.is-editable').forEach((cell) => {
-                cell.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    beginCellEdit(cell);
-                });
+        // Selection is just a class toggle — no reason to rebuild the table.
+        function paintSelection() {
+            root.querySelectorAll('tr.editor-row').forEach((tr) => {
+                tr.classList.toggle('is-selected', selectedKey !== null && String(selectedKey) === tr.dataset.key);
             });
+        }
 
+        function scrollSelectedIntoView() {
             const selectedRow = root.querySelector('tr.editor-row.is-selected');
             if (selectedRow) selectedRow.scrollIntoView({ block: 'nearest' });
         }
@@ -234,7 +238,7 @@
                 try {
                     const fresh = await onCommitEdit(record, column, parsed);
                     if (Array.isArray(fresh)) records = fresh;
-                    render();
+                    renderBody();
                 } catch (err) {
                     flashInvalid((err && err.message) || 'Save failed');
                 }
@@ -263,10 +267,20 @@
             input.addEventListener('blur', finish);
         }
 
+        // Replaces only the count + table, leaving the toolbar DOM alone.
+        function renderBody() {
+            const visible = visibleRecords();
+            const countEl = root.querySelector('.editor-count');
+            if (countEl) countEl.textContent = `${visible.length} record${visible.length === 1 ? '' : 's'}`;
+            const wrap = root.querySelector('.editor-table-wrap');
+            if (wrap) wrap.outerHTML = renderTable(visible);
+            scrollSelectedIntoView();
+        }
+
         function render() {
             const visible = visibleRecords();
             root.innerHTML = renderToolbar(visible.length) + renderTable(visible);
-            attachListeners();
+            scrollSelectedIntoView();
         }
 
         function update(newRecords) {
@@ -278,10 +292,12 @@
             const record = records.find((candidate) => String(getKey(candidate)) === String(key));
             if (!record) return;
             selectedKey = getKey(record);
-            render();
+            paintSelection();
+            scrollSelectedIntoView();
             if (typeof onSelect === 'function') onSelect(record);
         }
 
+        wireListeners();
         render();
 
         return { update, selectRecord };

@@ -268,8 +268,23 @@ function serveStatic(req, res, config, rawPath) {
     }
     if (!stat.isFile()) return sendJson(res, 404, { error: 'not found' });
 
+    // no-cache + ETag: the browser may reuse its cached copy (thumbnails,
+    // sprites, scripts) but must revalidate, so overwritten uploads and
+    // edited files show up immediately — revalidations are empty 304s.
+    const etag = `"${stat.size}-${Math.floor(stat.mtimeMs)}"`;
+    const cacheHeaders = {
+        'Cache-Control': 'no-cache',
+        'ETag': etag,
+        'Last-Modified': stat.mtime.toUTCString()
+    };
+
+    if (req.headers['if-none-match'] === etag) {
+        res.writeHead(304, cacheHeaders);
+        return res.end();
+    }
+
     const mime = MIME_TYPES[path.extname(resolved).toLowerCase()] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': mime });
+    res.writeHead(200, Object.assign({ 'Content-Type': mime, 'Content-Length': stat.size }, cacheHeaders));
     return res.end(req.method === 'HEAD' ? undefined : fs.readFileSync(resolved));
 }
 

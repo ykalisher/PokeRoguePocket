@@ -34,7 +34,7 @@
             {
                 key: 'image',
                 label: '',
-                render: (record) => `<img class="editor-thumb" src="${EditorPreview.itemImagePathFor(record)}" alt="">`
+                render: (record) => `<img class="editor-thumb" loading="lazy" decoding="async" src="${EditorPreview.itemImagePathFor(record)}" alt="">`
             },
             {
                 key: 'name',

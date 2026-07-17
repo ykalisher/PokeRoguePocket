@@ -49,7 +49,7 @@
             {
                 key: 'portrait',
                 label: '',
-                render: (record) => `<img class="editor-thumb" src="assets/portraits/${encodeURIComponent(record.name)}.png" alt="">`
+                render: (record) => `<img class="editor-thumb" loading="lazy" decoding="async" src="assets/portraits/${encodeURIComponent(record.name)}.png" alt="">`
             },
             {
                 key: 'name',

@@ -12,7 +12,15 @@
     const tabs = new Map();
     const tabOrder = [];
     let activeTab = null;
-    let activeListHandle = null;
+
+    // Tab switching keeps every visited tab's DOM alive (memory is cheap on
+    // the one dev machine this runs on): each tab renders once into its own
+    // persistent panel inside #editor-view, and switching just toggles
+    // `hidden`. A panel re-renders only when the store changed (tracked by
+    // storeVersion, bumped in computeIssues — every mutation path calls it)
+    // since the panel was last rendered.
+    const panels = new Map(); // tab name -> { el, handle, version }
+    let storeVersion = 0;
 
     // The single currently-open detail editor, or null when a tab is
     // showing its list. Shape: { kind, fileName, record, draft, dirty,
@@ -91,6 +99,10 @@
     };
 
     EditorApp.computeIssues = function computeIssues() {
+        // Every store mutation (init, save, delete, upload) funnels through
+        // here, so this doubles as the panels' cache-invalidation signal.
+        storeVersion += 1;
+
         const { data, enums, assetIndex, engineRefs } = EditorApp.store;
         const issues = window.EditorValidation.validateAll(data, { enums, assetIndex, engineRefs });
 
@@ -115,16 +127,26 @@
             return `<button type="button" class="editor-tab${isActive ? ' is-active' : ''}" data-tab="${name}">${tab.label}${badge}</button>`;
         }).join('');
 
-        nav.querySelectorAll('.editor-tab').forEach((button) => {
-            button.addEventListener('click', () => {
-                if (button.dataset.tab === activeTab) return;
+        if (!nav.dataset.wired) {
+            nav.dataset.wired = '1';
+            nav.addEventListener('click', (event) => {
+                const button = event.target.closest('.editor-tab');
+                if (!button || button.dataset.tab === activeTab) return;
                 if (!confirmLeaveIfDirty()) return;
                 currentEditor = null;
                 showTab(button.dataset.tab);
             });
-        });
+        }
 
         paintBadge();
+    }
+
+    function paintActiveTab() {
+        const nav = document.getElementById('editor-tabs');
+        if (!nav) return;
+        nav.querySelectorAll('.editor-tab').forEach((button) => {
+            button.classList.toggle('is-active', button.dataset.tab === activeTab);
+        });
     }
 
     function paintBadge() {
@@ -153,12 +175,57 @@
         if (!tab) return;
 
         activeTab = name;
-        renderTabBar();
+        paintActiveTab();
+        hideDetail();
 
         const view = document.getElementById('editor-view');
-        view.innerHTML = '';
-        activeListHandle = tab.render(view) || null;
+        let panel = panels.get(name);
+        if (!panel) {
+            panel = { el: document.createElement('div'), handle: null, version: -1 };
+            panel.el.className = 'editor-tab-panel';
+            view.appendChild(panel.el);
+            panels.set(name, panel);
+        }
+
+        if (panel.version !== storeVersion) {
+            // A fresh element, not innerHTML = '': tabs attach delegated
+            // listeners to their root, which would otherwise stack across
+            // re-renders.
+            const fresh = document.createElement('div');
+            fresh.className = 'editor-tab-panel';
+            panel.el.replaceWith(fresh);
+            panel.el = fresh;
+            panel.handle = tab.render(fresh) || null;
+            panel.version = storeVersion;
+        }
+
+        panels.forEach((other, otherName) => {
+            other.el.hidden = otherName !== name;
+        });
+
         if (typeof tab.onShow === 'function') tab.onShow();
+    }
+
+    // The detail editor lives in its own sibling container so opening it
+    // never destroys the list panels underneath.
+    function detailHost() {
+        const view = document.getElementById('editor-view');
+        let host = view.querySelector(':scope > .editor-detail-host');
+        if (!host) {
+            host = document.createElement('div');
+            host.className = 'editor-detail-host';
+            view.appendChild(host);
+        }
+        return host;
+    }
+
+    function hideDetail() {
+        const view = document.getElementById('editor-view');
+        const host = view.querySelector(':scope > .editor-detail-host');
+        if (host) {
+            host.innerHTML = '';
+            host.hidden = true;
+        }
     }
 
     function assetIndexFrom(assets) {
@@ -309,8 +376,9 @@
         if (!confirmLeaveIfDirty()) return;
         currentEditor = null;
         showTab(tabName);
-        if (activeListHandle && typeof activeListHandle.selectRecord === 'function') {
-            activeListHandle.selectRecord(key);
+        const panel = panels.get(tabName);
+        if (panel && panel.handle && typeof panel.handle.selectRecord === 'function') {
+            panel.handle.selectRecord(key);
         }
     }
 
@@ -468,10 +536,14 @@
     // -------------------------------------------------------- openEditor
 
     function renderDetailChrome() {
-        const view = document.getElementById('editor-view');
         const ed = currentEditor;
         const canDelete = ed.record != null;
 
+        const panel = panels.get(activeTab);
+        if (panel) panel.el.hidden = true;
+
+        const view = detailHost();
+        view.hidden = false;
         view.innerHTML = `
             <div class="editor-detail">
                 <div class="editor-detail-bar">
@@ -538,7 +610,13 @@
         updateDetailButtons();
     }
 
+    // Pending debounced preview refresh; renderDetailBody cancels it so a
+    // stale closure never paints over a freshly rendered body.
+    let previewTimer = 0;
+
     function renderDetailBody() {
+        clearTimeout(previewTimer);
+
         const ed = currentEditor;
         const view = document.getElementById('editor-view');
         const previewEl = view.querySelector('#editor-preview-pane');
@@ -551,9 +629,16 @@
                 updateDetailButtons();
                 renderFormIssues();
             },
+            // Debounced: the preview pane can be large (a boss trainer's
+            // whole deck of mini-cards), so mid-typing repaints are wasted
+            // work — only the last call within the window renders.
             refreshPreview() {
                 if (!currentEditor) return;
-                ed.config.renderPreview(previewEl, currentEditor.draft);
+                clearTimeout(previewTimer);
+                previewTimer = setTimeout(() => {
+                    if (!currentEditor || !previewEl.isConnected) return;
+                    ed.config.renderPreview(previewEl, currentEditor.draft);
+                }, 120);
             }
         };
 
