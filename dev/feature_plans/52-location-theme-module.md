@@ -29,7 +29,7 @@
 
 ## Steps
 
-- [ ] 1. **`scripts/location_theme.js`** (new file) — create with exactly this content:
+- [x] 1. **`scripts/location_theme.js`** (new file) — create with exactly this content:
   ```js
   /**
    * Pokemon Rogue Pocket - type-derived location theme defaults (dev tooling).
@@ -135,13 +135,13 @@
       if (typeof window !== 'undefined') window.LocationTheme = api;
   }());
   ```
-- [ ] 2. **Self-check the math** before touching data — all three worked examples in the
+- [x] 2. **Self-check the math** before touching data — all three worked examples in the
   overview must reproduce exactly, e.g.:
   ```bash
   node -e "console.log(JSON.stringify(require('./scripts/location_theme').deriveLocationTheme(['FIRE','ROCK'])))"
   # {"accent":"#ff9024","glow":"#e7e5af","surface":"#4f250d","bgDeep":"#151718","bgMid":"#242626"}
   ```
-- [ ] 3. **`tests/location_theme.test.js`** (new file) — create with exactly this content:
+- [x] 3. **`tests/location_theme.test.js`** (new file) — create with exactly this content:
   ```js
   'use strict';
 
@@ -194,7 +194,7 @@
       THEME_KEYS.forEach((key) => assert.ok(HEX_PATTERN.test(theme[key]), `${key} = ${theme[key]}`));
   });
   ```
-- [ ] 4. **`locations.json`** — retroactively re-theme **all** records (including the two
+- [x] 4. **`locations.json`** — retroactively re-theme **all** records (including the two
   hand-authored ones — owner's explicit choice, see overview):
   ```bash
   node -e "
@@ -209,14 +209,14 @@
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green (includes the new test file and the byte-exact
+- [x] `node tests/run_all.js` green (includes the new test file and the byte-exact
   format test against the rewritten `locations.json`).
-- [ ] `git diff locations.json` shows **only** `theme` lines changed, one per record
+- [x] `git diff locations.json` shows **only** `theme` lines changed, one per record
   (13 records), and nothing else.
-- [ ] Eyeball the values: `node -e "JSON.parse(require('fs').readFileSync('locations.json','utf8')).forEach(l => console.log(l.id.padEnd(24), JSON.stringify(l.theme)))"`
+- [x] Eyeball the values: `node -e "JSON.parse(require('fs').readFileSync('locations.json','utf8')).forEach(l => console.log(l.id.padEnd(24), JSON.stringify(l.theme)))"`
   — accents/glows are bright type colors; surface/bgDeep/bgMid are dark (every
   bgDeep/bgMid channel pair reads well below `#40`).
-- [ ] In-game spot check (`verify` skill): `python3 -m http.server 8931 --bind
+- [x] In-game spot check (`verify` skill): `python3 -m http.server 8931 --bind
   127.0.0.1`, start a run from `index.html`, confirm the area page background/panels
   pick up a location-specific palette (no longer the shared neutral gold/teal for most
   locations). `pkill -f "http.server 8931"` afterwards.

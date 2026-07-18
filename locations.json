@@ -4,7 +4,7 @@
     "name": "Cinnabar Island Volcano",
     "terrain": "Volcanic",
     "types": ["FIRE", "ROCK"],
-    "theme": { "accent": "#f2a35c", "glow": "#d95f3b", "surface": "#402420", "bgDeep": "#1c0f0c", "bgMid": "#2e1a14" },
+    "theme": { "accent": "#ff9024", "glow": "#e7e5af", "surface": "#4f250d", "bgDeep": "#151718", "bgMid": "#242626" },
     "background": "assets/backgrounds/cinder-ridge.png",
     "enabled": true
   },
@@ -13,7 +13,7 @@
     "name": "Cinnabar Mansion",
     "terrain": "Urban",
     "types": ["FIRE", "GHOST", "HUMAN"],
-    "theme": { "accent": "#e8865c", "glow": "#a05cd9", "surface": "#3a2635", "bgDeep": "#190f18", "bgMid": "#2b1a28" },
+    "theme": { "accent": "#ff9024", "glow": "#876dad", "surface": "#281c15", "bgDeep": "#0d0e14", "bgMid": "#14161e" },
     "background": "assets/backgrounds/dragons-rest.png",
     "enabled": true
   },
@@ -22,7 +22,7 @@
     "name": "Old Chateau",
     "terrain": "Urban",
     "types": ["GHOST", "DARK", "MONSTER"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#876dad", "glow": "#a6a6a6", "surface": "#0d1f1c", "bgDeep": "#0b0d11", "bgMid": "#121419" },
     "background": "assets/backgrounds/old-chateau.png",
     "enabled": true
   },
@@ -31,7 +31,7 @@
     "name": "Fuego Ironworks",
     "terrain": "Factory",
     "types": ["FIRE", "STEEL", "ELECTRIC"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#ff9024", "glow": "#dbdbdb", "surface": "#3f380d", "bgDeep": "#16171b", "bgMid": "#25272b" },
     "background": "assets/backgrounds/fuego-ironworks.png",
     "enabled": true
   },
@@ -40,7 +40,7 @@
     "name": "Cerulean Cave",
     "terrain": "Cave",
     "types": ["MONSTER", "DARK", "PSYCHIC"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#00b464", "glow": "#a6a6a6", "surface": "#2d1834", "bgDeep": "#0b0d11", "bgMid": "#121419" },
     "background": "assets/backgrounds/cerulean-cave.png",
     "enabled": true
   },
@@ -49,7 +49,7 @@
     "name": "Safari Zone",
     "terrain": "Safari",
     "types": ["NORMAL", "GOURMET"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#fffefe", "glow": "#ff8473", "surface": "#2b2d30", "bgDeep": "#221315", "bgMid": "#3b1f21" },
     "background": "assets/backgrounds/safari-zone.png",
     "enabled": true
   },
@@ -58,7 +58,7 @@
     "name": "Sevii Islands",
     "terrain": "Island",
     "types": ["WATER", "GRASS", "FLYING"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#2da2fd", "glow": "#17b300", "surface": "#2f4652", "bgDeep": "#06170b", "bgMid": "#09270f" },
     "background": "assets/backgrounds/sevii-islands.png",
     "enabled": true
   },
@@ -67,7 +67,7 @@
     "name": "Seafoam Islands",
     "terrain": "Island",
     "types": ["WATER", "ICE"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#2da2fd", "glow": "#c3e4ee", "surface": "#081f4a", "bgDeep": "#0f191d", "bgMid": "#192a2f" },
     "background": "assets/backgrounds/seafoam-islands.png",
     "enabled": true
   },
@@ -76,7 +76,7 @@
     "name": "Castelia City",
     "terrain": "Urban",
     "types": ["NORMAL", "POISON", "DARK", "HUMAN"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#fffefe", "glow": "#88d7a0", "surface": "#15171b", "bgDeep": "#130f0e", "bgMid": "#201814" },
     "background": "assets/backgrounds/castelia-city.png",
     "enabled": true
   },
@@ -85,7 +85,7 @@
     "name": "New Mauville",
     "terrain": "Factory",
     "types": ["ELECTRIC", "STEEL"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#fdff4a", "glow": "#dbdbdb", "surface": "#3f380d", "bgDeep": "#16171b", "bgMid": "#25272b" },
     "background": "assets/backgrounds/new-mauville.png",
     "enabled": true
   },
@@ -94,7 +94,7 @@
     "name": "Viridian Forest",
     "terrain": "Forest",
     "types": ["GRASS", "BUG", "ELECTRIC"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#17b300", "glow": "#fffe66", "surface": "#3f380d", "bgDeep": "#141610", "bgMid": "#222617" },
     "background": "assets/backgrounds/viridian-forest.png",
     "enabled": true
   },
@@ -103,7 +103,7 @@
     "name": "Lavender Town",
     "terrain": "Urban",
     "types": ["GHOST", "HUMAN", "MONSTER"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#876dad", "glow": "#fdbb8b", "surface": "#0d1f1c", "bgDeep": "#130f0e", "bgMid": "#201814" },
     "background": "assets/backgrounds/lavender-town.png",
     "enabled": true
   },
@@ -112,7 +112,7 @@
     "name": "Lake of Rage",
     "terrain": "Lake",
     "types": ["DRAGON", "WATER", "MONSTER"],
-    "theme": { "accent": "#e0b84f", "glow": "#4ab0a5", "surface": "#232f3d", "bgDeep": "#10161f", "bgMid": "#1b2836" },
+    "theme": { "accent": "#b87333", "glow": "#2da2fd", "surface": "#0d1f1c", "bgDeep": "#061124", "bgMid": "#091b3b" },
     "background": "assets/backgrounds/lake-of-rage.png",
     "enabled": true
   }
