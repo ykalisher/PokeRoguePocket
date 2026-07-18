@@ -20,6 +20,16 @@ never retype values): `PokeType`, `Status`, `StatChange`, `AttackTarget`,
 `pokemon.json` (188): `name`, `type1..type3` (PokeType; `type1 !== NONE`),
 `id` (4-digit string, matches `assets/portraits/<name>.png` numbering),
 `baseHealth/baseAttack/baseDefense/baseSpeed` (positive numbers).
+`evolvesInto` (optional string, name or id) names a BABY-typed pokemon's mega
+evolution target — there is no mega type; a "mega" is simply any record some
+baby's `evolvesInto` resolves to (`map/locations.js` `isMegaPokemon`,
+`getMegaTargetKeys`). Rules: every BABY-typed pokemon needs >=1 non-BABY type;
+no attack may use `BABY` in `type1`/`type2`; `evolvesInto` stays optional even
+on babies (runtime code guards its absence) but when present must resolve to
+a real pokemon by name or id. Babies and megas are excluded from every
+generic pokemon pool — wild encounters, legendary captures, and event random
+grants (`isObtainablePokemon`/`getObtainablePokemonPool` in
+`map/locations.js`). Owner authors baby/mega data later; zero exists today.
 
 `attacks.json` (115): `name`, `type1/type2` (PokeType), `basePower` (>= 0;
 0 = pure effect), `status` (Status, or an artificial effect — below),
