@@ -30,7 +30,7 @@ Simulating exactly that mutation against the live data yields **only** the error
 
 ## Steps
 
-- [ ] 1. **`locations.json`** — rewrite the file through the canonical formatter without
+- [x] 1. **`locations.json`** — rewrite the file through the canonical formatter without
   changing any data:
   ```bash
   node -e "
@@ -40,7 +40,7 @@ Simulating exactly that mutation against the live data yields **only** the error
   fs.writeFileSync('locations.json', formatDataFile('locations', data));
   "
   ```
-- [ ] 2. **`tests/editor_validation.test.js`** — in the `'locations: disconnected graph'`
+- [x] 2. **`tests/editor_validation.test.js`** — in the `'locations: disconnected graph'`
   test (~line 163): change `'meadow-market'` to `'lavender-town'` and replace the
   comment above the mutation so it stays truthful, e.g.:
   ```js
@@ -53,8 +53,8 @@ Simulating exactly that mutation against the live data yields **only** the error
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green (both formerly-failing tests now pass).
-- [ ] `locations.json` data is byte-identical *as data* — this prints `DATA IDENTICAL`:
+- [x] `node tests/run_all.js` green (both formerly-failing tests now pass).
+- [x] `locations.json` data is byte-identical *as data* — this prints `DATA IDENTICAL`:
   ```bash
   node -e "
   const fs = require('fs');

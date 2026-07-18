@@ -161,11 +161,11 @@ test('locations: bad hex theme color', () => {
 });
 
 test('locations: disconnected graph', () => {
-    // meadow-market's types (NORMAL/FAIRY/GOURMET/GRASS) are all also covered
-    // by other enabled locations, so isolating it doesn't break starter
-    // coverage — only the connectivity rule.
+    // lavender-town's types (GHOST/HUMAN/MONSTER) are all also covered by other
+    // enabled locations and include no starter type, so isolating it doesn't
+    // break starter coverage — only the connectivity rule.
     const data = withLocations((locations) => {
-        const isolated = locations.find((location) => location.id === 'meadow-market');
+        const isolated = locations.find((location) => location.id === 'lavender-town');
         isolated.types = ['BABY', 'FOSSIL'];
     });
     const issues = validateAll(data, { enums: live.enums, engineRefs: live.engineRefs });
