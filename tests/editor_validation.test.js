@@ -148,6 +148,18 @@ test('events: trainer event naming a missing trainer', () => {
     assert.ok(hasCode(issues, 'events.unknown-trainer'));
 });
 
+test('events: unknown location id in locations override', () => {
+    const data = withEvents((events) => { events[0].locations = ['not-a-real-place']; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.unknown-location'));
+});
+
+test('events: unknown terrain in terrains override', () => {
+    const data = withEvents((events) => { events[0].terrains = ['NotATerrain']; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.unknown-terrain'));
+});
+
 test('locations: only 1 type', () => {
     const data = withLocations((locations) => { locations[0].types = ['WATER']; });
     const issues = validateAll(data, { enums: live.enums });

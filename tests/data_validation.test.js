@@ -200,6 +200,8 @@ test('events.json entries are well-formed', () => {
     assert.ok(Array.isArray(events), 'events.json must be an array');
 
     const trainerNames = new Set(trainers.map(record => record.name));
+    const locationIds = new Set(locations.map(location => location.id));
+    const terrainSet = new Set(locations.map(location => String(location.terrain || '').trim().toLowerCase()).filter(Boolean));
     const seenIds = new Set();
     let trainerEventCount = 0;
 
@@ -220,6 +222,20 @@ test('events.json entries are well-formed', () => {
                 assert.ok(VALID_TYPES.has(type), `${event.id}: bad type ${type}`);
                 assert.notEqual(type, 'NONE', `${event.id}: NONE is not an event type`);
                 assert.notEqual(type, 'LEGENDARY', `${event.id}: LEGENDARY is not an event type`);
+            });
+        }
+
+        if (event.locations !== undefined) {
+            assert.ok(Array.isArray(event.locations), `${event.id}: locations must be an array`);
+            event.locations.forEach(id => {
+                assert.ok(locationIds.has(id), `${event.id}: unknown location id ${id}`);
+            });
+        }
+
+        if (event.terrains !== undefined) {
+            assert.ok(Array.isArray(event.terrains), `${event.id}: terrains must be an array`);
+            event.terrains.forEach(label => {
+                assert.ok(terrainSet.has(String(label).trim().toLowerCase()), `${event.id}: unknown terrain ${label}`);
             });
         }
 

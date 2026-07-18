@@ -47,7 +47,7 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
 
 ## Steps
 
-- [ ] 1. **`tab_events.js`** — next to `chipListHtml`, add the plain (icon-less)
+- [x] 1. **`tab_events.js`** — next to `chipListHtml`, add the plain (icon-less)
   variant and the two value providers + pickers:
   ```js
   function plainChipListHtml(values, addScopeAttrs, removeAttrsFor, available, placeholder) {
@@ -94,14 +94,14 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
       );
   }
   ```
-- [ ] 2. **`tab_events.js`** — in `commonZoneHtml`, right after the
+- [x] 2. **`tab_events.js`** — in `commonZoneHtml`, right after the
   `<label>Location gate types${gateChipsHtml(draft)}</label>` line, add:
   ```html
   <label>Only at locations${locationChipsHtml(draft)}</label>
   <label>Only at terrains${terrainChipsHtml(draft)}</label>
   <span class="editor-hint">If either override list is set, it replaces the type gate: the event appears only at those location ids / terrains.</span>
   ```
-- [ ] 3. **`tab_events.js`** — in the `change` listener's `switch`, add two cases
+- [x] 3. **`tab_events.js`** — in the `change` listener's `switch`, add two cases
   modeled on `gate-add`:
   ```js
   case 'event-locations-add':
@@ -111,7 +111,7 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
       if (value) { draft.terrains = draft.terrains || []; draft.terrains.push(value); }
       break;
   ```
-- [ ] 4. **`tab_events.js`** — in the `click` listener's `chip-remove` branch, add two
+- [x] 4. **`tab_events.js`** — in the `click` listener's `chip-remove` branch, add two
   branches modeled on `chip === 'gate'`:
   ```js
   } else if (chip === 'event-locations') {
@@ -122,7 +122,7 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
       if (!draft.terrains.length) delete draft.terrains;
   }
   ```
-- [ ] 5. **`tab_events.js`** — make the list "Gate" column override-aware (replace its
+- [x] 5. **`tab_events.js`** — make the list "Gate" column override-aware (replace its
   `render`):
   ```js
   render: (record) => {
@@ -136,7 +136,7 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
           : '<span class="editor-muted">Any</span>';
   }
   ```
-- [ ] 6. **`tab_events.js`** — same precedence in `eventPreviewHtml`: replace the
+- [x] 6. **`tab_events.js`** — same precedence in `eventPreviewHtml`: replace the
   `const gates = ...` expression with:
   ```js
   const locs = Array.isArray(draft.locations) ? draft.locations : [];
@@ -150,7 +150,7 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
       gates = '<span class="editor-muted">Any location</span>';
   }
   ```
-- [ ] 7. **`dev/editor/validate.js`** — give `validateEvents` a 4th parameter and the
+- [x] 7. **`dev/editor/validate.js`** — give `validateEvents` a 4th parameter and the
   two checks. Signature: `function validateEvents(events, trainerNames, enums, locations)`.
   At the top of the function add:
   ```js
@@ -187,7 +187,7 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
   ```
   Then in `validateAll`, change the call to
   `...validateEvents(events, trainerNames, enums, locations),`.
-- [ ] 8. **`tests/data_validation.test.js`** — in the events test, build the sets once
+- [x] 8. **`tests/data_validation.test.js`** — in the events test, build the sets once
   before `events.forEach` (next to `const trainerNames = ...`):
   ```js
   const locationIds = new Set(locations.map(location => location.id));
@@ -209,7 +209,7 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
       });
   }
   ```
-- [ ] 9. **`tests/editor_validation.test.js`** — add two synthetic tests next to the
+- [x] 9. **`tests/editor_validation.test.js`** — add two synthetic tests next to the
   existing events tests:
   ```js
   test('events: unknown location id in locations override', () => {
@@ -227,9 +227,9 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `cd dev/verify && .cache/venv/bin/python drive_editor.py` passes.
-- [ ] Browser check passes — save as `<scratchpad>/check_phase55.py`, run with
+- [x] `node tests/run_all.js` green.
+- [x] `cd dev/verify && .cache/venv/bin/python drive_editor.py` passes.
+- [x] Browser check passes — save as `<scratchpad>/check_phase55.py`, run with
   `dev/verify/.cache/venv/bin/python <scratchpad>/check_phase55.py` from the repo root;
   must print `OK` (nothing is saved):
   ```python
@@ -277,7 +277,7 @@ for chip state, repaint, and round-trip fidelity (key deleted when the last chip
   (If the preview panel's root selector differs, find the preview container class in
   `app.js`'s `openEditor` and adjust the `.editor-preview` selector — the assertion is
   that the two chosen values appear in the rendered preview.)
-- [ ] Round-trip stays clean: with the editor server running, opening and saving an
+- [x] Round-trip stays clean: with the editor server running, opening and saving an
   untouched event must not change `events.json` — or simply confirm the last chip
   removal deletes the keys (the browser check asserts this) and that
   `git diff events.json` is empty after the checks.

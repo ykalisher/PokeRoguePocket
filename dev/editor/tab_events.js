@@ -140,9 +140,16 @@
             {
                 key: 'types',
                 label: 'Gate',
-                render: (record) => (Array.isArray(record.types) && record.types.length
-                    ? record.types.map(typeIconHtml).join('')
-                    : '<span class="editor-muted">Any</span>')
+                render: (record) => {
+                    const locs = Array.isArray(record.locations) ? record.locations : [];
+                    const terrs = Array.isArray(record.terrains) ? record.terrains : [];
+                    if (locs.length || terrs.length) {
+                        return locs.concat(terrs).map((value) => `<span class="editor-badge">${escapeHtml(value)}</span>`).join(' ');
+                    }
+                    return Array.isArray(record.types) && record.types.length
+                        ? record.types.map(typeIconHtml).join('')
+                        : '<span class="editor-muted">Any</span>';
+                }
             },
             {
                 key: 'enabled',
@@ -396,9 +403,16 @@
     }
 
     function eventPreviewHtml(draft) {
-        const gates = Array.isArray(draft.types) && draft.types.length
-            ? draft.types.map(typeIconHtml).join('')
-            : '<span class="editor-muted">Any location</span>';
+        const locs = Array.isArray(draft.locations) ? draft.locations : [];
+        const terrs = Array.isArray(draft.terrains) ? draft.terrains : [];
+        let gates;
+        if (locs.length || terrs.length) {
+            gates = locs.concat(terrs).map((value) => `<span class="editor-badge">${escapeHtml(value)}</span>`).join(' ');
+        } else if (Array.isArray(draft.types) && draft.types.length) {
+            gates = draft.types.map(typeIconHtml).join('');
+        } else {
+            gates = '<span class="editor-muted">Any location</span>';
+        }
 
         let actionsHtml = '';
         if (draft.type === 'gift') {
@@ -483,6 +497,50 @@
             'data-scope="gate-add"',
             (index) => `data-action="chip-remove" data-chip="gate" data-chip-index="${index}"`,
             gateTypeValues()
+        );
+    }
+
+    function plainChipListHtml(values, addScopeAttrs, removeAttrsFor, available, placeholder) {
+        const chips = values.map((value, index) =>
+            `<span class="editor-chip">${escapeHtml(value)}` +
+            `<button type="button" class="editor-chip-remove" ${removeAttrsFor(index)} aria-label="Remove ${escapeAttr(value)}">×</button></span>`
+        ).join('');
+        const remaining = available.filter((value) => !values.includes(value));
+        return `<div class="editor-chip-list">${chips}` +
+            `<select class="editor-chip-add" ${addScopeAttrs}><option value="">${placeholder}</option>${optionTags(remaining, '')}</select></div>`;
+    }
+
+    function locationIdValues() {
+        return (EditorApp.store.data.locations || []).map((record) => record.id).sort();
+    }
+
+    function terrainValues() {
+        // Distinct terrain labels, deduped case-insensitively, first-seen casing kept.
+        const seen = new Map();
+        (EditorApp.store.data.locations || []).forEach((record) => {
+            const label = String(record.terrain || '').trim();
+            if (label && !seen.has(label.toLowerCase())) seen.set(label.toLowerCase(), label);
+        });
+        return Array.from(seen.values()).sort();
+    }
+
+    function locationChipsHtml(draft) {
+        return plainChipListHtml(
+            draft.locations || [],
+            'data-scope="event-locations-add"',
+            (index) => `data-action="chip-remove" data-chip="event-locations" data-chip-index="${index}"`,
+            locationIdValues(),
+            '+ location…'
+        );
+    }
+
+    function terrainChipsHtml(draft) {
+        return plainChipListHtml(
+            draft.terrains || [],
+            'data-scope="event-terrains-add"',
+            (index) => `data-action="chip-remove" data-chip="event-terrains" data-chip-index="${index}"`,
+            terrainValues(),
+            '+ terrain…'
         );
     }
 
@@ -690,6 +748,9 @@
                     <label class="editor-form-checkbox"><input type="checkbox" data-scope="common" data-field="enabled"${isEnabled(draft) ? ' checked' : ''}> Enabled</label>
                 </div>
                 <label>Location gate types${gateChipsHtml(draft)}</label>
+                <label>Only at locations${locationChipsHtml(draft)}</label>
+                <label>Only at terrains${terrainChipsHtml(draft)}</label>
+                <span class="editor-hint">If either override list is set, it replaces the type gate: the event appears only at those location ids / terrains.</span>
             </div>
         `;
     }
@@ -950,6 +1011,12 @@
                 case 'gate-add':
                     if (value) { draft.types = draft.types || []; draft.types.push(value); }
                     break;
+                case 'event-locations-add':
+                    if (value) { draft.locations = draft.locations || []; draft.locations.push(value); }
+                    break;
+                case 'event-terrains-add':
+                    if (value) { draft.terrains = draft.terrains || []; draft.terrains.push(value); }
+                    break;
                 case 'req-cardkind':
                     requireAt(owner, index).cardKind = value;
                     break;
@@ -1042,6 +1109,12 @@
                     const effect = effectAt(owner, index);
                     effect.replacement.types.splice(chipIndex, 1);
                     if (!effect.replacement.types.length) { delete effect.replacement.types; cleanupReplacement(effect); }
+                } else if (chip === 'event-locations') {
+                    draft.locations.splice(chipIndex, 1);
+                    if (!draft.locations.length) delete draft.locations;
+                } else if (chip === 'event-terrains') {
+                    draft.terrains.splice(chipIndex, 1);
+                    if (!draft.terrains.length) delete draft.terrains;
                 }
             } else {
                 return;

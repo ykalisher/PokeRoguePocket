@@ -301,11 +301,15 @@
 
     // ----------------------------------------------------------------- events
 
-    function validateEvents(events, trainerNames, enums) {
+    function validateEvents(events, trainerNames, enums, locations) {
         const issues = [];
         const validTypes = new Set(Object.values((enums && enums.PokeType) || {}));
         const validEffectTypes = new Set((enums && enums.effectTypes) || DEFAULT_EFFECT_TYPES);
         const validEventTypes = new Set((enums && enums.eventTypes) || DEFAULT_EVENT_TYPES);
+        const locationIds = new Set((locations || []).map((record) => record && record.id).filter(Boolean));
+        const terrainSet = new Set((locations || [])
+            .map((record) => String((record && record.terrain) || '').trim().toLowerCase())
+            .filter(Boolean));
 
         const seenIds = new Set();
         let trainerEventCount = 0;
@@ -343,6 +347,29 @@
                         issues.push(err('events.json', key, 'events.bad-gate-type', `${key}: bad type ${type}`, 'types'));
                     }
                 });
+            }
+            if (event.locations !== undefined) {
+                if (!Array.isArray(event.locations)) {
+                    issues.push(err('events.json', key, 'events.bad-locations', `${key}: locations must be an array`, 'locations'));
+                } else {
+                    event.locations.forEach((id) => {
+                        if (!locationIds.has(id)) {
+                            issues.push(err('events.json', key, 'events.unknown-location', `${key}: unknown location id ${id}`, 'locations'));
+                        }
+                    });
+                }
+            }
+            if (event.terrains !== undefined) {
+                if (!Array.isArray(event.terrains)) {
+                    issues.push(err('events.json', key, 'events.bad-terrains', `${key}: terrains must be an array`, 'terrains'));
+                } else {
+                    event.terrains.forEach((label) => {
+                        const norm = String(label || '').trim().toLowerCase();
+                        if (!norm || !terrainSet.has(norm)) {
+                            issues.push(err('events.json', key, 'events.unknown-terrain', `${key}: unknown terrain ${label}`, 'terrains'));
+                        }
+                    });
+                }
             }
 
             collectEventEffects(event).forEach((effect) => {
@@ -601,7 +628,7 @@
             ...validateAttacks(attacks, enums),
             ...validateItems(items, enums),
             ...validateTrainers(trainers, pokemonNames, attackNames, itemNames, enums),
-            ...validateEvents(events, trainerNames, enums),
+            ...validateEvents(events, trainerNames, enums, locations),
             ...validateLocations(locations, enums, engineRefs),
             ...validateEngineRefs(pokemonNames, attackNames, itemNames, engineRefs),
             ...validateAssets(data, assetIndex, engineRefs)
