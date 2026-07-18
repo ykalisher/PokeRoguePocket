@@ -149,6 +149,13 @@
         });
     }
 
+    function updateInfoButton() {
+        const button = document.getElementById('editor-info-btn');
+        if (!button) return;
+        const tab = tabs.get(activeTab);
+        button.hidden = !(tab && tab.info);
+    }
+
     function paintBadge() {
         const nav = document.getElementById('editor-tabs');
         if (!nav) return;
@@ -204,6 +211,7 @@
         });
 
         if (typeof tab.onShow === 'function') tab.onShow();
+        updateInfoButton();
     }
 
     // The detail editor lives in its own sibling container so opening it
@@ -285,6 +293,14 @@
 
             EditorApp.computeIssues();
 
+            const infoButton = document.getElementById('editor-info-btn');
+            if (infoButton) {
+                infoButton.addEventListener('click', () => {
+                    const tab = tabs.get(activeTab);
+                    if (tab && tab.info) showModal({ title: tab.info.title, bodyHtml: infoNotesHtml(tab.info.lines) });
+                });
+            }
+
             if (tabOrder.length > 0) showTab(tabOrder[0]);
         } catch (err) {
             showErrorBanner(err);
@@ -315,6 +331,10 @@
 
     function escapeAttr(value) {
         return window.EditorListView.escapeAttr(value);
+    }
+
+    function infoNotesHtml(lines) {
+        return `<div class="editor-info-notes">${lines.map((line) => `<p>${escapeHtml(line)}</p>`).join('')}</div>`;
     }
 
     function showModal({ title, bodyHtml }) {

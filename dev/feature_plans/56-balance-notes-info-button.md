@@ -33,12 +33,12 @@ balance notes **verbatim**.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/index.html`** — inside the header, after the
+- [x] 1. **`dev/editor/index.html`** — inside the header, after the
   `<nav id="editor-tabs" ...></nav>` line, add:
   ```html
   <button type="button" id="editor-info-btn" class="editor-info-btn" hidden aria-label="Balance notes">i</button>
   ```
-- [ ] 2. **`dev/editor/app.js`** — add next to `paintActiveTab`:
+- [x] 2. **`dev/editor/app.js`** — add next to `paintActiveTab`:
   ```js
   function updateInfoButton() {
       const button = document.getElementById('editor-info-btn');
@@ -49,7 +49,7 @@ balance notes **verbatim**.
   ```
   and call `updateInfoButton();` at the end of `showTab(name)` (after the
   `tab.onShow` line).
-- [ ] 3. **`dev/editor/app.js`** — near `showModal`, add the body renderer:
+- [x] 3. **`dev/editor/app.js`** — near `showModal`, add the body renderer:
   ```js
   function infoNotesHtml(lines) {
       return `<div class="editor-info-notes">${lines.map((line) => `<p>${escapeHtml(line)}</p>`).join('')}</div>`;
@@ -65,7 +65,7 @@ balance notes **verbatim**.
       });
   }
   ```
-- [ ] 4. **`dev/editor/editor.css`** — add after the `.editor-tab` rules:
+- [x] 4. **`dev/editor/editor.css`** — add after the `.editor-tab` rules:
   ```css
   .editor-info-btn {
       display: inline-flex;
@@ -94,7 +94,7 @@ balance notes **verbatim**.
       white-space: pre-wrap;
   }
   ```
-- [ ] 5. **`dev/editor/tab_pokemon.js`** — extend the registration at the bottom of the
+- [x] 5. **`dev/editor/tab_pokemon.js`** — extend the registration at the bottom of the
   file to (text verbatim):
   ```js
   EditorApp.registerTab('pokemon', {
@@ -115,7 +115,7 @@ balance notes **verbatim**.
       }
   });
   ```
-- [ ] 6. **`dev/editor/tab_attacks.js`** — same shape at the bottom of the file (text
+- [x] 6. **`dev/editor/tab_attacks.js`** — same shape at the bottom of the file (text
   verbatim):
   ```js
   EditorApp.registerTab('attacks', {
@@ -139,9 +139,9 @@ balance notes **verbatim**.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `cd dev/verify && .cache/venv/bin/python drive_editor.py` passes (still 7 tabs).
-- [ ] Browser check passes — save as `<scratchpad>/check_phase56.py`, run with
+- [x] `node tests/run_all.js` green.
+- [x] `cd dev/verify && .cache/venv/bin/python drive_editor.py` passes (still 7 tabs).
+- [x] Browser check passes — save as `<scratchpad>/check_phase56.py`, run with
   `dev/verify/.cache/venv/bin/python <scratchpad>/check_phase56.py` from the repo root;
   must print `OK`:
   ```python
@@ -197,7 +197,7 @@ balance notes **verbatim**.
       sys.exit(1)
   print('OK')
   ```
-- [ ] Diff the eight note lines in `tab_attacks.js` and the eight in `tab_pokemon.js`
+- [x] Diff the eight note lines in `tab_attacks.js` and the eight in `tab_pokemon.js`
   against the arrays in this file — they must be character-identical (watch the `—` em
   dashes).
 

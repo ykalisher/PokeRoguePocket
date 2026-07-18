@@ -56,6 +56,13 @@ No match in the pool means the grant is skipped (no off-type fallback), not a ra
 draw from the full pool. `tests/data_validation.test.js` validates `types` values
 against the `PokeType` enum.
 
+Events gate by location via optional top-level `types` (PokeType overlap with the
+location's types). Two optional override lists: `locations` (location ids) and
+`terrains` (terrain labels, matched trimmed/case-insensitive). If either is
+non-empty it replaces the type gate — the event appears only where the location id
+is in `locations` OR the terrain is in `terrains`. Both are validated against
+locations.json.
+
 ## Engine extensions beyond the enums
 
 - Attack target `TRAINER` + statuses `INCREASE_CAPACITY`, `EXTRA_ITEM`,

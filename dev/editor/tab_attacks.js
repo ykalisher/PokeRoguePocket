@@ -300,5 +300,21 @@
         });
     }
 
-    EditorApp.registerTab('attacks', { label: 'Attacks', render });
+    EditorApp.registerTab('attacks', {
+        label: 'Attacks',
+        render,
+        info: {
+            title: 'Attack balance notes',
+            lines: [
+                'Legendary two-type attacks no effect: 85 for single opponent, 80 for all opponents',
+                'Legendary two-type attacks + effect: 80 for single opponent, 75 for all opponents',
+                'Legendary single-type attacks no effect: 75 for single opponent, 70 for all',
+                'Legendary single-type attacks + effect: 70 for single opponent, 65 for all',
+                'two-type attacks no effect: 70 for single opponent, 65 for all',
+                'two-type attacks + effect: 65 for single opponent, 60 for all',
+                'single-type attack no effect: 60 for single opponent, 55 for all',
+                'single-type attack + effect: 55 for single opponent, 50 for all'
+            ]
+        }
+    });
 })(window.EditorApp, window.EditorPreview, window.EditorListView);

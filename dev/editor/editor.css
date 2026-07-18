@@ -58,6 +58,33 @@
     color: #fbf6e8;
 }
 
+.editor-info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(251, 246, 232, 0.18);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.18);
+    color: var(--muted);
+    font: inherit;
+    font-weight: 700;
+    font-style: italic;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.editor-info-btn:hover {
+    color: #fbf6e8;
+    border-color: var(--gold);
+}
+
+.editor-info-notes p {
+    margin: 0 0 6px;
+    white-space: pre-wrap;
+}
+
 .editor-tab-badge {
     display: inline-flex;
     align-items: center;
