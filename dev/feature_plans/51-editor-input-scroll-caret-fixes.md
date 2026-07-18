@@ -37,7 +37,7 @@ quoted code.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/editor.css`** — replace the `.editor-cell-input` rule's
+- [x] 1. **`dev/editor/editor.css`** — replace the `.editor-cell-input` rule's
   `width: 100%;` with a fixed compact width and add spinner suppression. Final result:
   ```css
   .editor-cell-input {
@@ -61,7 +61,7 @@ quoted code.
       margin: 0;
   }
   ```
-- [ ] 2. **`dev/editor/list_view.js`** — give `renderBody` an options parameter that
+- [x] 2. **`dev/editor/list_view.js`** — give `renderBody` an options parameter that
   preserves the scroll offsets across the `outerHTML` replacement:
   ```js
   // Replaces only the count + table, leaving the toolbar DOM alone.
@@ -86,13 +86,13 @@ quoted code.
       scrollSelectedIntoView();
   }
   ```
-- [ ] 3. **`dev/editor/list_view.js`** — in `commit()` inside `beginCellEdit`, change the
+- [x] 3. **`dev/editor/list_view.js`** — in `commit()` inside `beginCellEdit`, change the
   post-save call `renderBody();` to `renderBody({ preserveScroll: true });`. Leave every
   other `renderBody()` call site argument-less.
-- [ ] 4. **`dev/editor/tab_locations.js`** — in `formHtml(draft)`, wrap the background
+- [x] 4. **`dev/editor/tab_locations.js`** — in `formHtml(draft)`, wrap the background
   block in a named container: change `${backgroundRowHtml(draft)}` to
   `<div data-role="background-row">${backgroundRowHtml(draft)}</div>`.
-- [ ] 5. **`dev/editor/tab_locations.js`** — in the form `input` listener, replace
+- [x] 5. **`dev/editor/tab_locations.js`** — in the form `input` listener, replace
   `if (field === 'id') paint();` with a subtree-only refresh:
   ```js
   if (field === 'id') {
@@ -105,11 +105,11 @@ quoted code.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `cd dev/verify && .cache/venv/bin/python drive_editor.py` passes (its inline-edit
+- [x] `node tests/run_all.js` green.
+- [x] `cd dev/verify && .cache/venv/bin/python drive_editor.py` passes (its inline-edit
   round-trip exercises the new commit path; run `bash dev/verify/setup.sh` once first if
   `.cache/venv` doesn't exist).
-- [ ] Browser check passes — save the script below as
+- [x] Browser check passes — save the script below as
   `<scratchpad>/check_phase51.py`, run it with
   `dev/verify/.cache/venv/bin/python <scratchpad>/check_phase51.py` from the repo root;
   it must print `OK`. (It reuses `drive_editor.py`'s server harness and restores
@@ -177,7 +177,7 @@ quoted code.
       sys.exit(1)
   print('OK')
   ```
-- [ ] Sorting and searching the pokemon list still snap the table back to the top
+- [x] Sorting and searching the pokemon list still snap the table back to the top
   (quick manual check, or confirm no `preserveScroll` was added to those call sites).
 
 ## Out of scope / do not touch

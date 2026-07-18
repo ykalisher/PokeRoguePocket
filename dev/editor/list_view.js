@@ -238,7 +238,7 @@
                 try {
                     const fresh = await onCommitEdit(record, column, parsed);
                     if (Array.isArray(fresh)) records = fresh;
-                    renderBody();
+                    renderBody({ preserveScroll: true });
                 } catch (err) {
                     flashInvalid((err && err.message) || 'Save failed');
                 }
@@ -268,12 +268,24 @@
         }
 
         // Replaces only the count + table, leaving the toolbar DOM alone.
-        function renderBody() {
+        function renderBody(options) {
+            const preserveScroll = Boolean(options && options.preserveScroll);
             const visible = visibleRecords();
             const countEl = root.querySelector('.editor-count');
             if (countEl) countEl.textContent = `${visible.length} record${visible.length === 1 ? '' : 's'}`;
             const wrap = root.querySelector('.editor-table-wrap');
+            const scroll = preserveScroll && wrap ? { top: wrap.scrollTop, left: wrap.scrollLeft } : null;
             if (wrap) wrap.outerHTML = renderTable(visible);
+            if (scroll) {
+                // The fresh wrap starts at 0/0; restore instead of scrollSelectedIntoView,
+                // which could undo the restore.
+                const fresh = root.querySelector('.editor-table-wrap');
+                if (fresh) {
+                    fresh.scrollTop = scroll.top;
+                    fresh.scrollLeft = scroll.left;
+                }
+                return;
+            }
             scrollSelectedIntoView();
         }
 

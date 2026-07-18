@@ -243,7 +243,7 @@
             <div class="editor-form-row">
                 ${THEME_KEYS.map((key) => colorFieldHtml(theme, key)).join('')}
             </div>
-            ${backgroundRowHtml(draft)}
+            <div data-role="background-row">${backgroundRowHtml(draft)}</div>
         `;
     }
 
@@ -287,7 +287,10 @@
             if (!field) return;
 
             draft[field] = target.value;
-            if (field === 'id') paint();
+            if (field === 'id') {
+                const row = el.querySelector('[data-role="background-row"]');
+                if (row) row.innerHTML = backgroundRowHtml(draft);
+            }
 
             api.markDirty();
             api.refreshPreview();
