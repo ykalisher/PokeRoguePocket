@@ -1574,12 +1574,12 @@
     }
 
     function hasAvailableEvents() {
-        const locationTypes = state.run && state.run.location ? state.run.location.types : undefined;
+        const location = state.run && state.run.location ? state.run.location : undefined;
 
         return Boolean(
             window.PokeEvents &&
             typeof window.PokeEvents.getAvailableEvents === 'function' &&
-            window.PokeEvents.getAvailableEvents(arena.GameData, locationTypes).length > 0
+            window.PokeEvents.getAvailableEvents(arena.GameData, location).length > 0
         );
     }
 

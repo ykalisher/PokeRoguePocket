@@ -15,12 +15,12 @@ const P = globalThis.PokeLocations;
 const R = globalThis.PokeRun;
 const E = globalThis.PokeEvents;
 
-function makeEvent(id, type, types) {
+function makeEvent(id, type, types, extra) {
     const event = { id, type, title: id, body: 'text', enabled: true };
     if (types) event.types = types;
     if (type === 'choice') event.choices = [{ title: 'a', id: 'a', effects: [] }];
     if (type === 'trainer') { event.trainerName = 'x'; event.rewardEffects = []; }
-    return event;
+    return Object.assign(event, extra || {});
 }
 
 function makeGraph() {
@@ -675,6 +675,68 @@ test('chooseEvent only returns events matching the run location types', () => {
 
     for (let index = 0; index < 200; index += 1) {
         const event = E.chooseEvent(EVENT_POOL, run);
+        assert.ok(event && allowed.has(event.id), `chooseEvent leaked ${event && event.id}`);
+    }
+});
+
+// --- Location / terrain gate overrides (phase 54) --------------------------
+
+const OVERRIDE_POOL = {
+    events: [
+        makeEvent('universal-gift', 'gift'),
+        makeEvent('seafoam-only', 'gift', ['FIRE'], { locations: ['seafoam-islands'] }),
+        makeEvent('island-only', 'gift', null, { terrains: ['Island'] }),
+        makeEvent('either-place', 'gift', null, { locations: ['new-mauville'], terrains: ['Lake'] })
+    ]
+};
+
+function atLocation(id, terrain, types) {
+    return { id, terrain, types };
+}
+
+test('event locations override beats the type gate both ways', () => {
+    const atSeafoam = E.getAvailableEvents(OVERRIDE_POOL, atLocation('seafoam-islands', 'Island', ['WATER', 'ICE']))
+        .map(event => event.id);
+    // id matches even though the event's types (FIRE) do not overlap WATER/ICE
+    assert.ok(atSeafoam.includes('seafoam-only'));
+
+    const atVolcano = E.getAvailableEvents(OVERRIDE_POOL, atLocation('cinnabar-island-volcano', 'Volcanic', ['FIRE', 'ROCK']))
+        .map(event => event.id);
+    // types overlap (FIRE) but the locations override is set and does not match
+    assert.ok(!atVolcano.includes('seafoam-only'));
+});
+
+test('event terrains override matches trimmed and case-insensitive', () => {
+    const island = E.getAvailableEvents(OVERRIDE_POOL, atLocation('sevii-islands', '  island ', ['WATER']))
+        .map(event => event.id);
+    assert.ok(island.includes('island-only'));
+
+    const cave = E.getAvailableEvents(OVERRIDE_POOL, atLocation('cerulean-cave', 'Cave', ['MONSTER']))
+        .map(event => event.id);
+    assert.ok(!cave.includes('island-only'));
+});
+
+test('locations and terrains overrides OR together', () => {
+    const byId = E.getAvailableEvents(OVERRIDE_POOL, atLocation('new-mauville', 'Factory', ['ELECTRIC'])).map(event => event.id);
+    const byTerrain = E.getAvailableEvents(OVERRIDE_POOL, atLocation('lake-of-rage', 'Lake', ['DRAGON'])).map(event => event.id);
+    const neither = E.getAvailableEvents(OVERRIDE_POOL, atLocation('safari-zone', 'Safari', ['NORMAL'])).map(event => event.id);
+
+    assert.ok(byId.includes('either-place'));
+    assert.ok(byTerrain.includes('either-place'));
+    assert.ok(!neither.includes('either-place'));
+});
+
+test('ungated calls still include override-gated events', () => {
+    const all = E.getAvailableEvents(OVERRIDE_POOL).map(event => event.id);
+    ['seafoam-only', 'island-only', 'either-place'].forEach(id => assert.ok(all.includes(id), id));
+});
+
+test('chooseEvent respects overrides via run.location', () => {
+    const run = { location: atLocation('seafoam-islands', 'Island', ['WATER', 'ICE']) };
+    const allowed = new Set(['universal-gift', 'seafoam-only', 'island-only']);
+
+    for (let index = 0; index < 100; index += 1) {
+        const event = E.chooseEvent(OVERRIDE_POOL, run);
         assert.ok(event && allowed.has(event.id), `chooseEvent leaked ${event && event.id}`);
     }
 });

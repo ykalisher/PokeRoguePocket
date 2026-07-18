@@ -40,7 +40,7 @@ the data-skill doc updated.
 
 ## Steps
 
-- [ ] 1. **`map/event_effects.js`** — replace `getAvailableEvents` and
+- [x] 1. **`map/event_effects.js`** — replace `getAvailableEvents` and
   `matchesLocationTypes`'s caller wiring with the location-snapshot form (keep
   `matchesLocationTypes` itself unchanged):
   ```js
@@ -83,7 +83,7 @@ the data-skill doc updated.
       return matchesLocationTypes(event, Array.isArray(loc.types) ? loc.types : []);
   }
   ```
-- [ ] 2. **`map/event_effects.js`** — `chooseEvent` passes the whole snapshot:
+- [x] 2. **`map/event_effects.js`** — `chooseEvent` passes the whole snapshot:
   ```js
   function chooseEvent(gameData, run) {
       const location = run && run.location ? run.location : undefined;
@@ -96,14 +96,14 @@ the data-skill doc updated.
   ```
   Leave `getEventById` exactly as is (ungated). If the IIFE's exports list names
   `matchesLocationTypes`, leave that export; do not export the new internals.
-- [ ] 3. **`map/area.js`** — in `hasAvailableEvents()`, pass the snapshot instead of the
+- [x] 3. **`map/area.js`** — in `hasAvailableEvents()`, pass the snapshot instead of the
   types array:
   ```js
   const location = state.run && state.run.location ? state.run.location : undefined;
   ```
   and use `getAvailableEvents(arena.GameData, location)`. (Adjust the surrounding
   variable name/comment; nothing else in area.js changes.)
-- [ ] 4. **`tests/run_progression.test.js`** — extend `makeEvent` with an optional
+- [x] 4. **`tests/run_progression.test.js`** — extend `makeEvent` with an optional
   4th parameter, keeping existing call sites valid:
   ```js
   function makeEvent(id, type, types, extra) {
@@ -114,7 +114,7 @@ the data-skill doc updated.
       return Object.assign(event, extra || {});
   }
   ```
-- [ ] 5. **`tests/run_progression.test.js`** — add these tests directly after the
+- [x] 5. **`tests/run_progression.test.js`** — add these tests directly after the
   existing `chooseEvent only returns events matching the run location types` test:
   ```js
   // --- Location / terrain gate overrides (phase 54) --------------------------
@@ -179,7 +179,7 @@ the data-skill doc updated.
       }
   });
   ```
-- [ ] 6. **`.claude/skills/data/SKILL.md`** — append a short note to the events section
+- [x] 6. **`.claude/skills/data/SKILL.md`** — append a short note to the events section
   (append-only; the file has uncommitted owner edits):
   ```
   Events gate by location via optional top-level `types` (PokeType overlap with the
@@ -192,11 +192,11 @@ the data-skill doc updated.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — including the four **pre-existing**
+- [x] `node tests/run_all.js` green — including the four **pre-existing**
   `getAvailableEvents` tests, untouched (proves the bare-array shim works).
-- [ ] The existing `getEventById` behavior is unchanged: `grep -n "getAvailableEvents(gameData)"
+- [x] The existing `getEventById` behavior is unchanged: `grep -n "getAvailableEvents(gameData)"
   map/event_effects.js` still shows the ungated call inside `getEventById`.
-- [ ] Quick engine check without a browser:
+- [x] Quick engine check without a browser:
   ```bash
   node -e "
   require('./tests/helpers/arena_env');

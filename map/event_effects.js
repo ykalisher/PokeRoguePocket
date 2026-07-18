@@ -8,19 +8,21 @@
     const EVENT_TYPES = ['gift', 'choice', 'trainer'];
     const CARD_KINDS = ['pokemon', 'attack', 'item', 'action'];
 
-    function getAvailableEvents(gameData, locationTypes) {
+    function getAvailableEvents(gameData, location) {
         const events = gameData && Array.isArray(gameData.events) ? gameData.events : [];
-        // A non-empty locationTypes array gates typed events to the current
-        // location; undefined leaves the pool ungated (so getEventById and any
-        // saved-encounter restore path always resolve).
-        const gated = Array.isArray(locationTypes) && locationTypes.length > 0;
+        // Accepts a location snapshot ({ id, terrain, types }) or, for older
+        // callers/tests, a bare types array; undefined leaves the pool ungated
+        // (so getEventById and any saved-encounter restore path always resolve).
+        const loc = Array.isArray(location) ? { types: location } : (location || null);
+        const gated = Boolean(loc && (loc.id || loc.terrain ||
+            (Array.isArray(loc.types) && loc.types.length > 0)));
 
         return events.filter(event => (
             event &&
             event.enabled !== false &&
             event.id &&
             EVENT_TYPES.includes(event.type) &&
-            (!gated || matchesLocationTypes(event, locationTypes))
+            (!gated || matchesLocation(event, loc))
         ));
     }
 
@@ -28,9 +30,30 @@
         return !event.types || event.types.length === 0 || event.types.some(type => locationTypes.includes(type));
     }
 
+    function normTerrain(value) {
+        return String(value || '').trim().toLowerCase();
+    }
+
+    // `locations` / `terrains` on an event override the `types` gate entirely:
+    // when either list is non-empty the event appears only at those location
+    // ids / terrains (OR of the two lists). With neither set, the PokeType
+    // overlap gate applies as before.
+    function matchesLocation(event, loc) {
+        const ids = Array.isArray(event.locations) ? event.locations.filter(Boolean) : [];
+        const terrains = Array.isArray(event.terrains) ? event.terrains.filter(Boolean) : [];
+
+        if (ids.length > 0 || terrains.length > 0) {
+            return (ids.length > 0 && typeof loc.id === 'string' && ids.includes(loc.id)) ||
+                (terrains.length > 0 && normTerrain(loc.terrain) !== '' &&
+                    terrains.some(label => normTerrain(label) === normTerrain(loc.terrain)));
+        }
+
+        return matchesLocationTypes(event, Array.isArray(loc.types) ? loc.types : []);
+    }
+
     function chooseEvent(gameData, run) {
-        const locationTypes = run && run.location ? run.location.types : undefined;
-        const events = getAvailableEvents(gameData, locationTypes).filter(event => poolSatisfied(event, gameData));
+        const location = run && run.location ? run.location : undefined;
+        const events = getAvailableEvents(gameData, location).filter(event => poolSatisfied(event, gameData));
 
         if (events.length === 0) return null;
 
