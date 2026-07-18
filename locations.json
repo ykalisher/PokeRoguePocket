@@ -1,10 +1,10 @@
 [
   {
-    "id": "cinnabar-island-volcano",
-    "name": "Cinnabar Island Volcano",
+    "id": "mt-ember",
+    "name": "Mt. Ember",
     "terrain": "Volcanic",
-    "types": ["FIRE", "ROCK"],
-    "theme": { "accent": "#ff9024", "glow": "#e7e5af", "surface": "#4f250d", "bgDeep": "#151718", "bgMid": "#242626" },
+    "types": ["FIRE", "ROCK", "FLYING"],
+    "theme": { "accent": "#ff9024", "glow": "#e7e5af", "surface": "#2f4652", "bgDeep": "#151718", "bgMid": "#242626" },
     "background": "assets/backgrounds/cinder-ridge.png",
     "enabled": true
   },
@@ -48,8 +48,8 @@
     "id": "safari-zone",
     "name": "Safari Zone",
     "terrain": "Safari",
-    "types": ["NORMAL", "GOURMET"],
-    "theme": { "accent": "#fffefe", "glow": "#ff8473", "surface": "#2b2d30", "bgDeep": "#221315", "bgMid": "#3b1f21" },
+    "types": ["NORMAL", "GOURMET", "DRAGON"],
+    "theme": { "accent": "#fffefe", "glow": "#ff8473", "surface": "#311f13", "bgDeep": "#221315", "bgMid": "#3b1f21" },
     "background": "assets/backgrounds/safari-zone.png",
     "enabled": true
   },
@@ -66,8 +66,8 @@
     "id": "seafoam-islands",
     "name": "Seafoam Islands",
     "terrain": "Island",
-    "types": ["WATER", "ICE"],
-    "theme": { "accent": "#2da2fd", "glow": "#c3e4ee", "surface": "#081f4a", "bgDeep": "#0f191d", "bgMid": "#192a2f" },
+    "types": ["ICE", "FLYING", "WATER"],
+    "theme": { "accent": "#c3e4ee", "glow": "#b2e9ff", "surface": "#081f4a", "bgDeep": "#162027", "bgMid": "#253741" },
     "background": "assets/backgrounds/seafoam-islands.png",
     "enabled": true
   },
@@ -75,8 +75,8 @@
     "id": "castelia-city",
     "name": "Castelia City",
     "terrain": "Urban",
-    "types": ["NORMAL", "POISON", "DARK", "HUMAN"],
-    "theme": { "accent": "#fffefe", "glow": "#88d7a0", "surface": "#15171b", "bgDeep": "#130f0e", "bgMid": "#201814" },
+    "types": ["NORMAL", "POISON", "HUMAN", "GOURMET"],
+    "theme": { "accent": "#fffefe", "glow": "#88d7a0", "surface": "#281c15", "bgDeep": "#221315", "bgMid": "#3b1f21" },
     "background": "assets/backgrounds/castelia-city.png",
     "enabled": true
   },
@@ -84,8 +84,8 @@
     "id": "new-mauville",
     "name": "New Mauville",
     "terrain": "Factory",
-    "types": ["ELECTRIC", "STEEL"],
-    "theme": { "accent": "#fdff4a", "glow": "#dbdbdb", "surface": "#3f380d", "bgDeep": "#16171b", "bgMid": "#25272b" },
+    "types": ["ELECTRIC", "STEEL", "FLYING"],
+    "theme": { "accent": "#fdff4a", "glow": "#dbdbdb", "surface": "#2f4652", "bgDeep": "#16171b", "bgMid": "#25272b" },
     "background": "assets/backgrounds/new-mauville.png",
     "enabled": true
   },
@@ -114,6 +114,150 @@
     "types": ["DRAGON", "WATER", "MONSTER"],
     "theme": { "accent": "#b87333", "glow": "#2da2fd", "surface": "#0d1f1c", "bgDeep": "#061124", "bgMid": "#091b3b" },
     "background": "assets/backgrounds/lake-of-rage.png",
+    "enabled": true
+  },
+  {
+    "id": "ilex-forest",
+    "name": "Ilex Forest",
+    "terrain": "Forest",
+    "types": ["GRASS", "FAIRY", "BUG"],
+    "theme": { "accent": "#17b300", "glow": "#ffafd1", "surface": "#2a2e19", "bgDeep": "#181119", "bgMid": "#291c27" },
+    "background": "assets/backgrounds/ilex-forest.png",
+    "enabled": true
+  },
+  {
+    "id": "petalburg-woods",
+    "name": "Petalburg Woods",
+    "terrain": "Forest",
+    "types": ["GRASS", "FIGHTING", "NORMAL"],
+    "theme": { "accent": "#17b300", "glow": "#f33218", "surface": "#2b2d30", "bgDeep": "#1b0c0f", "bgMid": "#2f1216" },
+    "background": "assets/backgrounds/petalburg-woods.png",
+    "enabled": true
+  },
+  {
+    "id": "olivine-city",
+    "name": "Olivine City",
+    "terrain": "Beach",
+    "types": ["WATER", "STEEL", "HUMAN"],
+    "theme": { "accent": "#2da2fd", "glow": "#dbdbdb", "surface": "#281c15", "bgDeep": "#16171b", "bgMid": "#25272b" },
+    "background": "assets/backgrounds/olivine-city.png",
+    "enabled": true
+  },
+  {
+    "id": "mt-chimney",
+    "name": "Mt. Chimney",
+    "terrain": "Mountain",
+    "types": ["FIRE", "DARK", "POISON"],
+    "theme": { "accent": "#ff9024", "glow": "#a6a6a6", "surface": "#23302a", "bgDeep": "#0b0d11", "bgMid": "#121419" },
+    "background": "assets/backgrounds/mt-chimney.png",
+    "enabled": true
+  },
+  {
+    "id": "mt-pyre",
+    "name": "Mt. Pyre",
+    "terrain": "Mountain",
+    "types": ["GHOST", "FAIRY", "PSYCHIC"],
+    "theme": { "accent": "#876dad", "glow": "#ffafd1", "surface": "#2d1834", "bgDeep": "#181119", "bgMid": "#291c27" },
+    "background": "assets/backgrounds/mt-pyre.png",
+    "enabled": true
+  },
+  {
+    "id": "eterna-forest",
+    "name": "Eterna Forest",
+    "terrain": "Forest",
+    "types": ["GRASS", "BUG", "NORMAL"],
+    "theme": { "accent": "#17b300", "glow": "#fffe66", "surface": "#2b2d30", "bgDeep": "#141610", "bgMid": "#222617" },
+    "background": "assets/backgrounds/eterna-forest.png",
+    "enabled": true
+  },
+  {
+    "id": "mt-silver",
+    "name": "Mt. Silver",
+    "terrain": "Mountain",
+    "types": ["ROCK", "GROUND", "WATER"],
+    "theme": { "accent": "#e7e5af", "glow": "#c6964a", "surface": "#081f4a", "bgDeep": "#120f0d", "bgMid": "#1f1713" },
+    "background": "assets/backgrounds/mt-silver.png",
+    "enabled": true
+  },
+  {
+    "id": "meteor-falls",
+    "name": "Meteor Falls",
+    "terrain": "Cave",
+    "types": ["ROCK", "DRAGON", "PSYCHIC"],
+    "theme": { "accent": "#e7e5af", "glow": "#b87333", "surface": "#2d1834", "bgDeep": "#17100e", "bgMid": "#271a13" },
+    "background": "assets/backgrounds/meteor-falls.png",
+    "enabled": true
+  },
+  {
+    "id": "dewford-town",
+    "name": "Dewford Town",
+    "terrain": "Beach",
+    "types": ["FIGHTING", "HUMAN", "WATER"],
+    "theme": { "accent": "#f33218", "glow": "#fdbb8b", "surface": "#081f4a", "bgDeep": "#130f0e", "bgMid": "#201814" },
+    "background": "assets/backgrounds/dewford-town.png",
+    "enabled": true
+  },
+  {
+    "id": "snowpoint-city",
+    "name": "Snowpoint City",
+    "terrain": "Mountain",
+    "types": ["ICE", "FIGHTING", "FOSSIL"],
+    "theme": { "accent": "#c3e4ee", "glow": "#f33218", "surface": "#222519", "bgDeep": "#1b0c0f", "bgMid": "#2f1216" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "mauville-desert",
+    "name": "Mauville Desert",
+    "terrain": "Desert",
+    "types": ["GROUND", "FOSSIL", "ROCK"],
+    "theme": { "accent": "#c6964a", "glow": "#d2d35b", "surface": "#2d2e2d", "bgDeep": "#111310", "bgMid": "#1c1f17" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "fortree-jungle",
+    "name": "Fortree Jungle",
+    "terrain": "Jungle",
+    "types": ["GRASS", "STEEL", "FOSSIL"],
+    "theme": { "accent": "#17b300", "glow": "#dbdbdb", "surface": "#222519", "bgDeep": "#16171b", "bgMid": "#25272b" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "lumiose-city",
+    "name": "Lumiose City",
+    "terrain": "Urban",
+    "types": ["GOURMET", "ELECTRIC", "STEEL"],
+    "theme": { "accent": "#ff8473", "glow": "#fdff4a", "surface": "#2e3034", "bgDeep": "#1c1a0b", "bgMid": "#312d0f" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "oreburg-mine",
+    "name": "Oreburg Mine",
+    "terrain": "Cave",
+    "types": ["ROCK", "FOSSIL", "STEEL"],
+    "theme": { "accent": "#e7e5af", "glow": "#d2d35b", "surface": "#2e3034", "bgDeep": "#111310", "bgMid": "#1c1f17" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "great-marsh",
+    "name": "Great Marsh",
+    "terrain": "Swamp",
+    "types": ["BUG", "POISON", "GROUND"],
+    "theme": { "accent": "#fffe66", "glow": "#88d7a0", "surface": "#261a12", "bgDeep": "#111717", "bgMid": "#1c2724" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "shoal-cave",
+    "name": "Shoal Cave",
+    "terrain": "Cave",
+    "types": ["ICE", "GROUND", "FAIRY"],
+    "theme": { "accent": "#c3e4ee", "glow": "#c6964a", "surface": "#34212f", "bgDeep": "#120f0d", "bgMid": "#1f1713" },
+    "background": "",
     "enabled": true
   }
 ]
