@@ -1,110 +1,246 @@
 [
   {
-    "id": "tidepool-coast",
-    "name": "Tidepool Coast",
-    "terrain": "Waterfront",
-    "types": ["WATER", "ICE"],
-    "theme": { "accent": "#e8c266", "glow": "#4ab0c8", "surface": "#143a4a", "bgDeep": "#081b26", "bgMid": "#123240" },
-    "background": "assets/backgrounds/tidepool-coast.png",
-    "enabled": true
-  },
-  {
-    "id": "emerald-canopy",
-    "name": "Emerald Canopy",
-    "terrain": "Forest",
-    "types": ["GRASS", "BUG", "FLYING"],
-    "theme": { "accent": "#b8d96a", "glow": "#3fae6e", "surface": "#1b3d2a", "bgDeep": "#0a1f14", "bgMid": "#14301f" },
-    "background": "assets/backgrounds/emerald-canopy.png",
-    "enabled": true
-  },
-  {
-    "id": "cinder-ridge",
-    "name": "Cinder Ridge",
+    "id": "cinnabar-island-volcano",
+    "name": "Cinnabar Island Volcano",
     "terrain": "Volcanic",
-    "types": ["FIRE", "ROCK", "GROUND"],
-    "theme": { "accent": "#f2a35c", "glow": "#d95f3b", "surface": "#402420", "bgDeep": "#1c0f0c", "bgMid": "#2e1a14" },
+    "types": [
+      "FIRE",
+      "ROCK"
+    ],
+    "theme": {
+      "accent": "#f2a35c",
+      "glow": "#d95f3b",
+      "surface": "#402420",
+      "bgDeep": "#1c0f0c",
+      "bgMid": "#2e1a14"
+    },
     "background": "assets/backgrounds/cinder-ridge.png",
     "enabled": true
   },
   {
-    "id": "thunder-flats",
-    "name": "Thunder Flats",
-    "terrain": "Power Plant",
-    "types": ["ELECTRIC", "STEEL", "FLYING"],
-    "theme": { "accent": "#f2d95c", "glow": "#6aa8d9", "surface": "#2a3140", "bgDeep": "#12151c", "bgMid": "#1f2531" },
-    "background": "assets/backgrounds/thunder-flats.png",
-    "enabled": true
-  },
-  {
-    "id": "mystic-hollow",
-    "name": "Mystic Hollow",
-    "terrain": "Ruins",
-    "types": ["PSYCHIC", "FAIRY", "GHOST"],
-    "theme": { "accent": "#d9a0e8", "glow": "#7a6ad9", "surface": "#2e2440", "bgDeep": "#140f1f", "bgMid": "#221a33" },
-    "background": "assets/backgrounds/mystic-hollow.png",
-    "enabled": true
-  },
-  {
-    "id": "murkwater-marsh",
-    "name": "Murkwater Marsh",
-    "terrain": "Swamp",
-    "types": ["WATER", "POISON", "GRASS"],
-    "theme": { "accent": "#b5cc66", "glow": "#66a68c", "surface": "#22362c", "bgDeep": "#0e1a13", "bgMid": "#1a2a20" },
-    "background": "assets/backgrounds/murkwater-marsh.png",
-    "enabled": true
-  },
-  {
-    "id": "frostpeak-pass",
-    "name": "Frostpeak Pass",
-    "terrain": "Mountain",
-    "types": ["ICE", "ROCK", "FIGHTING"],
-    "theme": { "accent": "#cfe8f2", "glow": "#7fb4d9", "surface": "#2a3a47", "bgDeep": "#101a22", "bgMid": "#1d2c38" },
-    "background": "assets/backgrounds/frostpeak-pass.png",
-    "enabled": true
-  },
-  {
-    "id": "old-boneyard",
-    "name": "Old Boneyard",
-    "terrain": "Graveyard",
-    "types": ["GHOST", "DARK", "GROUND"],
-    "theme": { "accent": "#d9c9a0", "glow": "#8a7a9e", "surface": "#332e33", "bgDeep": "#16121a", "bgMid": "#262029" },
-    "background": "assets/backgrounds/old-boneyard.png",
-    "enabled": true
-  },
-  {
-    "id": "harbor-boardwalk",
-    "name": "Harbor Boardwalk",
-    "terrain": "Harbor",
-    "types": ["WATER", "HUMAN", "NORMAL"],
-    "theme": { "accent": "#f2b95c", "glow": "#5c9ed9", "surface": "#24384a", "bgDeep": "#0f1824", "bgMid": "#1b2b3a" },
-    "background": "assets/backgrounds/harbor-boardwalk.png",
-    "enabled": true
-  },
-  {
-    "id": "dragons-rest",
-    "name": "Dragon's Rest",
-    "terrain": "Caldera",
-    "types": ["DRAGON", "FIRE", "FLYING"],
-    "theme": { "accent": "#e8865c", "glow": "#a05cd9", "surface": "#3a2635", "bgDeep": "#190f18", "bgMid": "#2b1a28" },
+    "id": "cinnabar-mansion",
+    "name": "Cinnabar Mansion",
+    "terrain": "Urban",
+    "types": [
+      "FIRE",
+      "GHOST",
+      "HUMAN"
+    ],
+    "theme": {
+      "accent": "#e8865c",
+      "glow": "#a05cd9",
+      "surface": "#3a2635",
+      "bgDeep": "#190f18",
+      "bgMid": "#2b1a28"
+    },
     "background": "assets/backgrounds/dragons-rest.png",
     "enabled": true
   },
   {
-    "id": "neon-arcade",
-    "name": "Neon Arcade",
-    "terrain": "City",
-    "types": ["ELECTRIC", "DARK", "HUMAN"],
-    "theme": { "accent": "#f25ca8", "glow": "#5cf2d9", "surface": "#241f33", "bgDeep": "#0f0c1a", "bgMid": "#1b1626" },
-    "background": "assets/backgrounds/neon-arcade.png",
+    "id": "old-chateau",
+    "name": "Old Chateau",
+    "terrain": "Urban",
+    "types": [
+      "GHOST",
+      "DARK",
+      "MONSTER"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/old-chateau.png",
     "enabled": true
   },
   {
-    "id": "meadow-market",
-    "name": "Meadow Market",
-    "terrain": "Meadow",
-    "types": ["NORMAL", "FAIRY", "GOURMET", "GRASS"],
-    "theme": { "accent": "#f2d05c", "glow": "#8fcc66", "surface": "#2e3a24", "bgDeep": "#141a0f", "bgMid": "#24301b" },
-    "background": "assets/backgrounds/meadow-market.png",
+    "id": "fuego-ironworks",
+    "name": "Fuego Ironworks",
+    "terrain": "Factory",
+    "types": [
+      "FIRE",
+      "STEEL",
+      "ELECTRIC"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/fuego-ironworks.png",
+    "enabled": true
+  },
+  {
+    "id": "cerulean-cave",
+    "name": "Cerulean Cave",
+    "terrain": "Cave",
+    "types": [
+      "MONSTER",
+      "DARK",
+      "PSYCHIC"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/cerulean-cave.png",
+    "enabled": true
+  },
+  {
+    "id": "safari-zone",
+    "name": "Safari Zone",
+    "terrain": "Safari",
+    "types": [
+      "NORMAL",
+      "GOURMET"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/safari-zone.png",
+    "enabled": true
+  },
+  {
+    "id": "sevii-islands",
+    "name": "Sevii Islands",
+    "terrain": "Island",
+    "types": [
+      "WATER",
+      "GRASS",
+      "FLYING"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/sevii-islands.png",
+    "enabled": true
+  },
+  {
+    "id": "seafoam-islands",
+    "name": "Seafoam Islands",
+    "terrain": "Island",
+    "types": [
+      "WATER",
+      "ICE"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/seafoam-islands.png",
+    "enabled": true
+  },
+  {
+    "id": "castelia-city",
+    "name": "Castelia City",
+    "terrain": "Urban",
+    "types": [
+      "NORMAL",
+      "POISON",
+      "DARK",
+      "HUMAN"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/castelia-city.png",
+    "enabled": true
+  },
+  {
+    "id": "new-mauville",
+    "name": "New Mauville",
+    "terrain": "Factory",
+    "types": [
+      "ELECTRIC",
+      "STEEL"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/new-mauville.png",
+    "enabled": true
+  },
+  {
+    "id": "viridian-forest",
+    "name": "Viridian Forest",
+    "terrain": "Forest",
+    "types": [
+      "GRASS",
+      "BUG",
+      "ELECTRIC"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/viridian-forest.png",
+    "enabled": true
+  },
+  {
+    "id": "lavender-town",
+    "name": "Lavender Town",
+    "terrain": "Urban",
+    "types": [
+      "GHOST",
+      "HUMAN",
+      "MONSTER"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/lavender-town.png",
+    "enabled": true
+  },
+  {
+    "id": "lake-of-rage",
+    "name": "Lake of Rage",
+    "terrain": "Lake",
+    "types": [
+      "DRAGON",
+      "WATER",
+      "MONSTER"
+    ],
+    "theme": {
+      "accent": "#e0b84f",
+      "glow": "#4ab0a5",
+      "surface": "#232f3d",
+      "bgDeep": "#10161f",
+      "bgMid": "#1b2836"
+    },
+    "background": "assets/backgrounds/lake-of-rage.png",
     "enabled": true
   }
 ]
