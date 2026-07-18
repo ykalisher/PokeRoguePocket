@@ -33,11 +33,11 @@
 
 ## Steps
 
-- [ ] 1. **`dev/editor/index.html`** — add
+- [x] 1. **`dev/editor/index.html`** — add
   `<script src="/scripts/location_theme.js"></script>` immediately **before** the
   `<script src="/dev/editor/validate.js"></script>` tag (any spot before the tab
   scripts works; keep it with the other shared modules).
-- [ ] 2. **`dev/editor/tab_locations.js`** — add two helpers right after
+- [x] 2. **`dev/editor/tab_locations.js`** — add two helpers right after
   `NEUTRAL_LOCATION_THEME`:
   ```js
   function themesEqual(a, b) {
@@ -55,7 +55,7 @@
       if (untouched) draft.theme = window.LocationTheme.deriveLocationTheme(draft.types || []);
   }
   ```
-- [ ] 3. **`dev/editor/tab_locations.js`** — in the form `input` listener's chip-add
+- [x] 3. **`dev/editor/tab_locations.js`** — in the form `input` listener's chip-add
   branch, capture the previous list and derive when the types changed:
   ```js
   if (target.dataset.chipAdd) {
@@ -71,11 +71,11 @@
       return;
   }
   ```
-- [ ] 4. **`dev/editor/tab_locations.js`** — same treatment in the `click` listener's
+- [x] 4. **`dev/editor/tab_locations.js`** — same treatment in the `click` listener's
   chip-remove branch: before the `splice`, `const before = (draft[field] || []).slice();`
   and after it, `if (field === 'types') maybeApplyDerivedTheme(draft, before);` (keep the
   existing `paint(); api.markDirty(); api.refreshPreview();`).
-- [ ] 5. **`dev/editor/tab_locations.js`** — in `formHtml`, append a button to the theme
+- [x] 5. **`dev/editor/tab_locations.js`** — in `formHtml`, append a button to the theme
   row (after the five `colorFieldHtml` pickers, inside the same `.editor-form-row`):
   ```html
   <button type="button" class="editor-btn" data-action="apply-type-theme">Use type colors</button>
@@ -92,7 +92,7 @@
       return;
   }
   ```
-- [ ] 6. **`scripts/manage_locations.js`** — stop prompting for colors:
+- [x] 6. **`scripts/manage_locations.js`** — stop prompting for colors:
   - Add `const { deriveLocationTheme } = require('./location_theme');` next to the
     `data_options` require.
   - Delete `HEX_PATTERN`, the `NEUTRAL_THEME` block, and `THEME_FIELDS`.
@@ -103,14 +103,14 @@
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `node -e "const m = require('./scripts/manage_locations.js')"` is **not** how to
+- [x] `node tests/run_all.js` green.
+- [x] `node -e "const m = require('./scripts/manage_locations.js')"` is **not** how to
   check the CLI (it would launch the interactive menu) — instead confirm syntax only:
   `node --check scripts/manage_locations.js` (the edit hook does this too) and
   `grep -c askTheme scripts/manage_locations.js` prints `0`.
-- [ ] `cd dev/verify && .cache/venv/bin/python drive_editor.py` passes (catches
+- [x] `cd dev/verify && .cache/venv/bin/python drive_editor.py` passes (catches
   script-tag/load-order mistakes — any page error fails it).
-- [ ] Browser check passes — save as `<scratchpad>/check_phase53.py`, run with
+- [x] Browser check passes — save as `<scratchpad>/check_phase53.py`, run with
   `dev/verify/.cache/venv/bin/python <scratchpad>/check_phase53.py` from the repo root;
   must print `OK`. Nothing is saved, so no git restore is needed:
   ```python

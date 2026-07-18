@@ -30,6 +30,21 @@
         bgMid: '#1b2836'
     };
 
+    function themesEqual(a, b) {
+        return THEME_KEYS.every((key) =>
+            String((a && a[key]) || '').toLowerCase() === String((b && b[key]) || '').toLowerCase());
+    }
+
+    // Auto-apply the derived theme on a types change only while the theme is
+    // "untouched" (still the derivation of the previous types, or the neutral
+    // template); one manual picker edit makes it sticky.
+    function maybeApplyDerivedTheme(draft, previousTypes) {
+        const derivePrev = window.LocationTheme.deriveLocationTheme(previousTypes);
+        const untouched = themesEqual(draft.theme, derivePrev)
+            || themesEqual(draft.theme, NEUTRAL_LOCATION_THEME);
+        if (untouched) draft.theme = window.LocationTheme.deriveLocationTheme(draft.types || []);
+    }
+
     function isEnabled(record) {
         return record.enabled !== false;
     }
@@ -242,6 +257,7 @@
             </div>
             <div class="editor-form-row">
                 ${THEME_KEYS.map((key) => colorFieldHtml(theme, key)).join('')}
+                <button type="button" class="editor-btn" data-action="apply-type-theme">Use type colors</button>
             </div>
             <div data-role="background-row">${backgroundRowHtml(draft)}</div>
         `;
@@ -268,7 +284,9 @@
             if (target.dataset.chipAdd) {
                 const field = target.dataset.chipAdd;
                 if (target.value) {
-                    draft[field] = (draft[field] || []).concat(target.value);
+                    const before = (draft[field] || []).slice();
+                    draft[field] = before.concat(target.value);
+                    if (field === 'types') maybeApplyDerivedTheme(draft, before);
                     paint();
                     api.markDirty();
                     api.refreshPreview();
@@ -301,7 +319,9 @@
             if (removeBtn) {
                 const field = removeBtn.dataset.chipRemove;
                 const index = Number(removeBtn.dataset.chipIndex);
+                const before = (draft[field] || []).slice();
                 draft[field].splice(index, 1);
+                if (field === 'types') maybeApplyDerivedTheme(draft, before);
                 paint();
                 api.markDirty();
                 api.refreshPreview();
@@ -314,6 +334,16 @@
                 paint();
                 api.markDirty();
                 api.refreshPreview();
+                return;
+            }
+
+            const themeBtn = event.target.closest('[data-action="apply-type-theme"]');
+            if (themeBtn) {
+                draft.theme = window.LocationTheme.deriveLocationTheme(draft.types || []);
+                paint();
+                api.markDirty();
+                api.refreshPreview();
+                return;
             }
         });
     }

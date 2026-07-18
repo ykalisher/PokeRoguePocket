@@ -2,28 +2,9 @@ const fs = require('fs');
 const readline = require('readline/promises');
 const { stdin: input, stdout: output } = require('process');
 const { PokeType } = require('./data_options');
+const { deriveLocationTheme } = require('./location_theme');
 
 const LOCATIONS_FILE = 'locations.json';
-
-const HEX_PATTERN = /^#[0-9a-f]{6}$/i;
-
-// Neutral palette used as defaults; keep in sync with NEUTRAL_LOCATION_THEME
-// in arena/arena_data.js and the CLI defaults there.
-const NEUTRAL_THEME = Object.freeze({
-    accent: '#e0b84f',
-    glow: '#4ab0a5',
-    surface: '#232f3d',
-    bgDeep: '#10161f',
-    bgMid: '#1b2836'
-});
-
-const THEME_FIELDS = [
-    ['accent', 'Accent hex'],
-    ['glow', 'Glow hex'],
-    ['surface', 'Surface hex'],
-    ['bgDeep', 'Deep background hex'],
-    ['bgMid', 'Mid background hex']
-];
 
 // Real, selectable pokemon types (NONE and LEGENDARY are not location types).
 const SELECTABLE_TYPES = Object.values(PokeType).filter(type => type !== 'NONE' && type !== 'LEGENDARY');
@@ -74,7 +55,7 @@ async function handleAddLocation(rl, locations) {
     const id = await askUniqueId(rl, locations, name);
     const terrain = await askString(rl, 'Terrain display label: ');
     const types = await askTypes(rl);
-    const theme = await askTheme(rl);
+    const theme = deriveLocationTheme(types);
     const background = await askBackground(rl, id);
     const enabled = await askBoolean(rl, 'Enable this location now? (y/n): ');
 
@@ -110,25 +91,6 @@ async function askTypes(rl) {
 
         types.push(remaining[index]);
         if (types.length >= 4) return types;
-    }
-}
-
-async function askTheme(rl) {
-    const theme = {};
-
-    for (const [field, label] of THEME_FIELDS) {
-        theme[field] = await askHex(rl, `${label} (default "${NEUTRAL_THEME[field]}"): `, NEUTRAL_THEME[field]);
-    }
-
-    return theme;
-}
-
-async function askHex(rl, prompt, fallback) {
-    while (true) {
-        const value = (await rl.question(prompt)).trim();
-        if (value.length === 0) return fallback;
-        if (HEX_PATTERN.test(value)) return value.toLowerCase();
-        console.log('Please enter a 6-digit hex color like "#1a2b3c", or leave blank.');
     }
 }
 
