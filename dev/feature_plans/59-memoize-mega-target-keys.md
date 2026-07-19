@@ -48,7 +48,7 @@ builders drop from ≈1.8 ms to well under 0.2 ms per call.
 
 ## Steps
 
-- [ ] 1. **`map/locations.js`** — add a module-level cache directly above
+- [x] 1. **`map/locations.js`** — add a module-level cache directly above
   `getMegaTargetKeys` and make the function consult it. Rename the current body to a private
   compute helper:
   ```js
@@ -86,7 +86,7 @@ builders drop from ≈1.8 ms to well under 0.2 ms per call.
   ```
   Do not export `computeMegaTargetKeys` and do not change `isMegaPokemon`,
   `isObtainablePokemon`, or any pool function — they now benefit automatically.
-- [ ] 2. **`tests/pokemon_pools.test.js`** — append these tests after the existing
+- [x] 2. **`tests/pokemon_pools.test.js`** — append these tests after the existing
   `findPokemonByNameOrId` test:
   ```js
   test('getMegaTargetKeys is memoized per gameData object and stays correct', () => {
@@ -133,9 +133,9 @@ builders drop from ≈1.8 ms to well under 0.2 ms per call.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — including the untouched real-data assertion that
+- [x] `node tests/run_all.js` green — including the untouched real-data assertion that
   `getWildPokemonPool(gameData, []).length === 160` (proves live behavior is unchanged).
-- [ ] Timing sanity — before this phase, 100 calls measured 184 ms; after, expect < 20 ms:
+- [x] Timing sanity — before this phase, 100 calls measured 184 ms; after, expect < 20 ms:
   ```bash
   node -e "
   require('./tests/helpers/arena_env');

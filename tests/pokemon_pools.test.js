@@ -61,6 +61,47 @@ test('findPokemonByNameOrId resolves by exact name and by exact id', () => {
     assert.equal(P.findPokemonByNameOrId(gameData, 'nope-at-all'), null);
 });
 
+test('getMegaTargetKeys is memoized per gameData object and stays correct', () => {
+    const gameData = fixtureGameData();
+    const first = P.getMegaTargetKeys(gameData);
+
+    assert.deepEqual([...first].sort(), ['9002', 'Fixture Mega']);
+    // Same object in, same cached Set out.
+    assert.equal(P.getMegaTargetKeys(gameData), first);
+});
+
+test('a different gameData object gets freshly computed keys', () => {
+    const gameData = fixtureGameData();
+    P.getMegaTargetKeys(gameData);
+
+    const other = fixtureGameData();
+    other.pokemon.push(
+        makePokemon('Other Mega', '9102', ['WATER', 'DRAGON']),
+        makePokemon('Other Baby', '9101', ['WATER', 'BABY'], { evolvesInto: 'Other Mega' })
+    );
+    const keys = P.getMegaTargetKeys(other);
+
+    assert.deepEqual([...keys].sort(), ['9002', '9102', 'Fixture Mega', 'Other Mega']);
+    // The first object's cache entry is untouched.
+    assert.deepEqual([...P.getMegaTargetKeys(gameData)].sort(), ['9002', 'Fixture Mega']);
+});
+
+test('memoization does not change pool verdicts', () => {
+    const gameData = fixtureGameData();
+    const [baby, mega, , plainA] = gameData.pokemon;
+
+    // Call twice: the second pass runs entirely from cache.
+    for (let pass = 0; pass < 2; pass += 1) {
+        assert.equal(P.isObtainablePokemon(plainA, gameData), true);
+        assert.equal(P.isObtainablePokemon(baby, gameData), false);
+        assert.equal(P.isObtainablePokemon(mega, gameData), false);
+        assert.deepEqual(
+            P.getObtainablePokemonPool(gameData).map(record => record.name).sort(),
+            ['Fixture Plain A', 'Fixture Plain B']
+        );
+    }
+});
+
 test('getWildPokemonPool excludes baby/mega/legendary from the fixture', () => {
     const gameData = fixtureGameData();
     const pool = P.getWildPokemonPool(gameData, ['WATER']);

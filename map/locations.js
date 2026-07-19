@@ -722,7 +722,25 @@
 
     // Set of every name AND id resolved from any baby's evolvesInto, so
     // isMegaPokemon can match a record by either key.
+    // Cache keyed by the gameData object itself: loadGameData() replaces
+    // arena.GameData with a fresh object on every load, so object identity is
+    // the invalidation and stale entries are garbage-collected with their data.
+    const megaKeyCache = new WeakMap();
+
     function getMegaTargetKeys(gameData) {
+        if (!gameData || typeof gameData !== 'object') return computeMegaTargetKeys(gameData);
+
+        let keys = megaKeyCache.get(gameData);
+
+        if (!keys) {
+            keys = computeMegaTargetKeys(gameData);
+            megaKeyCache.set(gameData, keys);
+        }
+
+        return keys;
+    }
+
+    function computeMegaTargetKeys(gameData) {
         const pokemon = gameData && Array.isArray(gameData.pokemon) ? gameData.pokemon : [];
         const keys = new Set();
 
