@@ -173,12 +173,14 @@ test('locations: bad hex theme color', () => {
 });
 
 test('locations: disconnected graph', () => {
-    // lavender-town's types (GHOST/HUMAN/MONSTER) are all also covered by other
-    // enabled locations and include no starter type, so isolating it doesn't
-    // break starter coverage — only the connectivity rule.
+    // Isolation types must be types NO enabled location uses. FOSSIL became a
+    // real location type in the 2026-07-18 location expansion, so BABY +
+    // ARTIFICIAL (card-only types) are used instead. lavender-town's real
+    // types (GHOST/HUMAN/MONSTER) are all covered by other enabled locations
+    // and include no starter type, so isolating it breaks only connectivity.
     const data = withLocations((locations) => {
         const isolated = locations.find((location) => location.id === 'lavender-town');
-        isolated.types = ['BABY', 'FOSSIL'];
+        isolated.types = ['BABY', 'ARTIFICIAL'];
     });
     const issues = validateAll(data, { enums: live.enums, engineRefs: live.engineRefs });
     assert.ok(hasCode(issues, 'locations.graph-disconnected'));

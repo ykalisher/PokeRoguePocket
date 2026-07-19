@@ -25,7 +25,7 @@
 
 ## Steps
 
-- [ ] 1. **`tests/editor_validation.test.js`** — in the `locations: disconnected graph` test,
+- [x] 1. **`tests/editor_validation.test.js`** — in the `locations: disconnected graph` test,
   replace the fixture types and refresh the comment:
   ```js
   test('locations: disconnected graph', () => {
@@ -46,8 +46,8 @@
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — zero failing tests.
-- [ ] `node --test tests/editor_validation.test.js` shows `locations: disconnected graph`
+- [x] `node tests/run_all.js` green — zero failing tests.
+- [x] `node --test tests/editor_validation.test.js` shows `locations: disconnected graph`
   passing.
 
 ## Out of scope / do not touch
