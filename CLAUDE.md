@@ -56,6 +56,11 @@ Binding rules for all agents (imported):
   (overview + one-session phases) per `dev/feature_plans/README.md`, each phase sized
   for the weakest capable model.
 - `TODO.md` is the owner's planning file — never act on it unless explicitly asked.
+- The owner's task board is `dev/owner_tasks/` (view: `bash dev/owner_tasks/tasks.sh`;
+  conventions: `dev/owner_tasks/README.md`). These are features **only the owner
+  implements and marks complete.** You may run `tasks.sh add "…" [--area X] [--needs NNN]`
+  **only when the owner explicitly asks** to add a task; never run `done`/`reopen` and
+  never act on the board's contents otherwise (same rule as `TODO.md`).
 - UI text says "Gym Leader" and "Wild Pokemon Encounter", but internals keep the old
   names (node types `'boss'`/`'capture'`, rank `'Boss'`, `bossNodeId`, CSS classes) —
   never rename internals to match the UI.

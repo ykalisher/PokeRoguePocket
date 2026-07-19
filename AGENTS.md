@@ -14,6 +14,8 @@ The project should remain simple, portable, and easy to understand. Prefer clear
 
 - `TODO.md` is the owner's planning file. Do not act on its contents unless explicitly asked.
 
+- `dev/owner_tasks/` is the owner's task board (features only the owner implements). Agents may run `dev/owner_tasks/tasks.sh add` only when the owner explicitly asks to add a task, and must never mark tasks done/reopened or otherwise act on the board.
+
 ## Project Structure and Code Requirements
 
 - Use plain JavaScript, HTML, and CSS.
