@@ -276,6 +276,7 @@
 
     function render() {
         const currentNode = getCurrentNode();
+        const selectableNodeIds = new Set(getAvailableNextNodes().map(node => node.id));
 
         state.elements.root.innerHTML = `
             <header class="area-topbar">
@@ -305,7 +306,7 @@
                     ${isRunComplete() ? '<div class="area-victory-banner" role="status">Champion! You cleared all 4 levels.</div>' : ''}
                     <div class="area-map-canvas">
                         ${renderMapLinks()}
-                        ${state.area.nodes.map(renderNode).join('')}
+                        ${state.area.nodes.map(node => renderNode(node, selectableNodeIds)).join('')}
                     </div>
                 </div>
                 <footer class="area-map-footer">
@@ -389,10 +390,10 @@
         return `<line class="${className}" x1="${fromNode.x}" y1="${fromNode.y}" x2="${toNode.x}" y2="${toNode.y}"></line>`;
     }
 
-    function renderNode(node) {
+    function renderNode(node, selectableNodeIds) {
         const current = state.currentNodeId === node.id;
         const visited = state.visitedNodeIds.has(node.id);
-        const selectable = isNodeSelectable(node);
+        const selectable = selectableNodeIds.has(node.id);
         const className = [
             'area-node',
             `area-node--${node.type}`,

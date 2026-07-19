@@ -828,8 +828,11 @@
 
     function getHealthPercent(card) {
         if (!isPokemonCard(card)) return 0;
+        if (card.currentHealth <= 0) return 0;
 
-        return Math.max(0, Math.round((card.currentHealth / card.pokemon.baseHealth) * 100));
+        // Floor at 1: a living Pokemon never shows 0%, even when baseHealth is
+        // large enough for Math.round to drop 1 HP below half a percent.
+        return Math.max(1, Math.round((card.currentHealth / card.pokemon.baseHealth) * 100));
     }
 
     function getPortraitHue(speciesId) {

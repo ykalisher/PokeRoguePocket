@@ -663,6 +663,7 @@
         await animateArtificialAttackCard(removedCard, impactCenter || sourceCenter, ownerId);
 
         model.removeCardFromPlay(owner, removedCard);
+        logEvent(`${model.getCardName(removedCard)} was removed from play for the rest of the battle.`);
 
         if (ownerId === 'player') {
             state.isResolving = false;
@@ -1663,11 +1664,19 @@
     }
 
     function pickHighestScoringCandidate(candidates, scoreFn) {
-        return candidates.reduce((best, candidate) => (scoreFn(candidate) > scoreFn(best) ? candidate : best));
+        return pickCandidateByScore(candidates, scoreFn, (score, bestScore) => score > bestScore);
     }
 
     function pickLowestScoringCandidate(candidates, scoreFn) {
-        return candidates.reduce((best, candidate) => (scoreFn(candidate) < scoreFn(best) ? candidate : best));
+        return pickCandidateByScore(candidates, scoreFn, (score, bestScore) => score < bestScore);
+    }
+
+    // Scores each candidate exactly once; strict comparison keeps the earliest
+    // candidate on ties, matching the old reduce-over-scoreFn behavior.
+    function pickCandidateByScore(candidates, scoreFn, isBetter) {
+        const scored = candidates.map(candidate => ({ candidate, score: scoreFn(candidate) }));
+
+        return scored.reduce((best, entry) => (isBetter(entry.score, best.score) ? entry : best)).candidate;
     }
 
     /**

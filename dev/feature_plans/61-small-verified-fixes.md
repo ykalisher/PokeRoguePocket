@@ -22,7 +22,7 @@ is the point; suite stays green.
 
 ## Steps
 
-- [ ] 1. **`arena/arena_model.js`** — `getHealthPercent` (~line 829): a living Pokemon must
+- [x] 1. **`arena/arena_model.js`** — `getHealthPercent` (~line 829): a living Pokemon must
   never display 0% (a species with `baseHealth > 200` at 1 HP would round to 0 today; the
   current data max is exactly 200, one owner edit away). Replace the function body:
   ```js
@@ -35,14 +35,14 @@ is the point; suite stays green.
       return Math.max(1, Math.round((card.currentHealth / card.pokemon.baseHealth) * 100));
   }
   ```
-- [ ] 2. **`arena/arena_controller.js`** — `useDragonGemItemFromHand` (~line 632): it is the
+- [x] 2. **`arena/arena_controller.js`** — `useDragonGemItemFromHand` (~line 632): it is the
   only single-use item path that never logs the removal. Directly after its
   `model.removeCardFromPlay(owner, removedCard);` line, add:
   ```js
   logEvent(`${model.getCardName(removedCard)} was removed from play for the rest of the battle.`);
   ```
   (Exact same wording as `usePendingItem` / `useEffectBoostItemFromHand` / `useOpponentItem`.)
-- [ ] 3. **`arena/arena_controller.js`** — score each rival-AI candidate once (~line 1665).
+- [x] 3. **`arena/arena_controller.js`** — score each rival-AI candidate once (~line 1665).
   Replace the two pickers with:
   ```js
   function pickHighestScoringCandidate(candidates, scoreFn) {
@@ -61,7 +61,7 @@ is the point; suite stays green.
       return scored.reduce((best, entry) => (isBetter(entry.score, best.score) ? entry : best)).candidate;
   }
   ```
-- [ ] 4. **`map/area.js`** — compute the selectable-node set once per render pass instead of
+- [x] 4. **`map/area.js`** — compute the selectable-node set once per render pass instead of
   re-deriving `getAvailableNextNodes()` for every node:
   - In `render()` (~line 277), add as the second local, after `const currentNode = ...`:
     ```js
@@ -78,9 +78,9 @@ is the point; suite stays green.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green after every step (the phase-40 rival-targeting tests
+- [x] `node tests/run_all.js` green after every step (the phase-40 rival-targeting tests
   guard step 3).
-- [ ] Health-floor spot-check:
+- [x] Health-floor spot-check:
   ```bash
   node -e "
   const { arena } = require('./tests/helpers/arena_env');
@@ -90,7 +90,7 @@ is the point; suite stays green.
   "
   ```
   must print `OK`.
-- [ ] Area map still renders and moves correctly in the browser (`verify` skill,
+- [x] Area map still renders and moves correctly in the browser (`verify` skill,
   `dev/verify/` drivers): load `area.html` on a run, confirm next-step nodes are highlighted
   and clickable, visited/unreachable nodes are not.
 

@@ -95,3 +95,6 @@ apply to both:
   drift out of sync. `tests/data_validation.test.js` guards the default
   deck's pairings; a bulk import once retyped Feraligatr and silently
   shrank the deck.
+- Record names (pokemon/attacks/items/trainers) and location name/terrain must not
+  contain `"`, `<`, or `>` — the battle renderer interpolates them into double-quoted
+  HTML attributes unescaped (validated as `data.unsafe-name-chars`). Apostrophes are fine.
