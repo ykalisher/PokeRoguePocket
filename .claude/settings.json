@@ -4,6 +4,7 @@
       "Bash(node --check:*)",
       "Bash(node --test:*)",
       "Bash(node tests/run_all.js)",
+      "Bash(node *)",
       "Bash(python3 -m http.server 8931:*)",
       "Bash(pkill -f \"http.server 8931\")",
       "Bash(bash dev/verify/setup.sh)",
