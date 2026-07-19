@@ -603,6 +603,34 @@
         return issues;
     }
 
+    // ---------------------------------------------------- name character safety
+
+    // The battle renderer (arena/arena_render.js) interpolates these strings
+    // into double-quoted HTML attributes without escaping, so a quote or angle
+    // bracket in a name would silently corrupt the DOM. Apostrophes are legal.
+    const UNSAFE_NAME_PATTERN = /["<>]/;
+
+    function validateNameCharacters(data) {
+        const issues = [];
+        const check = (file, recordKey, value, field) => {
+            if (typeof value === 'string' && UNSAFE_NAME_PATTERN.test(value)) {
+                issues.push(err(file, recordKey, 'data.unsafe-name-chars',
+                    `${recordKey}: ${field} must not contain " < or > (breaks battle markup), got ${value}`, field));
+            }
+        };
+
+        (data.pokemon || []).forEach((record) => check('pokemon.json', record.name, record.name, 'name'));
+        (data.attacks || []).forEach((record) => check('attacks.json', record.name, record.name, 'name'));
+        (data.items || []).forEach((record) => check('items.json', record.name, record.name, 'name'));
+        (data.trainers || []).forEach((record) => check('trainers.json', record.name, record.name, 'name'));
+        (data.locations || []).forEach((record) => {
+            check('locations.json', record.id, record.name, 'name');
+            check('locations.json', record.id, record.terrain, 'terrain');
+        });
+
+        return issues;
+    }
+
     // -------------------------------------------------------------- validateAll
 
     function validateAll(data, options) {
@@ -630,6 +658,7 @@
             ...validateTrainers(trainers, pokemonNames, attackNames, itemNames, enums),
             ...validateEvents(events, trainerNames, enums, locations),
             ...validateLocations(locations, enums, engineRefs),
+            ...validateNameCharacters(data),
             ...validateEngineRefs(pokemonNames, attackNames, itemNames, engineRefs),
             ...validateAssets(data, assetIndex, engineRefs)
         ];

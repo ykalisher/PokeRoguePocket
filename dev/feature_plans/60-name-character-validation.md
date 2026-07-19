@@ -37,7 +37,7 @@ and documented in the data skill.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/validate.js`** — add this function directly above the
+- [x] 1. **`dev/editor/validate.js`** — add this function directly above the
   `// -------------------------------------------------------------- validateAll` banner:
   ```js
   // ---------------------------------------------------- name character safety
@@ -68,13 +68,13 @@ and documented in the data skill.
       return issues;
   }
   ```
-- [ ] 2. **`dev/editor/validate.js`** — splice it into `validateAll`'s returned array, after
+- [x] 2. **`dev/editor/validate.js`** — splice it into `validateAll`'s returned array, after
   the `validateLocations` line:
   ```js
           ...validateLocations(locations, enums, engineRefs),
           ...validateNameCharacters(data),
   ```
-- [ ] 3. **`tests/editor_validation.test.js`** — add these tests next to the other
+- [x] 3. **`tests/editor_validation.test.js`** — add these tests next to the other
   mutation-fixture tests (after the locations tests is fine):
   ```js
   test('names: double quote in an attack name is an error', () => {
@@ -96,7 +96,7 @@ and documented in the data skill.
       assert.ok(!hasCode(issues, 'data.unsafe-name-chars'));
   });
   ```
-- [ ] 4. **`.claude/skills/data/SKILL.md`** — append this note at the end of the file
+- [x] 4. **`.claude/skills/data/SKILL.md`** — append this note at the end of the file
   (append-only):
   ```
   Record names (pokemon/attacks/items/trainers) and location name/terrain must not
@@ -106,10 +106,10 @@ and documented in the data skill.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — including the pre-existing
+- [x] `node tests/run_all.js` green — including the pre-existing
   `live data: zero error-severity issues` test (proves the rule fires on nothing live).
-- [ ] `node --test tests/editor_validation.test.js` shows the three new tests passing.
-- [ ] Quick spot-check without the editor GUI:
+- [x] `node --test tests/editor_validation.test.js` shows the three new tests passing.
+- [x] Quick spot-check without the editor GUI:
   ```bash
   node -e "
   const { validateAll } = require('./dev/editor/validate.js');

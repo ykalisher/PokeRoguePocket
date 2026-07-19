@@ -186,6 +186,25 @@ test('locations: disconnected graph', () => {
     assert.ok(hasCode(issues, 'locations.graph-disconnected'));
 });
 
+test('names: double quote in an attack name is an error', () => {
+    const data = withAttacks((attacks) => { attacks[0].name = 'Slash "Deluxe"'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'data.unsafe-name-chars'));
+});
+
+test('names: angle bracket in a location terrain is an error', () => {
+    const data = withLocations((locations) => { locations[0].terrain = '<Volcanic>'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'data.unsafe-name-chars'));
+});
+
+test('names: apostrophes stay legal', () => {
+    // Live data already contains "Nature's Blessing" etc.; the zero-errors
+    // live-parity test above is the real guard — this pins the intent.
+    const issues = validateAll(live.data, { enums: live.enums, assetIndex: live.assetIndex, engineRefs: live.engineRefs });
+    assert.ok(!hasCode(issues, 'data.unsafe-name-chars'));
+});
+
 test('engine: deleting a defaultDeck pokemon strands the engine reference', () => {
     const data = withPokemon((pokemon) => {
         const index = pokemon.findIndex((record) => record.name === 'Blastoise');
