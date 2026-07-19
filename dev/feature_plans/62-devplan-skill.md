@@ -42,7 +42,7 @@ doctrine, and (c) execute/review plans ("do the next development phase"). Owner 
 
 ## Steps
 
-- [ ] 1. **`~/.claude/skills/devplan/assets/status.sh`** (new) — copy
+- [x] 1. **`~/.claude/skills/devplan/assets/status.sh`** (new) — copy
   `dev/feature_plans/status.sh` byte-for-byte, then replace the title line
   `echo "${B}PokeRoguePocket — feature plan status${RST}"` with:
   ```bash
@@ -50,7 +50,7 @@ doctrine, and (c) execute/review plans ("do the next development phase"). Owner 
   echo "${B}${repo} — feature plan status${RST}"
   ```
   No other changes. Check it with `bash -n`.
-- [ ] 2. **`~/.claude/skills/devplan/assets/plan-README.template.md`** (new) — start from a
+- [x] 2. **`~/.claude/skills/devplan/assets/plan-README.template.md`** (new) — start from a
   copy of `dev/feature_plans/README.md` and apply exactly these transformations:
   - Keep near-verbatim: "Doing the next step of a plan", "File conventions",
     "Progress tracking", the canonical phase-file template, the `**Recommended agent:**`
@@ -68,7 +68,7 @@ doctrine, and (c) execute/review plans ("do the next development phase"). Owner 
     legacy files) — the rest of those paragraphs stays.
   - Do not invent new conventions. If a sentence is neither repo-specific nor listed above,
     keep it.
-- [ ] 3. **`~/.claude/skills/devplan/SKILL.md`** (new) — create with exactly this content:
+- [x] 3. **`~/.claude/skills/devplan/SKILL.md`** (new) — create with exactly this content:
   ```markdown
   ---
   name: devplan
@@ -155,7 +155,7 @@ doctrine, and (c) execute/review plans ("do the next development phase"). Owner 
   5. Stop at the phase boundary and report what was done and what
      `--current` says is next.
   ```
-- [ ] 4. **`CLAUDE.md`** (this repo) — in "## Task pointers", insert directly after the
+- [x] 4. **`CLAUDE.md`** (this repo) — in "## Task pointers", insert directly after the
   existing "Phased feature plans live in `dev/feature_plans/`…" bullet:
   ```markdown
   - **To write a NEW development plan** ("make a development plan", "plan this feature"):
@@ -166,18 +166,18 @@ doctrine, and (c) execute/review plans ("do the next development phase"). Owner 
 
 ## Verification
 
-- [ ] `~/.claude/skills/devplan/` contains exactly `SKILL.md`, `assets/status.sh`,
+- [x] `~/.claude/skills/devplan/` contains exactly `SKILL.md`, `assets/status.sh`,
   `assets/plan-README.template.md`; frontmatter has only `name:` + `description:` keys.
-- [ ] `bash -n ~/.claude/skills/devplan/assets/status.sh` — syntax OK.
-- [ ] Dry-run the bootstrap in the session scratchpad (NOT in this repo): make a temp dir,
+- [x] `bash -n ~/.claude/skills/devplan/assets/status.sh` — syntax OK.
+- [x] Dry-run the bootstrap in the session scratchpad (NOT in this repo): make a temp dir,
   `git init`, copy the two assets in as `dev/feature_plans/status.sh` + `README.md`, then
   `bash dev/feature_plans/status.sh` there → prints the temp repo's directory name in the
   title and "All phases complete." Delete the temp dir afterwards.
-- [ ] In THIS repo, `bash dev/feature_plans/status.sh` output is unchanged (the repo's own
+- [x] In THIS repo, `bash dev/feature_plans/status.sh` output is unchanged (the repo's own
   status.sh was not touched).
-- [ ] Read the finished template README against `dev/feature_plans/README.md`: no dropped
+- [x] Read the finished template README against `dev/feature_plans/README.md`: no dropped
   conventions other than the three listed repo-specific items, no invented ones.
-- [ ] `node tests/run_all.js` green (docs/tooling-only phase — proves nothing else moved).
+- [x] `node tests/run_all.js` green (docs/tooling-only phase — proves nothing else moved).
 
 ## Out of scope / do not touch
 

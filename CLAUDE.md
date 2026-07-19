@@ -51,6 +51,10 @@ Binding rules for all agents (imported):
   continue the next step of a plan** (e.g. "do the next step in the dev plan"): run
   `bash dev/feature_plans/status.sh --current` to find the active phase, then implement
   exactly that one phase per the README, ticking each checkbox as you go.
+- **To write a NEW development plan** ("make a development plan", "plan this feature"):
+  `devplan` skill (user-level) — investigate first, then emit a numbered batch
+  (overview + one-session phases) per `dev/feature_plans/README.md`, each phase sized
+  for the weakest capable model.
 - `TODO.md` is the owner's planning file — never act on it unless explicitly asked.
 - UI text says "Gym Leader" and "Wild Pokemon Encounter", but internals keep the old
   names (node types `'boss'`/`'capture'`, rank `'Boss'`, `bossNodeId`, CSS classes) —
