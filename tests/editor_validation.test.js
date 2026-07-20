@@ -111,6 +111,34 @@ test('pokemon: eventOnly granted by a gain-card event has no unreachable warning
     assert.ok(!hasCode(issues, 'pokemon.event-only-unreachable'));
 });
 
+test('pokemon: BABY with no evolvesInto is a baby-missing-mega error', () => {
+    const data = withPokemon((pokemon) => {
+        const baby = pokemon.find((record) => record.name === 'Numel');
+        delete baby.evolvesInto;
+    });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'pokemon.baby-missing-mega'));
+});
+
+test('pokemon: BABY evolvesInto naming a non-Mega is a baby-missing-mega error', () => {
+    const data = withPokemon((pokemon) => {
+        const baby = pokemon.find((record) => record.name === 'Numel');
+        baby.evolvesInto = 'Blastoise';
+    });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'pokemon.baby-missing-mega'));
+});
+
+test('pokemon: BABY evolvesInto naming a 9xxx Mega has no baby-missing-mega error', () => {
+    const issues = validateAll(live.data, { enums: live.enums });
+    assert.ok(!hasCode(issues, 'pokemon.baby-missing-mega'));
+});
+
+test('live data: zero baby-missing-mega issues', () => {
+    const issues = validateAll(live.data, { enums: live.enums, assetIndex: live.assetIndex, engineRefs: live.engineRefs });
+    assert.ok(!hasCode(issues, 'pokemon.baby-missing-mega'), 'expected zero pokemon.baby-missing-mega issues in live data');
+});
+
 test('attacks: unknown status', () => {
     const data = withAttacks((attacks) => { attacks[0].status = 'NOT_A_STATUS'; });
     const issues = validateAll(data, { enums: live.enums });

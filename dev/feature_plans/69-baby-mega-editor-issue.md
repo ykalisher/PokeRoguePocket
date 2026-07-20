@@ -29,7 +29,7 @@ current babies already pass, so this blocks no existing data. Ends green.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/validate.js`** — inside `validatePokemon`, near the `namesAndIds`
+- [x] 1. **`dev/editor/validate.js`** — inside `validatePokemon`, near the `namesAndIds`
   build (~L86), add a resolver map and a mega predicate:
   ```js
   const byNameOrId = new Map();
@@ -44,7 +44,7 @@ current babies already pass, so this blocks no existing data. Ends green.
   };
   ```
 
-- [ ] 2. **`dev/editor/validate.js`** — inside the per-record loop, after the existing
+- [x] 2. **`dev/editor/validate.js`** — inside the per-record loop, after the existing
   baby/`evolvesInto` checks (~L125), add:
   ```js
   if ([record.type1, record.type2, record.type3].includes('BABY')) {
@@ -62,7 +62,7 @@ current babies already pass, so this blocks no existing data. Ends green.
   }
   ```
 
-- [ ] 3. **Tests — `tests/editor_validation.test.js`.** Add cases: (a) a BABY record with no
+- [x] 3. **Tests — `tests/editor_validation.test.js`.** Add cases: (a) a BABY record with no
   `evolvesInto` → `pokemon.baby-missing-mega` error; (b) a BABY whose `evolvesInto` names a
   non-Mega (id ≤ 9000) → same error; (c) a BABY pointing to a 9xxx Mega → no such error.
   Also assert the **real** `pokemon.json` produces **zero** `pokemon.baby-missing-mega`
@@ -70,9 +70,9 @@ current babies already pass, so this blocks no existing data. Ends green.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — in particular the "real data has zero
+- [x] `node tests/run_all.js` green — in particular the "real data has zero
   baby-missing-mega" assertion passes.
-- [ ] Editor browser check via the `verify` skill: open **Numel** (a baby) → no
+- [x] Editor browser check via the `verify` skill: open **Numel** (a baby) → no
   baby-missing-mega issue. Temporarily clear its Evolves-into → the Issues tab shows the
   error and the Save button is blocked; restore it → the error clears. (Do **not** save the
   cleared state.)

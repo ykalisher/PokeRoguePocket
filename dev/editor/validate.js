@@ -84,10 +84,18 @@
         const validTypes = new Set(Object.values((enums && enums.PokeType) || {}));
         const seen = new Set();
         const namesAndIds = new Set();
+        const byNameOrId = new Map();
         pokemon.forEach((record) => {
             if (record.name) namesAndIds.add(record.name);
             if (record.id) namesAndIds.add(record.id);
+            if (record.name) byNameOrId.set(record.name, record);
+            if (record.id) byNameOrId.set(record.id, record);
         });
+        // Mega convention: id > 9000 (mirrors map/locations.js isMegaByConvention).
+        const isMega = (record) => {
+            const idNum = parseInt(record && record.id, 10);
+            return Number.isFinite(idNum) && idNum > 9000;
+        };
 
         pokemon.forEach((record) => {
             const key = record.name || '(unnamed pokemon)';
@@ -114,14 +122,25 @@
                 issues.push(err('pokemon.json', key, 'pokemon.bad-id', `${key}: bad id ${record.id}`, 'id'));
             }
 
-            // evolvesInto stays optional even on babies — runtime code
-            // (map/locations.js isMegaPokemon/getMegaTargetKeys) guards its absence.
             const types = [record.type1, record.type2, record.type3].filter((type) => type && type !== 'NONE');
             if (types.includes('BABY') && !types.some((type) => type !== 'BABY')) {
                 issues.push(err('pokemon.json', key, 'pokemon.baby-needs-other-type', `${key}: BABY pokemon needs >=1 non-BABY type`, 'type1'));
             }
             if (record.evolvesInto !== undefined && !namesAndIds.has(record.evolvesInto)) {
                 issues.push(err('pokemon.json', key, 'pokemon.bad-evolves-into', `${key}: evolvesInto "${record.evolvesInto}" does not resolve to a real pokemon`, 'evolvesInto'));
+            }
+            if ([record.type1, record.type2, record.type3].includes('BABY')) {
+                if (record.evolvesInto === undefined || record.evolvesInto === '') {
+                    issues.push(err('pokemon.json', key, 'pokemon.baby-missing-mega',
+                        `${key}: BABY pokemon must set evolvesInto to its Mega`, 'evolvesInto'));
+                } else {
+                    const target = byNameOrId.get(record.evolvesInto);
+                    // target that doesn't resolve at all is already reported by pokemon.bad-evolves-into
+                    if (target && !isMega(target)) {
+                        issues.push(err('pokemon.json', key, 'pokemon.baby-missing-mega',
+                            `${key}: evolvesInto "${record.evolvesInto}" is not a Mega (id must be > 9000)`, 'evolvesInto'));
+                    }
+                }
             }
             if (record.eventOnly === true && !(eventGrantedPokemon && eventGrantedPokemon.has(record.name))) {
                 issues.push(warn('pokemon.json', key, 'pokemon.event-only-unreachable',
