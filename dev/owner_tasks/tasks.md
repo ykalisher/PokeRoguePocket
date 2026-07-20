@@ -6,8 +6,8 @@
      Optional indented "> " lines below a task are free-text notes, preserved untouched.
      Only the OWNER marks tasks done. Agents may add tasks, and only when explicitly asked. -->
 
-- [ ] #001 area:pokemon added:2026-07-19 needs:- :: Add non-legendary mega pokemon
-- [ ] #002 area:pokemon added:2026-07-19 needs:001 :: Add baby pokemon and link them to their respective megas
+- [x] #001 area:pokemon added:2026-07-19 done:2026-07-20 needs:- :: Add non-legendary mega pokemon
+- [x] #002 area:pokemon added:2026-07-19 done:2026-07-20 needs:001 :: Add baby pokemon and link them to their respective megas
    > Depends on #001 — megas must exist before babies can link to them.
 - [x] #003 area:pokemon added:2026-07-19 done:2026-07-20 needs:- :: Add rotom
 - [ ] #004 area:pokemon added:2026-07-19 needs:- :: Add future and past pokemon for some more artificial and fossil legendaries/event pokemon
