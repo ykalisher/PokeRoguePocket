@@ -18,7 +18,7 @@
 - [x] #008 added:2026-07-20 done:2026-07-20 needs:- :: Confirm every type has base set of usable moves
 - [x] #009 added:2026-07-20 done:2026-07-20 needs:- :: Change gym leaders and elites to use megas instead of legendaries
 - [ ] #010 added:2026-07-20 needs:- :: Download backgrounds
-- [ ] #011 added:2026-07-20 needs:- :: Fix gym leaders
+- [x] #011 added:2026-07-20 done:2026-07-20 needs:- :: Fix gym leaders
 - [ ] #012 added:2026-07-20 needs:- :: check ace trainers
 - [ ] #013 added:2026-07-20 needs:- :: check event trainers
 - [ ] #014 added:2026-07-20 needs:- :: check standards

@@ -1364,7 +1364,9 @@
     "type2": "NONE",
     "basePower": 0,
     "status": "FULL_HEAL",
-    "statChanges": [],
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
     "target": "SELF",
     "full_type_requirements": false
   },
@@ -1527,6 +1529,31 @@
     "status": "POISON",
     "statChanges": [],
     "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Hallucinatory Swarm",
+    "type1": "PSYCHIC",
+    "type2": "BUG",
+    "basePower": 0,
+    "status": "PROTECT",
+    "statChanges": [
+      "ATTACK_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Gravity",
+    "type1": "PSYCHIC",
+    "type2": "ROCK",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "SPEED_DOWN",
+      "SPEED_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
     "full_type_requirements": true
   }
 ]
