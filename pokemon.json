@@ -2165,5 +2165,27 @@
     "baseAttack": 85,
     "baseDefense": 20,
     "baseSpeed": 85
+  },
+  {
+    "name": "Mega Beedrill",
+    "type1": "BUG",
+    "type2": "POISON",
+    "type3": "NONE",
+    "id": "9015",
+    "baseHealth": 80,
+    "baseAttack": 115,
+    "baseDefense": 80,
+    "baseSpeed": 115
+  },
+  {
+    "name": "Weedle",
+    "type1": "BABY",
+    "type2": "BUG",
+    "type3": "POISON",
+    "id": "0013",
+    "baseHealth": 60,
+    "baseAttack": 60,
+    "baseDefense": 70,
+    "baseSpeed": 40
   }
 ]
