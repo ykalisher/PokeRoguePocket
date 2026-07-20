@@ -14,3 +14,6 @@
 - [ ] #005 area:framework added:2026-07-19 needs:- :: Tell Claude to create a framework for event-only pokemon
    > Still designing this — do NOT implement yet; will brief an agent later.
 - [ ] #006 area:events added:2026-07-19 needs:- :: Add location-specific and pokemon-specific events (including for legendaries)
+- [ ] #007 added:2026-07-20 needs:- :: More dual-typed moves
+- [ ] #008 added:2026-07-20 needs:- :: Confirm every type has base set of usable moves
+- [ ] #009 added:2026-07-20 needs:- :: Change gym leaders and elites to use megas instead of legendaries
