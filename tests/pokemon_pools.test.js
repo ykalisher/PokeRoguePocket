@@ -127,11 +127,10 @@ test('getWildPokemonPool excludes baby/mega/legendary from the fixture', () => {
     assert.deepEqual(pool.map(record => record.name).sort(), ['Fixture Plain A', 'Fixture Plain B']);
 });
 
-test('getBabyPokemonPool returns the authored baby species from real pokemon.json', async () => {
+test('getBabyPokemonPool returns only BABY-typed species from real pokemon.json', async () => {
     await loadRealGameData();
     const babies = P.getBabyPokemonPool(arena.GameData);
-    assert.ok(babies.length >= 1, 'expected at least one authored baby (Numel)');
-    assert.ok(babies.some(record => record.name === 'Numel'), 'Numel must be in the baby pool');
+    assert.ok(babies.length >= 1, 'expected at least one authored BABY-typed species');
     babies.forEach(record => {
         assert.ok([record.type1, record.type2, record.type3].includes('BABY'), `${record.name} is not BABY-typed`);
     });

@@ -32,7 +32,7 @@ so run it 2-3 times.
 
 ## Steps
 
-- [ ] 1. **`tests/mart_stock.test.js`** — add these selector helpers next to the existing
+- [x] 1. **`tests/mart_stock.test.js`** — add these selector helpers next to the existing
   helpers (after `findRecord`, ~line 39). They make card selection trait-based instead of
   name-based, and each asserts its pick exists:
 
@@ -51,7 +51,7 @@ so run it 2-3 times.
   }
   ```
 
-- [ ] 2. **`tests/mart_stock.test.js`** — replace every `findRecord(gameData.…, '<Name>')`
+- [x] 2. **`tests/mart_stock.test.js`** — replace every `findRecord(gameData.…, '<Name>')`
   exemplar lookup with a trait-based `pick(...)`. Apply this mapping everywhere those
   names appear (Articuno, Blastoise, Surf, Dragonite, Dragon Claw):
 
@@ -84,7 +84,7 @@ so run it 2-3 times.
   and assert `!attackNames.includes(forbiddenAttack)` / `!itemNames.includes(forbiddenItem)`
   in place of the literals `'Hyper Beam'` / `'Fire Gem'`.
 
-- [ ] 3. **`tests/mart_stock.test.js`** — fix the hard-coded count test (title ~114,
+- [x] 3. **`tests/mart_stock.test.js`** — fix the hard-coded count test (title ~114,
   asserts `99` / `9`). Replace the two magic-number assertions with the **relative** form
   and add non-empty / meaningful-filter guards:
 
@@ -100,7 +100,7 @@ so run it 2-3 times.
   `'filtered pools drop exactly the gated cards for an ineligible run'`. (The sibling test
   at ~161-162 already uses `=== gameData.attacks.length` — this matches that idiom.)
 
-- [ ] 4. **`tests/pokemon_pools.test.js`** — in the `getBabyPokemonPool` real-data test
+- [x] 4. **`tests/pokemon_pools.test.js`** — in the `getBabyPokemonPool` real-data test
   (~130-138):
   - Keep `assert.ok(babies.length >= 1, …)` but change its message to drop the specific
     species, e.g. `'expected at least one authored BABY-typed species'`.
@@ -112,10 +112,10 @@ so run it 2-3 times.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green, run **2-3 times** (the mart draw test is randomized).
-- [ ] `git diff --name-only` shows **only** `tests/mart_stock.test.js` and
+- [x] `node tests/run_all.js` green, run **2-3 times** (the mart draw test is randomized).
+- [x] `git diff --name-only` shows **only** `tests/mart_stock.test.js` and
   `tests/pokemon_pools.test.js` changed — no other file.
-- [ ] Data-proof sanity check (reasoned, do not commit): confirm the count test now uses
+- [x] Data-proof sanity check (reasoned, do not commit): confirm the count test now uses
   `gameData.attacks.length` / `gameData.items.length` minus the computed gated counts, so
   appending an ordinary attack or a non-gem item would keep it green. Confirm no remaining
   `findRecord(...)` or literal card-name string survives in `mart_stock.test.js` for the

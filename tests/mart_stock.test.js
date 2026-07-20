@@ -32,9 +32,16 @@ function addAttack(run, record, bench = false) {
     return card;
 }
 
-function findRecord(records, name) {
-    const record = records.find(entry => entry.name === name);
-    assert.ok(record, `expected fixture record ${name} to exist in real data`);
+function typesOf(record) {
+    if (record && Array.isArray(record.types)) return record.types;
+    return record ? [record.type1, record.type2, record.type3].filter(t => t && t !== 'NONE') : [];
+}
+function itemIsDragonGem(item) {
+    return Boolean(item && Array.isArray(item.status) && item.status.includes('DRAGON_GEM'));
+}
+function pick(records, predicate, label) {
+    const record = records.find(predicate);
+    assert.ok(record, `expected real data to contain ${label}`);
     return record;
 }
 
@@ -53,10 +60,10 @@ function drawNames(records, collectionKey, run, count) {
 test('isMartOfferAllowed: legendary attacks require an owned legendary pokemon', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
-    const legendaryAttack = findRecord(gameData.attacks, 'Hyper Beam');
-    const normalAttack = findRecord(gameData.attacks, 'Surf');
-    const legendaryPokemon = findRecord(gameData.pokemon, 'Articuno');
-    const plainPokemon = findRecord(gameData.pokemon, 'Blastoise');
+    const legendaryAttack = pick(gameData.attacks, a => typesOf(a).includes('LEGENDARY'), 'a legendary attack');
+    const normalAttack = pick(gameData.attacks, a => !typesOf(a).includes('LEGENDARY') && !typesOf(a).includes('DRAGON'), 'an ungated attack');
+    const legendaryPokemon = pick(gameData.pokemon, p => typesOf(p).includes('LEGENDARY'), 'a legendary pokemon');
+    const plainPokemon = pick(gameData.pokemon, p => P.isObtainablePokemon(p, gameData) && !typesOf(p).includes('DRAGON'), 'a plain obtainable non-dragon pokemon');
 
     const runWithoutLegendary = emptyRun();
     addPokemon(runWithoutLegendary, plainPokemon);
@@ -73,12 +80,12 @@ test('isMartOfferAllowed: legendary attacks require an owned legendary pokemon',
 test('isMartOfferAllowed: dragon-gem items require both a DRAGON attack and a DRAGON pokemon owned', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
-    const gemItem = findRecord(gameData.items, 'Fire Gem');
-    const normalItem = findRecord(gameData.items, 'Sitrus Berry');
-    const dragonAttack = findRecord(gameData.attacks, 'Dragon Claw');
-    const dragonPokemon = findRecord(gameData.pokemon, 'Dragonite');
-    const plainPokemon = findRecord(gameData.pokemon, 'Blastoise');
-    const plainAttack = findRecord(gameData.attacks, 'Surf');
+    const gemItem = pick(gameData.items, itemIsDragonGem, 'a dragon-gem item');
+    const normalItem = pick(gameData.items, i => !itemIsDragonGem(i), 'a non-gem item');
+    const dragonAttack = pick(gameData.attacks, a => typesOf(a).includes('DRAGON'), 'a dragon attack');
+    const dragonPokemon = pick(gameData.pokemon, p => typesOf(p).includes('DRAGON'), 'a dragon pokemon');
+    const plainPokemon = pick(gameData.pokemon, p => P.isObtainablePokemon(p, gameData) && !typesOf(p).includes('DRAGON'), 'a plain obtainable non-dragon pokemon');
+    const plainAttack = pick(gameData.attacks, a => !typesOf(a).includes('LEGENDARY') && !typesOf(a).includes('DRAGON'), 'an ungated attack');
 
     const noPrereqsRun = emptyRun();
     addPokemon(noPrereqsRun, plainPokemon);
@@ -106,37 +113,44 @@ test('isMartOfferAllowed: dragon-gem items require both a DRAGON attack and a DR
 test('non-attack/item collections are always allowed regardless of run state', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
-    const legendaryPokemon = findRecord(gameData.pokemon, 'Articuno');
+    const legendaryPokemon = pick(gameData.pokemon, p => typesOf(p).includes('LEGENDARY'), 'a legendary pokemon');
     const run = emptyRun();
     assert.equal(P.isMartOfferAllowed(legendaryPokemon, 'pokemon', run), true);
 });
 
-test('filtered pools stay sufficient for the ineligible run (99 legal attacks, 9 legal items)', async () => {
+test('filtered pools drop exactly the gated cards for an ineligible run', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
     const run = emptyRun();
-    addPokemon(run, findRecord(gameData.pokemon, 'Blastoise'));
-    addAttack(run, findRecord(gameData.attacks, 'Surf'));
+    addPokemon(run, pick(gameData.pokemon, p => P.isObtainablePokemon(p, gameData) && !typesOf(p).includes('DRAGON'), 'a plain obtainable non-dragon pokemon'));
+    addAttack(run, pick(gameData.attacks, a => !typesOf(a).includes('LEGENDARY') && !typesOf(a).includes('DRAGON'), 'an ungated attack'));
 
     const legalAttacks = gameData.attacks.filter(record => P.isMartOfferAllowed(record, 'attacks', run));
     const legalItems = gameData.items.filter(record => P.isMartOfferAllowed(record, 'items', run));
-    assert.equal(legalAttacks.length, 99);
-    assert.equal(legalItems.length, 9);
+    const legendaryAttackCount = gameData.attacks.filter(a => typesOf(a).includes('LEGENDARY')).length;
+    const gemItemCount = gameData.items.filter(itemIsDragonGem).length;
+    assert.equal(legalAttacks.length, gameData.attacks.length - legendaryAttackCount);
+    assert.equal(legalItems.length, gameData.items.length - gemItemCount);
+    assert.ok(legendaryAttackCount > 0 && gemItemCount > 0, 'gated cards must exist so the filter is meaningful');
+    assert.ok(legalAttacks.length > 0 && legalItems.length > 0, 'filtered pools must stay non-empty');
 });
 
 test('filtered draw never surfaces a forbidden name for an ineligible run, over 200 draws', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
     const run = emptyRun();
-    addPokemon(run, findRecord(gameData.pokemon, 'Blastoise'));
-    addAttack(run, findRecord(gameData.attacks, 'Surf'));
+    addPokemon(run, pick(gameData.pokemon, p => P.isObtainablePokemon(p, gameData) && !typesOf(p).includes('DRAGON'), 'a plain obtainable non-dragon pokemon'));
+    addAttack(run, pick(gameData.attacks, a => !typesOf(a).includes('LEGENDARY') && !typesOf(a).includes('DRAGON'), 'an ungated attack'));
+
+    const forbiddenAttack = pick(gameData.attacks, a => typesOf(a).includes('LEGENDARY'), 'a legendary attack').name;
+    const forbiddenItem = pick(gameData.items, itemIsDragonGem, 'a dragon-gem item').name;
 
     for (let iteration = 0; iteration < 200; iteration += 1) {
         const attackNames = drawNames(gameData.attacks, 'attacks', run, 8);
         const itemNames = drawNames(gameData.items, 'items', run, 4);
 
-        assert.ok(!attackNames.includes('Hyper Beam'), 'legendary attack leaked into an ineligible draw');
-        assert.ok(!itemNames.includes('Fire Gem'), 'dragon-gem item leaked into an ineligible draw');
+        assert.ok(!attackNames.includes(forbiddenAttack), 'legendary attack leaked into an ineligible draw');
+        assert.ok(!itemNames.includes(forbiddenItem), 'dragon-gem item leaked into an ineligible draw');
         attackNames.forEach(name => {
             const record = gameData.attacks.find(entry => entry.name === name);
             assert.equal(P.isMartOfferAllowed(record, 'attacks', run), true, `${name} should be allowed`);
@@ -152,9 +166,9 @@ test('eligible runs can still draw the full range, including legendary attacks a
     await loadRealGameData();
     const gameData = arena.GameData;
     const run = emptyRun();
-    addPokemon(run, findRecord(gameData.pokemon, 'Articuno'));
-    addPokemon(run, findRecord(gameData.pokemon, 'Dragonite'), true);
-    addAttack(run, findRecord(gameData.attacks, 'Dragon Claw'));
+    addPokemon(run, pick(gameData.pokemon, p => typesOf(p).includes('LEGENDARY'), 'a legendary pokemon'));
+    addPokemon(run, pick(gameData.pokemon, p => typesOf(p).includes('DRAGON'), 'a dragon pokemon'), true);
+    addAttack(run, pick(gameData.attacks, a => typesOf(a).includes('DRAGON'), 'a dragon attack'));
 
     const legalAttacks = gameData.attacks.filter(record => P.isMartOfferAllowed(record, 'attacks', run));
     const legalItems = gameData.items.filter(record => P.isMartOfferAllowed(record, 'items', run));
