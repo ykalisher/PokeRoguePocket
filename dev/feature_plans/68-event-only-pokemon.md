@@ -51,11 +51,11 @@ green. **No real pokemon is flagged — mechanism only.**
 
 ## Steps
 
-- [ ] 1. **`arena/arena_data.js`** — in `normalizePokemon` (~L358), add to the `species`
+- [x] 1. **`arena/arena_data.js`** — in `normalizePokemon` (~L358), add to the `species`
   object literal: `eventOnly: record.eventOnly === true,` (only `true` survives; anything
   else normalizes to `false`). This exposes the flag to the pool code.
 
-- [ ] 2. **`map/locations.js`** — add a helper next to the baby/mega helpers (~L720):
+- [x] 2. **`map/locations.js`** — add a helper next to the baby/mega helpers (~L720):
   ```js
   function isEventOnlyPokemon(record) {
       return Boolean(record && record.eventOnly === true);
@@ -68,12 +68,12 @@ green. **No real pokemon is flagged — mechanism only.**
   Add `isEventOnlyPokemon` to the module's export object at the bottom of the file (alongside
   `isObtainablePokemon`, `isMegaPokemon`, `isBabyPokemon`).
 
-- [ ] 3. **`map/capture.js`** and **`map/area.js`** — in each `getAvailableLegendaryPokemon`
+- [x] 3. **`map/capture.js`** and **`map/area.js`** — in each `getAvailableLegendaryPokemon`
   (capture.js ~L454-456, area.js ~L1181-1183), extend the existing
   `.filter(record => !locations.isMegaPokemon(...) && !locations.isBabyPokemon(record))` with
   `&& !locations.isEventOnlyPokemon(record)`.
 
-- [ ] 4. **`dev/editor/tab_pokemon.js`** — in `renderForm`, add an "Event-only" checkbox row
+- [x] 4. **`dev/editor/tab_pokemon.js`** — in `renderForm`, add an "Event-only" checkbox row
   (place it after the stat inputs, before/after the evolves-into row):
   ```js
   <div class="editor-form-row">
@@ -81,7 +81,7 @@ green. **No real pokemon is flagged — mechanism only.**
   </div>
   ```
 
-- [ ] 5. **`dev/editor/tab_pokemon.js`** — in the delegated `input` listener, add a checkbox
+- [x] 5. **`dev/editor/tab_pokemon.js`** — in the delegated `input` listener, add a checkbox
   branch **before** the generic field write (~L220):
   ```js
   if (event.target.type === 'checkbox') {
@@ -93,7 +93,7 @@ green. **No real pokemon is flagged — mechanism only.**
   }
   ```
 
-- [ ] 6. **`dev/editor/validate.js`** — add the orphan warning. In `validateAll` (~L636),
+- [x] 6. **`dev/editor/validate.js`** — add the orphan warning. In `validateAll` (~L636),
   after `events` is in scope, compute the set of pokemon granted by name across all events
   and thread it into the pokemon validator:
   ```js
@@ -115,7 +115,7 @@ green. **No real pokemon is flagged — mechanism only.**
   ```
   Keep it a **warning** so it never blocks saving a pokemon flagged before its event exists.
 
-- [ ] 7. **Tests — engine.** Add a test (new `tests/event_only_pokemon.test.js`, using
+- [x] 7. **Tests — engine.** Add a test (new `tests/event_only_pokemon.test.js`, using
   `tests/helpers/arena_env.js`) that builds a synthetic `gameData` whose `pokemon` array
   includes a plain record with `eventOnly:true` (give it ordinary non-legendary/non-baby
   types). Assert `locations.isObtainablePokemon(rec, gameData) === false`, that the record is
@@ -123,20 +123,20 @@ green. **No real pokemon is flagged — mechanism only.**
   still finds it (documents that events can still grant it). Keep it data-proof — use a
   synthetic record, not a real species.
 
-- [ ] 8. **Tests — editor validation.** Add to `tests/editor_validation.test.js`: a fixture
+- [x] 8. **Tests — editor validation.** Add to `tests/editor_validation.test.js`: a fixture
   with an `eventOnly:true` pokemon and NO event granting it by name → expect a
   `pokemon.event-only-unreachable` warning; then add an event whose `gain-card` names it →
   expect the warning gone.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] Editor browser check via the `verify` skill (`node dev/editor/server.js` →
+- [x] `node tests/run_all.js` green.
+- [x] Editor browser check via the `verify` skill (`node dev/editor/server.js` →
   `127.0.0.1:8932`): open any pokemon, tick **Event-only**, Save → `pokemon.json` shows
   `"eventOnly": true` on that record; untick + Save → the key is **removed** (not set to
   `false`). While flagged-but-unnamed, the Issues tab shows the
   `pokemon.event-only-unreachable` warning; saving is **not** blocked.
-- [ ] (Optional runtime) `verify` skill: temporarily flag a common pokemon and confirm it
+- [x] (Optional runtime) `verify` skill: temporarily flag a common pokemon and confirm it
   never appears in a Wild Pokemon Encounter across several terrains; then unflag it.
 
 ## Out of scope / do not touch

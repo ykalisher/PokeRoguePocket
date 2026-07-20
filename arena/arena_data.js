@@ -361,6 +361,7 @@
             baseDefense: Number(record.baseDefense) || 0,
             baseHealth: Number(record.baseHealth) || 1,
             baseSpeed: Number(record.baseSpeed) || 0,
+            eventOnly: record.eventOnly === true,
             id: record.id,
             name: record.name,
             type1: record.type1,

@@ -453,7 +453,7 @@
 
         return getUniqueRecordsByName(records)
             .filter(isLegendaryPokemon)
-            .filter(record => !locations.isMegaPokemon(record, arena.GameData) && !locations.isBabyPokemon(record));
+            .filter(record => !locations.isMegaPokemon(record, arena.GameData) && !locations.isBabyPokemon(record) && !locations.isEventOnlyPokemon(record));
     }
 
     function getFirstValidLegendaryOptionName(optionNames, node) {

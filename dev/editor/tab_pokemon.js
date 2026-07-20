@@ -204,6 +204,9 @@
                     ${evolvesIntoSelectHtml(draft)}
                 </label>
             </div>
+            <div class="editor-form-row">
+                <label class="editor-form-checkbox"><input type="checkbox" name="eventOnly"${draft.eventOnly === true ? ' checked' : ''}> Event-only (never appears in wild areas)</label>
+            </div>
             <p class="editor-form-bst">BST: <strong data-role="bst">${bst(draft)}</strong></p>
         `;
 
@@ -212,6 +215,14 @@
         el.addEventListener('input', (event) => {
             const field = event.target.name;
             if (!field) return;
+
+            if (event.target.type === 'checkbox') {
+                if (event.target.checked) draft[field] = true;
+                else delete draft[field];
+                api.markDirty();
+                api.refreshPreview();
+                return;
+            }
 
             if (field === 'evolvesInto') {
                 if (event.target.value) draft.evolvesInto = event.target.value;

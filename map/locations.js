@@ -721,6 +721,10 @@
         return getRecordTypes(record).includes('BABY');
     }
 
+    function isEventOnlyPokemon(record) {
+        return Boolean(record && record.eventOnly === true);
+    }
+
     // Set of every name AND id resolved from any baby's evolvesInto, so
     // isMegaPokemon can match a record by either key.
     // Cache keyed by the gameData object itself: loadGameData() replaces
@@ -784,6 +788,7 @@
         if (getRecordTypes(record).includes('LEGENDARY')) return false;
         if (isBabyPokemon(record)) return false;
         if (isMegaPokemon(record, gameData)) return false;
+        if (isEventOnlyPokemon(record)) return false;
         return true;
     }
 
@@ -914,6 +919,7 @@
         getWildPokemonPool,
         isAllowedTrainerRank,
         isBabyPokemon,
+        isEventOnlyPokemon,
         isMartOfferAllowed,
         isMegaPokemon,
         isObtainablePokemon,

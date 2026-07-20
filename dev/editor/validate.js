@@ -79,7 +79,7 @@
 
     // ---------------------------------------------------------------- pokemon
 
-    function validatePokemon(pokemon, enums) {
+    function validatePokemon(pokemon, enums, eventGrantedPokemon) {
         const issues = [];
         const validTypes = new Set(Object.values((enums && enums.PokeType) || {}));
         const seen = new Set();
@@ -122,6 +122,10 @@
             }
             if (record.evolvesInto !== undefined && !namesAndIds.has(record.evolvesInto)) {
                 issues.push(err('pokemon.json', key, 'pokemon.bad-evolves-into', `${key}: evolvesInto "${record.evolvesInto}" does not resolve to a real pokemon`, 'evolvesInto'));
+            }
+            if (record.eventOnly === true && !(eventGrantedPokemon && eventGrantedPokemon.has(record.name))) {
+                issues.push(warn('pokemon.json', key, 'pokemon.event-only-unreachable',
+                    `${key}: event-only pokemon is granted by no event (gain-card) — it is unobtainable`, 'eventOnly'));
             }
         });
 
@@ -650,9 +654,15 @@
         const attackNames = new Set(attacks.map((record) => record.name));
         const itemNames = new Set(items.map((record) => record.name));
         const trainerNames = new Set(trainers.map((record) => record.name));
+        const eventGrantedPokemon = new Set(
+            collectAllEffectRefs(events)
+                .map((ref) => ref.effect)
+                .filter((effect) => effect && effect.type === 'gain-card' && effect.cardKind === 'pokemon' && effect.name)
+                .map((effect) => effect.name)
+        );
 
         return [
-            ...validatePokemon(pokemon, enums),
+            ...validatePokemon(pokemon, enums, eventGrantedPokemon),
             ...validateAttacks(attacks, enums),
             ...validateItems(items, enums),
             ...validateTrainers(trainers, pokemonNames, attackNames, itemNames, enums),

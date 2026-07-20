@@ -91,6 +91,26 @@ test('pokemon: negative stat', () => {
     assert.ok(hasCode(issues, 'pokemon.bad-stat'));
 });
 
+test('pokemon: eventOnly with no granting event warns unreachable', () => {
+    const data = withPokemon((pokemon) => { pokemon[0].eventOnly = true; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'pokemon.event-only-unreachable'));
+});
+
+test('pokemon: eventOnly granted by a gain-card event has no unreachable warning', () => {
+    const data = structuredClone(live.data);
+    data.pokemon[0].eventOnly = true;
+    data.events[0] = {
+        ...data.events[0],
+        rewardEffects: [
+            ...(data.events[0].rewardEffects || []),
+            { type: 'gain-card', cardKind: 'pokemon', name: data.pokemon[0].name, count: 1 }
+        ]
+    };
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(!hasCode(issues, 'pokemon.event-only-unreachable'));
+});
+
 test('attacks: unknown status', () => {
     const data = withAttacks((attacks) => { attacks[0].status = 'NOT_A_STATUS'; });
     const issues = validateAll(data, { enums: live.enums });
