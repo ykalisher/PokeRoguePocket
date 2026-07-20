@@ -148,17 +148,33 @@ Requested by the owner after the editor field landed; recorded here so the chang
 lost. **This deliberately steps outside the "do not touch runtime/tests" fence above.**
 
 - **`map/locations.js`** — `isMegaPokemon` now also treats a record as a mega **by
-  convention**: name starting with `Mega` (`/^Mega\b/`) or `id > 9000` (new
-  `isMegaByConvention`), in addition to the existing evolvesInto-target detection. This keeps
-  every mega (e.g. Mega Camerupt, id 9323) out of wild/obtainable/mart/trade pools even
-  before a baby is linked to it. Real data has exactly one such record, so the rule is safe.
+  convention**: `id > 9000` (new `isMegaByConvention`), in addition to the existing
+  evolvesInto-target detection. This keeps every mega (Mega Camerupt 9323, Mega Sharpedo
+  9319, Mega Beedrill 9015) out of wild/obtainable/mart/trade pools even before a baby is
+  linked to it. **Id, not name**, is the rule on purpose — names are unreliable (Meganium,
+  id 0154, starts with "Mega" but is not a mega), and all mega cards are authored with
+  ids > 9000.
 - **Tests updated** (the owner's Numel/Mega commit had left these red at HEAD, or the new
   rule required fixture ids ≤ 9000):
   - `tests/run_progression.test.js` — fallback test now asserts the pool == obtainable pool
     and leaks no legendary/baby/mega.
-  - `tests/pokemon_pools.test.js` — baby-pool test reflects Numel; "160 obtainable"; added a
-    dedicated `isMegaPokemon` name/id-rule test; plain fixtures renumbered ≤ 9000.
+  - `tests/pokemon_pools.test.js` — baby-pool test reflects Numel; obtainable-count test now
+    recomputes the expected set independently (survives ordinary pokemon additions); added a
+    dedicated `isMegaPokemon` id>9000 test that also guards the Meganium (id 0154) case;
+    plain fixtures renumbered ≤ 9000.
   - `tests/mart_stock.test.js` — trade fixture ids renumbered ≤ 9000; legal-items count
     8 → 9 (owner added `MOOMOO_MILK`).
   - `tests/baby_event.test.js` — real-data nursery-egg test flipped to "reachable now that a
     baby exists".
+  - `tests/editor_validation.test.js` — dropped the stale "expect a `Linoone.png` orphan
+    portrait" assertion (owner removed that asset; there are now 0 orphan portraits), keeping
+    the missing-background check.
+
+**Mega detection uses id > 9000, not name** (owner's second follow-up): the name-prefix
+branch (`/^Mega\b/`) was removed from `isMegaByConvention` because names are unreliable —
+Meganium (id 0154) starts with "Mega" but is not a mega. All mega cards are authored with
+ids > 9000, so id alone is the correct, non-fragile signal.
+
+**Note:** this work was completed while the owner was committing in parallel; an
+intermediate state of it was picked up in commit `9722661`. The runtime + test edits above
+are the final id-only version and leave `node tests/run_all.js` green (189/0).

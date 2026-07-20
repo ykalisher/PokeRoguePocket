@@ -20,16 +20,18 @@ test('live data: zero error-severity issues', () => {
     assert.deepEqual(errors, [], `expected zero errors, got: ${JSON.stringify(errors)}`);
 });
 
-test('live data: asset warnings include missing backgrounds and the Linoone orphan portrait', () => {
+test('live data: asset warnings include the missing backgrounds', () => {
     const issues = validateAll(live.data, { enums: live.enums, assetIndex: live.assetIndex, engineRefs: live.engineRefs });
     const warnings = issues.filter((issue) => issue.severity === 'warning');
     const missingBackgrounds = warnings.filter((issue) => issue.code === 'assets.missing-background');
 
     assert.ok(missingBackgrounds.length >= 8, `expected >=8 assets.missing-background warnings, got ${missingBackgrounds.length}`);
-    assert.ok(
-        warnings.some((issue) => issue.code === 'assets.orphan-portrait' && issue.recordKey === 'Linoone.png'),
-        'expected an assets.orphan-portrait warning for Linoone.png'
-    );
+    // No specific orphan portrait is asserted: the live assets currently have
+    // none (the former Linoone.png orphan was cleaned up). Any orphan-portrait
+    // warnings that do surface must still be well-formed.
+    warnings
+        .filter((issue) => issue.code === 'assets.orphan-portrait')
+        .forEach((issue) => assert.ok(issue.recordKey, 'orphan-portrait warning must name a recordKey'));
 });
 
 // -------------------------------------------------------- synthetic fixtures

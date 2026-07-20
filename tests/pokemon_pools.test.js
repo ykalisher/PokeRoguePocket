@@ -56,18 +56,20 @@ test('isObtainablePokemon verdicts against a baby/mega/legendary fixture', () =>
     assert.equal(P.isObtainablePokemon(legendary, gameData), false);
 });
 
-test('isMegaPokemon flags megas by "Mega" name prefix and by id > 9000', () => {
-    const megaByName = makePokemon('Mega Fixture', '0500', ['FIRE']);
+test('isMegaPokemon uses id > 9000 for the mega convention, not the name', () => {
     const megaById = makePokemon('Highnum Fixture', '9500', ['FIRE']);
+    // "Mega"-prefixed name but a low id: NOT a mega. Guards the real Meganium
+    // (id 0154) case — the convention is id-based on purpose.
+    const megaNameLowId = makePokemon('Mega Fixture', '0500', ['FIRE']);
     const plain = makePokemon('Plain Fixture', '0501', ['FIRE']);
-    const gameData = { pokemon: [megaByName, megaById, plain] };
+    const gameData = { pokemon: [megaById, megaNameLowId, plain] };
 
-    assert.equal(P.isMegaPokemon(megaByName, gameData), true);
     assert.equal(P.isMegaPokemon(megaById, gameData), true);
+    assert.equal(P.isMegaPokemon(megaNameLowId, gameData), false, 'a "Mega"-named record below id 9000 (cf. Meganium) is not a mega');
     assert.equal(P.isMegaPokemon(plain, gameData), false);
 
-    assert.equal(P.isObtainablePokemon(megaByName, gameData), false);
     assert.equal(P.isObtainablePokemon(megaById, gameData), false);
+    assert.equal(P.isObtainablePokemon(megaNameLowId, gameData), true);
     assert.equal(P.isObtainablePokemon(plain, gameData), true);
 });
 
@@ -135,13 +137,28 @@ test('getBabyPokemonPool returns the authored baby species from real pokemon.jso
     });
 });
 
-test('getWildPokemonPool against real data returns exactly the 160 obtainable species', async () => {
+test('getWildPokemonPool against real data returns exactly the obtainable species (no legendary/baby/mega)', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
     const pool = P.getWildPokemonPool(gameData, []);
-    // 162 unique non-legendary species minus the baby (Numel) and its mega
-    // (Mega Camerupt, id 9323) = 160 obtainable.
-    assert.equal(pool.length, 160);
+
+    // Independently recompute the obtainable set so this survives the owner
+    // adding ordinary pokemon: unique-by-name, not LEGENDARY, not BABY, not a
+    // mega (id > 9000). Guards that megas like Mega Camerupt (9323) stay out
+    // while Meganium (0154) stays in.
+    const seen = new Set();
+    const expected = [];
+    gameData.pokemon.forEach(species => {
+        if (seen.has(species.name)) return;
+        seen.add(species.name);
+        const types = [species.type1, species.type2, species.type3];
+        if (types.includes('LEGENDARY') || types.includes('BABY')) return;
+        if (parseInt(species.id, 10) > 9000) return;
+        expected.push(species);
+    });
+
+    assert.ok(expected.length > 0, 'expected a non-empty obtainable set');
+    assert.deepEqual(pool.map(species => species.name).sort(), expected.map(species => species.name).sort());
 });
 
 test('gain-random-card pokemon picks from the fixture never return baby/mega/legendary', () => {

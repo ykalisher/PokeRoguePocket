@@ -284,8 +284,7 @@ test('getWildPokemonPool falls back to all obtainable species when nothing match
     fallbackPool.forEach(species => {
         assert.ok(!species.types.includes('LEGENDARY'), `${species.name} legendary leaked`);
         assert.ok(!species.types.includes('BABY'), `${species.name} baby leaked`);
-        assert.ok(!/^Mega\b/.test(species.name), `${species.name} mega-name leaked`);
-        assert.ok(parseInt(species.id, 10) <= 9000, `${species.name} mega-id leaked`);
+        assert.ok(parseInt(species.id, 10) <= 9000, `${species.name} mega leaked (id > 9000)`);
     });
 });
 

@@ -701,9 +701,9 @@
 
     // --- Baby/mega pokemon (phase 42) -------------------------------------
     // There is no mega type. A "mega" is any record referenced by some baby's
-    // evolvesInto (name or id), OR one matching the mega convention: name
-    // starting with "Mega" or id > 9000 (see isMegaByConvention). Babies are
-    // BABY-typed records; both are excluded from wild/obtainable pools.
+    // evolvesInto (name or id), OR one matching the mega convention: id > 9000
+    // (see isMegaByConvention). Babies are BABY-typed records; both are
+    // excluded from wild/obtainable pools.
 
     /**
      * Resolves a pokemon reference (as used by `evolvesInto`) to a record by
@@ -756,13 +756,14 @@
     }
 
     // A record is a mega if any baby's evolvesInto resolves to it, OR by
-    // convention: its name starts with "Mega" or its id is above 9000 (all
-    // mega cards are authored with ids >9000). The convention keeps megas out
-    // of the wild/obtainable pools even before a baby links to one.
+    // convention: its id is above 9000 (all mega cards are authored with ids
+    // >9000). Id — not name — is the rule on purpose: names are unreliable
+    // (e.g. "Meganium" starts with "Mega" but is id 0154, not a mega). The
+    // convention keeps megas out of the wild/obtainable pools even before a
+    // baby links to one.
     function isMegaByConvention(record) {
         if (!record) return false;
-        if (typeof record.name === 'string' && /^Mega\b/.test(record.name)) return true;
-        const idNum = parseInt(record.id, 10);
+        const idNum = parseInt(record && record.id, 10);
         return Number.isFinite(idNum) && idNum > 9000;
     }
 
