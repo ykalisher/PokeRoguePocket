@@ -2066,5 +2066,27 @@
     "baseAttack": 75,
     "baseDefense": 90,
     "baseSpeed": 95
+  },
+  {
+    "name": "Mega Camerupt",
+    "type1": "FIRE",
+    "type2": "GROUND",
+    "type3": "NONE",
+    "id": "9323",
+    "baseHealth": 125,
+    "baseAttack": 120,
+    "baseDefense": 100,
+    "baseSpeed": 45
+  },
+  {
+    "name": "Numel",
+    "type1": "BABY",
+    "type2": "FIRE",
+    "type3": "GROUND",
+    "id": "0322",
+    "baseHealth": 80,
+    "baseAttack": 60,
+    "baseDefense": 50,
+    "baseSpeed": 40
   }
 ]

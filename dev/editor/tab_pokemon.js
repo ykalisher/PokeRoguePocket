@@ -258,13 +258,14 @@
             title: 'Pokemon balance notes',
             lines: [
                 '1. major legendaries — 410 BST',
-                '2. Minor legendaries: 390 BST',
-                '3. Fossil major legendaries: 350 BST',
-                '4. Fossil minor legendaries: 330 BST',
+                '2. Minor legendaries & Megas - 390 BST',
+                '3. Fossil major legendaries - 350 BST',
+                '4. Fossil minor legendaries - 330 BST',
                 '5. Dragon types — 370',
                 '6. High-tier non-legendaries — 350-360',
                 '7. Low-tier non-legendaries — 330-340',
-                '8. Non-legendary fossils — 310'
+                '8. Non-legendary fossils — 310',
+                '9. Baby Pokemon - 230'
             ]
         }
     });
