@@ -111,7 +111,7 @@ test('non-attack/item collections are always allowed regardless of run state', a
     assert.equal(P.isMartOfferAllowed(legendaryPokemon, 'pokemon', run), true);
 });
 
-test('filtered pools stay sufficient for the ineligible run (99 legal attacks, 8 legal items)', async () => {
+test('filtered pools stay sufficient for the ineligible run (99 legal attacks, 9 legal items)', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
     const run = emptyRun();
@@ -121,7 +121,7 @@ test('filtered pools stay sufficient for the ineligible run (99 legal attacks, 8
     const legalAttacks = gameData.attacks.filter(record => P.isMartOfferAllowed(record, 'attacks', run));
     const legalItems = gameData.items.filter(record => P.isMartOfferAllowed(record, 'items', run));
     assert.equal(legalAttacks.length, 99);
-    assert.equal(legalItems.length, 8);
+    assert.equal(legalItems.length, 9);
 });
 
 test('filtered draw never surfaces a forbidden name for an ineligible run, over 200 draws', async () => {
@@ -186,12 +186,14 @@ function getRecordTypes(record) {
 // obtainable species per type — enough to exercise every trade branch:
 // uniform accepted/offered type rolls and the exclude-when-possible rule.
 function fixtureTradeGameData() {
-    const mega = makePokemon('Trade Mega', '9102', ['FIRE', 'DRAGON']);
-    const baby = makePokemon('Trade Baby', '9101', ['FIRE', 'BABY'], { evolvesInto: 'Trade Mega' });
-    const legendary = makePokemon('Trade Legend', '9103', ['LEGENDARY']);
-    const waterA = makePokemon('Trade Water A', '9104', ['WATER']);
-    const waterB = makePokemon('Trade Water B', '9105', ['WATER']);
-    const grassA = makePokemon('Trade Grass A', '9106', ['GRASS']);
+    // Ids stay below 9000 so the obtainable water/grass species are not caught
+    // by the mega convention (name "Mega…" or id > 9000; see isMegaPokemon).
+    const mega = makePokemon('Trade Mega', '0302', ['FIRE', 'DRAGON']);
+    const baby = makePokemon('Trade Baby', '0301', ['FIRE', 'BABY'], { evolvesInto: 'Trade Mega' });
+    const legendary = makePokemon('Trade Legend', '0303', ['LEGENDARY']);
+    const waterA = makePokemon('Trade Water A', '0304', ['WATER']);
+    const waterB = makePokemon('Trade Water B', '0305', ['WATER']);
+    const grassA = makePokemon('Trade Grass A', '0306', ['GRASS']);
     return { pokemon: [baby, mega, legendary, waterA, waterB, grassA] };
 }
 

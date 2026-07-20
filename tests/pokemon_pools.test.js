@@ -38,8 +38,10 @@ function fixtureGameData() {
     const mega = makePokemon('Fixture Mega', '9002', ['FIRE', 'DRAGON']);
     const baby = makePokemon('Fixture Baby', '9001', ['FIRE', 'BABY'], { evolvesInto: 'Fixture Mega' });
     const legendary = makePokemon('Fixture Legend', '9003', ['LEGENDARY']);
-    const plainA = makePokemon('Fixture Plain A', '9004', ['WATER']);
-    const plainB = makePokemon('Fixture Plain B', '9005', ['WATER']);
+    // Ids stay below 9000 so these read as obtainable — ids >9000 are the mega
+    // convention (see isMegaPokemon), exercised separately below.
+    const plainA = makePokemon('Fixture Plain A', '0904', ['WATER']);
+    const plainB = makePokemon('Fixture Plain B', '0905', ['WATER']);
     return { pokemon: [baby, mega, legendary, plainA, plainB] };
 }
 
@@ -52,6 +54,21 @@ test('isObtainablePokemon verdicts against a baby/mega/legendary fixture', () =>
     assert.equal(P.isObtainablePokemon(baby, gameData), false);
     assert.equal(P.isObtainablePokemon(mega, gameData), false);
     assert.equal(P.isObtainablePokemon(legendary, gameData), false);
+});
+
+test('isMegaPokemon flags megas by "Mega" name prefix and by id > 9000', () => {
+    const megaByName = makePokemon('Mega Fixture', '0500', ['FIRE']);
+    const megaById = makePokemon('Highnum Fixture', '9500', ['FIRE']);
+    const plain = makePokemon('Plain Fixture', '0501', ['FIRE']);
+    const gameData = { pokemon: [megaByName, megaById, plain] };
+
+    assert.equal(P.isMegaPokemon(megaByName, gameData), true);
+    assert.equal(P.isMegaPokemon(megaById, gameData), true);
+    assert.equal(P.isMegaPokemon(plain, gameData), false);
+
+    assert.equal(P.isObtainablePokemon(megaByName, gameData), false);
+    assert.equal(P.isObtainablePokemon(megaById, gameData), false);
+    assert.equal(P.isObtainablePokemon(plain, gameData), true);
 });
 
 test('findPokemonByNameOrId resolves by exact name and by exact id', () => {
@@ -108,15 +125,22 @@ test('getWildPokemonPool excludes baby/mega/legendary from the fixture', () => {
     assert.deepEqual(pool.map(record => record.name).sort(), ['Fixture Plain A', 'Fixture Plain B']);
 });
 
-test('getBabyPokemonPool is empty against real pokemon.json (no baby data authored yet)', async () => {
+test('getBabyPokemonPool returns the authored baby species from real pokemon.json', async () => {
     await loadRealGameData();
-    assert.deepEqual(P.getBabyPokemonPool(arena.GameData), []);
+    const babies = P.getBabyPokemonPool(arena.GameData);
+    assert.ok(babies.length >= 1, 'expected at least one authored baby (Numel)');
+    assert.ok(babies.some(record => record.name === 'Numel'), 'Numel must be in the baby pool');
+    babies.forEach(record => {
+        assert.ok([record.type1, record.type2, record.type3].includes('BABY'), `${record.name} is not BABY-typed`);
+    });
 });
 
-test('getWildPokemonPool against real data still returns exactly the 160 non-legendary species', async () => {
+test('getWildPokemonPool against real data returns exactly the 160 obtainable species', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
     const pool = P.getWildPokemonPool(gameData, []);
+    // 162 unique non-legendary species minus the baby (Numel) and its mega
+    // (Mega Camerupt, id 9323) = 160 obtainable.
     assert.equal(pool.length, 160);
 });
 

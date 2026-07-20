@@ -52,16 +52,24 @@ function fixtureGameDataWithoutBaby() {
     return { pokemon: [plain], events: [NURSERY_EVENT] };
 }
 
-test('chooseEvent never returns nursery-egg against real game data (zero babies authored)', async () => {
+test('chooseEvent can return nursery-egg against real game data (a baby is authored)', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
 
     assert.ok(gameData.events.some(event => event.id === 'nursery-egg'), 'expected nursery-egg to be seeded in events.json');
+    assert.ok(
+        gameData.pokemon.some(record => [record.type1, record.type2, record.type3].includes('BABY')),
+        'expected at least one BABY-typed pokemon authored (e.g. Numel)'
+    );
 
-    for (let i = 0; i < 200; i += 1) {
+    // The baby pool is non-empty, so the baby-gated event is reachable. It hits
+    // ~15% of rolls in real data, so 200 rolls is effectively certain.
+    let sawNursery = false;
+    for (let i = 0; i < 200 && !sawNursery; i += 1) {
         const chosen = E.chooseEvent(gameData, {});
-        assert.notEqual(chosen && chosen.id, 'nursery-egg');
+        if (chosen && chosen.id === 'nursery-egg') sawNursery = true;
     }
+    assert.ok(sawNursery, 'expected nursery-egg to be reachable now that a baby exists');
 });
 
 test('chooseEvent can return nursery-egg once a baby exists in the pool', () => {

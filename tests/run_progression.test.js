@@ -271,22 +271,21 @@ test('getWildPokemonPool filters by type and excludes legendaries', async () => 
     assert.equal(new Set(names).size, names.length);
 });
 
-test('getWildPokemonPool falls back to all non-legendaries when nothing matches', async () => {
+test('getWildPokemonPool falls back to all obtainable species when nothing matches', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
 
-    const uniqueNonLegendary = [];
-    const seen = new Set();
-    gameData.pokemon.forEach(species => {
-        if (seen.has(species.name)) return;
-        seen.add(species.name);
-        if (!species.types.includes('LEGENDARY')) uniqueNonLegendary.push(species);
-    });
-
+    // The empty-types fallback is exactly the obtainable pool: unique-by-name
+    // species that are not legendary, not a baby, and not a mega.
     const fallbackPool = P.getWildPokemonPool(gameData, []);
-    assert.equal(fallbackPool.length, uniqueNonLegendary.length);
+    const obtainable = P.getObtainablePokemonPool(gameData);
+    assert.deepEqual(fallbackPool.map(species => species.name), obtainable.map(species => species.name));
+
     fallbackPool.forEach(species => {
-        assert.ok(!species.types.includes('LEGENDARY'));
+        assert.ok(!species.types.includes('LEGENDARY'), `${species.name} legendary leaked`);
+        assert.ok(!species.types.includes('BABY'), `${species.name} baby leaked`);
+        assert.ok(!/^Mega\b/.test(species.name), `${species.name} mega-name leaked`);
+        assert.ok(parseInt(species.id, 10) <= 9000, `${species.name} mega-id leaked`);
     });
 });
 

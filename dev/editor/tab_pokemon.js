@@ -157,6 +157,23 @@
         return `<select name="${name}">${options}</select>`;
     }
 
+    // "Evolves into" is how a baby (BABY-typed) pokemon points at its mega; the
+    // mega is any record referenced here by name or id. Option value is the
+    // target's name; an existing id-valued link still highlights correctly.
+    function evolvesIntoSelectHtml(draft) {
+        const current = draft.evolvesInto || '';
+        const options = ['<option value="">(none)</option>'].concat(
+            EditorApp.store.data.pokemon
+                .filter((p) => p.name !== draft.name)
+                .map((p) => {
+                    const selected = (p.name === current || p.id === current) ? ' selected' : '';
+                    const label = `${EditorListView.escapeHtml(p.name)} (${EditorListView.escapeHtml(p.id)})`;
+                    return `<option value="${EditorListView.escapeAttr(p.name)}"${selected}>${label}</option>`;
+                })
+        ).join('');
+        return `<select name="evolvesInto">${options}</select>`;
+    }
+
     function renderForm(el, draft, api) {
         el.innerHTML = `
             <div class="editor-form-row">
@@ -178,6 +195,11 @@
                 <label>DEF<input type="number" name="baseDefense" min="1" value="${draft.baseDefense}"></label>
                 <label>SPD<input type="number" name="baseSpeed" min="1" value="${draft.baseSpeed}"></label>
             </div>
+            <div class="editor-form-row">
+                <label>Evolves into (baby → mega target)
+                    ${evolvesIntoSelectHtml(draft)}
+                </label>
+            </div>
             <p class="editor-form-bst">BST: <strong data-role="bst">${bst(draft)}</strong></p>
         `;
 
@@ -187,7 +209,12 @@
             const field = event.target.name;
             if (!field) return;
 
-            draft[field] = STAT_FIELDS.includes(field) ? Number(event.target.value) : event.target.value;
+            if (field === 'evolvesInto') {
+                if (event.target.value) draft.evolvesInto = event.target.value;
+                else delete draft.evolvesInto;
+            } else {
+                draft[field] = STAT_FIELDS.includes(field) ? Number(event.target.value) : event.target.value;
+            }
 
             if (STAT_FIELDS.includes(field)) {
                 el.querySelector('[data-role="bst"]').textContent = bst(draft);
