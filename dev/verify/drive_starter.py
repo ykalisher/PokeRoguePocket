@@ -12,19 +12,19 @@ EXPECTED = {
     "fire": {
         "type": "FIRE",
         "pokemon": ["Charizard", "Typhlosion"],
-        "attacks": {"Flame Thrower": 2, "Fire Spin": 2, "Will-o-wisp": 2},
+        "attacks": {"Flame Thrower": 2, "Fire Spin": 2, "Air Slash": 1, "Shadow Ball": 1},
         "items": {"Sitrus Berry": 1, "Withdraw Wand": 1},
     },
     "water": {
         "type": "WATER",
         "pokemon": ["Blastoise", "Feraligatr"],
-        "attacks": {"Surf": 2, "Waterfall": 2, "Rain Dance": 2},
+        "attacks": {"Surf": 2, "Waterfall": 2, "Crunch": 1, "Sucker Punch": 1},
         "items": {"Sitrus Berry": 1, "Withdraw Wand": 1},
     },
     "grass": {
         "type": "GRASS",
         "pokemon": ["Venusaur", "Meganium"],
-        "attacks": {"Sleep Powder": 2, "Leech Seed": 2, "Razor Leaf": 2},
+        "attacks": {"Razor Leaf": 3, "Sleep Powder": 1, "Sludge Bomb": 1, "Moonblast": 1},
         "items": {"Sitrus Berry": 1, "Withdraw Wand": 1},
     },
 }
