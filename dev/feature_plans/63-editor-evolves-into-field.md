@@ -121,13 +121,22 @@ key stay untouched.
   helpers): `evolvesIntoSelectHtml` renders `(none)` selected when unset, selects the target
   when linked by **name** or by **id**, excludes the record itself, and lists Mega Camerupt
   as an option. Empty pick path `delete draft.evolvesInto` confirmed by code inspection.
-- [ ] Browser check via the editor (`node dev/editor/server.js` → 127.0.0.1:8932): open the
+- [x] Browser check via the editor (`node dev/editor/server.js` → 127.0.0.1:8932): open the
   **Numel** record, set **Evolves into → Mega Camerupt (9323)**, Save. Confirm `pokemon.json`
   now has `"evolvesInto": "Mega Camerupt"` on Numel and the Issues tab reports no
   `pokemon.bad-evolves-into` error. Re-open, set it back to **(none)**, Save, and confirm the
   key is removed (not left as `""`). (If you cannot drive the GUI, at minimum load the file
   in a browser/headless page and assert `evolvesIntoSelectHtml` returns a `<select>` whose
   `(none)` option is selected when `draft.evolvesInto` is unset.)
+
+  Driven headless via Playwright (a one-off script modeled on
+  `dev/verify/drive_editor.py`, run against the real repo `pokemon.json` and restored via
+  `git checkout` afterward, matching that driver's pattern): Numel's form loaded with
+  **Evolves into** pre-selected to `Mega Camerupt` (the owner's real link, already committed
+  in `pokemon.json`); the Issues tab showed no `pokemon.bad-evolves-into` row; flipping the
+  select to **(none)** and clicking Save round-tripped through `/api/data` with the
+  `evolvesInto` key absent from Numel (not `""`). `node tests/run_all.js` green (189/0)
+  afterward; `pokemon.json` left clean.
 
 ## Out of scope / do not touch
 
