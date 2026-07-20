@@ -569,7 +569,7 @@
     "baseHealth": 75,
     "baseAttack": 105,
     "baseDefense": 50,
-    "baseSpeed": 105
+    "baseSpeed": 110
   },
   {
     "name": "Altaria",
@@ -1061,7 +1061,7 @@
     "type2": "GHOST",
     "type3": "ARTIFICIAL",
     "id": "0479",
-    "baseHealth": 60,
+    "baseHealth": 65,
     "baseAttack": 110,
     "baseDefense": 60,
     "baseSpeed": 115
@@ -2088,5 +2088,82 @@
     "baseAttack": 60,
     "baseDefense": 50,
     "baseSpeed": 40
+  },
+  {
+    "name": "Rotom-Wash",
+    "type1": "ELECTRIC",
+    "type2": "WATER",
+    "type3": "ARTIFICIAL",
+    "id": "4479",
+    "baseHealth": 70,
+    "baseAttack": 105,
+    "baseDefense": 80,
+    "baseSpeed": 95
+  },
+  {
+    "name": "Rotom-Heat",
+    "type1": "ELECTRIC",
+    "type2": "FIRE",
+    "type3": "ARTIFICIAL",
+    "id": "4478",
+    "baseHealth": 70,
+    "baseAttack": 105,
+    "baseDefense": 80,
+    "baseSpeed": 95
+  },
+  {
+    "name": "Rotom-Frost",
+    "type1": "ELECTRIC",
+    "type2": "ICE",
+    "type3": "ARTIFICIAL",
+    "id": "4481",
+    "baseHealth": 70,
+    "baseAttack": 105,
+    "baseDefense": 80,
+    "baseSpeed": 95
+  },
+  {
+    "name": "Rotom-Fan",
+    "type1": "ELECTRIC",
+    "type2": "FLYING",
+    "type3": "ARTIFICIAL",
+    "id": "4482",
+    "baseHealth": 70,
+    "baseAttack": 105,
+    "baseDefense": 80,
+    "baseSpeed": 95
+  },
+  {
+    "name": "Rotom-Mow",
+    "type1": "ELECTRIC",
+    "type2": "GRASS",
+    "type3": "ARTIFICIAL",
+    "id": "4483",
+    "baseHealth": 70,
+    "baseAttack": 105,
+    "baseDefense": 80,
+    "baseSpeed": 95
+  },
+  {
+    "name": "Mega Sharpedo",
+    "type1": "WATER",
+    "type2": "DARK",
+    "type3": "NONE",
+    "id": "9319",
+    "baseHealth": 75,
+    "baseAttack": 125,
+    "baseDefense": 65,
+    "baseSpeed": 125
+  },
+  {
+    "name": "Carvanha",
+    "type1": "BABY",
+    "type2": "WATER",
+    "type3": "DARK",
+    "id": "0318",
+    "baseHealth": 40,
+    "baseAttack": 85,
+    "baseDefense": 20,
+    "baseSpeed": 85
   }
 ]
