@@ -11,9 +11,14 @@
    > Depends on #001 — megas must exist before babies can link to them.
 - [x] #003 area:pokemon added:2026-07-19 done:2026-07-20 needs:- :: Add rotom
 - [x] #004 area:pokemon added:2026-07-19 done:2026-07-20 needs:- :: Add future and past pokemon for some more artificial and fossil legendaries/event pokemon
-- [ ] #005 area:framework added:2026-07-19 needs:- :: Tell Claude to create a framework for event-only pokemon
+- [x] #005 area:framework added:2026-07-19 done:2026-07-20 needs:- :: Tell Claude to create a framework for event-only pokemon
    > Still designing this — do NOT implement yet; will brief an agent later.
 - [ ] #006 area:events added:2026-07-19 needs:- :: Add location-specific and pokemon-specific events (including for legendaries)
-- [ ] #007 added:2026-07-20 needs:- :: More dual-typed moves
-- [ ] #008 added:2026-07-20 needs:- :: Confirm every type has base set of usable moves
-- [ ] #009 added:2026-07-20 needs:- :: Change gym leaders and elites to use megas instead of legendaries
+- [x] #007 added:2026-07-20 done:2026-07-20 needs:- :: More dual-typed moves
+- [x] #008 added:2026-07-20 done:2026-07-20 needs:- :: Confirm every type has base set of usable moves
+- [x] #009 added:2026-07-20 done:2026-07-20 needs:- :: Change gym leaders and elites to use megas instead of legendaries
+- [ ] #010 added:2026-07-20 needs:- :: Download backgrounds
+- [ ] #011 added:2026-07-20 needs:- :: Fix gym leaders
+- [ ] #012 added:2026-07-20 needs:- :: check ace trainers
+- [ ] #013 added:2026-07-20 needs:- :: check event trainers
+- [ ] #014 added:2026-07-20 needs:- :: check standards

@@ -13,11 +13,11 @@
     "name": "Leech Seed",
     "type1": "GRASS",
     "type2": "GHOST",
-    "basePower": 55,
+    "basePower": 65,
     "status": "FATIGUE",
     "statChanges": [],
     "target": "OPPONENT",
-    "full_type_requirements": false
+    "full_type_requirements": true
   },
   {
     "name": "Sludge Bomb",
@@ -129,7 +129,7 @@
     "status": "HEAL_STATUS",
     "statChanges": [],
     "target": "ALL_ALLIES",
-    "full_type_requirements": false
+    "full_type_requirements": true
   },
   {
     "name": "Waterfall",
@@ -161,7 +161,7 @@
     "status": "NONE",
     "statChanges": [],
     "target": "OPPONENT",
-    "full_type_requirements": false
+    "full_type_requirements": true
   },
   {
     "name": "Soaking Smash",
@@ -308,12 +308,14 @@
   {
     "name": "Dragon Rage",
     "type1": "DRAGON",
-    "type2": "NONE",
-    "basePower": 60,
+    "type2": "MONSTER",
+    "basePower": 65,
     "status": "NONE",
-    "statChanges": [],
+    "statChanges": [
+      "DEFENSE_DOWN"
+    ],
     "target": "OPPONENT",
-    "full_type_requirements": false
+    "full_type_requirements": true
   },
   {
     "name": "Dragon Dance",
@@ -716,19 +718,6 @@
     "full_type_requirements": true
   },
   {
-    "name": "Nature's Gift",
-    "type1": "GRASS",
-    "type2": "PSYCHIC",
-    "basePower": 0,
-    "status": "FULL_HEAL",
-    "statChanges": [
-      "ATTACK_UP",
-      "DEFENSE_UP"
-    ],
-    "target": "ALLY",
-    "full_type_requirements": true
-  },
-  {
     "name": "Stone Wall",
     "type1": "ROCK",
     "type2": "NONE",
@@ -790,12 +779,12 @@
   {
     "name": "Earth Power",
     "type1": "GROUND",
-    "type2": "GRASS",
-    "basePower": 55,
+    "type2": "ROCK",
+    "basePower": 70,
     "status": "NONE",
     "statChanges": [],
     "target": "ALL_OPPONENTS",
-    "full_type_requirements": false
+    "full_type_requirements": true
   },
   {
     "name": "Bulldoze",
@@ -931,6 +920,7 @@
     "basePower": 0,
     "status": "NONE",
     "statChanges": [
+      "ATTACK_UP",
       "ATTACK_UP"
     ],
     "target": "ALLY",
@@ -1108,8 +1098,8 @@
     "basePower": 0,
     "status": "NONE",
     "statChanges": [
-      "SPEED_DOWN",
-      "SPEED_DOWN"
+      "SPEED_UP",
+      "SPEED_UP"
     ],
     "target": "SELF",
     "full_type_requirements": true
@@ -1230,12 +1220,12 @@
   {
     "name": "Dragon's Breath",
     "type1": "DRAGON",
-    "type2": "NONE",
-    "basePower": 60,
-    "status": "NONE",
+    "type2": "FAIRY",
+    "basePower": 65,
+    "status": "REVERT_STATS",
     "statChanges": [],
     "target": "OPPONENT",
-    "full_type_requirements": false
+    "full_type_requirements": true
   },
   {
     "name": "Haze",
@@ -1305,7 +1295,7 @@
     "status": "BURN",
     "statChanges": [],
     "target": "OPPONENT",
-    "full_type_requirements": false
+    "full_type_requirements": true
   },
   {
     "name": "Gunk Shot",
@@ -1396,6 +1386,147 @@
     "status": "NONE",
     "statChanges": [],
     "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Sky Uppercut",
+    "type1": "FLYING",
+    "type2": "FIGHTING",
+    "basePower": 70,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Nature's Bounty",
+    "type1": "GRASS",
+    "type2": "GOURMET",
+    "basePower": 0,
+    "status": "FULL_HEAL",
+    "statChanges": [],
+    "target": "ALL_ALLIES",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Dark Pulse",
+    "type1": "DARK",
+    "type2": "PSYCHIC",
+    "basePower": 65,
+    "status": "FLINCH",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Fire Fang",
+    "type1": "FIRE",
+    "type2": "DARK",
+    "basePower": 65,
+    "status": "BURN",
+    "statChanges": [
+      "ATTACK_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Dino Wing",
+    "type1": "FOSSIL",
+    "type2": "FLYING",
+    "basePower": 70,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Mind Read",
+    "type1": "PSYCHIC",
+    "type2": "HUMAN",
+    "basePower": 0,
+    "status": "FLINCH",
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Ice Wave",
+    "type1": "ICE",
+    "type2": "WATER",
+    "basePower": 60,
+    "status": "PARALYSIS",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Ominous Wind",
+    "type1": "DARK",
+    "type2": "FLYING",
+    "basePower": 60,
+    "status": "FLINCH",
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Poison Sting",
+    "type1": "BUG",
+    "type2": "POISON",
+    "basePower": 65,
+    "status": "POISON",
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Flaming Fist of Fury",
+    "type1": "FIRE",
+    "type2": "FIGHTING",
+    "basePower": 65,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Dazzling Gleam",
+    "type1": "PSYCHIC",
+    "type2": "FAIRY",
+    "basePower": 60,
+    "status": "NONE",
+    "statChanges": [
+      "DEFENSE_DOWN",
+      "ATTACK_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Toxic Pit",
+    "type1": "GROUND",
+    "type2": "POISON",
+    "basePower": 60,
+    "status": "POISON",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Dragonfruit Juice",
+    "type1": "DRAGON",
+    "type2": "GRASS",
+    "basePower": 65,
+    "status": "POISON",
+    "statChanges": [],
+    "target": "OPPONENT",
     "full_type_requirements": true
   }
 ]
