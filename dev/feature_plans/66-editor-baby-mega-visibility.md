@@ -41,7 +41,7 @@ no-op at runtime and cannot introduce a validation error.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/tab_pokemon.js`** — add an `isBaby` helper right after `isLegendary`
+- [x] 1. **`dev/editor/tab_pokemon.js`** — add an `isBaby` helper right after `isLegendary`
   (~line 13):
   ```js
   function isBaby(record) {
@@ -49,7 +49,7 @@ no-op at runtime and cannot introduce a validation error.
   }
   ```
 
-- [ ] 2. **`dev/editor/tab_pokemon.js`** — in `renderForm`'s template, give the
+- [x] 2. **`dev/editor/tab_pokemon.js`** — in `renderForm`'s template, give the
   Evolves-into row (~198-202) a stable hook and initial hidden state via the native
   `hidden` attribute (no CSS needed):
   ```js
@@ -63,7 +63,7 @@ no-op at runtime and cannot introduce a validation error.
   is rebuilt on the framework's open/save/revert re-renders, so initial visibility stays
   correct there too.
 
-- [ ] 3. **`dev/editor/tab_pokemon.js`** — in the delegated `input` listener (~208-225),
+- [x] 3. **`dev/editor/tab_pokemon.js`** — in the delegated `input` listener (~208-225),
   after `draft[field]` is updated (i.e. after the `if (field === 'evolvesInto') … else …`
   block, before `api.markDirty()`), react to type changes by toggling the row and clearing
   a stranded link:
@@ -84,10 +84,10 @@ no-op at runtime and cannot introduce a validation error.
 
 ## Verification
 
-- [ ] `node --check dev/editor/tab_pokemon.js` passes.
-- [ ] `node tests/run_all.js` stays green (the editor tests drive the server/validator,
+- [x] `node --check dev/editor/tab_pokemon.js` passes.
+- [x] `node tests/run_all.js` stays green (the editor tests drive the server/validator,
   not the form DOM, so none assume the row is always visible — confirm nothing went red).
-- [ ] Browser check via the editor (`node dev/editor/server.js` → `127.0.0.1:8932`, using
+- [x] Browser check via the editor (`node dev/editor/server.js` → `127.0.0.1:8932`, using
   the `verify` skill or manually):
   - Open an ordinary pokemon (e.g. **Blastoise**) → the Evolves-into row is **hidden**.
   - Open **Numel** (BABY) → the row is **visible**.
@@ -101,6 +101,17 @@ no-op at runtime and cannot introduce a validation error.
     63 did — render the form and assert `[data-role="evolves-into-row"]`'s `hidden` flips
     between `draft.type1='NORMAL'` and `'BABY'`, and that a `NORMAL` type input event
     deletes a pre-set `draft.evolvesInto`.)
+
+**Note:** the `hidden` attribute alone did not work — `editor.css`'s
+`.editor-form-row { display: flex }` has equal specificity to the UA `[hidden] { display:
+none }` rule, and author CSS wins ties over the UA stylesheet regardless of specificity, so
+the row stayed visually visible while `hidden` was set. Fixed without touching
+`editor.css`: the row still gets the `hidden` attribute (kept for semantics/queryability)
+plus an inline `style="display: none"` set in the template and toggled via
+`row.style.display` in the listener — inline style wins over any stylesheet rule. Confirmed
+via Playwright (computed `display`) that Blastoise hides the row, Numel shows it, and the
+row hides/clears again after toggling the type away from BABY, both before and after Save
+(pokemon.json round-trip checked, then restored — no data changes committed).
 
 ## Out of scope / do not touch
 

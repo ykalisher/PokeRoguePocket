@@ -12,6 +12,10 @@
         return [record.type1, record.type2, record.type3].includes('LEGENDARY');
     }
 
+    function isBaby(record) {
+        return [record.type1, record.type2, record.type3].includes('BABY');
+    }
+
     function bst(record) {
         return (Number(record.baseHealth) || 0)
             + (Number(record.baseAttack) || 0)
@@ -195,7 +199,7 @@
                 <label>DEF<input type="number" name="baseDefense" min="1" value="${draft.baseDefense}"></label>
                 <label>SPD<input type="number" name="baseSpeed" min="1" value="${draft.baseSpeed}"></label>
             </div>
-            <div class="editor-form-row">
+            <div class="editor-form-row" data-role="evolves-into-row"${isBaby(draft) ? '' : ' hidden style="display: none"'}>
                 <label>Evolves into (baby → mega target)
                     ${evolvesIntoSelectHtml(draft)}
                 </label>
@@ -214,6 +218,20 @@
                 else delete draft.evolvesInto;
             } else {
                 draft[field] = STAT_FIELDS.includes(field) ? Number(event.target.value) : event.target.value;
+            }
+
+            if (field === 'type1' || field === 'type2' || field === 'type3') {
+                const row = el.querySelector('[data-role="evolves-into-row"]');
+                const baby = isBaby(draft);
+                row.hidden = !baby;
+                // .editor-form-row sets display:flex, which beats the UA [hidden] rule at
+                // equal specificity, so the hidden attribute alone doesn't hide the row.
+                row.style.display = baby ? '' : 'none';
+                if (!baby && draft.evolvesInto !== undefined) {
+                    delete draft.evolvesInto;
+                    const select = row.querySelector('select[name="evolvesInto"]');
+                    if (select) select.value = '';
+                }
             }
 
             if (STAT_FIELDS.includes(field)) {
