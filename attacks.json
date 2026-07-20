@@ -873,12 +873,12 @@
   {
     "name": "Earthquake",
     "type1": "GROUND",
-    "type2": "NONE",
-    "basePower": 60,
+    "type2": "LEGENDARY",
+    "basePower": 80,
     "status": "NONE",
     "statChanges": [],
     "target": "ALL_OPPONENTS",
-    "full_type_requirements": false
+    "full_type_requirements": true
   },
   {
     "name": "Thunder Wave",
@@ -1306,5 +1306,96 @@
     "statChanges": [],
     "target": "OPPONENT",
     "full_type_requirements": false
+  },
+  {
+    "name": "Gunk Shot",
+    "type1": "POISON",
+    "type2": "LEGENDARY",
+    "basePower": 80,
+    "status": "POISON",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Frenzy Plant",
+    "type1": "GRASS",
+    "type2": "LEGENDARY",
+    "basePower": 80,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Awaken Third Eye",
+    "type1": "HUMAN",
+    "type2": "LEGENDARY",
+    "basePower": 0,
+    "status": "HEAL_STATUS",
+    "statChanges": [
+      "ATTACK_UP",
+      "DEFENSE_UP",
+      "SPEED_UP",
+      "ATTACK_UP",
+      "DEFENSE_UP",
+      "SPEED_UP"
+    ],
+    "target": "SELF",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Precipice Blades",
+    "type1": "ROCK",
+    "type2": "LEGENDARY",
+    "basePower": 90,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Rampage",
+    "type1": "MONSTER",
+    "type2": "LEGENDARY",
+    "basePower": 75,
+    "status": "NONE",
+    "statChanges": [
+      "DEFENSE_DOWN",
+      "DEFENSE_DOWN",
+      "SPEED_UP"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Rest",
+    "type1": "NORMAL",
+    "type2": "NONE",
+    "basePower": 0,
+    "status": "FULL_HEAL",
+    "statChanges": [],
+    "target": "SELF",
+    "full_type_requirements": false
+  },
+  {
+    "name": "Flatten",
+    "type1": "NORMAL",
+    "type2": "LEGENDARY",
+    "basePower": 75,
+    "status": "REVERT_STATS",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Metal Burst",
+    "type1": "STEEL",
+    "type2": "LEGENDARY",
+    "basePower": 80,
+    "status": "NONE",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
   }
 ]
