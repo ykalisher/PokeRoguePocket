@@ -51,7 +51,7 @@
             name: 'Grass',
             type: 'GRASS',
             pokemon: ['Venusaur', 'Meganium'],
-            attacks: [['Razor Leaf', 3], ['Sleep Powder', 1], ['Moonblast', 1], ['Sludge Bomb', 1]],
+            attacks: [['Razor Leaf', 3], ['Sleep Powder', 1], ['Sludge Bomb', 1], ['Moon Blast', 1]],
             items: [['Sitrus Berry', 1], ['Withdraw Wand', 1]]
         }),
         fire: Object.freeze({
@@ -59,7 +59,7 @@
             name: 'Fire',
             type: 'FIRE',
             pokemon: ['Charizard', 'Typhlosion'],
-            attacks: [['Flame Thrower', 2], ['Fire Spin', 2], ['Shadow Ball', 1], ['Air Slash', 1]],
+            attacks: [['Flame Thrower', 2], ['Fire Spin', 2], ['Air Slash', 1], ['Shadow Ball', 1]],
             items: [['Sitrus Berry', 1], ['Withdraw Wand', 1]]
         })
     });

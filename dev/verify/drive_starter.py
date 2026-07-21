@@ -24,7 +24,7 @@ EXPECTED = {
     "grass": {
         "type": "GRASS",
         "pokemon": ["Venusaur", "Meganium"],
-        "attacks": {"Razor Leaf": 3, "Sleep Powder": 1, "Sludge Bomb": 1, "Moonblast": 1},
+        "attacks": {"Razor Leaf": 3, "Sleep Powder": 1, "Sludge Bomb": 1, "Moon Blast": 1},
         "items": {"Sitrus Berry": 1, "Withdraw Wand": 1},
     },
 }
