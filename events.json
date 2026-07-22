@@ -3,18 +3,18 @@
     "type": "trainer",
     "title": "Rogue Mecha Cop",
     "id": "rogue-mecha-cop",
-    "types": ["STEEL", "ELECTRIC", "HUMAN"],
+    "types": ["HUMAN"],
     "kicker": "Mecha Cop wants to subdue you",
-    "subtitle": "Stop and frisk",
     "body": "You hear sirens suddenly explode to life and see a strange police officer jump out from behind a building. \"UNAUTHORIZED TRAINER. PREPARE TO BE SUBDUED.\"",
     "resultTitle": "One less cop terrorizing the streets.",
     "trainerName": "Mecha Cop",
     "battleTitle": "Fight back!",
     "battleText": "Beat the cop!",
     "battleButtonText": "Battle Mecha Cop",
-    "rewardCash": 400,
+    "rewardCash": 0,
     "rewardEffects": [
-      { "type": "gain-card", "cardKind": "pokemon", "name": "Porygon2", "count": 1 }
+      { "type": "gain-card", "cardKind": "pokemon", "name": "Porygon2", "count": 1 },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Energize" }
     ],
     "enabled": true
   },
@@ -99,9 +99,97 @@
       { "type": "gain-random-baby" }
     ],
     "enabled": true,
-    "kicker": "A mysterious egg",
+    "kicker": "egg",
     "actionTitle": "Accept the egg",
     "rewardText": "The egg hatched into a baby Pokemon!",
     "requiresPool": "baby"
+  },
+  {
+    "type": "trainer",
+    "title": "A Slumbering Ice Golem",
+    "id": "regice-battle",
+    "body": "As you wander through the cave, you find yourself in a large empty chamber with a strange inscription on the far wall. The inscription looks familiar to you but you can't quite place it. You pace clockwise around the perimeter of the room trying to jog your memory, when suddenly the inscription glows and the wall disappears, revealing a dormant golem. Suddenly, its eyes begin to glow.",
+    "trainerName": "Regice",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Regice" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Ancient Force" }
+    ],
+    "enabled": true,
+    "kicker": "regice",
+    "locations": ["shoal-cave"],
+    "battleButtonText": "REEEEGEEEEICE",
+    "battleTitle": "Battle Regice!",
+    "resultTitle": "Regice Joins your Team!"
+  },
+  {
+    "type": "trainer",
+    "title": "A Slumbering Stone Golem",
+    "id": "regirock-battle",
+    "body": "While wandering the desert through a sandstorm you find a cave, and decide to take shelter there while you wait out the storm. Inside you find a single cavern with strange inscription on the far wall. However, you don't  notice that, because the storm is still able to reach into the cave, peppering you with sand. In a desperate attempt to go deeper, after stumbling around you have your pokemon smash the far rock wall. To your surprise, you see a second cavern containing a dormant stone golem. Suddenly, its eyes light up.",
+    "trainerName": "Regirock",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Regirock" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Ancient Force" }
+    ],
+    "enabled": true,
+    "battleTitle": "Battle Regirock!",
+    "battleButtonText": "UN UN UN",
+    "locations": ["mauville-desert"],
+    "kicker": "Regirock",
+    "resultTitle": "Regirock Joins your Team"
+  },
+  {
+    "type": "trainer",
+    "title": "A Slumbering Iron Golem",
+    "id": "registeel-battle",
+    "body": "As you cut your way through the dense undergrowth in the pouring rain you find yourself in front of a large cave. You enter, hoping to wait out the storm, but find that it's pitch black. You have one of your pokemon light up the room with Flash, and as you do you hear a thunderous rumble, and see that the far side of the cave has an entrance to a cavern containing a motionless iron giant. Suddenly, its eyes light up.",
+    "trainerName": "Registeel",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Registeel" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Ancient Force" }
+    ],
+    "enabled": true,
+    "kicker": "Registeel",
+    "resultTitle": "Registeel Joins your Team!",
+    "locations": ["fortree-jungle"],
+    "battleTitle": "Battle Registeel!",
+    "battleButtonText": "rereregipwpwwmmw"
+  },
+  {
+    "type": "trainer",
+    "title": "The Great Titan",
+    "id": "regigigas-battle",
+    "body": "You see an ancient temple and decide to walk inside.As you step in, the entrance behind you closes, and you see a titanic statue of a weird looking Regi. Suddenly, its eyes start glowing, and three more golems with glowing eyes drop from the ceiling.",
+    "trainerName": "Regigigas",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Regigigas" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Ancient Force" }
+    ],
+    "enabled": true,
+    "battleButtonText": "gigigiGIGAS",
+    "battleTitle": "Battle Regigigas!",
+    "kicker": "Regigigas",
+    "resultTitle": "Regigigas Joins your Team!",
+    "locations": ["snowpoint-city"]
+  },
+  {
+    "type": "gift",
+    "title": "Strange Buzzing TV",
+    "id": "rotom-tv",
+    "body": "You pass by an empty room with a TV filled with static making a strange buzzing noise. As you approach it starts to buzz louder, then suddenly a Pokémon jumps out and gives you a kiss!",
+    "buttonText": "bzzt",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Rotom" },
+      { "type": "gain-random-card", "amount": 1, "cardKind": "attack", "count": 1, "types": ["ARTIFICIAL"] }
+    ],
+    "enabled": true,
+    "kicker": "Rotom",
+    "actionTitle": "Rotom Joins your Team!",
+    "requires": [],
+    "types": ["GHOST", "HUMAN"]
   }
 ]

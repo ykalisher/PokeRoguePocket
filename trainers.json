@@ -387,49 +387,6 @@
     ]
   },
   {
-    "name": "Giovanni",
-    "sprite": "Giovanni",
-    "cash": 150,
-    "rank": "Special",
-    "typeSpecialization": "GROUND",
-    "pokemon": [
-      "Nidoking",
-      "Rhyperior",
-      "Garchomp",
-      "Gliscor",
-      "Seismitoad"
-    ],
-    "attacks": [
-      "Sludge Bomb",
-      "Angered Roar",
-      "Crunch",
-      "Earth Power",
-      "Rock Slide",
-      "Bulldoze",
-      "Earthquake",
-      "Stone Wall",
-      "Intimidating Stare",
-      "Dragon Dance",
-      "Dragon Claw",
-      "Earthquake",
-      "Sludge Bomb",
-      "Tailwind",
-      "Bulldoze",
-      "Sludge Strike",
-      "Rain Dance",
-      "Muddy Water",
-      "Bulldoze",
-      "Ooze"
-    ],
-    "items": [
-      "Sitrus Berry",
-      "Lum Berry",
-      "Withdraw Wand",
-      "Liechi Berry",
-      "Poison Gem"
-    ]
-  },
-  {
     "name": "Guitarist",
     "sprite": "Guitarist",
     "cash": 50,
@@ -816,9 +773,7 @@
     "attacks": [
       "Swarming Strike",
       "Iron Head",
-      "Flash Cannon",
       "Swords Dance",
-      "Thunder Bolt",
       "Discharge",
       "Flash Cannon",
       "Magnetize",
@@ -829,7 +784,9 @@
       "Bug Buzz",
       "Flash Cannon",
       "Swarming Strike",
-      "Thunder Bolt"
+      "Thunder Bolt",
+      "Bullet Punch",
+      "Bullet Punch"
     ],
     "items": [
       "Sitrus Berry",
@@ -3838,5 +3795,88 @@
       "Withdraw Wand",
       "Dark Gem"
     ]
+  },
+  {
+    "name": "Regice",
+    "sprite": "Regice",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ICE",
+    "pokemon": [
+      "Regice"
+    ],
+    "attacks": [
+      "Ancient Force",
+      "Ancient Power",
+      "Ice Beam",
+      "Freeze-Dry"
+    ],
+    "items": []
+  },
+  {
+    "name": "Regirock",
+    "sprite": "Regirock",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ROCK",
+    "pokemon": [
+      "Regirock"
+    ],
+    "attacks": [
+      "Ancient Power",
+      "Ancient Force",
+      "Rock Slide",
+      "Stone Edge"
+    ],
+    "items": []
+  },
+  {
+    "name": "Registeel",
+    "sprite": "Registeel",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "STEEL",
+    "pokemon": [
+      "Registeel"
+    ],
+    "attacks": [
+      "Ancient Power",
+      "Ancient Force",
+      "Iron Head",
+      "Flash Cannon"
+    ],
+    "items": []
+  },
+  {
+    "name": "Regigigas",
+    "sprite": "Regigigas",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "FOSSIL",
+    "pokemon": [
+      "Registeel",
+      "Regirock",
+      "Regice",
+      "Regigigas"
+    ],
+    "attacks": [
+      "Ancient Power",
+      "Ancient Force",
+      "Ice Beam",
+      "Iron Head",
+      "Rock Slide",
+      "Body Slam",
+      "Ancient Power",
+      "Ancient Force",
+      "Ice Beam",
+      "Iron Head",
+      "Rock Slide",
+      "Body Slam",
+      "Rock Slide",
+      "Body Slam",
+      "Ancient Energy",
+      "Ancient Energy"
+    ],
+    "items": []
   }
 ]
