@@ -90,6 +90,40 @@ engine defaults an absent kind to `attack`, which is almost never intended.
 non-string `text`, or a `name` that does not exist in the matching data file as an
 error.
 
+## Event card requirements (`events.json`)
+
+A requirement renders the card grid the `*-selected-card` effects consume. It lives in
+a `requires` array on the event (gift), a choice, or `payment`, and pairs with an
+effect by id:
+
+```json
+"requires": [
+  { "id": "rotom", "cardKind": "pokemon", "name": "Rotom",
+    "label": "Choose your Rotom", "emptyText": "You have no Rotom to send in." }
+],
+"effects": [
+  { "type": "replace-selected-card", "selectionId": "rotom",
+    "replacement": { "cardKind": "pokemon", "name": "Rotom-Heat" } }
+]
+```
+
+`id` is the key `selectionId` points at — it is not a filter. **Without `name`/`names`
+the picker offers every card of `cardKind` the run owns**, so a plain
+`{ "id": "rotom", "cardKind": "pokemon" }` lets the player replace *any* Pokemon.
+Add `name` (one card) or `names` (a list) to narrow the grid; `getBlockedReason`
+re-checks the confirmed selection against the same filtered list, so a stale
+selection cannot slip through. Names match exactly and are validated against the data
+file by both validators, and the editor's "where is this used?" lists them.
+`label`/`prompt` head the grid, `emptyText` shows when the filter matches nothing.
+
+Pair a filter with an `event.conditions` gate when the event only makes sense with
+that card (`rotom-appliances` is the worked example: a `has Rotom` condition keeps
+the event out of the pool, and each choice's `name: "Rotom"` requirement keeps the
+picker to that one card).
+
+Note `replacement.types` is only used when `replacement.name` is absent (the random
+path) — on a named replacement it is inert.
+
 ## Engine extensions beyond the enums
 
 - Attack target `TRAINER` + statuses `INCREASE_CAPACITY`, `EXTRA_ITEM`,
