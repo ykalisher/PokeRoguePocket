@@ -39,7 +39,7 @@ Both fixes below were run during planning and produced a matching set / a `false
 
 ## Steps
 
-- [ ] 1. **`tests/pokemon_pools.test.js`** — in the "obtainable species" recompute inside
+- [x] 1. **`tests/pokemon_pools.test.js`** — in the "obtainable species" recompute inside
   the `getWildPokemonPool against real data …` test, add the missing exclusion next to the
   existing mega guard, and extend the comment above the loop to mention it:
 
@@ -48,7 +48,7 @@ Both fixes below were run during planning and produced a matching set / a `false
           if (species.eventOnly === true) return;
   ```
 
-- [ ] 2. **`tests/editor_validation.test.js`** — in *"pokemon: eventOnly granted by a
+- [x] 2. **`tests/editor_validation.test.js`** — in *"pokemon: eventOnly granted by a
   gain-card event has no unreachable warning"*, replace the global `hasCode` assertion with
   a record-scoped one so unrelated live warnings cannot trip it:
 
@@ -65,9 +65,9 @@ Both fixes below were run during planning and produced a matching set / a `false
   Leave the sibling test above it (*"…eventOnly with no granting event is an unreachable
   warning"*, which asserts the code **is** present) alone — it passes.
 
-- [ ] 3. **`node tests/run_all.js`** — confirm the whole suite is green.
+- [x] 3. **`node tests/run_all.js`** — confirm the whole suite is green.
 
-- [ ] 4. Confirm the five `Rotom-*` warnings are still reported (they are the owner's
+- [x] 4. Confirm the five `Rotom-*` warnings are still reported (they are the owner's
   to-do list, not noise to be hidden). Quick check:
 
   ```bash
@@ -85,11 +85,11 @@ Both fixes below were run during planning and produced a matching set / a `false
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — zero failing tests.
-- [ ] `node --test tests/pokemon_pools.test.js` and
+- [x] `node tests/run_all.js` green — zero failing tests.
+- [x] `node --test tests/pokemon_pools.test.js` and
   `node --test tests/editor_validation.test.js` both pass on their own.
-- [ ] Step 4 still prints the five `pokemon.event-only-unreachable` warnings.
-- [ ] `git status --porcelain` shows **only** `tests/pokemon_pools.test.js` and
+- [x] Step 4 still prints the five `pokemon.event-only-unreachable` warnings.
+- [x] `git status --porcelain` shows **only** `tests/pokemon_pools.test.js` and
   `tests/editor_validation.test.js` modified. `pokemon.json`, `events.json`,
   `dev/editor/validate.js` and everything under `map/` must be untouched.
 

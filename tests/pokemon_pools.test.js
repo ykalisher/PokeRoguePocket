@@ -143,8 +143,8 @@ test('getWildPokemonPool against real data returns exactly the obtainable specie
 
     // Independently recompute the obtainable set so this survives the owner
     // adding ordinary pokemon: unique-by-name, not LEGENDARY, not BABY, not a
-    // mega (id > 9000). Guards that megas like Mega Camerupt (9323) stay out
-    // while Meganium (0154) stays in.
+    // mega (id > 9000), not eventOnly. Guards that megas like Mega Camerupt
+    // (9323) stay out while Meganium (0154) stays in.
     const seen = new Set();
     const expected = [];
     gameData.pokemon.forEach(species => {
@@ -153,6 +153,7 @@ test('getWildPokemonPool against real data returns exactly the obtainable specie
         const types = [species.type1, species.type2, species.type3];
         if (types.includes('LEGENDARY') || types.includes('BABY')) return;
         if (parseInt(species.id, 10) > 9000) return;
+        if (species.eventOnly === true) return;
         expected.push(species);
     });
 

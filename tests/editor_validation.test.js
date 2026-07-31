@@ -108,7 +108,12 @@ test('pokemon: eventOnly granted by a gain-card event has no unreachable warning
         ]
     };
     const issues = validateAll(data, { enums: live.enums });
-    assert.ok(!hasCode(issues, 'pokemon.event-only-unreachable'));
+    const grantedName = data.pokemon[0].name;
+
+    assert.ok(
+        !issues.some((issue) => issue.code === 'pokemon.event-only-unreachable' && issue.recordKey === grantedName),
+        `${grantedName} is granted by an event, so it must not be reported unreachable`
+    );
 });
 
 test('pokemon: BABY with no evolvesInto is a baby-missing-mega error', () => {
