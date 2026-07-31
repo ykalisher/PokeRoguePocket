@@ -56,7 +56,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
 
 ## Steps
 
-- [ ] 1. **`dev/editor/tab_events.js`** — near `CARD_KINDS_UI` (~line 21) add the mode
+- [x] 1. **`dev/editor/tab_events.js`** — near `CARD_KINDS_UI` (~line 21) add the mode
   vocabulary and its option renderer (labels are the UI wording; values are the JSON):
 
   ```js
@@ -76,7 +76,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
       }
   ```
 
-- [ ] 2. **`dev/editor/tab_events.js`** — add a factory beside `newRequirement` (~line 199).
+- [x] 2. **`dev/editor/tab_events.js`** — add a factory beside `newRequirement` (~line 199).
   `cardKind` is always explicit because the engine defaults a missing kind to `'attack'`:
 
   ```js
@@ -85,7 +85,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
       }
   ```
 
-- [ ] 3. **`dev/editor/tab_events.js`** — extend `resolveAction` (~line 280): add
+- [x] 3. **`dev/editor/tab_events.js`** — extend `resolveAction` (~line 280): add
   `conditionsField` to every branch — `'gift'` → `null`, `'reward'` → `null`,
   `'payment'` → `'conditions'`, `'choice:N'` → `'conditions'` — and add a new first branch:
 
@@ -97,7 +97,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
   `choiceBlockHtml` (~line 777), which builds its own action object instead of calling
   `resolveAction`.
 
-- [ ] 4. **`dev/editor/tab_events.js`** — beside `actionRequires` / `ensureRequires`
+- [x] 4. **`dev/editor/tab_events.js`** — beside `actionRequires` / `ensureRequires`
   (~line 295) add the two accessors:
 
   ```js
@@ -112,7 +112,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
       }
   ```
 
-- [ ] 5. **`dev/editor/tab_events.js`** — add the row + section renderers next to
+- [x] 5. **`dev/editor/tab_events.js`** — add the row + section renderers next to
   `requirementRowHtml` / `requirementsEditorHtml` (~line 694):
 
   ```js
@@ -151,7 +151,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
       }
   ```
 
-- [ ] 6. **`dev/editor/tab_events.js`** — render the section in exactly three places. The
+- [x] 6. **`dev/editor/tab_events.js`** — render the section in exactly three places. The
   hint text matters: it is the only thing telling the author how conditions differ from
   requirements, so use these words.
   - `commonZoneHtml` (~line 728), after the location/terrain chip labels:
@@ -167,7 +167,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
   - `paymentZoneHtml` (~line 817), above its `requirementsEditorHtml(action)` call, with
     the same hint wording as the choice one but "this payment option".
 
-- [ ] 7. **`dev/editor/tab_events.js`** — in `renderForm`, add the lookup helper next to
+- [x] 7. **`dev/editor/tab_events.js`** — in `renderForm`, add the lookup helper next to
   `requireAt` (~line 931):
 
   ```js
@@ -176,7 +176,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
           }
   ```
 
-- [ ] 8. **`dev/editor/tab_events.js`** — `input` listener (~line 971): add a branch beside
+- [x] 8. **`dev/editor/tab_events.js`** — `input` listener (~line 971): add a branch beside
   the `scope === 'req'` one. `name` is always set (never deleted) so a cleared box round-trips
   as `""` rather than vanishing mid-edit — same convention as `req.id` / `choice.id`:
 
@@ -187,7 +187,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
                   else setOrDelete(cond, field, value);
   ```
 
-- [ ] 9. **`dev/editor/tab_events.js`** — `change` listener (~line 1020): two cases beside
+- [x] 9. **`dev/editor/tab_events.js`** — `change` listener (~line 1020): two cases beside
   `'req-cardkind'`. Both repaint (the card-kind switch must re-point the datalist and the
   unknown badge):
 
@@ -200,7 +200,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
                       break;
   ```
 
-- [ ] 10. **`dev/editor/tab_events.js`** — `click` listener (~line 1077): two actions beside
+- [x] 10. **`dev/editor/tab_events.js`** — `click` listener (~line 1077): two actions beside
   `add-req` / `remove-req`. Removing the last one deletes the key so untouched events stay
   diff-clean:
 
@@ -215,7 +215,7 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
                   }
   ```
 
-- [ ] 11. **`dev/editor/tab_events.js`** — show conditions in the LEFT preview. Add a
+- [x] 11. **`dev/editor/tab_events.js`** — show conditions in the LEFT preview. Add a
   helper next to `previewActionHtml` (~line 378):
 
   ```js
@@ -236,10 +236,10 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
   `${conditionsPreviewHtml(draft.conditions)}` once inside `.editor-events-preview-text`
   (just before the body paragraph) so event-level gates are visible for every event type.
 
-- [ ] 12. **`node tests/run_all.js`** — green (it syntax-checks every tracked JS file,
+- [x] 12. **`node tests/run_all.js`** — green (it syntax-checks every tracked JS file,
   which is the main guard for this phase).
 
-- [ ] 13. Drive the editor in a browser and actually use the new UI. Start it with
+- [x] 13. Drive the editor in a browser and actually use the new UI. Start it with
   `node dev/editor/server.js` (127.0.0.1:8932) — or adapt `dev/verify/drive_editor.py`,
   which already spawns the server on port 8933 and restores any file it writes. Open the
   Events tab, open the existing `choice`-type event, and confirm:
@@ -256,13 +256,13 @@ listener for `[data-action]` buttons (repaints). Each reads `data-scope`, `data-
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] Manual/driven editor session per step 13 completed, with a screenshot saved under
+- [x] `node tests/run_all.js` green.
+- [x] Manual/driven editor session per step 13 completed, with a screenshot saved under
   `dev/verify/` showing an event whose conditions round-trip through the form.
-- [ ] Round-trip check: open an event, change nothing, save → `git diff events.json` is
+- [x] Round-trip check: open an event, change nothing, save → `git diff events.json` is
   empty. Then add a condition, save, and confirm the diff contains exactly the new
   `conditions` array (with `mode`, `cardKind`, `name`) and nothing else. Restore the file.
-- [ ] `git status --porcelain` shows `dev/editor/tab_events.js` modified (plus any new
+- [x] `git status --porcelain` shows `dev/editor/tab_events.js` modified (plus any new
   screenshot/driver) and **`events.json` unchanged**.
 
 ## Out of scope / do not touch

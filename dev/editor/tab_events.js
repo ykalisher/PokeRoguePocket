@@ -19,6 +19,11 @@
     const typeIconHtml = EditorPreview.typeIconHtml;
 
     const CARD_KINDS_UI = ['pokemon', 'attack', 'item'];
+    // Card-condition modes: labels are the UI wording, values are the JSON.
+    const CONDITION_MODES = [
+        { value: 'has', label: 'Must have' },
+        { value: 'lacks', label: 'Must not have' }
+    ];
     const STORE_FOR_KIND = { pokemon: 'pokemon', attack: 'attacks', item: 'items' };
     const DATALIST_ID = {
         pokemon: 'editor-events-pokemon-datalist',
@@ -200,6 +205,11 @@
         return { id: uniqueScopedId('req', existingRequires), cardKind: 'pokemon' };
     }
 
+    // cardKind is always explicit: the engine defaults a missing kind to 'attack'.
+    function newCondition() {
+        return { mode: 'has', cardKind: 'pokemon', name: '' };
+    }
+
     function newPayment() {
         return { title: '', description: '', buttonText: 'Pay', requires: [], effects: [] };
     }
@@ -277,13 +287,18 @@
     // An "action" is a container of effects (+ optionally requirements): the
     // gift event, each choice, the trainer battle reward, and the trainer
     // payment. resolveAction maps an owner key back to the live draft object.
+    // The pseudo-action 'event' owns nothing but the event-level card
+    // conditions, so the same row renderer / handlers serve them too. The gift
+    // claim and the battle reward inherit the event-level list instead of
+    // carrying one (conditionsField: null).
     function resolveAction(draft, key) {
-        if (key === 'gift') return { key, obj: draft, effectsField: 'effects', requiresField: 'requires' };
-        if (key === 'reward') return { key, obj: draft, effectsField: 'rewardEffects', requiresField: null };
-        if (key === 'payment') return { key, obj: draft.payment, effectsField: 'effects', requiresField: 'requires' };
+        if (key === 'event') return { key, obj: draft, effectsField: null, requiresField: null, conditionsField: 'conditions' };
+        if (key === 'gift') return { key, obj: draft, effectsField: 'effects', requiresField: 'requires', conditionsField: null };
+        if (key === 'reward') return { key, obj: draft, effectsField: 'rewardEffects', requiresField: null, conditionsField: null };
+        if (key === 'payment') return { key, obj: draft.payment, effectsField: 'effects', requiresField: 'requires', conditionsField: 'conditions' };
         if (key.indexOf('choice:') === 0) {
             const index = Number(key.slice('choice:'.length));
-            return { key, obj: draft.choices[index], effectsField: 'effects', requiresField: 'requires' };
+            return { key, obj: draft.choices[index], effectsField: 'effects', requiresField: 'requires', conditionsField: 'conditions' };
         }
         return null;
     }
@@ -296,6 +311,10 @@
         return action.requiresField ? (action.obj[action.requiresField] || []) : [];
     }
 
+    function actionConditions(action) {
+        return action.conditionsField ? (action.obj[action.conditionsField] || []) : [];
+    }
+
     function ensureEffects(action) {
         if (!action.obj[action.effectsField]) action.obj[action.effectsField] = [];
         return action.obj[action.effectsField];
@@ -305,6 +324,12 @@
         if (!action.requiresField) return [];
         if (!action.obj[action.requiresField]) action.obj[action.requiresField] = [];
         return action.obj[action.requiresField];
+    }
+
+    function ensureConditions(action) {
+        if (!action.conditionsField) return [];
+        if (!action.obj[action.conditionsField]) action.obj[action.conditionsField] = [];
+        return action.obj[action.conditionsField];
     }
 
     function cleanupReplacement(effect) {
@@ -373,7 +398,15 @@
         return `<li class="editor-events-preview-effect"><span>${escapeHtml(effectSummaryText(effect))}</span>${cardHtml}</li>`;
     }
 
-    function previewActionHtml(title, description, effects) {
+    function conditionsPreviewHtml(conditions) {
+        const list = (Array.isArray(conditions) ? conditions : []).filter((cond) => cond && cond.name);
+        if (!list.length) return '';
+        const parts = list.map((cond) =>
+            `${cond.mode === 'lacks' ? 'Only without' : 'Requires'} ${cond.name}`);
+        return `<p class="editor-events-preview-desc">${escapeHtml(parts.join(' · '))}</p>`;
+    }
+
+    function previewActionHtml(title, description, effects, conditions) {
         const effectsHtml = (effects && effects.length)
             ? `<ul class="editor-events-preview-effects">${effects.map(effectPreviewLineHtml).join('')}</ul>`
             : '<p class="editor-muted">No effects.</p>';
@@ -381,6 +414,7 @@
             <div class="editor-events-preview-action">
                 <h4>${escapeHtml(title || '')}</h4>
                 ${description ? `<p class="editor-events-preview-desc">${escapeHtml(description)}</p>` : ''}
+                ${conditionsPreviewHtml(conditions)}
                 ${effectsHtml}
             </div>
         `;
@@ -416,16 +450,17 @@
 
         let actionsHtml = '';
         if (draft.type === 'gift') {
-            actionsHtml = previewActionHtml(draft.actionTitle || 'Claim', draft.rewardText || '', draft.effects || []);
+            // The gift claim inherits the event-level conditions.
+            actionsHtml = previewActionHtml(draft.actionTitle || 'Claim', draft.rewardText || '', draft.effects || [], draft.conditions);
         } else if (draft.type === 'choice') {
             actionsHtml = (draft.choices || []).map((choice, index) =>
-                previewActionHtml(choice.title || `Choice ${index + 1}`, choice.description || choice.text || '', choice.effects || [])
+                previewActionHtml(choice.title || `Choice ${index + 1}`, choice.description || choice.text || '', choice.effects || [], choice.conditions)
             ).join('') || '<p class="editor-muted">No choices.</p>';
         } else if (draft.type === 'trainer') {
             actionsHtml = previewTrainerHeaderHtml(draft)
                 + previewActionHtml('Battle reward', '', draft.rewardEffects || []);
             if (draft.payment) {
-                actionsHtml += previewActionHtml(draft.payment.title || 'Pay and leave', draft.payment.description || '', draft.payment.effects || []);
+                actionsHtml += previewActionHtml(draft.payment.title || 'Pay and leave', draft.payment.description || '', draft.payment.effects || [], draft.payment.conditions);
             }
         }
 
@@ -440,6 +475,7 @@
                     ${draft.kicker ? `<p class="editor-events-preview-kicker">${escapeHtml(draft.kicker)}</p>` : ''}
                     <h3 class="editor-events-preview-title">${escapeHtml(draft.title || '(untitled)')}</h3>
                     ${draft.subtitle ? `<p class="editor-events-preview-subtitle">${escapeHtml(draft.subtitle)}</p>` : ''}
+                    ${conditionsPreviewHtml(draft.conditions)}
                     ${draft.body ? `<p class="editor-events-preview-body">${escapeHtml(draft.body)}</p>` : ''}
                 </div>
                 <div class="editor-events-preview-actions">${actionsHtml}</div>
@@ -462,6 +498,12 @@
     function optionTags(values, current) {
         return values.map((value) =>
             `<option value="${escapeAttr(value)}"${value === current ? ' selected' : ''}>${escapeHtml(value)}</option>`
+        ).join('');
+    }
+
+    function conditionModeOptions(current) {
+        return CONDITION_MODES.map(({ value, label }) =>
+            `<option value="${escapeAttr(value)}"${value === current ? ' selected' : ''}>${escapeHtml(label)}</option>`
         ).join('');
     }
 
@@ -723,6 +765,42 @@
         `;
     }
 
+    // ---- card conditions editor ----
+
+    function conditionRowHtml(cond, index, owner) {
+        const base = `data-owner="${escapeAttr(owner)}" data-index="${index}"`;
+        const kind = cond.cardKind || 'pokemon';
+        const store = STORE_FOR_KIND[kind] || 'pokemon';
+        return `
+            <li class="editor-events-req-row">
+                <div class="editor-form-row">
+                    <label>Rule<select data-scope="cond-mode" ${base}>${conditionModeOptions(cond.mode || 'has')}</select></label>
+                    <label>Card kind<select data-scope="cond-cardkind" ${base}>${optionTags(CARD_KINDS_UI, kind)}</select></label>
+                    <label>Card<input type="text" list="${datalistForStore(store)}" data-scope="cond" ${base} data-field="name" value="${escapeAttr(cond.name || '')}">${unknownBadge(store, cond.name)}</label>
+                    <button type="button" class="editor-btn editor-btn--danger editor-events-row-remove" data-action="remove-cond" ${base}>Remove</button>
+                </div>
+                <div class="editor-form-row">
+                    ${textField('Locked text', `data-scope="cond" ${base} data-field="text"`, cond.text)}
+                </div>
+            </li>
+        `;
+    }
+
+    function conditionsEditorHtml(action, title, hint) {
+        const conditions = actionConditions(action);
+        const rows = conditions.length
+            ? conditions.map((cond, index) => conditionRowHtml(cond, index, action.key)).join('')
+            : '<li class="editor-empty">No conditions.</li>';
+        return `
+            <div class="editor-events-subsection">
+                <h4>${escapeHtml(title)}</h4>
+                <span class="editor-hint">${escapeHtml(hint)}</span>
+                <ul class="editor-events-rows">${rows}</ul>
+                <button type="button" class="editor-btn" data-action="add-cond" data-owner="${escapeAttr(action.key)}">+ Add condition</button>
+            </div>
+        `;
+    }
+
     // ---- form zones ----
 
     function commonZoneHtml(draft) {
@@ -751,6 +829,8 @@
                 <label>Only at locations${locationChipsHtml(draft)}</label>
                 <label>Only at terrains${terrainChipsHtml(draft)}</label>
                 <span class="editor-hint">If either override list is set, it replaces the type gate: the event appears only at those location ids / terrains.</span>
+                ${conditionsEditorHtml(resolveAction(draft, 'event'), 'Event card conditions',
+                    'Checked when the game picks an event: the whole event is skipped unless the run satisfies every condition. Nothing is selected or taken away. A gift event\'s claim button inherits these too.')}
             </div>
         `;
     }
@@ -774,7 +854,7 @@
     }
 
     function choiceBlockHtml(choice, index, total) {
-        const choiceAction = { key: `choice:${index}`, obj: choice, effectsField: 'effects', requiresField: 'requires' };
+        const choiceAction = { key: `choice:${index}`, obj: choice, effectsField: 'effects', requiresField: 'requires', conditionsField: 'conditions' };
         const base = `data-choice="${index}"`;
         return `
             <div class="editor-events-choice">
@@ -794,6 +874,8 @@
                 <div class="editor-form-row">
                     ${textArea('Description', `data-scope="choice" ${base} data-field="description"`, choice.description || choice.text)}
                 </div>
+                ${conditionsEditorHtml(choiceAction, 'Choice card conditions',
+                    'Grays out this choice unless the run satisfies every condition. Unlike a requirement, the player picks nothing and loses nothing.')}
                 ${requirementsEditorHtml(choiceAction)}
                 ${effectsEditorHtml(choiceAction)}
             </div>
@@ -836,6 +918,8 @@
                 <div class="editor-form-row">
                     ${textArea('Description', 'data-scope="payment" data-field="description"', draft.payment.description)}
                 </div>
+                ${conditionsEditorHtml(action, 'Payment card conditions',
+                    'Grays out this payment option unless the run satisfies every condition. Unlike a requirement, the player picks nothing and loses nothing.')}
                 ${requirementsEditorHtml(action)}
                 ${effectsEditorHtml(action)}
             </div>
@@ -932,6 +1016,10 @@
             return actionRequires(resolveAction(draft, owner))[index];
         }
 
+        function conditionAt(owner, index) {
+            return actionConditions(resolveAction(draft, owner))[index];
+        }
+
         function applyCommonField(field, value) {
             if (field === 'id' || field === 'title' || field === 'body') draft[field] = value;
             else setOrDelete(draft, field, value);
@@ -972,6 +1060,12 @@
                 const req = requireAt(owner, index);
                 if (field === 'id') req.id = value;
                 else setOrDelete(req, field, value);
+            } else if (scope === 'cond') {
+                const cond = conditionAt(owner, index);
+                // name is always set (never deleted) so a cleared box round-trips
+                // as "" instead of vanishing mid-edit — same as req.id / choice.id.
+                if (field === 'name') cond.name = value;
+                else setOrDelete(cond, field, value);
             } else if (scope === 'eff') {
                 const effect = effectAt(owner, index);
                 if (field === 'amount' || field === 'count') effect[field] = Number(value) || 1;
@@ -1019,6 +1113,13 @@
                     break;
                 case 'req-cardkind':
                     requireAt(owner, index).cardKind = value;
+                    break;
+                case 'cond-mode':
+                    conditionAt(owner, index).mode = value;
+                    break;
+                case 'cond-cardkind':
+                    // Repaints: the datalist and the unknown badge follow the kind.
+                    conditionAt(owner, index).cardKind = value;
                     break;
                 case 'eff-type': {
                     const effect = effectAt(owner, index);
@@ -1079,6 +1180,15 @@
                 reqs.push(newRequirement(reqs));
             } else if (action === 'remove-req') {
                 actionRequires(resolveAction(draft, owner)).splice(index, 1);
+            } else if (action === 'add-cond') {
+                ensureConditions(resolveAction(draft, owner)).push(newCondition());
+            } else if (action === 'remove-cond') {
+                const target = resolveAction(draft, owner);
+                actionConditions(target).splice(index, 1);
+                // Drop the key entirely so untouched events stay diff-clean.
+                if (target.conditionsField && target.obj[target.conditionsField].length === 0) {
+                    delete target.obj[target.conditionsField];
+                }
             } else if (action === 'add-choice') {
                 draft.choices = draft.choices || [];
                 draft.choices.push(newChoice(draft.choices));
