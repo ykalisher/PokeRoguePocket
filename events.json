@@ -396,7 +396,14 @@
         "description": "",
         "buttonText": "Choose",
         "requires": [
-          { "id": "rotom", "cardKind": "pokemon" }
+          {
+            "id": "rotom",
+            "cardKind": "pokemon",
+            "name": "Rotom",
+            "label": "Choose your Rotom",
+            "emptyText": "You have no Rotom to send in.",
+            "prompt": "Send your Rotom into the appliance."
+          }
         ],
         "effects": [
           {
@@ -413,7 +420,14 @@
         "description": "",
         "buttonText": "Choose",
         "requires": [
-          { "id": "rotom", "cardKind": "pokemon" }
+          {
+            "id": "rotom",
+            "cardKind": "pokemon",
+            "name": "Rotom",
+            "label": "Choose your Rotom",
+            "emptyText": "You have no Rotom to send in.",
+            "prompt": "Send your Rotom into the appliance."
+          }
         ],
         "effects": [
           {
@@ -430,7 +444,14 @@
         "description": "",
         "buttonText": "Choose",
         "requires": [
-          { "id": "rotom", "cardKind": "pokemon" }
+          {
+            "id": "rotom",
+            "cardKind": "pokemon",
+            "name": "Rotom",
+            "label": "Choose your Rotom",
+            "emptyText": "You have no Rotom to send in.",
+            "prompt": "Send your Rotom into the appliance."
+          }
         ],
         "effects": [
           {
@@ -447,7 +468,14 @@
         "description": "",
         "buttonText": "Choose",
         "requires": [
-          { "id": "rotom", "cardKind": "pokemon" }
+          {
+            "id": "rotom",
+            "cardKind": "pokemon",
+            "name": "Rotom",
+            "label": "Choose your Rotom",
+            "emptyText": "You have no Rotom to send in.",
+            "prompt": "Send your Rotom into the appliance."
+          }
         ],
         "effects": [
           {
@@ -464,7 +492,14 @@
         "description": "",
         "buttonText": "Choose",
         "requires": [
-          { "id": "rotom", "cardKind": "pokemon" }
+          {
+            "id": "rotom",
+            "cardKind": "pokemon",
+            "name": "Rotom",
+            "label": "Choose your Rotom",
+            "emptyText": "You have no Rotom to send in.",
+            "prompt": "Send your Rotom into the appliance."
+          }
         ],
         "effects": [
           {

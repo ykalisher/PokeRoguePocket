@@ -210,6 +210,21 @@ function collectEventConditions(event) {
     return conditions;
 }
 
+function collectEventRequirements(event) {
+    const requirements = [];
+    const push = owner => {
+        if (!owner) return;
+        const list = owner.requires || owner.requirements;
+        if (Array.isArray(list)) requirements.push(...list);
+    };
+
+    push(event);
+    push(event.payment);
+    if (Array.isArray(event.choices)) event.choices.forEach(push);
+
+    return requirements;
+}
+
 test('events.json entries are well-formed', () => {
     assert.ok(Array.isArray(events), 'events.json must be an array');
 
@@ -290,6 +305,25 @@ test('events.json entries are well-formed', () => {
             if (condition.text !== undefined) {
                 assert.equal(typeof condition.text, 'string', `${event.id}: condition text must be a string`);
             }
+        });
+
+        collectEventRequirements(event).forEach(requirement => {
+            assert.ok(requirement && typeof requirement === 'object', `${event.id}: requirement must be an object`);
+            assert.ok(requirement.id && typeof requirement.id === 'string', `${event.id}: requirement needs an id`);
+
+            const cardKind = requirement.cardKind || requirement.kind;
+            const names = conditionCardNames[cardKind];
+            assert.ok(names, `${event.id}: requirement cardKind must be pokemon, attack or item, got ${cardKind}`);
+
+            // Optional name filter: narrows the picker to specific cards.
+            const filter = Array.isArray(requirement.names)
+                ? requirement.names
+                : (requirement.name === undefined ? [] : [requirement.name]);
+
+            filter.forEach(name => {
+                assert.ok(name && typeof name === 'string', `${event.id}: requirement name must be a non-empty string`);
+                assert.ok(names.has(name), `${event.id}: requirement names unknown ${cardKind} ${name}`);
+            });
         });
 
         if (event.type === 'choice') {

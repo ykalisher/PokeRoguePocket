@@ -76,6 +76,21 @@
         return conditions;
     }
 
+    function collectEventRequirements(event) {
+        const requirements = [];
+        const push = (owner) => {
+            if (!owner) return;
+            const list = owner.requires || owner.requirements;
+            if (Array.isArray(list)) requirements.push(...list);
+        };
+
+        push(event);
+        push(event.payment);
+        if (Array.isArray(event.choices)) event.choices.forEach(push);
+
+        return requirements;
+    }
+
     // Mirrors formatAssetName() in arena/arena_data.js (kept local so this
     // module stays require-free).
     function formatAssetName(name) {
@@ -462,6 +477,42 @@
                 }
             });
 
+            collectEventRequirements(event).forEach((requirement) => {
+                if (!requirement || typeof requirement !== 'object') {
+                    issues.push(err('events.json', key, 'events.bad-requirement',
+                        `${key}: requirement must be an object`, 'requires'));
+                    return;
+                }
+                if (!requirement.id || typeof requirement.id !== 'string') {
+                    issues.push(err('events.json', key, 'events.bad-requirement',
+                        `${key}: requirement needs an id`, 'requires'));
+                    return;
+                }
+
+                const requirementKind = requirement.cardKind || requirement.kind;
+                const names = cardNames && cardNames[requirementKind];
+                if (!names) {
+                    issues.push(err('events.json', key, 'events.bad-requirement-kind',
+                        `${key}: requirement cardKind must be pokemon, attack or item, got ${requirementKind}`, 'requires'));
+                    return;
+                }
+
+                // Optional name filter: narrows the picker to specific cards.
+                const filter = Array.isArray(requirement.names)
+                    ? requirement.names
+                    : (requirement.name === undefined ? [] : [requirement.name]);
+
+                filter.forEach((name) => {
+                    if (!name || typeof name !== 'string') {
+                        issues.push(err('events.json', key, 'events.bad-requirement',
+                            `${key}: requirement name must be a non-empty string`, 'requires'));
+                    } else if (!names.has(name)) {
+                        issues.push(err('events.json', key, 'events.unknown-requirement-card',
+                            `${key}: requirement names unknown ${requirementKind} ${name}`, 'requires'));
+                    }
+                });
+            });
+
             if (event.type === 'choice' && !(Array.isArray(event.choices) && event.choices.length >= 1)) {
                 issues.push(err('events.json', key, 'events.no-choices', `${key}: choice event needs >=1 choice`, 'choices'));
             }
@@ -756,6 +807,25 @@
         return refs;
     }
 
+    // A requirement's optional name/names filter is matched by name too, so a
+    // rename would silently empty its picker.
+    function addRequirementRefs(results, events, cardKind, name) {
+        (events || []).forEach((event) => {
+            collectEventRequirements(event).forEach((requirement) => {
+                if (!requirement || typeof requirement !== 'object') return;
+                if ((requirement.cardKind || requirement.kind) !== cardKind) return;
+
+                const filter = Array.isArray(requirement.names)
+                    ? requirement.names
+                    : (requirement.name === undefined ? [] : [requirement.name]);
+
+                if (filter.includes(name)) {
+                    results.push({ file: 'events.json', recordKey: event.id, field: 'requires' });
+                }
+            });
+        });
+    }
+
     function addEngineDeckRefs(results, engineRefs, listKey, name) {
         if (!engineRefs) return;
         if (engineRefs.defaultDeck && Array.isArray(engineRefs.defaultDeck[listKey]) && engineRefs.defaultDeck[listKey].includes(name)) {
@@ -791,6 +861,7 @@
                     results.push({ file: 'events.json', recordKey: event.id, field: 'conditions' });
                 }
             });
+            addRequirementRefs(results, events, 'pokemon', name);
             addEngineDeckRefs(results, engineRefs, 'pokemon', name);
         } else if (kind === 'attack') {
             trainers.forEach((t) => {
@@ -807,6 +878,7 @@
                     results.push({ file: 'events.json', recordKey: event.id, field: 'conditions' });
                 }
             });
+            addRequirementRefs(results, events, 'attack', name);
             addEngineDeckRefs(results, engineRefs, 'attacks', name);
         } else if (kind === 'item') {
             trainers.forEach((t) => {
@@ -824,6 +896,7 @@
                     results.push({ file: 'events.json', recordKey: event.id, field: 'conditions' });
                 }
             });
+            addRequirementRefs(results, events, 'item', name);
             addEngineDeckRefs(results, engineRefs, 'items', name);
         } else if (kind === 'trainer') {
             events.forEach((e) => {

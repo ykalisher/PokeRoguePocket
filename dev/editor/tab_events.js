@@ -735,15 +735,20 @@
 
     function requirementRowHtml(req, index, owner) {
         const base = `data-owner="${escapeAttr(owner)}" data-index="${index}"`;
+        const kind = req.cardKind || 'pokemon';
+        const store = STORE_FOR_KIND[kind] || 'pokemon';
         return `
             <li class="editor-events-req-row">
                 <div class="editor-form-row">
                     ${textField('ID', `data-scope="req" ${base} data-field="id"`, req.id)}
-                    <label>Card kind<select data-scope="req-cardkind" ${base}>${optionTags(CARD_KINDS_UI, req.cardKind || 'pokemon')}</select></label>
+                    <label>Card kind<select data-scope="req-cardkind" ${base}>${optionTags(CARD_KINDS_UI, kind)}</select></label>
                     <button type="button" class="editor-btn editor-btn--danger editor-events-row-remove" data-action="remove-req" ${base}>Remove</button>
                 </div>
                 <div class="editor-form-row">
+                    <label>Only this card<input type="text" list="${datalistForStore(store)}" data-scope="req" ${base} data-field="name" value="${escapeAttr(req.name || '')}" placeholder="any ${escapeAttr(kind)} card">${unknownBadge(store, req.name)}</label>
                     ${textField('Prompt', `data-scope="req" ${base} data-field="prompt"`, req.prompt)}
+                </div>
+                <div class="editor-form-row">
                     ${textField('Label', `data-scope="req" ${base} data-field="label"`, req.label)}
                     ${textField('Empty text', `data-scope="req" ${base} data-field="emptyText"`, req.emptyText)}
                 </div>

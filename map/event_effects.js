@@ -179,12 +179,26 @@
         return getActionRequirements(action).length > 0;
     }
 
+    // An optional name/names filter narrows the picker to specific cards (e.g. only
+    // the run's Rotom). getBlockedReason validates the confirmed selection against
+    // this same list, so a stale selection cannot slip past the filter.
     function getSelectableCards(run, requirement) {
         if (!requirement) return [];
 
         const cardKind = normalizeCardKind(requirement.cardKind || requirement.kind);
+        const names = getRequirementNames(requirement);
 
-        return getCardsByKind(run, cardKind).map(entry => entry.card);
+        return getCardsByKind(run, cardKind)
+            .map(entry => entry.card)
+            .filter(card => names.length === 0 || names.includes(getCardName(card)));
+    }
+
+    function getRequirementNames(requirement) {
+        const names = Array.isArray(requirement.names)
+            ? requirement.names
+            : (requirement.name ? [requirement.name] : []);
+
+        return names.filter(name => typeof name === 'string' && name.trim() !== '');
     }
 
     function getBlockedReason(run, action, selections, context = {}) {

@@ -269,6 +269,52 @@ test('events: condition naming a card that does not exist', () => {
     assert.ok(hasCode(issues, 'events.unknown-condition-card'));
 });
 
+// A requirement's optional name/names filter narrows its picker; these mirror
+// the condition fixtures above.
+const REQUIREMENT_CODES = [
+    'events.bad-requirement', 'events.bad-requirement-kind', 'events.unknown-requirement-card'
+];
+
+function withRequirement(placement, requirement) {
+    return withEvents((events) => {
+        const event = events.find((record) => record.id === 'sitrus-berry-tree');
+        if (placement === 'event') event.requires = [requirement];
+        if (placement === 'payment') event.payment = { requires: [requirement] };
+        if (placement === 'choice') event.choices = [{ label: 'Take it', requires: [requirement] }];
+    });
+}
+
+test('events: well-formed requirements raise no requirement issues, filtered or not', () => {
+    ['event', 'payment', 'choice'].forEach((placement) => {
+        [
+            { id: 'pick', cardKind: 'pokemon' },
+            { id: 'pick', cardKind: 'pokemon', name: 'Blastoise' },
+            { id: 'pick', cardKind: 'pokemon', names: ['Blastoise', 'Charizard'] }
+        ].forEach((requirement) => {
+            const issues = validateAll(withRequirement(placement, requirement), { enums: live.enums });
+            REQUIREMENT_CODES.forEach((code) => assert.ok(!hasCode(issues, code), `${placement}: unexpected ${code}`));
+        });
+    });
+});
+
+test('events: requirement without an id', () => {
+    const data = withRequirement('event', { cardKind: 'pokemon' });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.bad-requirement'));
+});
+
+test('events: requirement with a bad cardKind', () => {
+    const data = withRequirement('payment', { id: 'pick', cardKind: 'trainer' });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.bad-requirement-kind'));
+});
+
+test('events: requirement filtering on a card that does not exist', () => {
+    const data = withRequirement('choice', { id: 'pick', cardKind: 'pokemon', name: 'Definitely Not A Real Pokemon Name' });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.unknown-requirement-card'));
+});
+
 test('locations: only 1 type', () => {
     const data = withLocations((locations) => { locations[0].types = ['WATER']; });
     const issues = validateAll(data, { enums: live.enums });
@@ -343,6 +389,19 @@ test('findReferences(pokemon, Blastoise) includes an event that gates on it', ()
     const refs = findReferences(data, 'pokemon', 'Blastoise', live.engineRefs);
 
     assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'sitrus-berry-tree' && ref.field === 'conditions'));
+});
+
+test('findReferences(pokemon, Blastoise) includes an event whose requirement filters on it', () => {
+    const data = withRequirement('choice', { id: 'pick', cardKind: 'pokemon', name: 'Blastoise' });
+    const refs = findReferences(data, 'pokemon', 'Blastoise', live.engineRefs);
+
+    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'sitrus-berry-tree' && ref.field === 'requires'));
+});
+
+test('findReferences(pokemon, Rotom) includes the live rotom-appliances requirement filters', () => {
+    const refs = findReferences(live.data, 'pokemon', 'Rotom', live.engineRefs);
+
+    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'rotom-appliances' && ref.field === 'requires'));
 });
 
 test('findReferences returns [] for a freshly invented name', () => {
