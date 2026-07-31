@@ -22,17 +22,17 @@
 - [ ] #012 added:2026-07-20 needs:- :: check ace trainers
 - [ ] #013 added:2026-07-20 needs:- :: check event trainers
 - [ ] #014 added:2026-07-20 needs:- :: check standards
-- [ ] #015 added:2026-07-22 needs:- :: Create event for Articuno
-- [ ] #016 added:2026-07-22 needs:- :: Create event for Zapdos
-- [ ] #017 added:2026-07-22 needs:- :: Create event for Moltres
+- [x] #015 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Articuno
+- [x] #016 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Zapdos
+- [x] #017 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Moltres
 - [x] #018 added:2026-07-22 done:2026-07-22 needs:- :: Create events for Regis
-- [ ] #019 added:2026-07-22 needs:- :: Create event for Mewtwo
-- [ ] #020 added:2026-07-22 needs:- :: Create event for Entei
-- [ ] #021 added:2026-07-22 needs:- :: Create event for Raikou
-- [ ] #022 added:2026-07-22 needs:- :: Create event for Suicune
-- [ ] #023 added:2026-07-22 needs:- :: Create event for Celebi
-- [ ] #024 added:2026-07-22 needs:- :: Create event for Lugia
-- [ ] #025 added:2026-07-22 needs:- :: Create event for Ho-oh
+- [x] #019 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Mewtwo
+- [x] #020 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Entei
+- [x] #021 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Raikou
+- [x] #022 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Suicune
+- [x] #023 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Celebi
+- [x] #024 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Lugia
+- [x] #025 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Ho-oh
 - [ ] #026 added:2026-07-22 needs:- :: Create event for Dialga
 - [ ] #027 added:2026-07-22 needs:- :: Create event for Palkia
 - [ ] #028 added:2026-07-22 needs:- :: Create event for Giratina

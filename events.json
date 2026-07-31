@@ -3,20 +3,19 @@
     "type": "trainer",
     "title": "Rogue Mecha Cop",
     "id": "rogue-mecha-cop",
-    "types": ["HUMAN"],
     "kicker": "Mecha Cop wants to subdue you",
     "body": "You hear sirens suddenly explode to life and see a strange police officer jump out from behind a building. \"UNAUTHORIZED TRAINER. PREPARE TO BE SUBDUED.\"",
     "resultTitle": "One less cop terrorizing the streets.",
     "trainerName": "Mecha Cop",
-    "battleTitle": "Fight back!",
-    "battleText": "Beat the cop!",
-    "battleButtonText": "Battle Mecha Cop",
+    "battleTitle": "Battle Mecha Cop!",
+    "battleButtonText": "Beat the pig!",
     "rewardCash": 0,
     "rewardEffects": [
       { "type": "gain-card", "cardKind": "pokemon", "name": "Porygon2", "count": 1 },
       { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Energize" }
     ],
-    "enabled": true
+    "enabled": true,
+    "terrains": ["Urban"]
   },
   {
     "type": "gift",
@@ -31,7 +30,8 @@
     "kicker": "Get a berry",
     "actionTitle": "Grab a berry",
     "rewardText": "You got a sitrus berry!",
-    "requires": []
+    "requires": [],
+    "terrains": ["Forest", "Jungle", "Island"]
   },
   {
     "type": "gift",
@@ -45,7 +45,8 @@
     "enabled": true,
     "kicker": "Get a babiri berry",
     "actionTitle": "Grab a berry",
-    "rewardText": "You got a babiri berry!"
+    "rewardText": "You got a babiri berry!",
+    "terrains": ["Mountain", "Lake", "Swamp"]
   },
   {
     "type": "gift",
@@ -59,7 +60,8 @@
     "enabled": true,
     "kicker": "get a lum berry",
     "actionTitle": "Grab a lum berry!",
-    "rewardText": "You got a lum berry!"
+    "rewardText": "You got a lum berry!",
+    "terrains": ["Mountain", "Lake", "Swamp"]
   },
   {
     "type": "gift",
@@ -73,7 +75,8 @@
     "enabled": true,
     "kicker": "get a liechi berry",
     "actionTitle": "Grab a liechi berry!",
-    "rewardText": "You got a liechi berry!"
+    "rewardText": "You got a liechi berry!",
+    "terrains": ["Mountain", "Lake", "Swamp"]
   },
   {
     "type": "gift",
@@ -87,7 +90,8 @@
     "enabled": true,
     "kicker": "get a salac berry",
     "actionTitle": "Grab a salac berry!",
-    "rewardText": "You got a salac berry!"
+    "rewardText": "You got a salac berry!",
+    "terrains": ["Forest", "Jungle", "Island"]
   },
   {
     "type": "gift",
@@ -181,7 +185,6 @@
     "title": "Strange Buzzing TV",
     "id": "rotom-tv",
     "body": "You pass by an empty room with a TV filled with static making a strange buzzing noise. As you approach it starts to buzz louder, then suddenly a Pokémon jumps out and gives you a kiss!",
-    "buttonText": "bzzt",
     "effects": [
       { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Rotom" },
       { "type": "gain-random-card", "amount": 1, "cardKind": "attack", "count": 1, "types": ["ARTIFICIAL"] }
@@ -190,6 +193,195 @@
     "kicker": "Rotom",
     "actionTitle": "Rotom Joins your Team!",
     "requires": [],
-    "types": ["GHOST", "HUMAN"]
+    "terrains": ["Urban"],
+    "buttonText": "Bzzt!"
+  },
+  {
+    "type": "choice",
+    "title": "A Forest Pixie",
+    "id": "celebi-joins",
+    "body": "You walk into a clearing and discover a small shrine in the middle dedicated to the forest's guardian. You consider whether to leave an offering.",
+    "buttonText": "Take reward",
+    "effects": [],
+    "enabled": true,
+    "kicker": "Celebi",
+    "locations": ["ilex-forest"],
+    "choices": [
+      {
+        "title": "Leave an offering",
+        "id": "trade-for-celebi",
+        "description": "Pick an item to leave as an offering.",
+        "requires": [
+          { "id": "item-req", "cardKind": "item" }
+        ],
+        "effects": [
+          { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Celebi" },
+          { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Nature's Blessing" },
+          { "type": "remove-selected-card", "amount": 1, "selectionId": "item-req" }
+        ],
+        "buttonText": "Choose"
+      },
+      {
+        "title": "Walk away.",
+        "id": "choice-2",
+        "description": "",
+        "buttonText": "Choose",
+        "requires": [],
+        "effects": []
+      }
+    ]
+  },
+  {
+    "type": "trainer",
+    "title": "The Legendary Ice Bird",
+    "id": "articuno-battle",
+    "body": "While exploring the cave system in the islands, you trip and fall through a hole, landing in a river. Its current sweeps you deeper into the caves and spits you out on a gravelly beach. Soaking, shivering, you slowly get up, and immediately lock eyes with Articuno.",
+    "trainerName": "Articuno",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Articuno" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Blizzard" }
+    ],
+    "enabled": true,
+    "kicker": "Articuno",
+    "locations": ["seafoam-islands"],
+    "battleTitle": "Battle Articuno!",
+    "battleButtonText": "Let's go!"
+  },
+  {
+    "type": "trainer",
+    "title": "The Legendary Thunder Bird",
+    "id": "zapdos-battle",
+    "body": "While exploring the abandoned power plant, you trip over something. Before you can see what it was, you hear the crackling of an Electrode waking up, and are suddenly thrown back by an explosion. As the dust settles, you stand up wearily, and look back at where you were standing. There is a giant hole in the wall you were standing by earlier, and on the other side of it, Zapdos.",
+    "trainerName": "Zapdos",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Zapdos" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Thunder Storm" }
+    ],
+    "enabled": true,
+    "kicker": "Zapdos",
+    "locations": ["new-mauville"],
+    "battleTitle": "Battle Zapdos!",
+    "battleButtonText": "Let's go!"
+  },
+  {
+    "type": "trainer",
+    "title": "The Legendary Fire Bird",
+    "id": "moltres-battle",
+    "body": "As you scale the mountain, you see an opening to rest. Sweaty, exhausted, you drag yourself into the cave, only to feel a roaring heat from inside. You look up, and find yourself face-to-face with Moltres.",
+    "trainerName": "Moltres",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Moltres" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Eruption" }
+    ],
+    "enabled": true,
+    "kicker": "Moltres",
+    "locations": ["mt-ember"],
+    "battleTitle": "Battle Moltres!",
+    "battleButtonText": "Let's go!"
+  },
+  {
+    "type": "trainer",
+    "title": "A Voice in your Head",
+    "id": "mewtwo-battle",
+    "body": "So far, the cave hadn't been too bad. You hadn't seen any of the terrible Pokémon the guard at the entrance of the cave had warned you about, and you started to think he might have been messing with you. Although, what did it matter, since you hadn't listened anyway.\n\"Though maybe you should have,\" says a voice in your head. You pause, confused. The voice sounded unnatural, artificial, not how you normally think. You blink, and suddenly a Pokémon appears in front of you. It hovers just above the ground, barely moving, staring directly at you.",
+    "trainerName": "Mewtwo",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Mewtwo" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Shatter Reality" }
+    ],
+    "enabled": true,
+    "kicker": "Mewtwo",
+    "battleTitle": "Battle Mewtwo!",
+    "battleButtonText": "Uh oh",
+    "locations": ["cerulean-cave"]
+  },
+  {
+    "type": "trainer",
+    "title": "The Roaming Beast of Fire",
+    "id": "entei-battle",
+    "body": "As you scale the mountain, you suddenly hear a great roar. You turn around, and find yourself face-to-face with Entei. It roars again, challenging you to prove your worth.",
+    "trainerName": "Entei",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Entei" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Eruption" }
+    ],
+    "enabled": true,
+    "terrains": ["Mountain", "Volcanic"],
+    "battleTitle": "Battle Entei!",
+    "battleButtonText": "Let's go!",
+    "kicker": "Entei"
+  },
+  {
+    "type": "trainer",
+    "title": "The Roaming Beast of Water",
+    "id": "suicune-battle",
+    "body": "As you wade through the water, you suddenly hear a great roar. You turn around, and find yourself face-to-face with Suicune. It roars again, challenging you to prove your worth.",
+    "trainerName": "Suicune",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Suicune" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Great Flood" }
+    ],
+    "enabled": true,
+    "kicker": "Suicune",
+    "battleTitle": "Battle Suicune!",
+    "battleButtonText": "Let's go!",
+    "terrains": ["Beach", "Lake", "Island"]
+  },
+  {
+    "type": "trainer",
+    "title": "The Roaming Best of Thunder",
+    "id": "raikou-battle",
+    "body": "As you push through the undergrowth, you suddenly hear a great roar. You turn around, and find yourself face-to-face with Raikou. It roars again, challenging you to prove your worth.",
+    "trainerName": "Raikou",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Raikou" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Thunder Storm" }
+    ],
+    "enabled": true,
+    "kicker": "Raikou",
+    "battleTitle": "Battle Raikou!",
+    "battleButtonText": "Let's go!",
+    "terrains": ["Jungle", "Safari", "Forest"]
+  },
+  {
+    "type": "trainer",
+    "title": "The Rainbow Guardian",
+    "id": "ho-oh-battle",
+    "body": "After climbing the endless stairs of Bell Tower, you finally reach the summit. Waiting there is Ho-Oh, perched silently atop the ancient roof, its rainbow feathers shimmering. It lets out a single cry, and from below, three familiar roars answer in unison. Moments later, Raikou, Entei, and Suicune leap onto the tower, surrounding you.",
+    "trainerName": "Ho-oh",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Ho-oh" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 2, "name": "Divine Wrath" }
+    ],
+    "enabled": true,
+    "kicker": "Ho-oh",
+    "locations": ["bell-tower"],
+    "battleTitle": "Battle Ho-oh!",
+    "battleButtonText": "Let's go!"
+  },
+  {
+    "type": "trainer",
+    "title": "The Guardian of the Sea",
+    "id": "lugia-battle",
+    "body": "You finally reach the hidden chamber deep beneath the Whirl Islands. For a moment, it seems completely empty, until a massive shape stirs beneath the surface. Lugia emerges, fixing its gaze on you before letting out a powerful cry. Articuno, Zapdos, and Moltres swoop in from the storm outside.",
+    "trainerName": "Lugia",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Lugia" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Great Storm" }
+    ],
+    "enabled": true,
+    "kicker": "Lugia",
+    "locations": ["whirl-islands"],
+    "battleTitle": "Battle Lugia!",
+    "battleButtonText": "Let's go!"
   }
 ]

@@ -3878,5 +3878,188 @@
       "Ancient Energy"
     ],
     "items": []
+  },
+  {
+    "name": "Articuno",
+    "sprite": "Articuno",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ICE",
+    "pokemon": [
+      "Articuno"
+    ],
+    "attacks": [
+      "Ice Beam",
+      "Blizzard",
+      "Frigid Winds",
+      "Air Slash"
+    ],
+    "items": []
+  },
+  {
+    "name": "Zapdos",
+    "sprite": "Zapdos",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ELECTRIC",
+    "pokemon": [
+      "Zapdos"
+    ],
+    "attacks": [
+      "Air Slash",
+      "Discharge",
+      "Thunder Storm",
+      "Thunder Bolt"
+    ],
+    "items": []
+  },
+  {
+    "name": "Moltres",
+    "sprite": "Moltres",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "FIRE",
+    "pokemon": [
+      "Moltres"
+    ],
+    "attacks": [
+      "Air Slash",
+      "Eruption",
+      "Fire Spin",
+      "Flame Thrower"
+    ],
+    "items": []
+  },
+  {
+    "name": "Entei",
+    "sprite": "Entei",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "FIGHTING",
+    "pokemon": [
+      "Entei"
+    ],
+    "attacks": [
+      "Flame Thrower",
+      "Eruption",
+      "Fire Spin",
+      "Divine Power"
+    ],
+    "items": []
+  },
+  {
+    "name": "Raikou",
+    "sprite": "Raikou",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ELECTRIC",
+    "pokemon": [
+      "Raikou"
+    ],
+    "attacks": [
+      "Thunder Storm",
+      "Divine Power",
+      "Discharge",
+      "Thunder Bolt"
+    ],
+    "items": []
+  },
+  {
+    "name": "Suicune",
+    "sprite": "Suicune",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "WATER",
+    "pokemon": [
+      "Suicune"
+    ],
+    "attacks": [
+      "Great Flood",
+      "Surf",
+      "Divine Power",
+      "Waterfall"
+    ],
+    "items": []
+  },
+  {
+    "name": "Lugia",
+    "sprite": "Lugia",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "FLYING",
+    "pokemon": [
+      "Lugia",
+      "Moltres",
+      "Zapdos",
+      "Articuno"
+    ],
+    "attacks": [
+      "Great Storm",
+      "Great Storm",
+      "Ice Beam",
+      "Ice Beam",
+      "Thunder Bolt",
+      "Thunder Bolt",
+      "Flame Thrower",
+      "Flame Thrower",
+      "Air Slash",
+      "Expanding Force",
+      "Expanding Force",
+      "Air Slash",
+      "Air Slash",
+      "Air Slash",
+      "Tailwind",
+      "Air Slash"
+    ],
+    "items": []
+  },
+  {
+    "name": "Ho-oh",
+    "sprite": "Ho-oh",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "LEGENDARY",
+    "pokemon": [
+      "Ho-oh",
+      "Suicune",
+      "Entei",
+      "Raikou"
+    ],
+    "attacks": [
+      "Divine Wrath",
+      "Divine Wrath",
+      "Eruption",
+      "Eruption",
+      "Flame Thrower",
+      "Air Slash",
+      "Waterfall",
+      "Thunder Bolt",
+      "Discharge",
+      "Surf",
+      "Fire Spin",
+      "Flame Thrower",
+      "Fire Spin",
+      "Surf",
+      "Discharge",
+      "Ancient Power"
+    ],
+    "items": []
+  },
+  {
+    "name": "Mewtwo",
+    "sprite": "Mewtwo",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ARTIFICIAL",
+    "pokemon": [
+      "Mewtwo"
+    ],
+    "attacks": [
+      "Shatter Reality",
+      "Shatter Reality",
+      "Divine Power",
+      "Shatter Reality"
+    ],
+    "items": []
   }
 ]

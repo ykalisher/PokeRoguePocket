@@ -259,5 +259,23 @@
     "theme": { "accent": "#c3e4ee", "glow": "#c6964a", "surface": "#34212f", "bgDeep": "#120f0d", "bgMid": "#1f1713" },
     "background": "",
     "enabled": true
+  },
+  {
+    "id": "whirl-islands",
+    "name": "Whirl Islands",
+    "terrain": "Island",
+    "types": ["FLYING", "PSYCHIC", "WATER"],
+    "theme": { "accent": "#b2e9ff", "glow": "#b955d2", "surface": "#081f4a", "bgDeep": "#150e1b", "bgMid": "#24152b" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "bell-tower",
+    "name": "Bell Tower",
+    "terrain": "Urban",
+    "types": ["FIRE", "FLYING", "NORMAL"],
+    "theme": { "accent": "#ff9024", "glow": "#b2e9ff", "surface": "#2b2d30", "bgDeep": "#162027", "bgMid": "#253741" },
+    "background": "",
+    "enabled": true
   }
 ]

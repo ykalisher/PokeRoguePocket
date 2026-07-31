@@ -300,7 +300,7 @@
   {
     "name": "Celebi",
     "type1": "GRASS",
-    "type2": "PSYCHIC",
+    "type2": "FAIRY",
     "type3": "LEGENDARY",
     "id": "0251",
     "baseHealth": 100,
