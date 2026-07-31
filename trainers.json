@@ -3851,7 +3851,10 @@
       "Frigid Winds",
       "Air Slash"
     ],
-    "items": []
+    "items": [
+      "Salac Berry",
+      "Babiri Berry"
+    ]
   },
   {
     "name": "Zapdos",
@@ -3868,7 +3871,10 @@
       "Thunder Storm",
       "Thunder Bolt"
     ],
-    "items": []
+    "items": [
+      "Salac Berry",
+      "Liechi Berry"
+    ]
   },
   {
     "name": "Moltres",
@@ -3885,7 +3891,10 @@
       "Fire Spin",
       "Flame Thrower"
     ],
-    "items": []
+    "items": [
+      "Salac Berry",
+      "Liechi Berry"
+    ]
   },
   {
     "name": "Entei",
@@ -3902,7 +3911,10 @@
       "Fire Spin",
       "Divine Power"
     ],
-    "items": []
+    "items": [
+      "Salac Berry",
+      "Liechi Berry"
+    ]
   },
   {
     "name": "Raikou",
@@ -3919,7 +3931,10 @@
       "Discharge",
       "Thunder Bolt"
     ],
-    "items": []
+    "items": [
+      "Salac Berry",
+      "Liechi Berry"
+    ]
   },
   {
     "name": "Suicune",
@@ -3936,7 +3951,10 @@
       "Divine Power",
       "Waterfall"
     ],
-    "items": []
+    "items": [
+      "Salac Berry",
+      "Liechi Berry"
+    ]
   },
   {
     "name": "Lugia",
@@ -4017,6 +4035,48 @@
       "Divine Power",
       "Shatter Reality"
     ],
-    "items": []
+    "items": [
+      "Liechi Berry",
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Mega Gyarados",
+    "sprite": "Mega Gyarados",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "DRAGON",
+    "pokemon": [
+      "Mega Gyarados"
+    ],
+    "attacks": [
+      "Dragon Rage",
+      "Dragon Dance",
+      "Raging River",
+      "Dragon Rage"
+    ],
+    "items": [
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Darkrai",
+    "sprite": "Darkrai",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "GHOST",
+    "pokemon": [
+      "Darkrai"
+    ],
+    "attacks": [
+      "Nightmare",
+      "Lovecraftian Horror",
+      "Jumpscare",
+      "Rampage"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Salac Berry"
+    ]
   }
 ]

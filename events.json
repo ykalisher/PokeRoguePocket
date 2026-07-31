@@ -525,5 +525,48 @@
     ],
     "kicker": "Rotom Forms",
     "terrains": ["Urban"]
+  },
+  {
+    "type": "trainer",
+    "title": "Gyarados in the Lake of Rage",
+    "id": "mega-gyarados",
+    "body": "As you're exploring the lake, you hear vicious roars coming from the center, and see a massive raging Gyarados. You realize it could cause real harm to the nearby town, and that it might be a good idea to ",
+    "trainerName": "Mega Gyarados",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Mega Gyarados" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 2, "name": "Dragon Rage" }
+    ],
+    "enabled": true,
+    "kicker": "Mega Gyarados",
+    "locations": ["lake-of-rage"],
+    "battleTitle": "Battle Mega Gyarados!",
+    "battleButtonText": "Let's go!",
+    "payment": {
+      "description": "",
+      "buttonText": "Throw a card",
+      "requires": [
+        { "id": "card-to-eat", "cardKind": "attack" }
+      ],
+      "effects": [
+        { "type": "remove-selected-card", "amount": 1, "selectionId": "card-to-eat" }
+      ],
+      "title": "Let it eat one of your cards and run away"
+    }
+  },
+  {
+    "type": "trainer",
+    "title": "A Terrible Nightmare",
+    "id": "darkrai-battle",
+    "body": "You are surrounded by darkness, feeling nothing but paralyzing fear. Suddenly, you jolt awake and sit up straight, coming face to face with the living nightmare, Darkrai.",
+    "trainerName": "Darkrai",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Darkrai" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Lovecraftian Horror" }
+    ],
+    "enabled": true,
+    "kicker": "Darkrai",
+    "terrains": ["Urban"]
   }
 ]

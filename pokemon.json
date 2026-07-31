@@ -2345,19 +2345,8 @@
     "baseHealth": 100,
     "baseAttack": 125,
     "baseDefense": 85,
-    "baseSpeed": 85
-  },
-  {
-    "name": "Magikarp",
-    "type1": "BABY",
-    "type2": "WATER",
-    "type3": "DRAGON",
-    "id": "0129",
-    "baseHealth": 60,
-    "baseAttack": 50,
-    "baseDefense": 55,
-    "baseSpeed": 65,
-    "evolvesInto": "Mega Gyarados"
+    "baseSpeed": 85,
+    "eventOnly": true
   },
   {
     "name": "Mega Ampharos",
