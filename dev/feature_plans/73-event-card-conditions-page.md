@@ -55,7 +55,7 @@ The selection panel's footer already covers itself: `renderActiveAction` (~line 
 
 ## Steps
 
-- [ ] 1. **`map/event.js`** — in `getActionAvailabilityReason`, insert the condition check
+- [x] 1. **`map/event.js`** — in `getActionAvailabilityReason`, insert the condition check
   as the first statements of the function, above `const requirements = …`:
 
   ```js
@@ -67,9 +67,9 @@ The selection panel's footer already covers itself: `renderActiveAction` (~line 
   Nothing else in `map/event.js` changes — no new CSS class, no new markup: the existing
   `disabled` attribute and `.event-action-note` span carry the result.
 
-- [ ] 2. **`node tests/run_all.js`** — confirm green before touching the browser.
+- [x] 2. **`node tests/run_all.js`** — confirm green before touching the browser.
 
-- [ ] 3. **`dev/verify/phase73_event_conditions.py`** — new driver, docstring first
+- [x] 3. **`dev/verify/phase73_event_conditions.py`** — new driver, docstring first
   (`"""Phase 73 verification: … Usage: .cache/venv/bin/python phase73_event_conditions.py"""`).
   Structure it like `phase61_area_selectable.py`: `main()` returning an exit code,
   `pageerror` / `console.error` collectors, `sys.exit(main())`.
@@ -89,7 +89,7 @@ The selection panel's footer already covers itself: `renderActiveAction` (~line 
   owned = run["collections"]["pokemon"][0]["pokemon"]["name"]
   ```
 
-- [ ] 4. **`dev/verify/phase73_event_conditions.py`** — serve a fixture event instead of the
+- [x] 4. **`dev/verify/phase73_event_conditions.py`** — serve a fixture event instead of the
   real `events.json` (keeps the repo file untouched), using `owned` from step 3 and a name
   the run certainly lacks (e.g. `"Nonexistent Probe Mon"`):
 
@@ -113,7 +113,7 @@ The selection panel's footer already covers itself: `renderActiveAction` (~line 
       status=200, content_type="application/json", body=json.dumps(fixture)))
   ```
 
-- [ ] 5. **`dev/verify/phase73_event_conditions.py`** — point the run at that event and open
+- [x] 5. **`dev/verify/phase73_event_conditions.py`** — point the run at that event and open
   the page:
 
   ```python
@@ -136,7 +136,7 @@ The selection panel's footer already covers itself: `renderActiveAction` (~line 
   page.wait_for_selector(".event-choice-card", timeout=15000)
   ```
 
-- [ ] 6. **`dev/verify/phase73_event_conditions.py`** — assert, printing each check so the
+- [x] 6. **`dev/verify/phase73_event_conditions.py`** — assert, printing each check so the
   output is readable, and returning 1 on any failure or collected page error:
   - the heading text `Condition Probe` is on the page (proves the fixture loaded and the
     engine did not silently fall back to the real `events.json`);
@@ -151,23 +151,23 @@ The selection panel's footer already covers itself: `renderActiveAction` (~line 
     renders once an action has been applied).
   - screenshot to `dev/verify/phase73_event_conditions.png` before the click.
 
-- [ ] 7. Run it: `cd dev/verify && .cache/venv/bin/python phase73_event_conditions.py`.
+- [x] 7. Run it: `cd dev/verify && .cache/venv/bin/python phase73_event_conditions.py`.
   Iterate until it exits 0 with no collected page errors. If `page.route` interception
   turns out not to reach the fetch, fall back to temporarily appending the fixture event to
   `events.json`, running the driver, then restoring with `git checkout -- events.json` and
   confirming `git status --porcelain -- events.json` is empty.
 
-- [ ] 8. Look at the screenshot (`Read` the PNG) and confirm with your own eyes: two grayed
+- [x] 8. Look at the screenshot (`Read` the PNG) and confirm with your own eyes: two grayed
   buttons with reason text, one live button.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `dev/verify/.cache/venv/bin/python phase73_event_conditions.py` exits 0, printing a
+- [x] `node tests/run_all.js` green.
+- [x] `dev/verify/.cache/venv/bin/python phase73_event_conditions.py` exits 0, printing a
   pass line for each of the five assertions in step 6.
-- [ ] `dev/verify/phase73_event_conditions.png` exists and visually shows the locked choices
+- [x] `dev/verify/phase73_event_conditions.png` exists and visually shows the locked choices
   grayed with their reason text and the satisfiable choice enabled.
-- [ ] `git status --porcelain` shows only `map/event.js` modified plus the two new
+- [x] `git status --porcelain` shows only `map/event.js` modified plus the two new
   `dev/verify/phase73_*` files — **`events.json` must be untouched**.
 
 ## Out of scope / do not touch

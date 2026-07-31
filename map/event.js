@@ -604,6 +604,10 @@
     }
 
     function getActionAvailabilityReason(action) {
+        const unmetConditionReason = eventSystem.getUnmetConditionReason(state.run, action);
+
+        if (unmetConditionReason) return unmetConditionReason;
+
         const requirements = eventSystem.getActionRequirements(action);
 
         for (const requirement of requirements) {
