@@ -53,7 +53,9 @@
 
     function chooseEvent(gameData, run) {
         const location = run && run.location ? run.location : undefined;
-        const events = getAvailableEvents(gameData, location).filter(event => poolSatisfied(event, gameData));
+        const events = getAvailableEvents(gameData, location)
+            .filter(event => poolSatisfied(event, gameData))
+            .filter(event => eventConditionsMet(run, event));
 
         if (events.length === 0) return null;
 
@@ -87,6 +89,7 @@
         if (eventRecord.type === 'gift') {
             return [{
                 buttonText: eventRecord.buttonText || 'Take reward',
+                conditions: normalizeConditions(eventRecord.conditions),
                 description: eventRecord.rewardText || '',
                 effects: normalizeEffects(eventRecord.effects || eventRecord.rewards),
                 id: 'claim',
@@ -99,6 +102,7 @@
             return Array.isArray(eventRecord.choices)
                 ? eventRecord.choices.map((choice, index) => ({
                     buttonText: choice.buttonText || 'Choose',
+                    conditions: normalizeConditions(choice.conditions),
                     description: choice.description || choice.text || '',
                     effects: normalizeEffects(choice.effects),
                     id: choice.id || `choice-${index + 1}`,
@@ -122,6 +126,7 @@
 
         return {
             buttonText: eventRecord.payment.buttonText || 'Pay',
+            conditions: normalizeConditions(eventRecord.payment.conditions),
             description: eventRecord.payment.description || '',
             effects: normalizeEffects(eventRecord.payment.effects),
             id: 'pay',
@@ -132,6 +137,38 @@
 
     function getActionRequirements(action) {
         return normalizeRequirements(action && (action.requires || action.requirements));
+    }
+
+    // Event-level card gates. Applied in chooseEvent only (like poolSatisfied),
+    // so an already-saved encounter still resolves via getEventById.
+    function eventConditionsMet(run, eventRecord) {
+        return getUnmetConditionReason(run, eventRecord) === '';
+    }
+
+    function getActionConditions(action) {
+        return normalizeConditions(action && action.conditions);
+    }
+
+    // Card-ownership gates. Unlike a requirement (which renders a picker), a
+    // condition selects nothing: it only reports why an action is unavailable.
+    function getUnmetConditionReason(run, action) {
+        for (const condition of getActionConditions(action)) {
+            const owned = runHasCardNamed(run, condition.cardKind, condition.name);
+
+            if (condition.mode === 'lacks' && owned) {
+                return condition.text || `You already have ${condition.name}.`;
+            }
+
+            if (condition.mode === 'has' && !owned) {
+                return condition.text || `Requires ${condition.name}.`;
+            }
+        }
+
+        return '';
+    }
+
+    function runHasCardNamed(run, cardKind, name) {
+        return getCardsByKind(run, cardKind).some(entry => getCardName(entry.card) === name);
     }
 
     function getRequirementById(action, requirementId) {
@@ -151,6 +188,10 @@
     }
 
     function getBlockedReason(run, action, selections, context = {}) {
+        const unmetConditionReason = getUnmetConditionReason(run, action);
+
+        if (unmetConditionReason) return unmetConditionReason;
+
         const requirements = getActionRequirements(action);
 
         for (const requirement of requirements) {
@@ -737,6 +778,17 @@
         return Array.isArray(effects) ? effects.filter(effect => effect && effect.type) : [];
     }
 
+    function normalizeConditions(conditions) {
+        return (Array.isArray(conditions) ? conditions : [])
+            .filter(condition => condition && typeof condition.name === 'string' && condition.name.trim() !== '')
+            .map(condition => ({
+                cardKind: normalizeCardKind(condition.cardKind || condition.kind),
+                mode: condition.mode === 'lacks' ? 'lacks' : 'has',
+                name: condition.name.trim(),
+                text: typeof condition.text === 'string' ? condition.text : ''
+            }));
+    }
+
     function normalizeRequirements(requirements) {
         return (Array.isArray(requirements) ? requirements : []).filter(requirement => (
             requirement &&
@@ -791,6 +843,8 @@
         applyAction,
         applyEffects,
         chooseEvent,
+        eventConditionsMet,
+        getActionConditions,
         getActionRequirements,
         getAvailableEvents,
         getBlockedReason,
@@ -799,6 +853,7 @@
         getRequirementById,
         getSelectableCards,
         getTrainerBattleRewardEffects,
-        getTrainerPaymentAction
+        getTrainerPaymentAction,
+        getUnmetConditionReason
     };
 })(window);

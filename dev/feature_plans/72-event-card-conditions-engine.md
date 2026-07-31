@@ -35,7 +35,7 @@ as written rather than re-deriving it.
 
 ## Steps
 
-- [ ] 1. **`map/event_effects.js`** — add `normalizeConditions` immediately **above**
+- [x] 1. **`map/event_effects.js`** — add `normalizeConditions` immediately **above**
   `normalizeRequirements`:
 
   ```js
@@ -51,7 +51,7 @@ as written rather than re-deriving it.
       }
   ```
 
-- [ ] 2. **`map/event_effects.js`** — add the three accessors between
+- [x] 2. **`map/event_effects.js`** — add the three accessors between
   `getActionRequirements` and `getRequirementById`:
 
   ```js
@@ -88,19 +88,19 @@ as written rather than re-deriving it.
       }
   ```
 
-- [ ] 3. **`map/event_effects.js`** — in `getEventActions`, add `conditions:` to the gift
+- [x] 3. **`map/event_effects.js`** — in `getEventActions`, add `conditions:` to the gift
   action (right after `buttonText:`), reading the **event-level** list:
   `conditions: normalizeConditions(eventRecord.conditions),`
   Per the locked spec this is intentional: a gift event's claim button inherits the
   event-level conditions.
 
-- [ ] 4. **`map/event_effects.js`** — in `getEventActions`, add to each mapped choice
+- [x] 4. **`map/event_effects.js`** — in `getEventActions`, add to each mapped choice
   (right after `buttonText:`): `conditions: normalizeConditions(choice.conditions),`
 
-- [ ] 5. **`map/event_effects.js`** — in `getTrainerPaymentAction`, add (right after
+- [x] 5. **`map/event_effects.js`** — in `getTrainerPaymentAction`, add (right after
   `buttonText:`): `conditions: normalizeConditions(eventRecord.payment.conditions),`
 
-- [ ] 6. **`map/event_effects.js`** — guard `getBlockedReason`. It must be the **first**
+- [x] 6. **`map/event_effects.js`** — guard `getBlockedReason`. It must be the **first**
   thing in the function, above `const requirements = …`:
 
   ```js
@@ -109,7 +109,7 @@ as written rather than re-deriving it.
           if (unmetConditionReason) return unmetConditionReason;
   ```
 
-- [ ] 7. **`map/event_effects.js`** — filter the event pool in `chooseEvent`, replacing the
+- [x] 7. **`map/event_effects.js`** — filter the event pool in `chooseEvent`, replacing the
   single-line `const events = …` with:
 
   ```js
@@ -121,12 +121,12 @@ as written rather than re-deriving it.
   Do **not** touch `getAvailableEvents` or `getEventById` — a saved encounter must still
   resolve after the run stops qualifying.
 
-- [ ] 8. **`map/event_effects.js`** — export `eventConditionsMet`, `getActionConditions`
+- [x] 8. **`map/event_effects.js`** — export `eventConditionsMet`, `getActionConditions`
   and `getUnmetConditionReason` from `global.PokeEvents`, keeping the list alphabetical
   (the first two go just after `chooseEvent`; `getUnmetConditionReason` goes last, after
   `getTrainerPaymentAction`).
 
-- [ ] 9. **`tests/event_conditions.test.js`** — new file. Copy the loading preamble from
+- [x] 9. **`tests/event_conditions.test.js`** — new file. Copy the loading preamble from
   `tests/baby_event.test.js` (it aliases `window` to `globalThis` via
   `helpers/arena_env`, then requires `map/locations`, `map/run_state`,
   `map/event_effects`; `const R = globalThis.PokeRun; const E = globalThis.PokeEvents;`).
@@ -150,7 +150,7 @@ as written rather than re-deriving it.
   `E.applyEffects(run, [{ type: 'gain-card', cardKind: 'pokemon', name: 'Rotom', count: 1 }], {}, { gameData, runStore: R })`
   where `gameData = { pokemon: [...], attacks: [], items: [...] }`.
 
-- [ ] 10. **`tests/event_conditions.test.js`** — cover all of these (each was confirmed to
+- [x] 10. **`tests/event_conditions.test.js`** — cover all of these (each was confirmed to
   pass against the prototype, so a red one means the edit above drifted):
   - `has` unmet → `getUnmetConditionReason` returns `'Requires Rotom.'`; met → `''`.
   - `lacks` blocks only once the card is owned → `'You already have Rotom Wash.'`.
@@ -168,7 +168,7 @@ as written rather than re-deriving it.
   - `getEventById` still resolves that gated event (saved-encounter restore path).
   - `E.chooseEvent(gameData, {})` — a bare `{}` run, as older callers pass — does not throw.
 
-- [ ] 11. **`tests/event_conditions.test.js`** — add one **live-data** guard against
+- [x] 11. **`tests/event_conditions.test.js`** — add one **live-data** guard against
   over-gating, in the style of `tests/baby_event.test.js`'s real-data test
   (`await loadRealGameData()`, then use `arena.GameData`). Assert that a run holding **no
   cards at all** — the harshest case — can still be offered at least one event:
@@ -193,13 +193,13 @@ as written rather than re-deriving it.
 
 ## Verification
 
-- [ ] `node --check map/event_effects.js` passes.
-- [ ] `node --test tests/event_conditions.test.js` — all new tests pass.
-- [ ] `node tests/run_all.js` green (syntax check of every tracked JS + the full suite).
+- [x] `node --check map/event_effects.js` passes.
+- [x] `node --test tests/event_conditions.test.js` — all new tests pass.
+- [x] `node tests/run_all.js` green (syntax check of every tracked JS + the full suite).
   In particular `tests/baby_event.test.js` must still pass: it calls
   `chooseEvent(gameData, {})` and `chooseEvent(gameData, run)` and proves the new filter
   did not change behavior for events without conditions.
-- [ ] `git diff --stat` shows exactly two paths touched: `map/event_effects.js` and the new
+- [x] `git diff --stat` shows exactly two paths touched: `map/event_effects.js` and the new
   `tests/event_conditions.test.js`.
 
 ## Out of scope / do not touch
