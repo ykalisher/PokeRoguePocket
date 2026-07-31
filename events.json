@@ -383,5 +383,112 @@
     "locations": ["whirl-islands"],
     "battleTitle": "Battle Lugia!",
     "battleButtonText": "Let's go!"
+  },
+  {
+    "type": "choice",
+    "title": "Some Strange Appliances",
+    "id": "rotom-appliances",
+    "body": "You feel Rotom's Pokéball start to vibrate, so you decide to let it out. The Rotom starts buzzing excitedly, and leads you to an empty storage room with a bunch of strange appliances in it. The Rotom looks at you expectantly.",
+    "choices": [
+      {
+        "title": "Let Rotom Into the Microwave",
+        "id": "rotom-microwave",
+        "description": "",
+        "buttonText": "Choose",
+        "requires": [
+          { "id": "rotom", "cardKind": "pokemon" }
+        ],
+        "effects": [
+          {
+            "type": "replace-selected-card",
+            "amount": 1,
+            "selectionId": "rotom",
+            "replacement": { "cardKind": "pokemon", "name": "Rotom-Heat", "types": ["ELECTRIC", "GHOST", "ARTIFICIAL"] }
+          }
+        ]
+      },
+      {
+        "title": "Let Rotom into the Washing Machine",
+        "id": "rotom-wash",
+        "description": "",
+        "buttonText": "Choose",
+        "requires": [
+          { "id": "rotom", "cardKind": "pokemon" }
+        ],
+        "effects": [
+          {
+            "type": "replace-selected-card",
+            "amount": 1,
+            "selectionId": "rotom",
+            "replacement": { "cardKind": "pokemon", "name": "Rotom-Wash", "types": ["ELECTRIC", "GHOST", "ARTIFICIAL"] }
+          }
+        ]
+      },
+      {
+        "title": "Let Rotom into the Fridge",
+        "id": "rotom-frost",
+        "description": "",
+        "buttonText": "Choose",
+        "requires": [
+          { "id": "rotom", "cardKind": "pokemon" }
+        ],
+        "effects": [
+          {
+            "type": "replace-selected-card",
+            "amount": 1,
+            "selectionId": "rotom",
+            "replacement": { "cardKind": "pokemon", "name": "Rotom-Frost", "types": ["ELECTRIC", "GHOST", "ARTIFICIAL"] }
+          }
+        ]
+      },
+      {
+        "title": "Let Rotom into the Fan",
+        "id": "rotom-fan",
+        "description": "",
+        "buttonText": "Choose",
+        "requires": [
+          { "id": "rotom", "cardKind": "pokemon" }
+        ],
+        "effects": [
+          {
+            "type": "replace-selected-card",
+            "amount": 1,
+            "selectionId": "rotom",
+            "replacement": { "types": ["ELECTRIC", "GHOST", "ARTIFICIAL"], "cardKind": "pokemon", "name": "Rotom-Fan" }
+          }
+        ]
+      },
+      {
+        "title": "Let Rotom into the Lawnmower",
+        "id": "rotom-mow",
+        "description": "",
+        "buttonText": "Choose",
+        "requires": [
+          { "id": "rotom", "cardKind": "pokemon" }
+        ],
+        "effects": [
+          {
+            "type": "replace-selected-card",
+            "amount": 1,
+            "selectionId": "rotom",
+            "replacement": { "cardKind": "pokemon", "name": "Rotom-Mow" }
+          }
+        ]
+      },
+      {
+        "id": "rotom-base",
+        "description": "",
+        "buttonText": "Choose",
+        "requires": [],
+        "effects": [],
+        "title": "Put Rotom back in its Ball"
+      }
+    ],
+    "enabled": true,
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Rotom" }
+    ],
+    "kicker": "Rotom Forms",
+    "terrains": ["Urban"]
   }
 ]

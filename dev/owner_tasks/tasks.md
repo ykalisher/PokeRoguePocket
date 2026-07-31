@@ -54,10 +54,10 @@
 - [ ] #044 added:2026-07-22 needs:- :: Create event for Tapu Okidogi
 - [ ] #045 added:2026-07-22 needs:- :: Create event for Tapu Munkidori
 - [ ] #046 added:2026-07-22 needs:- :: Create event for Tapu Fezandipiti
-- [ ] #047 added:2026-07-22 needs:- :: Create event for rotom-heat conversion
-- [ ] #048 added:2026-07-22 needs:- :: Create event for rotom-wash conversion
-- [ ] #049 added:2026-07-22 needs:- :: Create event for rotom-frost conversion
-- [ ] #050 added:2026-07-22 needs:- :: Create event for rotom-fan conversion
-- [ ] #051 added:2026-07-22 needs:- :: Create event for rotom-mow conversion
+- [x] #047 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-heat conversion
+- [x] #048 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-wash conversion
+- [x] #049 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-frost conversion
+- [x] #050 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-fan conversion
+- [x] #051 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-mow conversion
 - [ ] #052 added:2026-07-22 needs:- :: Create events for future pokemon
 - [ ] #053 added:2026-07-22 needs:- :: Create event for future archaludon
