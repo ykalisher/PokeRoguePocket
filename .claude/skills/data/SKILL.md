@@ -63,6 +63,33 @@ non-empty it replaces the type gate — the event appears only where the locatio
 is in `locations` OR the terrain is in `terrains`. Both are validated against
 locations.json.
 
+## Event card conditions (`events.json`)
+
+A condition gates an action on whether the run owns a named card:
+
+```json
+{ "mode": "has", "cardKind": "pokemon", "name": "Rotom", "text": "optional blocked message" }
+```
+
+`mode` is `has` (blocked unless the run owns the card) or `lacks` (blocked when it
+does). A condition is a pure **gate** — it renders no picker and consumes nothing.
+Do not confuse it with `requires`, which shows the player a card grid and pairs with
+the `*-selected-card` effects; conditions are also not a cost. Three places may carry
+a `conditions` array: `event.conditions` filters the whole event out of `chooseEvent`'s
+pool while unmet (and, on a gift event, also grays the claim button),
+`choices[].conditions` grays one choice button, and `payment.conditions` grays a
+trainer event's pay-and-leave button. Multiple conditions on one owner are AND-ed.
+
+`name` is matched exactly against the card's current name, so renaming a card breaks
+any condition on it — the editor's "where is this used?" lists conditions for exactly
+that reason. Always write `cardKind` explicitly (`pokemon`/`attack`/`item`); the
+engine defaults an absent kind to `attack`, which is almost never intended.
+`text` overrides the generated message (`Requires <name>.` / `You already have
+<name>.`). Both validators — the editor's Issues tab and
+`tests/data_validation.test.js` — treat a bad `mode`/`cardKind`, a missing `name`, a
+non-string `text`, or a `name` that does not exist in the matching data file as an
+error.
+
 ## Engine extensions beyond the enums
 
 - Attack target `TRAINER` + statuses `INCREASE_CAPACITY`, `EXTRA_ITEM`,
