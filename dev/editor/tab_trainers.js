@@ -8,8 +8,9 @@
  * Deck arrays (`pokemon`, `attacks`, `items`) are exact battle decks —
  * duplicates are meaningful (e.g. Gamer runs Mind Break x2). `attacks` is
  * read tolerant of nested arrays (flattened once on open) but always saved
- * flat; the picker appends new names at the end, the "-" stepper removes by
- * first occurrence.
+ * flat; the picker appends new names at the end, the "-" stepper removes the
+ * last occurrence so deck rows (grouped by first occurrence) keep their order
+ * as the count drops.
  */
 (function (EditorApp, EditorPreview, EditorListView) {
     'use strict';
@@ -421,7 +422,11 @@
             if (btn.dataset.stepper === 'plus') {
                 arr.push(name);
             } else {
-                const idx = arr.indexOf(name);
+                // Remove the LAST occurrence: rows are grouped by first occurrence, so
+                // dropping the first one would let a later name overtake this row and make
+                // it hop down the list between clicks (decks are shuffled at battle start,
+                // so which duplicate goes is gameplay-irrelevant).
+                const idx = arr.lastIndexOf(name);
                 if (idx !== -1) arr.splice(idx, 1);
             }
             draft[field] = arr;
