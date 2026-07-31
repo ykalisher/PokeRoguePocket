@@ -1555,5 +1555,15 @@
     ],
     "target": "ALL_OPPONENTS",
     "full_type_requirements": true
+  },
+  {
+    "name": "Lava Plume",
+    "type1": "FIRE",
+    "type2": "GROUND",
+    "basePower": 60,
+    "status": "BURN",
+    "statChanges": [],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
   }
 ]

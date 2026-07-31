@@ -1,6 +1,6 @@
 [
   {
-    "name": "Gamer",
+    "name": "Gamer John",
     "sprite": "Gamer",
     "cash": 100,
     "rank": "Ace",
@@ -30,8 +30,6 @@
       "Curse"
     ],
     "items": [
-      "Sitrus Berry",
-      "Lum Berry",
       "Salac Berry",
       "Withdraw Wand",
       "Liechi Berry"
@@ -351,10 +349,10 @@
     "typeSpecialization": "FIRE",
     "pokemon": [
       "Arcanine",
-      "Camerupt",
       "Solrock",
       "Armarouge",
-      "Marowak"
+      "Marowak",
+      "Ceruledge"
     ],
     "attacks": [
       "Flame Thrower",
@@ -362,21 +360,21 @@
       "Stone Edge",
       "Fire Spin",
       "Flame Thrower",
-      "Earth Power",
-      "Bulldoze",
       "Fire Spin",
-      "Protect",
       "Stone Wall",
-      "Stone Edge",
       "Expanding Force",
       "Flame Thrower",
       "Fire Spin",
       "Mind Break",
       "Meditate",
-      "Flame Thrower",
       "Shadow Ball",
       "Fire Spin",
-      "Mind Break"
+      "Mind Break",
+      "Cursed Flame",
+      "Cursed Flame",
+      "Cursed Flame",
+      "Future Sight",
+      "Cursed Flame"
     ],
     "items": [
       "Sitrus Berry",
@@ -387,7 +385,7 @@
     ]
   },
   {
-    "name": "Guitarist",
+    "name": "Guitarist Momo",
     "sprite": "Guitarist",
     "cash": 50,
     "rank": "Standard",
@@ -418,7 +416,7 @@
     ]
   },
   {
-    "name": "Dancer",
+    "name": "Dancer Billy",
     "sprite": "Dancer",
     "cash": 50,
     "rank": "Standard",
@@ -511,7 +509,7 @@
     ]
   },
   {
-    "name": "Lass",
+    "name": "Lass Jasmine",
     "sprite": "Lass",
     "cash": 50,
     "rank": "Standard",
@@ -951,40 +949,39 @@
     ]
   },
   {
-    "name": "Rocker",
+    "name": "Thunder Thief Daniel",
     "sprite": "Rocker",
     "cash": 100,
     "rank": "Ace",
     "typeSpecialization": "ELECTRIC",
     "pokemon": [
-      "Toxtricity",
-      "Ampharos",
-      "Luxray",
-      "Zoroark"
+      "Rotom",
+      "Eelektross",
+      "Iron Thorns",
+      "Golem"
     ],
     "attacks": [
       "Discharge",
-      "Mega Punch",
-      "Sludge Strike",
-      "Thunder Wave",
+      "Energize",
+      "Increase Capacity",
       "Thunder Bolt",
-      "Dazzling Dance",
-      "Moon Blast",
-      "Flash Cannon",
       "Crunch",
-      "Sucker Punch",
-      "Thunder Bolt",
+      "Rock Slide",
+      "Thunder Wave",
       "Discharge",
-      "Mega Punch",
-      "Sucker Punch",
-      "Power-up Punch",
-      "Meditate"
+      "Discharge",
+      "Thunder Bolt",
+      "Thunder Bolt",
+      "Crunch",
+      "Rock Slide",
+      "Thunder Bolt",
+      "Stone Edge",
+      "Stone Edge"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Liechi Berry"
+      "Withdraw Wand"
     ]
   },
   {
@@ -1018,9 +1015,7 @@
       "Karate Smash"
     ],
     "items": [
-      "Sitrus Berry",
       "Flame Orb",
-      "Salac Berry",
       "Liechi Berry",
       "Withdraw Wand"
     ]
@@ -1032,10 +1027,10 @@
     "rank": "Ace",
     "typeSpecialization": "ROCK",
     "pokemon": [
-      "Tyranitar",
-      "Rhyperior",
-      "Aggron",
-      "Golem"
+      "Arcanine",
+      "Lunatone",
+      "Solrock",
+      "Drednaw"
     ],
     "attacks": [
       "Rock Slide",
@@ -1044,22 +1039,20 @@
       "Stone Wall",
       "Rock Slide",
       "Stone Edge",
-      "Earthquake",
-      "Stone Wall",
-      "Rock Slide",
-      "Iron Head",
       "Stone Edge",
-      "Rock Polish",
-      "Rock Slide",
+      "Fire Spin",
+      "Expanding Force",
+      "Expanding Force",
+      "Fire Spin",
+      "Waterfall",
+      "Flame Thrower",
       "Stone Edge",
-      "Thunder Bolt",
-      "Stone Wall"
+      "Future Sight",
+      "Mind Break"
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
       "Salac Berry",
-      "Babiri Berry",
       "Withdraw Wand"
     ]
   },
@@ -1085,19 +1078,17 @@
       "Dazzling Dance",
       "Surf",
       "Moon Blast",
-      "Dazzling Dance",
       "Future Sight",
       "Helping Hand",
       "Moon Blast",
-      "Dazzling Dance",
       "Crunch",
-      "Sucker Punch"
+      "Sucker Punch",
+      "Moon Blast",
+      "Helping Hand"
     ],
     "items": [
-      "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
       "Withdraw Wand"
     ]
   },
@@ -1116,26 +1107,24 @@
     "attacks": [
       "Razor Leaf",
       "Sleep Powder",
-      "Leech Seed",
       "Sludge Bomb",
       "Razor Leaf",
-      "Earthquake",
-      "Earth Power",
-      "Leech Seed",
       "Razor Leaf",
-      "Leech Seed",
       "Snack Up",
       "Chomp",
       "Razor Leaf",
       "Body Slam",
-      "Leech Seed",
-      "Sleep Powder"
+      "Sleep Powder",
+      "Sludge Bomb",
+      "Chomp",
+      "Razor Leaf",
+      "Body Slam",
+      "Razor Leaf",
+      "Espresso Shot"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Grass Gem",
       "Withdraw Wand"
     ]
   },
@@ -1147,34 +1136,32 @@
     "typeSpecialization": "POISON",
     "pokemon": [
       "Muk",
+      "Crobat",
       "Nidoking",
-      "Nidoqueen",
-      "Toxtricity"
+      "Corviknight"
     ],
     "attacks": [
-      "Sludge Bomb",
-      "Toxic",
       "Ooze",
+      "Sludge Bomb",
       "Sludge Strike",
-      "Sludge Bomb",
-      "Earthquake",
-      "Earth Power",
-      "Crunch",
-      "Sludge Bomb",
+      "Toxic Pit",
+      "Air Slash",
       "Toxic",
-      "Earthquake",
-      "Mega Punch",
+      "Iron Defense",
+      "Iron Head",
+      "Toxic Pit",
       "Sludge Bomb",
-      "Thunder Bolt",
-      "Discharge",
-      "Toxic"
+      "Sludge Bomb",
+      "Ooze",
+      "Ooze",
+      "Air Slash",
+      "Tailwind",
+      "Air Slash"
     ],
     "items": [
-      "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Poison Gem",
-      "Withdraw Wand"
+      "Withdraw Wand",
+      "Liechi Berry"
     ]
   },
   {
@@ -1193,11 +1180,9 @@
       "Crunch",
       "Dragon Claw",
       "Sucker Punch",
-      "Dragon's Breath",
       "Crunch",
       "Flame Thrower",
       "Sucker Punch",
-      "Fire Spin",
       "Crunch",
       "Murky Water",
       "Sucker Punch",
@@ -1205,12 +1190,12 @@
       "Crunch",
       "Air Slash",
       "Sucker Punch",
-      "Tailwind"
+      "Tailwind",
+      "Fire Fang",
+      "Dragon Claw"
     ],
     "items": [
-      "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
       "Dark Gem",
       "Withdraw Wand"
     ]
@@ -1222,40 +1207,38 @@
     "rank": "Ace",
     "typeSpecialization": "BUG",
     "pokemon": [
-      "Scizor",
-      "Vikavolt",
-      "Escavalier",
-      "Heracross"
+      "Butterfree",
+      "Beautifly",
+      "Masquerain",
+      "Yanmega"
     ],
     "attacks": [
       "Swarming Strike",
       "Buzz Up",
-      "Bullet Punch",
-      "Iron Head",
+      "Tailwind",
+      "Air Slash",
+      "Mind Break",
+      "Expanding Force",
+      "Ancient Energy",
+      "Air Slash",
       "Swarming Strike",
-      "Buzz Up",
-      "Bug Buzz",
-      "Thunder Bolt",
+      "Expanding Force",
       "Swarming Strike",
-      "Buzz Up",
-      "Bullet Punch",
-      "Iron Defense",
       "Swarming Strike",
-      "Buzz Up",
-      "Swarming Punch",
-      "Karate Smash"
+      "Air Slash",
+      "Air Slash",
+      "Tailwind",
+      "Angered Roar"
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Salac Berry",
       "Liechi Berry",
       "Withdraw Wand"
     ]
   },
   {
-    "name": "Tamer Cole",
-    "sprite": "Tamer",
+    "name": "Dragon Tamer Cole",
+    "sprite": "Dragon Tamer",
     "cash": 100,
     "rank": "Ace",
     "typeSpecialization": "DRAGON",
@@ -1263,32 +1246,30 @@
       "Baxcalibur",
       "Sceptile",
       "Dragalge",
-      "Serperior"
+      "Kingdra"
     ],
     "attacks": [
       "Dragon Claw",
       "Dragon Dance",
-      "Dragon's Breath",
       "Ice Beam",
       "Dragon Claw",
-      "Dragon's Breath",
       "Razor Leaf",
       "Dragon Dance",
       "Dragon Claw",
-      "Dragon's Breath",
       "Sludge Bomb",
       "Dragon Claw",
       "Dragon Claw",
-      "Dragon's Breath",
-      "Leech Seed",
-      "Dragon Dance"
+      "Dragon Claw",
+      "Ice Beam",
+      "Razor Leaf",
+      "Sludge Bomb",
+      "Haze",
+      "Waterfall"
     ],
     "items": [
+      "Withdraw Wand",
       "Sitrus Berry",
-      "Lum Berry",
-      "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Fire Gem"
     ]
   },
   {
@@ -1298,34 +1279,32 @@
     "rank": "Ace",
     "typeSpecialization": "FIRE",
     "pokemon": [
-      "Emboar",
       "Skeledirge",
-      "Magmortar",
-      "Arcanine"
+      "Ceruledge",
+      "Camerupt",
+      "Marowak"
     ],
     "attacks": [
-      "Flame Thrower",
-      "Fire Spin",
-      "Karate Smash",
-      "Will-o-wisp",
-      "Flame Thrower",
       "Cursed Flame",
-      "Fire Spin",
+      "Flame Thrower",
+      "Bulldoze",
       "Shadow Ball",
-      "Flame Thrower",
-      "Fire Punch",
-      "Fire Spin",
       "Will-o-wisp",
+      "Cursed Flame",
       "Flame Thrower",
+      "Bulldoze",
+      "Shadow Ball",
+      "Will-o-wisp",
+      "Cursed Flame",
+      "Flame Thrower",
+      "Bulldoze",
       "Fire Spin",
-      "Rock Slide",
-      "Will-o-wisp"
+      "Fire Spin",
+      "Shadow Ball"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Fire Gem",
       "Withdraw Wand"
     ]
   },
@@ -1336,35 +1315,34 @@
     "rank": "Ace",
     "typeSpecialization": "FLYING",
     "pokemon": [
-      "Braviary",
-      "Staraptor",
-      "Corviknight",
-      "Togekiss"
+      "Togekiss",
+      "Altaria",
+      "Drifblim",
+      "Decidueye"
     ],
     "attacks": [
       "Air Slash",
       "Tailwind",
-      "Karate Smash",
-      "Body Slam",
       "Air Slash",
-      "Tailwind",
-      "Kick in the Face",
-      "Body Slam",
       "Air Slash",
-      "Tailwind",
-      "Iron Head",
-      "Flash Cannon",
       "Air Slash",
-      "Tailwind",
+      "Dazzling Dance",
+      "Sparkling Breeze",
+      "Dragon Dance",
+      "Dragon's Breath",
+      "Razor Leaf",
+      "Shadow Ball",
+      "Helping Hand",
+      "Haze",
       "Moon Blast",
-      "Dazzling Dance"
+      "Sparkling Breeze",
+      "Jumpscare"
     ],
     "items": [
-      "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Withdraw Wand",
+      "Psychic Gem"
     ]
   },
   {
@@ -1374,34 +1352,30 @@
     "rank": "Ace",
     "typeSpecialization": "FOSSIL",
     "pokemon": [
-      "Aurorus",
       "Archeops",
       "Armaldo",
-      "Relicanth"
+      "Relicanth",
+      "Cradily"
     ],
     "attacks": [
       "Ancient Energy",
-      "Ancient Power",
       "Ice Beam",
       "Freeze-Dry",
-      "Ancient Energy",
-      "Ancient Power",
       "Air Slash",
       "Tailwind",
-      "Ancient Energy",
-      "Ancient Power",
       "Swarming Strike",
       "Buzz Up",
-      "Ancient Energy",
-      "Ancient Power",
       "Waterfall",
-      "Surf"
+      "Surf",
+      "Razor Leaf",
+      "Sleep Powder",
+      "Razor Leaf",
+      "Waterfall",
+      "Air Slash",
+      "Ice Beam",
+      "Ancient Energy"
     ],
     "items": [
-      "Sitrus Berry",
-      "Lum Berry",
-      "Salac Berry",
-      "Liechi Berry",
       "Withdraw Wand"
     ]
   },
@@ -1412,34 +1386,32 @@
     "rank": "Ace",
     "typeSpecialization": "GHOST",
     "pokemon": [
-      "Gengar",
-      "Dragapult",
-      "Basculegion",
-      "Trevenant"
+      "Rotom",
+      "Drifblim",
+      "Dusknoir",
+      "Froslass"
     ],
     "attacks": [
       "Shadow Ball",
       "Jumpscare",
       "Curse",
+      "Shadow Ball",
+      "Curse",
+      "Shadow Ball",
+      "Shadow Ball",
       "Ghastly Grip",
-      "Shadow Ball",
-      "Jumpscare",
-      "Curse",
-      "Dragon Claw",
-      "Shadow Ball",
-      "Jumpscare",
-      "Curse",
-      "Waterfall",
-      "Shadow Ball",
-      "Jumpscare",
-      "Curse",
-      "Razor Leaf"
+      "Discharge",
+      "Air Slash",
+      "Tailwind",
+      "Ghastly Grip",
+      "Ghastly Grip",
+      "Discharge",
+      "Air Slash",
+      "Energize"
     ],
     "items": [
-      "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
       "Withdraw Wand"
     ]
   },
@@ -1461,22 +1433,20 @@
       "Chomp",
       "Burp",
       "Stockpile",
-      "Snack Up",
       "Espresso Shot",
       "Chomp",
-      "Snack Up",
       "Chomp",
       "Razor Leaf",
       "Future Sight",
-      "Snack Up",
       "Chomp",
       "Flame Thrower",
-      "Karate Smash"
+      "Karate Smash",
+      "Burp",
+      "Burp",
+      "Chomp"
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Salac Berry",
       "Liechi Berry",
       "Withdraw Wand"
     ]
@@ -1488,39 +1458,37 @@
     "rank": "Ace",
     "typeSpecialization": "GROUND",
     "pokemon": [
-      "Excadrill",
-      "Seismitoad",
-      "Camerupt",
-      "Ursaluna"
+      "Mamoswine",
+      "Torterra",
+      "Abomasnow",
+      "Gastrodon"
     ],
     "attacks": [
-      "Earthquake",
+      "Muddy Water",
       "Bulldoze",
-      "Earth Power",
-      "Iron Head",
-      "Earthquake",
+      "Ice Beam",
+      "Bulldoze",
+      "Bulldoze",
       "Bulldoze",
       "Muddy Water",
-      "Earth Power",
-      "Earthquake",
+      "Muddy Water",
+      "Razor Leaf",
+      "Razor Leaf",
+      "Razor Leaf",
+      "Ice Beam",
+      "Ice Beam",
       "Bulldoze",
-      "Earth Power",
-      "Flame Thrower",
-      "Earthquake",
-      "Bulldoze",
-      "Earth Power",
-      "Body Slam"
+      "Razor Leaf",
+      "Sleep Powder"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Liechi Berry",
       "Withdraw Wand"
     ]
   },
   {
-    "name": "Skater Elsa",
+    "name": "Ice Worker Erwin",
     "sprite": "WorkerIce",
     "cash": 100,
     "rank": "Ace",
@@ -1541,20 +1509,18 @@
       "Slush Rush",
       "Swarming Strike",
       "Ice Beam",
-      "Freeze-Dry",
       "Slush Rush",
       "Waterfall",
-      "Ice Beam",
-      "Freeze-Dry",
-      "Slush Rush",
-      "Rock Slide"
+      "Rock Slide",
+      "Ice Hammer",
+      "Swarming Strike",
+      "Rock Slide",
+      "Iron Head"
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Withdraw Wand",
+      "Babiri Berry"
     ]
   },
   {
@@ -1564,35 +1530,33 @@
     "rank": "Ace",
     "typeSpecialization": "MONSTER",
     "pokemon": [
-      "Tyranitar",
-      "Drednaw",
+      "Blastoise",
       "Gyarados",
-      "Muk"
+      "Drednaw",
+      "Eelektross"
     ],
     "attacks": [
-      "Angered Roar",
-      "Intimidating Stare",
-      "Violent Smash",
-      "Crunch",
-      "Angered Roar",
-      "Intimidating Stare",
-      "Violent Smash",
       "Raging River",
-      "Angered Roar",
-      "Intimidating Stare",
-      "Violent Smash",
+      "Surf",
+      "Waterfall",
+      "Discharge",
+      "Rock Slide",
       "Raging River",
-      "Angered Roar",
+      "Raging River",
+      "Surf",
+      "Waterfall",
+      "Discharge",
+      "Rock Slide",
+      "Raging River",
       "Intimidating Stare",
+      "Angered Roar",
       "Violent Smash",
-      "Sludge Bomb"
+      "Violent Smash"
     ],
     "items": [
-      "Sitrus Berry",
-      "Lum Berry",
-      "Salac Berry",
       "Liechi Berry",
-      "Withdraw Wand"
+      "Withdraw Wand",
+      "Salac Berry"
     ]
   },
   {
@@ -1602,34 +1566,32 @@
     "rank": "Ace",
     "typeSpecialization": "NORMAL",
     "pokemon": [
-      "Slaking",
+      "Braviary",
+      "Staraptor",
       "Blissey",
-      "Farigiraf",
-      "Bewear"
+      "Sawsbuck"
     ],
     "attacks": [
-      "Body Slam",
-      "Inspiring Noise",
-      "Protect",
-      "Mega Punch",
-      "Body Slam",
-      "Inspiring Noise",
-      "Protect",
+      "Razor Leaf",
+      "Razor Leaf",
       "Moon Blast",
+      "Dazzling Dance",
       "Body Slam",
-      "Inspiring Noise",
-      "Protect",
-      "Future Sight",
       "Body Slam",
-      "Inspiring Noise",
-      "Protect",
-      "Karate Smash"
+      "Body Slam",
+      "Body Slam",
+      "Body Slam",
+      "Body Slam",
+      "Sky Uppercut",
+      "Sky Uppercut",
+      "Sky Uppercut",
+      "Sky Uppercut",
+      "Tailwind",
+      "Protect"
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
       "Withdraw Wand"
     ]
   },
@@ -1640,35 +1602,34 @@
     "rank": "Ace",
     "typeSpecialization": "PSYCHIC",
     "pokemon": [
-      "Alakazam",
+      "Ninetales",
       "Slowbro",
-      "Armarouge",
-      "Lunatone"
+      "Slowking",
+      "Dragalge"
     ],
     "attacks": [
-      "Future Sight",
-      "Mind Break",
+      "Dragon Claw",
       "Expanding Force",
-      "Trick",
       "Future Sight",
-      "Mind Break",
+      "Surf",
+      "Ooze",
+      "Ice Beam",
+      "Haze",
+      "Dragon Claw",
+      "Dragon Claw",
       "Expanding Force",
-      "Hydro Pump",
-      "Future Sight",
-      "Mind Break",
-      "Expanding Force",
-      "Flame Thrower",
-      "Future Sight",
-      "Mind Break",
-      "Expanding Force",
-      "Rock Slide"
+      "Surf",
+      "Ooze",
+      "Ice Beam",
+      "Surf",
+      "Ooze",
+      "Ice Beam"
     ],
     "items": [
-      "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Psychic Gem",
-      "Withdraw Wand"
+      "Withdraw Wand",
+      "Psychic Gem"
     ]
   },
   {
@@ -1681,32 +1642,30 @@
       "Magnezone",
       "Kingambit",
       "Gholdengo",
-      "Aggron"
+      "Ferrothorn"
     ],
     "attacks": [
-      "Iron Head",
       "Flash Cannon",
-      "Magnetize",
-      "Thunder Bolt",
-      "Iron Head",
-      "Flash Cannon",
-      "Iron Defense",
       "Sucker Punch",
-      "Iron Head",
-      "Flash Cannon",
-      "Iron Defense",
+      "Razor Leaf",
       "Shadow Ball",
       "Iron Head",
-      "Flash Cannon",
       "Iron Defense",
-      "Rock Slide"
+      "Iron Defense",
+      "Iron Head",
+      "Iron Head",
+      "Flash Cannon",
+      "Flash Cannon",
+      "Sucker Punch",
+      "Razor Leaf",
+      "Shadow Ball",
+      "Iron Head",
+      "Flash Cannon"
     ],
     "items": [
-      "Sitrus Berry",
-      "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Withdraw Wand",
+      "Babiri Berry"
     ]
   },
   {
@@ -1717,34 +1676,32 @@
     "typeSpecialization": "WATER",
     "pokemon": [
       "Basculegion",
-      "Seismitoad",
-      "Feraligatr",
-      "Milotic"
+      "Malamar",
+      "Relicanth",
+      "Gyarados"
     ],
     "attacks": [
-      "Hydro Pump",
+      "Dragon Rage",
+      "Dragon Dance",
+      "Ancient Energy",
+      "Waterfall",
+      "Murky Water",
+      "Surf",
+      "Mind Break",
+      "Dragon Rage",
       "Waterfall",
       "Surf",
-      "Shadow Ball",
-      "Hydro Pump",
+      "Mind Break",
+      "Dragon Rage",
       "Waterfall",
       "Surf",
-      "Muddy Water",
-      "Hydro Pump",
-      "Waterfall",
-      "Surf",
-      "Crunch",
-      "Hydro Pump",
-      "Waterfall",
-      "Surf",
-      "Moon Blast"
+      "Mind Break",
+      "Mind Break"
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Withdraw Wand",
+      "Dark Gem"
     ]
   },
   {
@@ -1869,7 +1826,7 @@
       "Talonflame",
       "Blaziken",
       "Camerupt",
-      "Marowak"
+      "Torkoal"
     ],
     "attacks": [
       "Heat Wave",
@@ -1877,21 +1834,21 @@
       "Heat Wave",
       "Heat Wave",
       "Heat Wave",
-      "Bulldoze",
-      "Bulldoze",
-      "Bulldoze",
-      "Bulldoze",
       "Flame Thrower",
-      "Fire Spin",
       "Fire Spin",
       "Fire Spin",
       "Flame Thrower",
       "Flame Thrower",
-      "Bulldoze",
+      "Flame Thrower",
+      "Lava Plume",
+      "Lava Plume",
+      "Lava Plume",
+      "Tailwind",
+      "Lava Plume",
+      "Lava Plume",
       "Heat Wave",
-      "Flame Thrower",
-      "Fire Spin",
-      "Flame Thrower"
+      "Heat Wave",
+      "Lava Plume"
     ],
     "items": [
       "Sitrus Berry",
@@ -3677,7 +3634,6 @@
       "Iron Defense",
       "Rock Polish",
       "Rock Polish",
-      "Rock Slide",
       "Stone Edge",
       "Rock Slide",
       "Rock Slide",
@@ -3687,7 +3643,8 @@
       "Discharge",
       "Discharge",
       "Titanic Boulder",
-      "Rock Slide"
+      "Rock Slide",
+      "Earth Power"
     ],
     "items": [
       "Sitrus Berry",

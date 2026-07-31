@@ -1105,7 +1105,7 @@
     "name": "Eelektross",
     "type1": "ELECTRIC",
     "type2": "MONSTER",
-    "type3": "NONE",
+    "type3": "WATER",
     "id": "0604",
     "baseHealth": 90,
     "baseAttack": 110,
@@ -3050,5 +3050,16 @@
     "baseAttack": 115,
     "baseDefense": 70,
     "baseSpeed": 90
+  },
+  {
+    "name": "Torkoal",
+    "type1": "FIRE",
+    "type2": "GROUND",
+    "type3": "NONE",
+    "id": "0324",
+    "baseHealth": 105,
+    "baseAttack": 90,
+    "baseDefense": 115,
+    "baseSpeed": 40
   }
 ]
