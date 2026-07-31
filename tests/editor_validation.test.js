@@ -215,6 +215,60 @@ test('events: unknown terrain in terrains override', () => {
     assert.ok(hasCode(issues, 'events.unknown-terrain'));
 });
 
+// Live events.json has no conditions yet, so every condition fixture starts
+// from a well-formed one and breaks exactly one field.
+const CONDITION_CODES = [
+    'events.bad-condition', 'events.bad-condition-mode',
+    'events.bad-condition-kind', 'events.unknown-condition-card'
+];
+
+function withCondition(placement, condition) {
+    return withEvents((events) => {
+        const event = events.find((record) => record.id === 'sitrus-berry-tree');
+        if (placement === 'event') event.conditions = [condition];
+        if (placement === 'payment') event.payment = { conditions: [condition] };
+        if (placement === 'choice') event.choices = [{ label: 'Take it', conditions: [condition] }];
+    });
+}
+
+test('events: well-formed conditions raise no condition issues', () => {
+    ['event', 'payment', 'choice'].forEach((placement) => {
+        const data = withCondition(placement, { mode: 'has', cardKind: 'pokemon', name: 'Blastoise', text: 'Needs Blastoise' });
+        const issues = validateAll(data, { enums: live.enums });
+        CONDITION_CODES.forEach((code) => assert.ok(!hasCode(issues, code), `${placement}: unexpected ${code}`));
+    });
+});
+
+test('events: condition without a name', () => {
+    const data = withCondition('event', { mode: 'has', cardKind: 'pokemon' });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.bad-condition'));
+});
+
+test('events: condition text must be a string', () => {
+    const data = withCondition('event', { mode: 'has', cardKind: 'pokemon', name: 'Blastoise', text: 7 });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.bad-condition'));
+});
+
+test('events: choice condition with a bad mode', () => {
+    const data = withCondition('choice', { mode: 'maybe', cardKind: 'pokemon', name: 'Blastoise' });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.bad-condition-mode'));
+});
+
+test('events: payment condition with a bad cardKind', () => {
+    const data = withCondition('payment', { mode: 'has', cardKind: 'trainer', name: 'Blastoise' });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.bad-condition-kind'));
+});
+
+test('events: condition naming a card that does not exist', () => {
+    const data = withCondition('choice', { mode: 'lacks', cardKind: 'pokemon', name: 'Definitely Not A Real Pokemon Name' });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.unknown-condition-card'));
+});
+
 test('locations: only 1 type', () => {
     const data = withLocations((locations) => { locations[0].types = ['WATER']; });
     const issues = validateAll(data, { enums: live.enums });
@@ -282,6 +336,13 @@ test('findReferences(trainer, Mecha Cop) includes events.json/rogue-mecha-cop', 
     const refs = findReferences(live.data, 'trainer', 'Mecha Cop', live.engineRefs);
 
     assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'rogue-mecha-cop'));
+});
+
+test('findReferences(pokemon, Blastoise) includes an event that gates on it', () => {
+    const data = withCondition('choice', { mode: 'has', cardKind: 'pokemon', name: 'Blastoise' });
+    const refs = findReferences(data, 'pokemon', 'Blastoise', live.engineRefs);
+
+    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'sitrus-berry-tree' && ref.field === 'conditions'));
 });
 
 test('findReferences returns [] for a freshly invented name', () => {

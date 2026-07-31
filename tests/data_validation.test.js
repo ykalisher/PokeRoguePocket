@@ -196,10 +196,29 @@ function collectEventEffects(event) {
     return effects;
 }
 
+function collectEventConditions(event) {
+    const conditions = [];
+
+    if (Array.isArray(event.conditions)) conditions.push(...event.conditions);
+    if (event.payment && Array.isArray(event.payment.conditions)) conditions.push(...event.payment.conditions);
+    if (Array.isArray(event.choices)) {
+        event.choices.forEach(choice => {
+            if (choice && Array.isArray(choice.conditions)) conditions.push(...choice.conditions);
+        });
+    }
+
+    return conditions;
+}
+
 test('events.json entries are well-formed', () => {
     assert.ok(Array.isArray(events), 'events.json must be an array');
 
     const trainerNames = new Set(trainers.map(record => record.name));
+    const conditionCardNames = {
+        pokemon: new Set(pokemon.map(record => record.name)),
+        attack: new Set(attacks.map(record => record.name)),
+        item: new Set(items.map(record => record.name))
+    };
     const locationIds = new Set(locations.map(location => location.id));
     const terrainSet = new Set(locations.map(location => String(location.terrain || '').trim().toLowerCase()).filter(Boolean));
     const seenIds = new Set();
@@ -255,6 +274,21 @@ test('events.json entries are well-formed', () => {
                 effect.replacement.types.forEach(type => {
                     assert.ok(VALID_TYPES.has(type), `${event.id}: bad replacement type filter ${type}`);
                 });
+            }
+        });
+
+        collectEventConditions(event).forEach(condition => {
+            assert.ok(condition && typeof condition === 'object', `${event.id}: condition must be an object`);
+            assert.ok(condition.name && typeof condition.name === 'string', `${event.id}: condition needs a non-empty name`);
+            assert.ok(condition.mode === 'has' || condition.mode === 'lacks',
+                `${event.id}: condition mode must be has or lacks, got ${condition.mode}`);
+
+            const names = conditionCardNames[condition.cardKind];
+            assert.ok(names, `${event.id}: condition cardKind must be pokemon, attack or item, got ${condition.cardKind}`);
+            assert.ok(names.has(condition.name), `${event.id}: condition names unknown ${condition.cardKind} ${condition.name}`);
+
+            if (condition.text !== undefined) {
+                assert.equal(typeof condition.text, 'string', `${event.id}: condition text must be a string`);
             }
         });
 

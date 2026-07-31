@@ -62,6 +62,20 @@
         return effects;
     }
 
+    function collectEventConditions(event) {
+        const conditions = [];
+
+        if (Array.isArray(event.conditions)) conditions.push(...event.conditions);
+        if (event.payment && Array.isArray(event.payment.conditions)) conditions.push(...event.payment.conditions);
+        if (Array.isArray(event.choices)) {
+            event.choices.forEach((choice) => {
+                if (choice && Array.isArray(choice.conditions)) conditions.push(...choice.conditions);
+            });
+        }
+
+        return conditions;
+    }
+
     // Mirrors formatAssetName() in arena/arena_data.js (kept local so this
     // module stays require-free).
     function formatAssetName(name) {
@@ -324,7 +338,7 @@
 
     // ----------------------------------------------------------------- events
 
-    function validateEvents(events, trainerNames, enums, locations) {
+    function validateEvents(events, trainerNames, enums, locations, cardNames) {
         const issues = [];
         const validTypes = new Set(Object.values((enums && enums.PokeType) || {}));
         const validEffectTypes = new Set((enums && enums.effectTypes) || DEFAULT_EFFECT_TYPES);
@@ -416,6 +430,35 @@
                             issues.push(err('events.json', key, 'events.bad-effect-types', `${key}: bad replacement type filter ${type}`, 'effects'));
                         }
                     });
+                }
+            });
+
+            collectEventConditions(event).forEach((condition) => {
+                if (!condition || typeof condition !== 'object') {
+                    issues.push(err('events.json', key, 'events.bad-condition',
+                        `${key}: condition must be an object`, 'conditions'));
+                    return;
+                }
+                if (!condition.name || typeof condition.name !== 'string') {
+                    issues.push(err('events.json', key, 'events.bad-condition',
+                        `${key}: condition needs a non-empty name`, 'conditions'));
+                    return;
+                }
+                if (condition.mode !== 'has' && condition.mode !== 'lacks') {
+                    issues.push(err('events.json', key, 'events.bad-condition-mode',
+                        `${key}: condition mode must be has or lacks, got ${condition.mode}`, 'conditions'));
+                }
+                const names = cardNames && cardNames[condition.cardKind];
+                if (!names) {
+                    issues.push(err('events.json', key, 'events.bad-condition-kind',
+                        `${key}: condition cardKind must be pokemon, attack or item, got ${condition.cardKind}`, 'conditions'));
+                } else if (!names.has(condition.name)) {
+                    issues.push(err('events.json', key, 'events.unknown-condition-card',
+                        `${key}: condition names unknown ${condition.cardKind} ${condition.name}`, 'conditions'));
+                }
+                if (condition.text !== undefined && typeof condition.text !== 'string') {
+                    issues.push(err('events.json', key, 'events.bad-condition',
+                        `${key}: condition text must be a string`, 'conditions'));
                 }
             });
 
@@ -685,7 +728,7 @@
             ...validateAttacks(attacks, enums),
             ...validateItems(items, enums),
             ...validateTrainers(trainers, pokemonNames, attackNames, itemNames, enums),
-            ...validateEvents(events, trainerNames, enums, locations),
+            ...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames }),
             ...validateLocations(locations, enums, engineRefs),
             ...validateNameCharacters(data),
             ...validateEngineRefs(pokemonNames, attackNames, itemNames, engineRefs),
@@ -699,6 +742,16 @@
         const refs = [];
         (events || []).forEach((event) => {
             collectEventEffects(event).forEach((effect) => refs.push({ event, effect }));
+        });
+        return refs;
+    }
+
+    function collectAllConditionRefs(events) {
+        const refs = [];
+        (events || []).forEach((event) => {
+            collectEventConditions(event).forEach((condition) => {
+                if (condition && typeof condition === 'object') refs.push({ event, condition });
+            });
         });
         return refs;
     }
@@ -733,6 +786,11 @@
                     results.push({ file: 'events.json', recordKey: event.id, field: 'effects' });
                 }
             });
+            collectAllConditionRefs(events).forEach(({ event, condition }) => {
+                if (condition.cardKind === 'pokemon' && condition.name === name) {
+                    results.push({ file: 'events.json', recordKey: event.id, field: 'conditions' });
+                }
+            });
             addEngineDeckRefs(results, engineRefs, 'pokemon', name);
         } else if (kind === 'attack') {
             trainers.forEach((t) => {
@@ -742,6 +800,11 @@
             collectAllEffectRefs(events).forEach(({ event, effect }) => {
                 if (effect.cardKind === 'attack' && (effect.name === name || (effect.replacement && effect.replacement.name === name))) {
                     results.push({ file: 'events.json', recordKey: event.id, field: 'effects' });
+                }
+            });
+            collectAllConditionRefs(events).forEach(({ event, condition }) => {
+                if (condition.cardKind === 'attack' && condition.name === name) {
+                    results.push({ file: 'events.json', recordKey: event.id, field: 'conditions' });
                 }
             });
             addEngineDeckRefs(results, engineRefs, 'attacks', name);
@@ -754,6 +817,11 @@
             collectAllEffectRefs(events).forEach(({ event, effect }) => {
                 if (effect.cardKind === 'item' && (effect.name === name || (effect.replacement && effect.replacement.name === name))) {
                     results.push({ file: 'events.json', recordKey: event.id, field: 'effects' });
+                }
+            });
+            collectAllConditionRefs(events).forEach(({ event, condition }) => {
+                if (condition.cardKind === 'item' && condition.name === name) {
+                    results.push({ file: 'events.json', recordKey: event.id, field: 'conditions' });
                 }
             });
             addEngineDeckRefs(results, engineRefs, 'items', name);

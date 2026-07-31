@@ -43,7 +43,7 @@ which is never what an author meant.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/validate.js`** — add a collector beside `collectEventEffects`, so
+- [x] 1. **`dev/editor/validate.js`** — add a collector beside `collectEventEffects`, so
   every place a condition may live is covered exactly once:
 
   ```js
@@ -62,7 +62,7 @@ which is never what an author meant.
       }
   ```
 
-- [ ] 2. **`dev/editor/validate.js`** — give `validateEvents` a fifth parameter
+- [x] 2. **`dev/editor/validate.js`** — give `validateEvents` a fifth parameter
   `cardNames` (an object of three `Set`s keyed `pokemon` / `attack` / `item`) and, inside
   the `events.forEach` block after the existing effects loop, validate each condition.
   Every issue is an **error** (not a warning) — a bad condition silently breaks gameplay:
@@ -98,10 +98,10 @@ which is never what an author meant.
               });
   ```
 
-- [ ] 3. **`dev/editor/validate.js`** — pass the sets from `validateAll`:
+- [x] 3. **`dev/editor/validate.js`** — pass the sets from `validateAll`:
   `...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames }),`
 
-- [ ] 4. **`dev/editor/validate.js`** — teach `findReferences` about conditions. Add a
+- [x] 4. **`dev/editor/validate.js`** — teach `findReferences` about conditions. Add a
   `collectAllConditionRefs(events)` beside `collectAllEffectRefs` returning
   `{ event, condition }` pairs (walk the same three locations as step 1), then in each of
   the `'pokemon'` / `'attack'` / `'item'` branches push a reference when
@@ -109,14 +109,14 @@ which is never what an author meant.
   `field: 'conditions'`. This is what makes the editor warn before an author renames or
   deletes a card an event gates on.
 
-- [ ] 5. **`tests/data_validation.test.js`** — mirror step 2 against the live data: add a
+- [x] 5. **`tests/data_validation.test.js`** — mirror step 2 against the live data: add a
   local `collectEventConditions(event)` matching step 1 and, inside the existing
   `events.forEach`, assert each condition has a valid `mode`, a `cardKind` in
   `pokemon|attack|item`, a `name` present in the matching name set (the file already builds
   or can build those sets from `pokemon`/`attacks`/`items`), and a string `text` if
   present. Keep the message style of its neighbors (`` `${event.id}: …` ``).
 
-- [ ] 6. **`tests/editor_validation.test.js`** — add synthetic fixtures in the style of the
+- [x] 6. **`tests/editor_validation.test.js`** — add synthetic fixtures in the style of the
   existing ones (clone `live.data`, mutate, assert `hasCode(issues, …)`). One test per
   code, each starting from a valid conditioned event and breaking one thing:
   `events.bad-condition` (missing name), `events.bad-condition-mode` (`"maybe"`),
@@ -125,11 +125,11 @@ which is never what an author meant.
   condition on a real card name produces none of those codes. Conditions on a choice and on
   `payment` must both be reached — cover at least one of each.
 
-- [ ] 7. **`tests/editor_validation.test.js`** — add a `findReferences` test: give a cloned
+- [x] 7. **`tests/editor_validation.test.js`** — add a `findReferences` test: give a cloned
   event a condition naming a real pokemon, and assert the refs include
   `{ file: 'events.json', recordKey: <that event id>, field: 'conditions' }`.
 
-- [ ] 8. **`.claude/skills/data/SKILL.md`** — document the feature in the
+- [x] 8. **`.claude/skills/data/SKILL.md`** — document the feature in the
   "Event effects (`events.json`)" section (~line 48), after the location-gating paragraph.
   Cover, tersely: the condition object and its four fields; that `mode` is `has`/`lacks`;
   that it is a **gate**, not a picker and not a cost (contrast with `requires`, which shows
@@ -142,16 +142,16 @@ which is never what an author meant.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green — including the "live data: zero error-severity issues"
+- [x] `node tests/run_all.js` green — including the "live data: zero error-severity issues"
   test, which proves the new rules do not fire on the real `events.json`.
-- [ ] `node --test tests/editor_validation.test.js` — the new fixture tests pass, and each
+- [x] `node --test tests/editor_validation.test.js` — the new fixture tests pass, and each
   genuinely fails when its rule is removed (spot-check one by temporarily reverting step 2's
   mode check and watching it go red, then restore).
-- [ ] Sanity-check the editor end: start `node dev/editor/server.js`, add a condition with a
+- [x] Sanity-check the editor end: start `node dev/editor/server.js`, add a condition with a
   nonsense card name to an event in the Events tab, and confirm the Issues tab lists
   `events.unknown-condition-card` pointing at that event. Restore `events.json`
   (`git checkout -- events.json`) afterwards.
-- [ ] `git status --porcelain` shows only `dev/editor/validate.js`,
+- [x] `git status --porcelain` shows only `dev/editor/validate.js`,
   `tests/data_validation.test.js`, `tests/editor_validation.test.js` and
   `.claude/skills/data/SKILL.md` — `events.json` unchanged.
 
