@@ -34,7 +34,7 @@ comes from the stat stage alone, so burn and paralysis produce no color at all, 
 
 **2 + 4 — Attack encounters and the new map shape.** A sixth node type, `'attack'`, offers
 1–3 attack cards filtered to the location's types (no LEGENDARY, no ARTIFICIAL); the player
-picks one and gets 2 copies. It slots into a rebuilt map: levels 1–3 become fixed 10-node
+picks one and gets 2 copies. It slots into a rebuilt map: levels 1–3 become fixed 11-node
 routes with a single one-step-wide branch and hard per-route quotas, and level 4 gains a
 second shop.
 
@@ -80,16 +80,23 @@ scope: showing the base number inline, and changing the `H` cell (it keeps showi
 
 ### Map layout
 
-Levels 1–3 (`layout: 'branching'`): every start→boss route is **exactly 10 nodes** — 9
+Levels 1–3 (`layout: 'branching'`): every start→boss route is **exactly 11 nodes** — 10
 non-boss plus the boss. `start` is step 0 and is not counted. There is **exactly one branch
 spot and it is exactly one step wide**: at one step the path splits into 2–3 lanes which all
-rejoin at the next step. Per-route quotas over the 9 non-boss nodes:
+rejoin at the next step. Per-route quotas over the 10 non-boss nodes:
 
 | level | battle | capture | event | shop | attack | Σ min | boss rank |
 |---|---|---|---|---|---|---|---|
 | L1 | 2–3 | 2–4 | 2–3 | 1–2 | 1–2 | 8 | `Boss` |
 | L2 | 3–4 | 1–3 | 2–3 | 1–2 | 1–2 | 8 | `Boss` |
 | L3 | 2–3 | 1–2 | 2–3 | 1–2 | 2–3 | 8 | **`Elite`** |
+
+**Owner-reconfirmed 2026-08-01: these ranges are exactly as intended — do not adjust them.**
+The minimums total 8 against 10 non-boss nodes, so **every route carries 2 flexible spots**
+above the guaranteed floor. That is deliberate: measured over 45 000 generated routes each
+category sits at its minimum ~60% of the time and at min+1 ~40%, and the wide ranges (L1
+capture, L2 capture) reach their maximum on a few percent of runs. Every value in every range
+is reachable.
 
 L1 keeps its forced opening: step 1 `capture`, step 2 `capture`, step 3 `battle`.
 
@@ -184,8 +191,8 @@ or stages, so the new coloring is inert there.
 drivers to copy: `drive_arena.py`, `phase61_area_selectable.py`, `drive_starter.py`. Use the
 `verify` skill; do not rebuild drivers from scratch.
 
-**The phase-79 generator was prototyped and validated during planning** — 12 000 graphs, 29
-975 routes, every assertion passing, 0 three-in-a-row. Its source is inlined verbatim in that
+**The phase-79 generator was prototyped and validated during planning** — 18 000 graphs, 44
+911 routes, every assertion passing, 0 three-in-a-row. Its source is inlined verbatim in that
 phase file. Transcribe it; do not re-derive it.
 
 ## Phases
@@ -194,7 +201,7 @@ phase file. Transcribe it; do not re-derive it.
 |---|---|---|
 | `77-battle-stat-status-colors.md` | `arena/arena_render.js` + `static/styles.css` + a new render test: status-driven stat colors and a tooltip breakdown. | independent — do first, it is the warm-up |
 | `78-attack-node-type-rendering.md` | `map/area.js` + `static/area.css` learn the `'attack'` node type (label, icon, legend). Purely additive; nothing generates one yet. | before 79 |
-| `79-map-layout-rewrite.md` | `map/locations.js` generator + `LEVEL_CONFIG` rewrite, the `boss-10` / storage-version constant sweep, and the `tests/run_progression.test.js` rewrite. **The risky one.** | after 78 |
+| `79-map-layout-rewrite.md` | `map/locations.js` generator + `LEVEL_CONFIG` rewrite, the `boss-11` / storage-version constant sweep, and the `tests/run_progression.test.js` rewrite. **The risky one.** | after 78 |
 | `80-attack-encounter-state.md` | `map/locations.js` pool helper + `map/run_state.js` + `map/area.js` + `main.js`: attack encounters exist in run state. The node is still inert. | after 79 |
 | `81-attack-encounter-page.md` | New `attack.html` + `map/attack.js` + `static/attack.css`, then the `moveToNode` dispatch that makes the node playable. | after 80 |
 | `82-location-typed-random-grants.md` | `locationTypes` flag: engine, `events.json`, editor, validation, docs. | independent of 77–81; late, so it does not collide with the map work |

@@ -1,4 +1,4 @@
-# Phase 79 — Map layout rewrite: 10-node routes, one branch, hard quotas
+# Phase 79 — Map layout rewrite: 11-node routes, one branch, hard quotas
 
 **Recommended agent:** Sonnet · high effort.
 
@@ -8,7 +8,7 @@
 
 **Prereqs:** phase 78 (the map must be able to draw an `attack` node before one is generated).
 **Read first:** `76-map-and-encounter-overhaul-overview.md`.
-**Goal:** Levels 1–3 generate fixed 10-node routes (9 non-boss + boss) with exactly one
+**Goal:** Levels 1–3 generate fixed 11-node routes (10 non-boss + boss) with exactly one
 one-step-wide branch and per-route type quotas that hold **by construction**; level 3's boss
 is an Elite; level 4 is a 6-step gauntlet with a second shop. Attack nodes now appear on the
 map (still inert — clicking one pops "You entered an Attack Encounter", which is correct until
@@ -23,38 +23,60 @@ phase 81).
 columns.flat()` (same object identities), `columns[step]` is the array of nodes at that step,
 node is `{ id, lane, step, type, x, y }`, edge is `{ from, to }`. Renderers depend on this.
 
-**Why the algorithm is what it is.** Each route is 9 non-boss nodes: the 8 single-node steps
+**Why the algorithm is what it is.** Each route is 10 non-boss nodes: the 9 single-node steps
 plus one node from the branch column. Because the branch lanes have **distinct** types and a
 route may take any lane, for every category `c` there is some route that does *not* pick `c`
-at the branch — so the 8 base steps must independently satisfy `base_c ≥ min_c`. Since every
-level's minimums total exactly 8, **the base multiset is forced to be exactly the minimums**.
-A lane then adds 1 to its category, which is legal iff `min_c < max_c`. Quotas therefore hold
-by construction, and the entire old repair pass (`enforceBranchingGuarantees` and friends)
-becomes dead code. The remaining randomness is: which step branches (4–9), the order of the 8
-base types, which 2–3 categories the lanes offer, and 2-vs-3 lanes.
+at the branch — so the 9 base steps must independently satisfy `base_c ≥ min_c`, and every
+route must also satisfy `base_c + 1 ≤ max_c` for the category the lane offers.
 
-**Validation already performed** (2000 graphs × 3 levels × 2 event flags = 29 975 routes, plus
-500 gauntlets): every assertion in the Verification section passed, 0 three-in-a-row runs,
-branch step uniform over 4–9, 2-vs-3 lanes ~50/50, and each category sits at its minimum on
-~80% of routes and `min+1` on ~20% — exactly what the proof predicts.
+Every level's minimums total 8 against 9 base steps, so the base multiset is **the minimums
+plus exactly one free token**, handed to a uniformly random category that still has headroom
+(`base_c < max_c`). A lane may then be offered for any category that *still* has headroom
+after that token lands. Both bounds therefore hold by construction:
 
-**Two failure modes were found and fixed during prototyping — do not reintroduce them:**
+```
+route_c = base_c + (lane === c ? 1 : 0)
+  lower: base_c ≥ min_c            (only ever added to)
+  upper: non-lane  base_c ≤ max_c  (buildBaseCounts never exceeds max)
+         lane      base_c + 1 ≤ max_c   (chooseLaneTypes filters on base_c < max_c)
+```
+
+The entire old repair pass (`enforceBranchingGuarantees` and friends) becomes dead code. The
+remaining randomness is: which step branches (4–10), which category gets the free token, the
+order of the 9 base types, which 2–3 categories the lanes offer, and 2-vs-3 lanes.
+
+> **The free token is why the quota table's `Σ min = 8` is not a bug.** The owner reconfirmed
+> the ranges on 2026-08-01: 8 guaranteed encounters plus **2 flexible spots** across each
+> route's 10 non-boss nodes is the intended shape. Do not "fix" it by raising minimums to 9.
+
+**Validation already performed** (3000 graphs × 3 levels × 2 event flags = 44 911 routes):
+every assertion in the Verification section passed, 0 three-in-a-row runs, branch step uniform
+over 4–10, 2-vs-3 lanes ~50/50, and each category sits at its minimum on ~60% of routes and
+`min+1` on ~40% — with the two wide ranges (L1 `capture`, L2 `capture`) reaching their maximum
+on ~4% of routes. **Every value in every configured range is reachable**; a run where some
+category can never hit an end of its range means the free-token step drifted.
+
+**Three failure modes were found and fixed during prototyping — do not reintroduce them:**
 1. A naive `includeEvents: false` fallback that dumped the whole event minimum onto `battle`
    gave L2 five-to-six battles per route and 81 three-in-a-row runs. The fix is the
    scarcest-first redistribution in `resolveQuotas`.
-2. A "slack" pass that also re-homed `event`'s `max − min` is provably dead: only the
-   predicate `min < max` matters, never the size of the gap, and the min-bump already
-   preserves `max − min`.
+2. Giving the free token to the category with the **widest** headroom instead of a uniformly
+   random one is deterministic in disguise: L1 `capture` is the unique widest every time, so
+   L1 rolled 3–4 captures on literally every route and its configured minimum of 2 became
+   unreachable. Pick uniformly among all categories that have headroom.
+3. Re-homing `event`'s `max − min` in `resolveQuotas` is still dead work — the min-bump
+   already preserves each surviving category's `max − min`, which is all `buildBaseCounts`
+   and `chooseLaneTypes` need.
 
 **A strict "never two identical types in a row" rule is not always satisfiable** (L1 with
 events off forces `battle` at steps 4/6/8, which collides with the forced battle at step 3).
 So adjacency is a **soft** best-of-48 penalty that hard-avoids three-in-a-row; it is
 structurally incapable of violating a quota because it only reorders a fixed multiset.
 
-**`makeNode` spacing is fine at `nodeCount: 10`** — `x = 5 + (step/nodeCount)*90` gives
-5,14,23,…,95, i.e. 9% per step instead of 7.5%. The canvas is percentage-positioned, so nodes
-get more room, not less. One deliberate visual change: single-step nodes now all use `lane 2`
-(y = 50, a centered spine), so the map reads as a straight line with one bulge.
+**`makeNode` spacing is fine at `nodeCount: 11`** — `x = 5 + (step/nodeCount)*90` gives
+5,13.2,21.4,…,95, i.e. 8.2% per step instead of 7.5%. The canvas is percentage-positioned, so
+nodes get more room, not less. One deliberate visual change: single-step nodes now all use
+`lane 2` (y = 50, a centered spine), so the map reads as a straight line with one bulge.
 
 **`bossNodeIdForLevel` derives from `LEVEL_CONFIG[level].nodeCount`** (~251) so it updates
 itself. `isAllowedTrainerRank` derives from `rankListForNode` (~168), so setting L3's
@@ -64,13 +86,13 @@ trainers, plenty for L3 + L4.
 ## Steps
 
 - [ ] 1. **`map/locations.js`** — replace `LEVEL_CONFIG` (~16–38) entirely. `weights` and
-  `caps` are gone; `quotas` is `{ type: [min, max] }` over the **9 non-boss nodes of one
-  route**.
+  `caps` are gone; `quotas` is `{ type: [min, max] }` over the **10 non-boss nodes of one
+  route**. The minimums total 8 by design — see the free-token note above.
 
   ```js
       const LEVEL_CONFIG = Object.freeze({
           1: {
-              nodeCount: 10,
+              nodeCount: 11,
               layout: 'branching',
               forcedTypes: { 1: 'capture', 2: 'capture', 3: 'battle' },
               quotas: { battle: [2, 3], capture: [2, 4], event: [2, 3], shop: [1, 2], attack: [1, 2] },
@@ -78,7 +100,7 @@ trainers, plenty for L3 + L4.
               bossRanks: [{ rank: 'Boss', weight: 100 }]
           },
           2: {
-              nodeCount: 10,
+              nodeCount: 11,
               layout: 'branching',
               forcedTypes: {},
               quotas: { battle: [3, 4], capture: [1, 3], event: [2, 3], shop: [1, 2], attack: [1, 2] },
@@ -86,7 +108,7 @@ trainers, plenty for L3 + L4.
               bossRanks: [{ rank: 'Boss', weight: 100 }]
           },
           3: {
-              nodeCount: 10,
+              nodeCount: 11,
               layout: 'branching',
               forcedTypes: {},
               quotas: { battle: [2, 3], capture: [1, 2], event: [2, 3], shop: [1, 2], attack: [2, 3] },
@@ -123,25 +145,26 @@ trainers, plenty for L3 + L4.
 
   ```js
       /**
-       * Levels 1-3: every start->boss route is exactly 10 nodes (9 + boss), with
-       * exactly one one-step-wide branch of 2-3 lanes. Because a route may take
-       * any lane, the 8 non-branch steps must independently satisfy every quota
-       * minimum; the minimums total exactly 8, so the base multiset IS the
-       * minimums, and each lane adds 1 to a category that still has headroom.
-       * Quotas therefore hold by construction - there is no repair pass.
+       * Levels 1-3: every start->boss route is exactly 11 nodes (10 + boss),
+       * with exactly one one-step-wide branch of 2-3 lanes. Because a route may
+       * take any lane, the 9 non-branch steps must independently satisfy every
+       * quota minimum; the minimums total 8, so the base multiset is the
+       * minimums plus one free token, and each lane adds 1 to a category that
+       * still has headroom. Quotas hold by construction - no repair pass.
        */
       function createBranchingGraph(config, includeEvents) {
           const quotas = resolveQuotas(config, includeEvents);
           const branchStep = chooseBranchStep(config);
-          const laneTypes = chooseLaneTypes(quotas, randomInt(2, 3));
-          const stepTypes = buildStepTypes(config, quotas, branchStep, laneTypes);
+          const baseCounts = buildBaseCounts(config, quotas);
+          const laneTypes = chooseLaneTypes(quotas, baseCounts, randomInt(2, 3));
+          const stepTypes = buildStepTypes(config, baseCounts, branchStep, laneTypes);
 
           return assembleBranchingGraph(config, stepTypes, branchStep, laneTypes);
       }
 
       // With events disabled the event minimum is re-homed onto the categories
       // that are currently scarcest, keeping the minimum total at 8 and every
-      // surviving category's headroom intact.
+      // surviving category's headroom (max - min) intact.
       function resolveQuotas(config, includeEvents) {
           const quotas = {};
 
@@ -171,21 +194,51 @@ trainers, plenty for L3 + L4.
           return randomInt(first, config.nodeCount - 1);
       }
 
-      // A lane is legal only where the base count (== the minimum) is below the
-      // maximum. Lanes are distinct types so the branch is a real choice.
-      function chooseLaneTypes(quotas, laneCount) {
-          const candidates = Object.keys(quotas).filter(type => quotas[type][0] < quotas[type][1]);
+      /**
+       * How many of each type fill the 9 non-branch steps: every minimum, plus
+       * the leftover slots handed out one at a time to a UNIFORMLY RANDOM
+       * category that still has headroom. Uniform matters - biasing toward the
+       * widest headroom makes the pick deterministic and strands a minimum
+       * (see failure mode 2 in the phase notes).
+       */
+      function buildBaseCounts(config, quotas) {
+          const types = Object.keys(quotas);
+          const counts = {};
+          let remaining = config.nodeCount - 2;
+
+          types.forEach(type => { counts[type] = quotas[type][0]; remaining -= quotas[type][0]; });
+          if (remaining < 0) throw new Error(`quota minimums exceed ${config.nodeCount - 2} base nodes`);
+
+          while (remaining > 0) {
+              const candidates = types.filter(type => counts[type] < quotas[type][1]);
+
+              if (candidates.length === 0) throw new Error('quota maximums cannot fill the base steps');
+
+              counts[randomPick(candidates)] += 1;
+              remaining -= 1;
+          }
+
+          return counts;
+      }
+
+      // A lane is legal only where the base count is still below the maximum,
+      // so base + 1 stays in range. Lanes are distinct types so the branch is a
+      // real choice; fewer than 2 legal categories means the quotas are broken.
+      function chooseLaneTypes(quotas, baseCounts, laneCount) {
+          const candidates = Object.keys(quotas).filter(type => baseCounts[type] < quotas[type][1]);
+
+          if (candidates.length < 2) throw new Error('quotas leave fewer than 2 branchable categories');
 
           return shuffle(candidates).slice(0, Math.min(laneCount, candidates.length));
       }
 
       /**
        * Types for every single-node step, keyed by step. The multiset is fixed
-       * (one token per quota minimum); only the ORDER is random. Forced steps
-       * claim their token first. Ordering is best-of-K on a cosmetic penalty, so
-       * it can never break a quota - the worst case is a repetitive-looking map.
+       * by buildBaseCounts; only the ORDER is random. Forced steps claim their
+       * token first. Ordering is best-of-K on a cosmetic penalty, so it can
+       * never break a quota - the worst case is a repetitive-looking map.
        */
-      function buildStepTypes(config, quotas, branchStep, laneTypes) {
+      function buildStepTypes(config, baseCounts, branchStep, laneTypes) {
           const baseSteps = [];
 
           for (let step = 1; step < config.nodeCount; step += 1) {
@@ -194,11 +247,11 @@ trainers, plenty for L3 + L4.
 
           const pool = [];
 
-          Object.keys(quotas).forEach(type => {
-              for (let i = 0; i < quotas[type][0]; i += 1) pool.push(type);
+          Object.keys(baseCounts).forEach(type => {
+              for (let i = 0; i < baseCounts[type]; i += 1) pool.push(type);
           });
           if (pool.length !== baseSteps.length) {
-              throw new Error(`quota minimums total ${pool.length}, expected ${baseSteps.length}`);
+              throw new Error(`base counts total ${pool.length}, expected ${baseSteps.length}`);
           }
 
           const forced = config.forcedTypes || {};
@@ -215,7 +268,7 @@ trainers, plenty for L3 + L4.
 
               const index = pool.indexOf(type);
 
-              if (index === -1) throw new Error(`forced ${type}@${step} exceeds its quota minimum`);
+              if (index === -1) throw new Error(`forced ${type}@${step} exceeds its base count`);
               pool.splice(index, 1);
               fixed[step] = type;
           });
@@ -309,11 +362,11 @@ trainers, plenty for L3 + L4.
   `makeNode`, `forcedTypeForStep`, `getBranchLanes`, `singleNodeId`, `addEdge`,
   `graphFromColumns`, `bossNodeIdForLevel`, `randomInt`, `randomPick`.
 
-- [ ] 5. **`map/area.js`** — `DEFAULT_BOSS_NODE_ID` (~9) `'boss-12'` → `'boss-10'`, and
-  `getMaxStep` (~772–776) fallback `12` → `10`. Both are only used when a graph is missing or
+- [ ] 5. **`map/area.js`** — `DEFAULT_BOSS_NODE_ID` (~9) `'boss-12'` → `'boss-11'`, and
+  `getMaxStep` (~772–776) fallback `12` → `11`. Both are only used when a graph is missing or
   empty, but they must match the new shape.
 
-- [ ] 6. **`map/run_state.js`** — `DEFAULT_BOSS_NODE_ID` (~10) `'boss-12'` → `'boss-10'`, and
+- [ ] 6. **`map/run_state.js`** — `DEFAULT_BOSS_NODE_ID` (~10) `'boss-12'` → `'boss-11'`, and
   `STORAGE_VERSION` (~9) `2` → `3`.
 
 - [ ] 7. **`main.js`** — `RUN_STORAGE_VERSION` (~10) `2` → `3`. **This must land in the same
@@ -326,15 +379,25 @@ trainers, plenty for L3 + L4.
 
 - [ ] 8. **`tests/run_progression.test.js`** — replace the config tests (~63–90):
   - `LEVEL_CONFIG matches the spec table verbatim` → assert each of L1/L2/L3 has
-    `nodeCount === 10`, `layout === 'branching'`, and the exact `quotas` object from step 1;
+    `nodeCount === 11`, `layout === 'branching'`, and the exact `quotas` object from step 1;
     assert `LEVEL_CONFIG[1].forcedTypes` deep-equals `{ 1: 'capture', 2: 'capture', 3: 'battle' }`
     and `LEVEL_CONFIG[3].bossRanks` deep-equals `[{ rank: 'Elite', weight: 100 }]`.
   - Add a **structural invariant test**: for every branching level and both event flags,
-    `resolveQuotas`'s effective minimums total exactly 8 and at least 2 categories satisfy
+    `resolveQuotas`'s effective minimums total exactly 8 and enough categories satisfy
     `min < max`. Since `resolveQuotas` is private, assert the public consequence instead —
     generate graphs and check the route length and quota bounds (covered by step 9). Also
-    assert directly that each level's **configured** minimums total 8:
-    `Object.values(P.LEVEL_CONFIG[level].quotas).reduce((sum, [min]) => sum + min, 0) === 8`.
+    assert directly, for each branching level, that the **configured** minimums total 8 and
+    leave room for the free token plus 2 distinct lanes:
+    ```js
+    const quotas = P.LEVEL_CONFIG[level].quotas;
+    const mins = Object.values(quotas).reduce((sum, [min]) => sum + min, 0);
+    const slack = P.LEVEL_CONFIG[level].nodeCount - 2 - mins;   // === 1
+    const roomy = Object.values(quotas).filter(([min, max]) => min < max).length;
+
+    assert.equal(mins, 8);
+    assert.equal(slack, 1);
+    assert.ok(roomy >= slack + 2);   // the free token can never strand the branch
+    ```
   - `L4 is a fixed 5-node gauntlet` → rename to 6-step: `nodeCount === 6`, `quotas === null`,
     `forcedTypes` deep-equals `{ 1: 'shop', 2: 'battle', 3: 'battle', 4: 'shop', 5: 'battle' }`,
     both rank lists Elite.
@@ -349,25 +412,33 @@ trainers, plenty for L3 + L4.
 
   | assertion | value |
   |---|---|
-  | route length (excluding `start`) | exactly `10` |
-  | last node | `type === 'boss'`, `id === 'boss-10'` |
-  | steps along the route | contiguous `1..10` |
-  | per-type counts over the **first 9** nodes | inside `[min, max]` for every quota key |
+  | route length (excluding `start`) | exactly `11` |
+  | last node | `type === 'boss'`, `id === 'boss-11'` |
+  | steps along the route | contiguous `1..11` |
+  | per-type counts over the **first 10** nodes | inside `[min, max]` for every quota key |
   | no node carries a type outside the quota keys (plus `boss`) | true |
   | columns with more than one node | exactly 1, holding 2–3 nodes with **distinct** types |
-  | `graph.columns.length` | `11` |
-  | `graph.nodes.length` | `10 + laneCount` |
-  | `graph.edges.length` | `8 + 2 * laneCount` |
+  | `graph.columns.length` | `12` |
+  | `graph.nodes.length` | `11 + laneCount` |
+  | `graph.edges.length` | `9 + 2 * laneCount` |
   | `graph.nodes` | deep-equals `graph.columns.flat()` |
-  | branch step | in `4..9` |
+  | branch step | in `4..10` |
   | every non-`start` node | has ≥1 inbound edge |
   | every non-`boss` node | has ≥1 outbound edge |
   | `listAllPaths(graph).length` | equals the lane count |
   | no three consecutive nodes of the same type on any route | true |
 
   With `includeEvents: false`, additionally assert zero `event` nodes **and** that the route
-  still has exactly 10 nodes with every surviving quota satisfied (this is what catches a
+  still has exactly 11 nodes with every surviving quota satisfied (this is what catches a
   broken `resolveQuotas`). Keep the existing `countTypes` helper (~381) and reuse it.
+
+  Add one **range-coverage** assertion in the same loop: accumulate the per-type counts across
+  all iterations and assert that, with events on, every quota key is observed at **both** its
+  configured `min` and its `min + 1` on some route (at ≥500 iterations each is seen thousands
+  of times, so this is not flaky). This is the regression test for failure mode 2 — a biased
+  free token silently strands a minimum and nothing else in the suite would notice. Do **not**
+  assert the maximum is reached for the wide ranges (L1/L2 `capture` hit 4/3 on only ~4% of
+  routes; it is reliable at 500 iterations but is the one bound worth leaving loose).
 
 - [ ] 10. **`tests/run_progression.test.js`** — keep `L1 forced steps 1-2 stay captures and
   step 3 a battle` (~512–521) but note the branch can no longer land on steps 1–3, so those
@@ -378,7 +449,7 @@ trainers, plenty for L3 + L4.
   `['start','node-1-1','node-2-1','node-3-1','node-4-1','node-5-1','boss-6']`.
 
 - [ ] 11. **`tests/run_progression.test.js`** — update the four hardcoded boss ids:
-  `'boss-12'` → `'boss-10'` at ~309, ~345, ~561, ~589.
+  `'boss-12'` → `'boss-11'` at ~309, ~345, ~561, ~589.
 
 ## Verification
 
@@ -398,9 +469,11 @@ trainers, plenty for L3 + L4.
   console.log(P.listAllPaths(g).map(p=>p.length));"
   ```
 - [ ] Browser proof with the `verify` skill: serve on 8931, start a fresh run, screenshot
-  `area.html`. Confirm by eye — 10 steps from Entrance to Gym Leader, exactly one place where
-  the path splits and it is one column wide, and at least one crimson `A` attack node visible.
-  Save as `dev/verify/phase79_map_layout.png`.
+  `area.html`. Confirm by eye — 11 steps from Entrance to Gym Leader (10 encounters plus the
+  Gym Leader), exactly one place where the path splits and it is one column wide, and at least
+  one crimson `A` attack node visible. Save as `dev/verify/phase79_map_layout.png`.
+  Check the 11 nodes still fit the canvas width without crowding the Gym Leader at the edge —
+  if they do not, that is a `static/area.css` issue to raise, **not** a reason to drop a node.
 - [ ] In the same session, walk the run to level 3 (or hand-edit `run.level` and call
   `PokeLocations.advanceRunToNextLevel`) and confirm the level-3 boss node shows an **Elite**
   trainer, and that level 4 shows `shop, battle, battle, shop, battle, boss`.
