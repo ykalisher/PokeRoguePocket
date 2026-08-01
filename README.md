@@ -43,9 +43,9 @@ When a Pokemon is knocked out:
 - Otherwise, a new Pokemon is drawn from the Pokemon deck and played into the
   open slot.
 
-The game ends when either player reaches 4 knockouts, or when a player needs to
-draw a replacement Pokemon after a knockout and has no Pokemon left in the
-Pokemon deck.
+The game ends when either player's whole team has been knocked out - that is,
+their knockout count reaches the number of Pokemon they brought into the
+battle.
 
 When a Switch effect is played on a Pokemon:
 

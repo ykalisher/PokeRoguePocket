@@ -67,7 +67,7 @@ missing or non-positive. Do not delete the constant.
 
 ## Steps
 
-- [ ] 1. **`arena/arena_model.js`** — replace `getEffectiveKnockoutLimit` (~428–433),
+- [x] 1. **`arena/arena_model.js`** — replace `getEffectiveKnockoutLimit` (~428–433),
   doc comment included:
 
   ```js
@@ -80,7 +80,7 @@ missing or non-positive. Do not delete the constant.
       }
   ```
 
-- [ ] 2. **`arena/arena_model.js`** — replace `isPlayerDefeated` (~453–468), doc comment
+- [x] 2. **`arena/arena_model.js`** — replace `isPlayerDefeated` (~453–468), doc comment
   included, dropping the `deckEmptyDefeat` clause entirely:
 
   ```js
@@ -101,21 +101,21 @@ missing or non-positive. Do not delete the constant.
       }
   ```
 
-- [ ] 3. **`arena/arena_controller.js`** — update the `checkGameOver` doc comment (~2962–2965):
+- [x] 3. **`arena/arena_controller.js`** — update the `checkGameOver` doc comment (~2962–2965):
   it currently says the battle ends "when either side reaches the knockout limit or cannot
   replace a KO". The second half is no longer true. Say it ends when either side's whole team
   has been knocked out. **Do not change any code in this file** — `drawReplacementPokemon`
   (~2898–2913) keeps setting `lostByPokemonDeck` and logging.
 
-- [ ] 4. **`README.md`** — line ~46 reads "The game ends when either player reaches 4
+- [x] 4. **`README.md`** — line ~46 reads "The game ends when either player reaches 4
   knockouts, or when a player needs to …". Rewrite it for the new rule: a side loses once its
   whole team has been knocked out. Read the surrounding paragraph and keep its voice.
 
-- [ ] 5. **`.claude/skills/data/SKILL.md`** — line ~137 says "hand size 6 and knockout limit
+- [x] 5. **`.claude/skills/data/SKILL.md`** — line ~137 says "hand size 6 and knockout limit
   4". Correct it: the knockout limit is the team's Pokemon count. **This file already has an
   uncommitted edit from earlier work; leave that hunk alone and touch only this line.**
 
-- [ ] 6. **`tests/arena_model.test.js`** — add a test next to the existing Fossil-deferral one
+- [x] 6. **`tests/arena_model.test.js`** — add a test next to the existing Fossil-deferral one
   (~270) pinning the new rule directly, so a future regression to `Math.min(…, 4)` fails
   loudly:
 
@@ -158,15 +158,15 @@ missing or non-positive. Do not delete the constant.
 
 ## Verification
 
-- [ ] `node --check arena/arena_model.js` and `node --check arena/arena_controller.js` pass.
-- [ ] `node tests/run_all.js` green. The two pre-existing defeat tests read the limit
+- [x] `node --check arena/arena_model.js` and `node --check arena/arena_controller.js` pass.
+- [x] `node tests/run_all.js` green. The two pre-existing defeat tests read the limit
   dynamically and were confirmed during planning to survive this change unmodified — if either
   now fails, step 1 or 2 drifted from the snippets above.
-- [ ] `grep -rn "KNOCKOUT_LIMIT" arena/` shows it only in `arena_data.js`, the model's
+- [x] `grep -rn "KNOCKOUT_LIMIT" arena/` shows it only in `arena_data.js`, the model's
   destructuring, and the `getInitialPokemonCount` fallback — nowhere in a defeat decision.
-- [ ] `grep -rniE "4 knockouts|knockout limit 4" . --include=*.md` returns nothing outside
+- [x] `grep -rniE "4 knockouts|knockout limit 4" . --include=*.md` returns nothing outside
   `dev/feature_plans/`.
-- [ ] Browser proof with the `verify` skill (`dev/verify/lib.py` `serving()` on 8931, driver
+- [x] Browser proof with the `verify` skill (`dev/verify/lib.py` `serving()` on 8931, driver
   modeled on `dev/verify/autoplay_arena.py`): start a battle against a trainer with **6**
   Pokemon (pick one from `trainers.json` — 23 have six) and confirm
   - the opponent's KO pill reads `KO 0/6`, not `KO 0/4`;
@@ -174,8 +174,20 @@ missing or non-positive. Do not delete the constant.
   - it ends exactly when the sixth Pokemon goes down, with the normal win popup and the run
     advancing as usual.
   Save the screenshot as `dev/verify/phase83_full_team_knockout.png`.
-- [ ] Same driver, the mirror case: let the player side reach 4 knockouts with a Pokemon still
+
+  Done via `dev/verify/phase83_full_team_knockout.py`: relabels the next reachable area node
+  to `'boss'` and pre-seeds its `battleEncounters` entry with Lorelei (a real Elite-rank,
+  6-Pokemon trainer from `trainers.json`; `run.level` forced to 3 so Elite rank is allowed at a
+  boss node), then plays a real battle. Confirms `initialPokemonCount === 6`, the `KO 0/6` pill,
+  that forcing the opponent to 4/6 knockouts and ending the turn leaves `state.finished` false,
+  that forcing it to 6/6 does finish the battle with the "You won" popup, and that Continue
+  returns to `area.html` with the boss node's encounter marked `completed`. All checks pass
+  (screenshot confirms `KO 6/6` for Lorelei / `KO 4/6` for the player at the win screen).
+- [x] Same driver, the mirror case: let the player side reach 4 knockouts with a Pokemon still
   on the board and confirm play continues.
+
+  Same script: forces the player's `initialPokemonCount` to 6 and `knockoutCount` to 4
+  mid-battle, ends the turn, and confirms `state.finished` stays false.
 
 ## Out of scope / do not touch
 

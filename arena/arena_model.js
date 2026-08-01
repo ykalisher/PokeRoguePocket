@@ -425,11 +425,11 @@
     }
 
     /**
-     * Knockouts needed to defeat a player: every Pokemon for teams at or below
-     * the standard knockout limit, otherwise the standard limit.
+     * Knockouts needed to defeat a player: every Pokemon on the team. A side
+     * fights until its whole team is down, so team size is the only input.
      */
     function getEffectiveKnockoutLimit(player) {
-        return Math.min(getInitialPokemonCount(player), KNOCKOUT_LIMIT);
+        return getInitialPokemonCount(player);
     }
 
     /**
@@ -451,20 +451,19 @@
     }
 
     /**
-     * Defeat check shared by the controller, render, and page flow. Knockouts
-     * that a pending Fossil revival can refund do not count toward the limit,
-     * so the battle never ends while an eligible Fossil could still revive at
-     * end of turn. Teams larger than the knockout limit also lose when their
-     * Pokemon deck cannot supply a replacement.
+     * Defeat check shared by the controller, render, and page flow. A side is
+     * beaten only once every Pokemon it brought has been knocked out. Knockouts
+     * that a pending Fossil revival can refund do not count, so the battle never
+     * ends while an eligible Fossil could still revive at end of turn. An empty
+     * Pokemon deck is no longer a loss on its own - a side with a Pokemon still
+     * standing keeps fighting.
      */
     function isPlayerDefeated(player) {
         if (!player) return false;
 
         const countedKnockouts = (Number(player.knockoutCount) || 0) - countPendingFossilRevivals(player);
-        const knockoutDefeat = countedKnockouts >= getEffectiveKnockoutLimit(player);
-        const deckEmptyDefeat = getInitialPokemonCount(player) > KNOCKOUT_LIMIT && Boolean(player.lostByPokemonDeck);
 
-        return knockoutDefeat || deckEmptyDefeat;
+        return countedKnockouts >= getEffectiveKnockoutLimit(player);
     }
 
     /**

@@ -2961,7 +2961,7 @@
 
     /**
      * Called after major state changes and during resolution loops. It ends the
-     * battle when either side reaches the knockout limit or cannot replace a KO.
+     * battle when either side's whole team has been knocked out.
      */
     function checkGameOver() {
         if (state.finished) return true;

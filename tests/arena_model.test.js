@@ -291,3 +291,35 @@ test('isPlayerDefeated defers the knockout limit while an eligible Fossil can re
     player.knockout = [latestKnockout, fossil];
     assert.equal(Model.isPlayerDefeated(player), true);
 });
+
+test('a player is defeated only after every Pokemon on the team is knocked out', () => {
+    const player = Model.createPlayer('player', 'You');
+
+    [1, 3, 4, 5, 6].forEach(teamSize => {
+        player.initialPokemonCount = teamSize;
+        player.knockout = [];
+        player.lostByPokemonDeck = false;
+
+        assert.equal(Model.getEffectiveKnockoutLimit(player), teamSize);
+
+        player.knockoutCount = teamSize - 1;
+        assert.equal(Model.isPlayerDefeated(player), false, `team of ${teamSize} at ${teamSize - 1} KOs`);
+
+        player.knockoutCount = teamSize;
+        assert.equal(Model.isPlayerDefeated(player), true, `team of ${teamSize} at ${teamSize} KOs`);
+    });
+});
+
+test('an empty Pokemon deck is not a defeat while a Pokemon is still standing', () => {
+    const player = Model.createPlayer('player', 'You');
+
+    player.initialPokemonCount = 6;
+    player.knockout = [];
+    player.knockoutCount = 4;
+    player.lostByPokemonDeck = true;
+
+    assert.equal(Model.isPlayerDefeated(player), false);
+
+    player.knockoutCount = 6;
+    assert.equal(Model.isPlayerDefeated(player), true);
+});
