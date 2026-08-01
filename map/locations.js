@@ -620,6 +620,7 @@
         }
 
         run.area = {
+            activeAttackNodeId: null,
             activeBattleNodeId: null,
             activeCaptureNodeId: null,
             activeEventNodeId: null,
@@ -633,6 +634,7 @@
             traveledPathKeys: [],
             visitedNodeIds: [START_NODE_ID]
         };
+        run.attackEncounters = {};
         run.battleEncounters = {};
         run.captureEncounters = {};
         run.martEncounters = {};
@@ -690,6 +692,39 @@
 
         const matched = obtainable.filter(species => getRecordTypes(species).some(type => types.includes(type)));
         return matched.length > 0 ? matched : obtainable;
+    }
+
+    /**
+     * Attack pool for a location: unique-by-name attacks that are neither
+     * legendary nor artificial (both are encoded as PokeTypes in type1/type2,
+     * not as flags) and share at least one type with the location. Falls back
+     * to every offerable attack so an attack node is never empty.
+     */
+    function getAttackCardPool(gameData, locationTypes) {
+        const attacks = gameData && Array.isArray(gameData.attacks) ? gameData.attacks : [];
+        const offerable = uniqueByName(attacks).filter(isOfferableAttack);
+        const types = Array.isArray(locationTypes) ? locationTypes : [];
+
+        const matched = offerable.filter(record => getRecordTypes(record).some(type => types.includes(type)));
+
+        return matched.length > 0 ? matched : offerable;
+    }
+
+    function isOfferableAttack(record) {
+        if (!record) return false;
+
+        const types = getRecordTypes(record);
+
+        return !types.includes('LEGENDARY') && !types.includes('ARTIFICIAL');
+    }
+
+    // 1-3 distinct attacks, matching the wild-capture encounter's offer size.
+    function chooseAttackCardOptions(gameData, locationTypes) {
+        const pool = getAttackCardPool(gameData, locationTypes);
+
+        if (pool.length === 0) return [];
+
+        return shuffle(pool.slice()).slice(0, randomInt(1, Math.min(3, pool.length)));
     }
 
     // --- Baby/mega pokemon (phase 42) -------------------------------------
@@ -896,12 +931,14 @@
         advanceRunToNextLevel,
         applyLocationTheme,
         bossNodeIdForLevel,
+        chooseAttackCardOptions,
         chooseNextLocation,
         chooseTradeResultRecord,
         chooseTrainer,
         createAreaGraph,
         createLocationSnapshot,
         findPokemonByNameOrId,
+        getAttackCardPool,
         getBabyPokemonPool,
         getLocationById,
         getLocations,

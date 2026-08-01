@@ -619,6 +619,7 @@ test('advanceRunToNextLevel bumps the level, refreshes the area, and preserves p
         location: { id: 'a', name: 'A', terrain: 'A', types: ['WATER', 'ICE'], theme: {}, background: null },
         visitedLocationIds: ['a'],
         area: { completed: true, graph: makeGraph(), bossNodeId: 'boss-11' },
+        attackEncounters: { 'node-4-1': {} },
         battleEncounters: { 'node-3-1': {} },
         captureEncounters: { 'node-1-1': {} },
         martEncounters: { 'node-5-1': {} },
@@ -636,6 +637,7 @@ test('advanceRunToNextLevel bumps the level, refreshes the area, and preserves p
     assert.ok(run.location.types.some(type => ['WATER', 'ICE'].includes(type)), 'shares a type with the old location');
     assert.deepEqual(run.visitedLocationIds, ['a', 'b']);
 
+    assert.deepEqual(run.attackEncounters, {});
     assert.deepEqual(run.battleEncounters, {});
     assert.deepEqual(run.captureEncounters, {});
     assert.deepEqual(run.martEncounters, {});
@@ -645,6 +647,7 @@ test('advanceRunToNextLevel bumps the level, refreshes the area, and preserves p
     assert.equal(run.area.currentNodeId, 'start');
     assert.deepEqual(run.area.visitedNodeIds, ['start']);
     assert.deepEqual(run.area.traveledPathKeys, []);
+    assert.equal(run.area.activeAttackNodeId, null);
     assert.equal(run.area.activeBattleNodeId, null);
     assert.equal(run.area.bossNodeId, 'boss-11');
     assert.ok(run.area.graph.nodes.length > 1);

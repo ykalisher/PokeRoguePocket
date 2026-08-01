@@ -45,7 +45,7 @@ sorts before `activeBattleNodeId`, and `attackEncounters` before `battleEncounte
 
 ## Steps
 
-- [ ] 1. **`map/locations.js`** — add the pool + picker next to `getWildPokemonPool` (~692):
+- [x] 1. **`map/locations.js`** — add the pool + picker next to `getWildPokemonPool` (~692):
 
   ```js
       /**
@@ -85,19 +85,19 @@ sorts before `activeBattleNodeId`, and `attackEncounters` before `battleEncounte
   Export `chooseAttackCardOptions` and `getAttackCardPool` from `global.PokeLocations` (~899),
   keeping the list alphabetical.
 
-- [ ] 2. **`map/run_state.js`** — in `createRunState` (~27–61), add `activeAttackNodeId: null`
+- [x] 2. **`map/run_state.js`** — in `createRunState` (~27–61), add `activeAttackNodeId: null`
   as the first key of the `area` object and `attackEncounters: {}` as the first key after
   `area`.
 
-- [ ] 3. **`map/run_state.js`** — in `normalizeAreaState` (~454–474), add
+- [x] 3. **`map/run_state.js`** — in `normalizeAreaState` (~454–474), add
   `activeAttackNodeId: area.activeAttackNodeId || null,` as the first field of the returned
   object.
 
-- [ ] 4. **`map/run_state.js`** — in `normalizeRunState` (~386–411), add
+- [x] 4. **`map/run_state.js`** — in `normalizeRunState` (~386–411), add
   `attackEncounters: normalizeAttackEncounters(run.attackEncounters),` immediately after
   `area,`.
 
-- [ ] 5. **`map/run_state.js`** — add `normalizeAttackEncounters` next to
+- [x] 5. **`map/run_state.js`** — add `normalizeAttackEncounters` next to
   `normalizeCaptureEncounters` (~522). Same shape, minus the capture-only reward fields:
 
   ```js
@@ -117,23 +117,23 @@ sorts before `activeBattleNodeId`, and `attackEncounters` before `battleEncounte
       }
   ```
 
-- [ ] 6. **`map/run_state.js`** — add `getActiveAttackEncounter`, a copy of
+- [x] 6. **`map/run_state.js`** — add `getActiveAttackEncounter`, a copy of
   `getActiveCaptureEncounter` (~129–137) against `activeAttackNodeId` / `attackEncounters`.
   Export it from `global.PokeRun` (~679–704), alphabetically.
 
-- [ ] 7. **`map/locations.js`** — in `advanceRunToNextLevel` (~610–649), add
+- [x] 7. **`map/locations.js`** — in `advanceRunToNextLevel` (~610–649), add
   `activeAttackNodeId: null,` to the fresh `run.area` literal and `run.attackEncounters = {};`
   to the encounter-map wipe (~643–646). **Do not skip this** — without it a stale
   `activeAttackNodeId` survives a level change and `redirectToActiveEncounter` traps the
   player on a node that no longer exists.
 
-- [ ] 8. **`map/area.js`** — add `state.run.area.activeAttackNodeId = null;` to **every**
+- [x] 8. **`map/area.js`** — add `state.run.area.activeAttackNodeId = null;` to **every**
   existing active-id reset block in `getOrCreateTrainerEncounter`,
   `getOrCreateCaptureEncounter`, `getOrCreateMartEncounter`, and `getOrCreateEventEncounter`
   (both the early-return block and the post-create block in each). Grep
   `activeCaptureNodeId = null` to find them all; there are eight.
 
-- [ ] 9. **`map/area.js`** — add `getOrCreateAttackEncounter`, modeled exactly on
+- [x] 9. **`map/area.js`** — add `getOrCreateAttackEncounter`, modeled exactly on
   `getOrCreateCaptureEncounter` (~892–922), placed next to it:
 
   ```js
@@ -169,7 +169,7 @@ sorts before `activeBattleNodeId`, and `attackEncounters` before `battleEncounte
   `getOrCreate*` functions through it is the cleaner option and is **allowed** in this phase;
   if you do, it replaces step 8 and every one of the five functions must use it.
 
-- [ ] 10. **`map/area.js`** — add `sanitizeAttackEncounter` + `sanitizeAttackEncounters`,
+- [x] 10. **`map/area.js`** — add `sanitizeAttackEncounter` + `sanitizeAttackEncounters`,
   modeled on `sanitizeCaptureEncounter(s)` (~1186–1226) but simpler (no legendary carve-out):
   drop option names that are no longer in `locations.getAttackCardPool(arena.GameData,
   getLocationTypes())` or that duplicate an earlier entry; if nothing survives, re-roll with
@@ -177,18 +177,18 @@ sorts before `activeBattleNodeId`, and `attackEncounters` before `battleEncounte
   `sanitizeAttackEncounters()` from the restore path alongside `sanitizeCaptureEncounters()`
   (~693).
 
-- [ ] 11. **`map/area.js`** — extend `redirectToActiveEncounter` (~870–890) with an attack
+- [x] 11. **`map/area.js`** — extend `redirectToActiveEncounter` (~870–890) with an attack
   branch pointing at `'attack.html'`. Order it after capture and before mart. The page does
   not exist until phase 81, but nothing can set `activeAttackNodeId` until then either
   (`moveToNode` has no attack branch yet), so this is unreachable and safe.
 
-- [ ] 12. **`main.js`** — add `hasActiveAttackEncounter(run)` copying
+- [x] 12. **`main.js`** — add `hasActiveAttackEncounter(run)` copying
   `hasActiveCaptureEncounter` (~85–92), and a
   `if (hasActiveAttackEncounter(run)) return 'attack.html';` branch in `getSavedRunRoute`
   (~58–69), in the same position as step 11. Remember `main.js` shares no code with the rest of
   the game — it must re-implement this against the raw JSON.
 
-- [ ] 13. **`tests/attack_encounter.test.js`** — new file. Preamble like
+- [x] 13. **`tests/attack_encounter.test.js`** — new file. Preamble like
   `tests/pokemon_pools.test.js` (require `./helpers/arena_env`, then `../map/locations`;
   `const P = globalThis.PokeLocations`). Cover, against **fixture** data first:
   - `getAttackCardPool` excludes every attack with `LEGENDARY` or `ARTIFICIAL` in `type1` or
@@ -202,16 +202,16 @@ sorts before `activeBattleNodeId`, and `attackEncounters` before `battleEncounte
   artificial attack. Live data has 25 legendary and 4 artificial attacks and ≥17 on-type
   attacks at the thinnest location, so this passes today and is a real tripwire.
 
-- [ ] 14. **`tests/run_progression.test.js`** — extend the
+- [x] 14. **`tests/run_progression.test.js`** — extend the
   `advanceRunToNextLevel bumps the level…` test (~550) to assert
   `result.attackEncounters` deep-equals `{}` and `result.area.activeAttackNodeId === null`.
 
 ## Verification
 
-- [ ] `node --check` passes on `map/locations.js`, `map/run_state.js`, `map/area.js`, `main.js`.
-- [ ] `node --test tests/attack_encounter.test.js` passes.
-- [ ] `node tests/run_all.js` green.
-- [ ] Persistence round-trip proves the whitelist edits landed — this is the single most
+- [x] `node --check` passes on `map/locations.js`, `map/run_state.js`, `map/area.js`, `main.js`.
+- [x] `node --test tests/attack_encounter.test.js` passes.
+- [x] `node tests/run_all.js` green.
+- [x] Persistence round-trip proves the whitelist edits landed — this is the single most
   common way this phase goes wrong:
   ```
   node -e "require('./tests/helpers/arena_env.js'); require('./map/run_state.js');
@@ -226,12 +226,12 @@ sorts before `activeBattleNodeId`, and `attackEncounters` before `battleEncounte
   ```
   Both the encounter and the active id must survive, and `getActiveAttackEncounter` must
   return the encounter.
-- [ ] Browser check with the `verify` skill: start a fresh run, step onto an attack node, and
+- [x] Browser check with the `verify` skill: start a fresh run, step onto an attack node, and
   confirm it still pops "You entered an Attack Encounter" and does **not** navigate anywhere
   (the page arrives in phase 81). Then confirm via the console that
   `JSON.parse(localStorage.getItem('pokemon-rogue-pocket-run')).attackEncounters` is still
   `{}` — `moveToNode` has no attack branch yet, so no encounter should have been created.
-- [ ] `grep -n "activeAttackNodeId" map/area.js` shows it reset in **all five**
+- [x] `grep -n "activeAttackNodeId" map/area.js` shows it reset in **all five**
   `getOrCreate*Encounter` functions (or in the shared helper all five now call).
 
 ## Out of scope / do not touch

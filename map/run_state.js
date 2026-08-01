@@ -29,6 +29,7 @@
 
         return {
             area: {
+                activeAttackNodeId: null,
                 activeBattleNodeId: null,
                 activeCaptureNodeId: null,
                 activeEventNodeId: null,
@@ -42,6 +43,7 @@
                 traveledPathKeys: [],
                 visitedNodeIds: ['start']
             },
+            attackEncounters: {},
             battleEncounters: {},
             cash: STARTING_CASH,
             captureEncounters: {},
@@ -132,6 +134,16 @@
         if (!nodeId || !run.captureEncounters) return null;
 
         const encounter = run.captureEncounters[nodeId];
+
+        return encounter && !encounter.completed ? encounter : null;
+    }
+
+    function getActiveAttackEncounter(run) {
+        const nodeId = run && run.area ? run.area.activeAttackNodeId : null;
+
+        if (!nodeId || !run.attackEncounters) return null;
+
+        const encounter = run.attackEncounters[nodeId];
 
         return encounter && !encounter.completed ? encounter : null;
     }
@@ -392,6 +404,7 @@
 
         return {
             area,
+            attackEncounters: normalizeAttackEncounters(run.attackEncounters),
             battleEncounters: normalizeBattleEncounters(run.battleEncounters),
             cash: Number.isFinite(run.cash) ? run.cash : STARTING_CASH,
             captureEncounters: normalizeCaptureEncounters(run.captureEncounters),
@@ -456,6 +469,7 @@
         if (!area.graph || !Array.isArray(area.graph.nodes) || !Array.isArray(area.graph.edges)) return null;
 
         return {
+            activeAttackNodeId: area.activeAttackNodeId || null,
             activeBattleNodeId: area.activeBattleNodeId || null,
             activeCaptureNodeId: area.activeCaptureNodeId || null,
             activeEventNodeId: area.activeEventNodeId || null,
@@ -516,6 +530,21 @@
                 tradeAcceptedType: encounter.tradeAcceptedType || null,
                 tradeOfferedType: encounter.tradeOfferedType || null,
                 tradeUsed: Boolean(encounter.tradeUsed)
+            }]));
+    }
+
+    function normalizeAttackEncounters(attackEncounters) {
+        if (!attackEncounters || typeof attackEncounters !== 'object') return {};
+
+        return Object.fromEntries(Object.entries(attackEncounters)
+            .filter(([, encounter]) => encounter && typeof encounter === 'object')
+            .map(([nodeId, encounter]) => [nodeId, {
+                completed: Boolean(encounter.completed),
+                createdAt: encounter.createdAt || null,
+                nodeId: encounter.nodeId || nodeId,
+                options: Array.isArray(encounter.options) ? encounter.options.filter(Boolean) : [],
+                selectedAttackName: encounter.selectedAttackName || null,
+                terrain: encounter.terrain || null
             }]));
     }
 
@@ -690,6 +719,7 @@
         createItemCard,
         createPokemonCard,
         createRunState,
+        getActiveAttackEncounter,
         getActiveBattleEncounter,
         getActiveCaptureEncounter,
         getActiveEventEncounter,

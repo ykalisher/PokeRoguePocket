@@ -700,6 +700,7 @@
                 repairRunLocation(),
                 repairRunCollections(),
                 sanitizeCaptureEncounters(),
+                sanitizeAttackEncounters(),
                 sanitizeEventEncounters(),
                 ensureBattleNodeEncounters(),
                 sanitizeBattleEncounters()
@@ -887,6 +888,11 @@
             return true;
         }
 
+        if (runStore.getActiveAttackEncounter(state.run)) {
+            window.location.href = 'attack.html';
+            return true;
+        }
+
         if (runStore.getActiveMartEncounter(state.run)) {
             window.location.href = 'mart.html';
             return true;
@@ -898,14 +904,47 @@
         return true;
     }
 
+    // The five active-node ids (attack/battle/capture/event/mart) are
+    // mutually exclusive: setting one clears the other four in one place, so
+    // adding a new encounter type never means hunting down every reset block.
+    function setActiveEncounterNode(type, nodeId) {
+        state.run.area.activeAttackNodeId = type === 'attack' ? nodeId : null;
+        state.run.area.activeBattleNodeId = type === 'battle' ? nodeId : null;
+        state.run.area.activeCaptureNodeId = type === 'capture' ? nodeId : null;
+        state.run.area.activeEventNodeId = type === 'event' ? nodeId : null;
+        state.run.area.activeMartNodeId = type === 'mart' ? nodeId : null;
+    }
+
+    function getOrCreateAttackEncounter(node) {
+        const existingEncounter = state.run.attackEncounters[node.id];
+
+        if (existingEncounter && !existingEncounter.completed) {
+            setActiveEncounterNode('attack', node.id);
+            sanitizeAttackEncounter(existingEncounter);
+            return existingEncounter;
+        }
+
+        const attackOptions = locations.chooseAttackCardOptions(arena.GameData, getLocationTypes());
+        const encounter = {
+            completed: false,
+            createdAt: new Date().toISOString(),
+            nodeId: node.id,
+            options: attackOptions.map(attack => attack.name),
+            selectedAttackName: null,
+            terrain: getLocationTerrain()
+        };
+
+        state.run.attackEncounters[node.id] = encounter;
+        setActiveEncounterNode('attack', node.id);
+
+        return encounter;
+    }
+
     function getOrCreateCaptureEncounter(node) {
         const existingEncounter = state.run.captureEncounters[node.id];
 
         if (existingEncounter && !existingEncounter.completed) {
-            state.run.area.activeCaptureNodeId = node.id;
-            state.run.area.activeBattleNodeId = null;
-            state.run.area.activeEventNodeId = null;
-            state.run.area.activeMartNodeId = null;
+            setActiveEncounterNode('capture', node.id);
             sanitizeCaptureEncounter(existingEncounter);
             return existingEncounter;
         }
@@ -922,10 +961,7 @@
         };
 
         state.run.captureEncounters[node.id] = encounter;
-        state.run.area.activeCaptureNodeId = node.id;
-        state.run.area.activeBattleNodeId = null;
-        state.run.area.activeEventNodeId = null;
-        state.run.area.activeMartNodeId = null;
+        setActiveEncounterNode('capture', node.id);
 
         return encounter;
     }
@@ -934,10 +970,7 @@
         const existingEncounter = state.run.battleEncounters[node.id];
 
         if (existingEncounter && !existingEncounter.completed) {
-            state.run.area.activeBattleNodeId = node.id;
-            state.run.area.activeCaptureNodeId = null;
-            state.run.area.activeEventNodeId = null;
-            state.run.area.activeMartNodeId = null;
+            setActiveEncounterNode('battle', node.id);
             sanitizeBattleEncounter(existingEncounter, node);
             return existingEncounter;
         }
@@ -949,10 +982,7 @@
         const encounter = createBattleEncounter(node, trainer);
 
         state.run.battleEncounters[node.id] = encounter;
-        state.run.area.activeBattleNodeId = node.id;
-        state.run.area.activeCaptureNodeId = null;
-        state.run.area.activeEventNodeId = null;
-        state.run.area.activeMartNodeId = null;
+        setActiveEncounterNode('battle', node.id);
 
         return encounter;
     }
@@ -977,10 +1007,7 @@
         const existingEncounter = state.run.martEncounters[node.id];
 
         if (existingEncounter && !existingEncounter.completed) {
-            state.run.area.activeMartNodeId = node.id;
-            state.run.area.activeBattleNodeId = null;
-            state.run.area.activeCaptureNodeId = null;
-            state.run.area.activeEventNodeId = null;
+            setActiveEncounterNode('mart', node.id);
             sanitizeMartEncounter(existingEncounter);
             return existingEncounter;
         }
@@ -1001,10 +1028,7 @@
         };
 
         state.run.martEncounters[node.id] = encounter;
-        state.run.area.activeMartNodeId = node.id;
-        state.run.area.activeBattleNodeId = null;
-        state.run.area.activeCaptureNodeId = null;
-        state.run.area.activeEventNodeId = null;
+        setActiveEncounterNode('mart', node.id);
 
         return encounter;
     }
@@ -1015,10 +1039,7 @@
         const existingEncounter = state.run.eventEncounters[node.id];
 
         if (existingEncounter && !existingEncounter.completed) {
-            state.run.area.activeEventNodeId = node.id;
-            state.run.area.activeBattleNodeId = null;
-            state.run.area.activeCaptureNodeId = null;
-            state.run.area.activeMartNodeId = null;
+            setActiveEncounterNode('event', node.id);
             sanitizeEventEncounter(existingEncounter);
             return existingEncounter;
         }
@@ -1042,10 +1063,7 @@
         };
 
         state.run.eventEncounters[node.id] = encounter;
-        state.run.area.activeEventNodeId = node.id;
-        state.run.area.activeBattleNodeId = null;
-        state.run.area.activeCaptureNodeId = null;
-        state.run.area.activeMartNodeId = null;
+        setActiveEncounterNode('event', node.id);
 
         return encounter;
     }
@@ -1224,6 +1242,40 @@
 
         if (nextOptions.length === 0) {
             nextOptions = chooseCapturePokemonOptions(node).map(pokemon => pokemon.name);
+        }
+
+        const changed = nextOptions.length !== originalOptions.length ||
+            nextOptions.some((name, index) => name !== originalOptions[index]);
+
+        encounter.options = nextOptions;
+
+        return changed;
+    }
+
+    function sanitizeAttackEncounters() {
+        if (!state.run || !state.run.attackEncounters) return false;
+
+        return Object.values(state.run.attackEncounters).reduce((changed, encounter) => {
+            if (!encounter || encounter.completed) return changed;
+
+            return sanitizeAttackEncounter(encounter) || changed;
+        }, false);
+    }
+
+    function sanitizeAttackEncounter(encounter) {
+        const originalOptions = Array.isArray(encounter.options) ? encounter.options : [];
+        const availableAttackNames = new Set(locations.getAttackCardPool(arena.GameData, getLocationTypes()).map(attack => attack.name));
+        const seenNames = new Set();
+
+        let nextOptions = originalOptions.filter(name => {
+            if (!availableAttackNames.has(name) || seenNames.has(name)) return false;
+
+            seenNames.add(name);
+            return true;
+        });
+
+        if (nextOptions.length === 0) {
+            nextOptions = locations.chooseAttackCardOptions(arena.GameData, getLocationTypes()).map(attack => attack.name);
         }
 
         const changed = nextOptions.length !== originalOptions.length ||
