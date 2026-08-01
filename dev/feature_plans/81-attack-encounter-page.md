@@ -72,7 +72,7 @@ array of attack **names**; resolve them against `arena.GameData.attacks` by exac
 
 ## Steps
 
-- [ ] 1. **`attack.html`** — new file, a copy of `capture.html` with `capture` → `attack`
+- [x] 1. **`attack.html`** — new file, a copy of `capture.html` with `capture` → `attack`
   throughout: `<title>Pokemon Rogue Pocket - Attack</title>`, `<body class="attack-page">`,
   `<main class="attack-shell" id="attack-root" aria-label="Attack encounter">`,
   `<section class="attack-loading">Loading attack encounter...</section>`, stylesheet
@@ -80,14 +80,14 @@ array of attack **names**; resolve them against `arena.GameData.attacks` by exac
   script tags and their order are **identical** to `capture.html` — `arena_data` before
   `arena_model` is required.
 
-- [ ] 2. **`map/attack.js`** — new file mirroring `map/capture.js`. Header comment
+- [x] 2. **`map/attack.js`** — new file mirroring `map/capture.js`. Header comment
   `Pokemon Rogue Pocket - attack encounter page`; IIFE
   `(function bootAttackPage(arena, runStore, locations) { 'use strict'; … })(window.CardArena
   = window.CardArena || {}, window.PokeRun, window.PokeLocations);`. Phases: `choosing →
   claimed → deck → complete` (three animation beats instead of capture's four — there is no
   pokemon-joins beat). Reuse `PHASE_DURATIONS`-style constants and `CARD_BACKS.actions`.
 
-- [ ] 3. **`map/attack.js`** — `init()`: same shape as capture's, but calling
+- [x] 3. **`map/attack.js`** — `init()`: same shape as capture's, but calling
   `runStore.getActiveAttackEncounter(state.run)`. Bounce to `area.html` when the run or the
   encounter is missing. Repair the stored options against
   `locations.getAttackCardPool(arena.GameData, getLocationTypes())` — drop unknown or
@@ -96,7 +96,7 @@ array of attack **names**; resolve them against `arena.GameData.attacks` by exac
   still empty. Add a local `getLocationTypes()` reading `state.run.location.types` (copy
   `map/capture.js` ~400–404).
 
-- [ ] 4. **`map/attack.js`** — `claimAttack(optionIndex)`: resolve the option to an attack
+- [x] 4. **`map/attack.js`** — `claimAttack(optionIndex)`: resolve the option to an attack
   record, then
 
   ```js
@@ -116,7 +116,7 @@ array of attack **names**; resolve them against `arena.GameData.attacks` by exac
   then run the phase/`sleep`/`render` chain and finish with
   `window.location.href = 'area.html'`. Ignore clicks unless `state.phase === 'choosing'`.
 
-- [ ] 5. **`map/attack.js`** — render: topbar with the terrain kicker, a phase title
+- [x] 5. **`map/attack.js`** — render: topbar with the terrain kicker, a phase title
   (`Choose one attack` → `Added <name> x2` → `Returning to map`), the action-deck counter
   (capture's `renderDeckCounter('actions', …)`; there is no pokemon counter to show, but keep
   it if it renders cleanly), an options row of buttons carrying
@@ -127,12 +127,12 @@ array of attack **names**; resolve them against `arena.GameData.attacks` by exac
   card-window overlay (`data-card-window` / `[data-close-card-window]` / Escape key) verbatim
   so the player can inspect their deck.
 
-- [ ] 6. **`static/attack.css`** — new file, `static/capture.css` with `capture` → `attack` in
+- [x] 6. **`static/attack.css`** — new file, `static/capture.css` with `capture` → `attack` in
   the class names, including the duplicated `.area-overlay` / `.area-card-*` block and the
   responsive block at the end. Do not add new visual language; this page should look like a
   sibling of the capture page.
 
-- [ ] 7. **`map/area.js`** — **only now** add the dispatch branch in `moveToNode` (~210–275),
+- [x] 7. **`map/area.js`** — **only now** add the dispatch branch in `moveToNode` (~210–275),
   next to the capture branch:
 
   ```js
@@ -147,12 +147,12 @@ array of attack **names**; resolve them against `arena.GameData.attacks` by exac
   Attack encounters can never be empty (`getAttackCardPool` falls back to the full offerable
   pool), so unlike the battle and event branches this one needs no failure path.
 
-- [ ] 8. **`map/area.js`** — sanity-check the aria/entered strings added in phase 78:
+- [x] 8. **`map/area.js`** — sanity-check the aria/entered strings added in phase 78:
   `getNodeAriaLabel` (~1545) reads `LOCATION_LABELS['attack']` → "Attack Encounter" and
   `getEnteredLocationText` (~1563) has the "an Attack Encounter" case. With step 7 in place
   the latter is no longer reachable for attack nodes; leave it, it is harmless and correct.
 
-- [ ] 9. **`tests/attack_encounter.test.js`** — extend the file phase 80 created with a
+- [x] 9. **`tests/attack_encounter.test.js`** — extend the file phase 80 created with a
   reward-shape test that does not need a DOM: build a run with `R.createRunState`, take an
   attack record from live data, create two cards with
   `R.createAttackCard` + `R.allocateCardId`, `R.addActionCard` each, and assert the run now
@@ -161,10 +161,10 @@ array of attack **names**; resolve them against `arena.GameData.attacks` by exac
 
 ## Verification
 
-- [ ] `node --check map/attack.js` and `node --check map/area.js` pass.
-- [ ] `node tests/run_all.js` green. `tests/run_all.js` syntax-checks **untracked** files too
+- [x] `node --check map/attack.js` and `node --check map/area.js` pass.
+- [x] `node tests/run_all.js` green. `tests/run_all.js` syntax-checks **untracked** files too
   (`git ls-files -co`), so the new `map/attack.js` is covered before it is ever committed.
-- [ ] Browser playthrough with the `verify` skill — this is the real proof, and it must be
+- [x] Browser playthrough with the `verify` skill — this is the real proof, and it must be
   done, not skipped:
   - serve on 8931, start a fresh run, and walk to an attack node (level 1 guarantees 1–2 per
     route; if the first route's attack node is behind the branch, take that lane);
@@ -179,10 +179,10 @@ array of attack **names**; resolve them against `arena.GameData.attacks` by exac
   - Save screenshots as `dev/verify/phase81_attack_encounter_offer.png` and
     `dev/verify/phase81_attack_encounter_claimed.png`, and commit the driver as
     `dev/verify/phase81_attack_encounter.py` (model it on `dev/verify/phase61_area_selectable.py`).
-- [ ] Mid-encounter reload: open the attack page, reload before choosing, and confirm the same
+- [x] Mid-encounter reload: open the attack page, reload before choosing, and confirm the same
   options come back (they are persisted in `run.attackEncounters[nodeId].options`) rather than
   being re-rolled.
-- [ ] From `index.html` with an in-progress attack encounter saved, Continue routes to
+- [x] From `index.html` with an in-progress attack encounter saved, Continue routes to
   `attack.html` (this exercises the `main.js` branch added in phase 80).
 
 ## Out of scope / do not touch

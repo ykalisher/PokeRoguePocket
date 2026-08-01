@@ -246,6 +246,13 @@
             return;
         }
 
+        if (node.type === 'attack') {
+            getOrCreateAttackEncounter(node);
+            saveRunState();
+            window.location.href = 'attack.html';
+            return;
+        }
+
         if (node.type === 'shop') {
             getOrCreateMartEncounter(node);
             saveRunState();

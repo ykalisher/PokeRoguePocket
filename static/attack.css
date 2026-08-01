@@ -1,0 +1,514 @@
+/* --- Attack Encounter --- */
+
+.attack-page {
+    --attack-panel: var(--panel-bg);
+    --attack-panel-deep: var(--panel-deep);
+    --card-w: clamp(92px, 13vw, 140px);
+    --card-h: calc(var(--card-w) * 1.52);
+
+    min-height: 100dvh;
+    height: auto;
+    display: block;
+    overflow: auto;
+    background: var(--page-bg-stack);
+    color: #fbf6e8;
+}
+
+.attack-page .btn-back {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 40;
+    width: auto;
+    padding: 9px 14px;
+    border: 1px solid rgba(251, 246, 232, 0.22);
+    background-color: color-mix(in srgb, var(--loc-bg-deep) 90%, transparent);
+    font-size: 0.95rem;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
+.attack-shell {
+    width: min(100%, 1180px);
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: 14px 18px 20px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 14px;
+}
+
+.attack-loading {
+    align-self: center;
+    justify-self: center;
+    padding: 14px 18px;
+    border: 1px solid rgba(251, 246, 232, 0.18);
+    border-radius: 8px;
+    background-color: rgba(5, 13, 16, 0.36);
+    color: var(--muted);
+    font-weight: 760;
+}
+
+.attack-topbar {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px 12px 104px;
+    border: 1px solid rgba(251, 246, 232, 0.16);
+    border-radius: 8px;
+    background: var(--attack-panel);
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.12), 0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
+.attack-title-group {
+    min-width: 0;
+    display: grid;
+    gap: 7px;
+}
+
+.attack-kicker {
+    color: var(--gold);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.attack-title-group h1 {
+    margin: 0;
+    color: #fbf6e8;
+    font-size: clamp(1.5rem, 4vw, 2.15rem);
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.attack-hud {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.attack-deck-counter {
+    position: relative;
+    width: 54px;
+    height: 74px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(251, 246, 232, 0.2);
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.22);
+    color: inherit;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.26);
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.attack-deck-counter:hover,
+.attack-deck-counter:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--gold) 72%, transparent);
+    outline-offset: 3px;
+    border-color: color-mix(in srgb, var(--gold) 76%, transparent);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.34);
+    transform: translateY(-2px);
+}
+
+.attack-deck-counter img {
+    width: 100%;
+    height: 100%;
+    border-radius: 7px;
+    object-fit: fill;
+}
+
+.attack-deck-counter span {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    min-width: 24px;
+    min-height: 24px;
+    display: grid;
+    place-items: center;
+    padding: 2px 6px;
+    border: 1px solid rgba(251, 246, 232, 0.7);
+    border-radius: 999px;
+    background-color: rgba(5, 13, 16, 0.92);
+    color: #fbf6e8;
+    font-size: 0.76rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.attack-stage {
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(var(--card-h), 1fr) auto;
+    align-items: center;
+    gap: 20px;
+    padding: clamp(18px, 4vw, 36px);
+    border: 1px solid rgba(251, 246, 232, 0.16);
+    border-radius: 8px;
+    background:
+        linear-gradient(90deg, rgba(251, 246, 232, 0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(251, 246, 232, 0.035) 1px, transparent 1px),
+        var(--attack-panel-deep);
+    background-size: 42px 42px, 42px 42px, auto;
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.14), 0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
+.attack-options {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, var(--card-w));
+    justify-content: center;
+    align-items: center;
+    gap: clamp(16px, 4vw, 34px);
+    perspective: 1000px;
+}
+
+.attack-option {
+    width: var(--card-w);
+    height: var(--card-h);
+    display: grid;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.attack-option .playing-card,
+.attack-reward-card .playing-card {
+    width: 100%;
+    height: 100%;
+}
+
+.attack-option:not(:disabled):hover .playing-card,
+.attack-option:not(:disabled):focus-visible .playing-card {
+    transform: translateY(-7px);
+    outline: 3px solid color-mix(in srgb, var(--gold) 82%, transparent);
+    outline-offset: 3px;
+    box-shadow: 0 15px 28px rgba(0, 0, 0, 0.38);
+}
+
+.attack-option:disabled {
+    cursor: default;
+}
+
+.attack-option.is-selected .playing-card {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+}
+
+.attack-option.is-catching .playing-card {
+    animation: attack-pokemon-to-list 0.9s cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
+    transform-style: preserve-3d;
+}
+
+.attack-option.is-dimmed .playing-card {
+    opacity: 0.26;
+    transform: scale(0.92);
+    filter: saturate(0.72);
+}
+
+.attack-rewards {
+    min-height: calc(var(--card-h) + 86px);
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 14px;
+}
+
+.attack-rewards[hidden] {
+    display: none;
+}
+
+.attack-reward-cards {
+    display: flex;
+    justify-content: center;
+    gap: clamp(10px, 2vw, 18px);
+    perspective: 900px;
+}
+
+.attack-reward-card {
+    width: calc(var(--card-w) * 0.86);
+    height: calc(var(--card-h) * 0.86);
+    opacity: 0;
+    transform: translateY(18px) scale(0.88);
+}
+
+.attack-rewards.is-revealed .attack-reward-card {
+    animation: attack-reward-appear 0.46s ease-out forwards;
+    animation-delay: calc(var(--reward-index) * 90ms);
+}
+
+.attack-rewards.is-decking .attack-reward-card {
+    opacity: 1;
+    animation: attack-reward-to-deck 0.72s cubic-bezier(0.34, 0.92, 0.3, 1) forwards;
+    animation-delay: calc(var(--reward-index) * 80ms);
+}
+
+.attack-deck-target {
+    min-height: 54px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid rgba(251, 246, 232, 0.18);
+    border-radius: 999px;
+    background-color: rgba(0, 0, 0, 0.22);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.attack-deck-target img {
+    width: 34px;
+    height: 48px;
+    border-radius: 5px;
+    object-fit: fill;
+}
+
+.attack-rewards.is-decking .attack-deck-target {
+    animation: attack-deck-pulse 0.72s ease-out 0.2s both;
+}
+
+.area-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    background-color: rgba(5, 13, 16, 0.58);
+}
+
+.area-card-window {
+    width: min(980px, calc(100vw - 28px));
+    max-height: min(760px, calc(100dvh - 28px));
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid rgba(251, 246, 232, 0.22);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(251, 246, 232, 0.08), rgba(0, 0, 0, 0.16)),
+        var(--loc-surface);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.54);
+}
+
+.area-card-window-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px;
+    border-bottom: 1px solid rgba(251, 246, 232, 0.14);
+    background-color: rgba(0, 0, 0, 0.18);
+}
+
+.area-card-window-title {
+    margin: 0;
+    color: #fbf6e8;
+    font-size: 1.4rem;
+    line-height: 1.1;
+    letter-spacing: 0;
+}
+
+.area-card-window-count {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 760;
+}
+
+.area-card-window-close {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    padding: 0;
+    border: 1px solid rgba(251, 246, 232, 0.26);
+    border-radius: 999px;
+    background-color: color-mix(in srgb, var(--coral) 24%, transparent);
+    color: #fbf6e8;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.area-card-window-close:hover,
+.area-card-window-close:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--gold) 70%, transparent);
+    outline-offset: 2px;
+    background-color: color-mix(in srgb, var(--coral) 38%, transparent);
+}
+
+.area-card-window-body {
+    min-height: 0;
+    display: grid;
+    align-content: start;
+    gap: 18px;
+    padding: 18px;
+    overflow-y: auto;
+}
+
+.area-card-section {
+    min-width: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.area-card-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(251, 246, 232, 0.12);
+}
+
+.area-card-section-header h3 {
+    margin: 0;
+    color: #fbf6e8;
+    font-size: 1rem;
+    line-height: 1.1;
+    letter-spacing: 0;
+}
+
+.area-card-section-header span {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 760;
+    white-space: nowrap;
+}
+
+.area-card-grid {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, var(--card-w));
+    justify-content: center;
+    align-content: start;
+    gap: 14px;
+}
+
+.area-card-grid .playing-card {
+    width: var(--card-w);
+    height: var(--card-h);
+}
+
+@keyframes attack-pokemon-to-list {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotateY(0deg) scale(1);
+    }
+
+    40% {
+        opacity: 1;
+        transform: translate3d(0, -10px, 0) rotateY(180deg) scale(1.08);
+    }
+
+    72% {
+        opacity: 1;
+        transform: translate3d(0, -24px, 0) rotateY(300deg) scale(0.9);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(0, -38vh, 0) rotateY(360deg) scale(0.48);
+    }
+}
+
+@keyframes attack-reward-appear {
+    0% {
+        opacity: 0;
+        transform: translateY(22px) rotateX(18deg) scale(0.82);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg) scale(1);
+    }
+}
+
+@keyframes attack-reward-to-deck {
+    0% {
+        opacity: 1;
+        transform: translateY(0) rotateZ(0deg) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(94px) rotateZ(8deg) scale(0.36);
+    }
+}
+
+@keyframes attack-deck-pulse {
+    0%,
+    100% {
+        box-shadow: none;
+    }
+
+    42% {
+        box-shadow: 0 0 0 8px color-mix(in srgb, var(--gold) 16%, transparent), 0 0 22px color-mix(in srgb, var(--gold) 34%, transparent);
+    }
+}
+
+@media (max-width: 760px) {
+    .attack-page {
+        --card-w: clamp(82px, 26vw, 112px);
+    }
+
+    .attack-shell {
+        padding: 66px 10px 14px;
+    }
+
+    .attack-topbar {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 12px 14px;
+    }
+
+    .attack-hud {
+        justify-content: flex-start;
+    }
+
+    .attack-stage {
+        grid-template-rows: auto auto;
+        align-content: center;
+        min-height: 620px;
+        padding: 16px 10px;
+    }
+
+    .attack-options {
+        gap: 14px;
+    }
+
+    .attack-reward-card {
+        width: calc(var(--card-w) * 0.92);
+        height: calc(var(--card-h) * 0.92);
+    }
+
+    .area-card-window-body {
+        gap: 10px;
+        padding: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .attack-option.is-catching .playing-card,
+    .attack-rewards.is-revealed .attack-reward-card,
+    .attack-rewards.is-decking .attack-reward-card,
+    .attack-rewards.is-decking .attack-deck-target {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+    }
+}

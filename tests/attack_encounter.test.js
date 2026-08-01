@@ -7,8 +7,10 @@ const assert = require('node:assert/strict');
 // globalThis namespaces below.
 const { loadRealGameData, arena } = require('./helpers/arena_env');
 require('../map/locations');
+require('../map/run_state');
 
 const P = globalThis.PokeLocations;
+const R = globalThis.PokeRun;
 
 function makeAttack(name, types, extra) {
     return Object.assign({
@@ -84,4 +86,27 @@ test('getAttackCardPool against real data is non-empty and legendary/artificial-
             assert.ok(record.type1 !== 'ARTIFICIAL' && record.type2 !== 'ARTIFICIAL', `${record.name} is artificial`);
         });
     });
+});
+
+test('claiming an attack awards exactly 2 copies across the active and benched action collections', async () => {
+    await loadRealGameData();
+    const attack = arena.GameData.attacks[0];
+    const run = R.createRunState({
+        area: { nodes: [{ id: 'start' }], edges: [] },
+        collections: {},
+        level: 1
+    });
+
+    const rewardCards = [1, 2].map(() => R.createAttackCard(
+        attack,
+        'player',
+        R.allocateCardId(run, 'attack', attack.name)
+    ));
+
+    rewardCards.forEach(card => R.addActionCard(run, card));
+
+    const allActionCards = [...run.collections.actions, ...run.collections.bench.actions];
+    const matchingCards = allActionCards.filter(card => card.kind === 'attack' && card.attack.name === attack.name);
+
+    assert.equal(matchingCards.length, 2);
 });
