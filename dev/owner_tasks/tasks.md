@@ -61,3 +61,5 @@
 - [x] #051 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-mow conversion
 - [ ] #052 added:2026-07-22 needs:- :: Create events for future pokemon
 - [ ] #053 added:2026-07-22 needs:- :: Create event for future archaludon
+- [ ] #054 added:2026-07-31 needs:- :: Events to give artificial items or attacks
+- [ ] #055 added:2026-07-31 needs:- :: More attacks for each type with stat-changing effects
