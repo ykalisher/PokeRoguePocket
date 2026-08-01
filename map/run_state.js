@@ -6,8 +6,8 @@
     'use strict';
 
     const STORAGE_KEY = 'pokemon-rogue-pocket-run';
-    const STORAGE_VERSION = 2;
-    const DEFAULT_BOSS_NODE_ID = 'boss-12';
+    const STORAGE_VERSION = 3;
+    const DEFAULT_BOSS_NODE_ID = 'boss-11';
     const DEFAULT_STARTER_ID = 'water';
     const MIN_LEVEL = 1;
     const MAX_LEVEL = 4;

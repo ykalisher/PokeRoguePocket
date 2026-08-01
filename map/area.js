@@ -6,7 +6,7 @@
     'use strict';
 
     const START_NODE_ID = 'start';
-    const DEFAULT_BOSS_NODE_ID = 'boss-12';
+    const DEFAULT_BOSS_NODE_ID = 'boss-11';
     const LOCATION_LABELS = Object.freeze({
         attack: 'Attack Encounter',
         battle: 'Trainer Battle',
@@ -781,7 +781,7 @@
     function getMaxStep() {
         return state.area && Array.isArray(state.area.nodes) && state.area.nodes.length > 0
             ? state.area.nodes.reduce((max, node) => Math.max(max, Number(node.step) || 0), 0)
-            : 12;
+            : 11;
     }
 
     function isRunComplete() {

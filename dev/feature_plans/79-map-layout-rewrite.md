@@ -85,7 +85,7 @@ trainers, plenty for L3 + L4.
 
 ## Steps
 
-- [ ] 1. **`map/locations.js`** — replace `LEVEL_CONFIG` (~16–38) entirely. `weights` and
+- [x] 1. **`map/locations.js`** — replace `LEVEL_CONFIG` (~16–38) entirely. `weights` and
   `caps` are gone; `quotas` is `{ type: [min, max] }` over the **10 non-boss nodes of one
   route**. The minimums total 8 by design — see the free-token note above.
 
@@ -126,7 +126,7 @@ trainers, plenty for L3 + L4.
       });
   ```
 
-- [ ] 2. **`map/locations.js`** — replace the generator constants (~247–249). Delete
+- [x] 2. **`map/locations.js`** — replace the generator constants (~247–249). Delete
   `OPENING_LINEAR_STEPS`; keep `LANE_COUNT` and `START_NODE_ID`:
 
   ```js
@@ -139,7 +139,7 @@ trainers, plenty for L3 + L4.
       const EVENT_FALLBACK_ORDER = ['capture', 'shop', 'attack', 'battle'];
   ```
 
-- [ ] 3. **`map/locations.js`** — replace `createBranchingGraph` (~293–328) and everything the
+- [x] 3. **`map/locations.js`** — replace `createBranchingGraph` (~293–328) and everything the
   old weighted path used, with the block below. Paste it verbatim; it is the validated source.
   `createAreaGraph` (~256) and `createGauntletGraph` (~275) stay exactly as they are.
 
@@ -351,7 +351,7 @@ trainers, plenty for L3 + L4.
       }
   ```
 
-- [ ] 4. **`map/locations.js`** — delete these now-dead functions and confirm with
+- [x] 4. **`map/locations.js`** — delete these now-dead functions and confirm with
   `grep -rn "<name>" map/ arena/ tests/ dev/ scripts/ *.js *.html` that nothing references
   them (this was checked during planning: the only external reference in the whole file group
   is `tests/run_progression.test.js` → `listAllPaths`):
@@ -362,14 +362,14 @@ trainers, plenty for L3 + L4.
   `makeNode`, `forcedTypeForStep`, `getBranchLanes`, `singleNodeId`, `addEdge`,
   `graphFromColumns`, `bossNodeIdForLevel`, `randomInt`, `randomPick`.
 
-- [ ] 5. **`map/area.js`** — `DEFAULT_BOSS_NODE_ID` (~9) `'boss-12'` → `'boss-11'`, and
+- [x] 5. **`map/area.js`** — `DEFAULT_BOSS_NODE_ID` (~9) `'boss-12'` → `'boss-11'`, and
   `getMaxStep` (~772–776) fallback `12` → `11`. Both are only used when a graph is missing or
   empty, but they must match the new shape.
 
-- [ ] 6. **`map/run_state.js`** — `DEFAULT_BOSS_NODE_ID` (~10) `'boss-12'` → `'boss-11'`, and
+- [x] 6. **`map/run_state.js`** — `DEFAULT_BOSS_NODE_ID` (~10) `'boss-12'` → `'boss-11'`, and
   `STORAGE_VERSION` (~9) `2` → `3`.
 
-- [ ] 7. **`main.js`** — `RUN_STORAGE_VERSION` (~10) `2` → `3`. **This must land in the same
+- [x] 7. **`main.js`** — `RUN_STORAGE_VERSION` (~10) `2` → `3`. **This must land in the same
   change as step 6.** `main.js` loads no shared modules and compares the raw JSON's `version`
   itself; if the two constants disagree, `getSavedRunRoute()` returns `null` while
   `PokeRun.loadRunState()` still succeeds, and the Continue button silently disables on a
@@ -377,7 +377,7 @@ trainers, plenty for L3 + L4.
   persisted inside it, so it would otherwise keep playing a 12-step level with no attack nodes
   and none of the new pacing.
 
-- [ ] 8. **`tests/run_progression.test.js`** — replace the config tests (~63–90):
+- [x] 8. **`tests/run_progression.test.js`** — replace the config tests (~63–90):
   - `LEVEL_CONFIG matches the spec table verbatim` → assert each of L1/L2/L3 has
     `nodeCount === 11`, `layout === 'branching'`, and the exact `quotas` object from step 1;
     assert `LEVEL_CONFIG[1].forcedTypes` deep-equals `{ 1: 'capture', 2: 'capture', 3: 'battle' }`
@@ -402,7 +402,7 @@ trainers, plenty for L3 + L4.
     `forcedTypes` deep-equals `{ 1: 'shop', 2: 'battle', 3: 'battle', 4: 'shop', 5: 'battle' }`,
     both rank lists Elite.
 
-- [ ] 9. **`tests/run_progression.test.js`** — replace the graph tests (~411–548). Delete
+- [x] 9. **`tests/run_progression.test.js`** — replace the graph tests (~411–548). Delete
   `branching graphs honor forced node types and the shop cap`,
   `levels 1-3 always generate at least 3 total capture nodes`,
   `every start->boss path has a qualifying capture and (with events on) an event`, and
@@ -440,7 +440,7 @@ trainers, plenty for L3 + L4.
   assert the maximum is reached for the wide ranges (L1/L2 `capture` hit 4/3 on only ~4% of
   routes; it is reliable at 500 iterations but is the one bound worth leaving loose).
 
-- [ ] 10. **`tests/run_progression.test.js`** — keep `L1 forced steps 1-2 stay captures and
+- [x] 10. **`tests/run_progression.test.js`** — keep `L1 forced steps 1-2 stay captures and
   step 3 a battle` (~512–521) but note the branch can no longer land on steps 1–3, so those
   columns are always single-node. Rewrite `level 4 is a strictly linear 6-node single-lane
   gauntlet` (~523–548) for the new chain: `columns.length === 7`, `nodes.length === 7`, every
@@ -448,37 +448,43 @@ trainers, plenty for L3 + L4.
   exact edge list over ids
   `['start','node-1-1','node-2-1','node-3-1','node-4-1','node-5-1','boss-6']`.
 
-- [ ] 11. **`tests/run_progression.test.js`** — update the four hardcoded boss ids:
+- [x] 11. **`tests/run_progression.test.js`** — update the four hardcoded boss ids:
   `'boss-12'` → `'boss-11'` at ~309, ~345, ~561, ~589.
 
 ## Verification
 
-- [ ] `node --check map/locations.js`, `node --check map/area.js`, `node --check
+- [x] `node --check map/locations.js`, `node --check map/area.js`, `node --check
   map/run_state.js`, `node --check main.js` all pass.
-- [ ] `node --test tests/run_progression.test.js` passes, including the ≥500-iteration route
+- [x] `node --test tests/run_progression.test.js` passes, including the ≥500-iteration route
   test. A quota violation shows up on roughly 1 seed in 200 if the generator drifted, so do
   **not** lower the iteration count.
-- [ ] `node tests/run_all.js` green.
-- [ ] `grep -rn "boss-12\|OPENING_LINEAR_STEPS\|pickRandomType\|enforceBranchingGuarantees" .
+- [x] `node tests/run_all.js` green.
+- [x] `grep -rn "boss-12\|OPENING_LINEAR_STEPS\|pickRandomType\|enforceBranchingGuarantees" .
   --include=*.js` returns nothing outside `dev/feature_plans/`.
-- [ ] Sanity one-liner prints a plausible map and one route per lane:
+- [x] Sanity one-liner prints a plausible map and one route per lane:
   ```
   node -e "require('./tests/helpers/arena_env.js'); require('./map/locations.js');
   const P=globalThis.PokeLocations, g=P.createAreaGraph(1,{includeEvents:true});
   g.columns.forEach((c,s)=>console.log(s, c.map(n=>n.type+':'+n.id).join(' | ')));
   console.log(P.listAllPaths(g).map(p=>p.length));"
   ```
-- [ ] Browser proof with the `verify` skill: serve on 8931, start a fresh run, screenshot
+- [x] Browser proof with the `verify` skill: serve on 8931, start a fresh run, screenshot
   `area.html`. Confirm by eye — 11 steps from Entrance to Gym Leader (10 encounters plus the
   Gym Leader), exactly one place where the path splits and it is one column wide, and at least
   one crimson `A` attack node visible. Save as `dev/verify/phase79_map_layout.png`.
   Check the 11 nodes still fit the canvas width without crowding the Gym Leader at the edge —
   if they do not, that is a `static/area.css` issue to raise, **not** a reason to drop a node.
-- [ ] In the same session, walk the run to level 3 (or hand-edit `run.level` and call
+  (Confirmed via `dev/verify/phase79_map_layout.py`: 11 numbered steps, one single-column
+  branch at step 5→6→7, two crimson `A` nodes, Gym Leader node well clear of the canvas edge.)
+- [x] In the same session, walk the run to level 3 (or hand-edit `run.level` and call
   `PokeLocations.advanceRunToNextLevel`) and confirm the level-3 boss node shows an **Elite**
   trainer, and that level 4 shows `shop, battle, battle, shop, battle, boss`.
-- [ ] Confirm the version bump behaves: with a pre-existing v2 save in localStorage, the main
+  (Confirmed: L3 boss encounter rank `Elite`; L4 byStep types `start, shop, battle, battle,
+  shop, battle, boss`.)
+- [x] Confirm the version bump behaves: with a pre-existing v2 save in localStorage, the main
   menu's Continue button is disabled / absent and starting a new run works cleanly.
+  (Confirmed: Continue button `disabled` with a stale v2-shaped save present; New Game then
+  starts a clean v3 level-1 run.)
 
 ## Out of scope / do not touch
 

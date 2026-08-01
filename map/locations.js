@@ -14,27 +14,38 @@
     const TOTAL_LEVELS = 4;
 
     const LEVEL_CONFIG = Object.freeze({
-        1: { nodeCount: 12, layout: 'branching',
-             forcedTypes: { 1: 'capture', 2: 'capture', 3: 'battle' },
-             weights: { battle: 38, capture: 26, event: 21, shop: 15 },
-             caps: { capture: 4, shop: 2 },
-             battleRanks: [{ rank: 'Standard', weight: 100 }],
-             bossRanks: [{ rank: 'Boss', weight: 100 }] },
-        2: { nodeCount: 12, layout: 'branching', forcedTypes: {},
-             weights: { battle: 44, capture: 22, event: 21, shop: 13 },
-             caps: { capture: 3, shop: 2 },
-             battleRanks: [{ rank: 'Standard', weight: 60 }, { rank: 'Ace', weight: 40 }],
-             bossRanks: [{ rank: 'Boss', weight: 100 }] },
-        3: { nodeCount: 12, layout: 'branching', forcedTypes: {},
-             weights: { battle: 52, capture: 16, event: 20, shop: 12 },
-             caps: { capture: 3, shop: 1 },
-             battleRanks: [{ rank: 'Ace', weight: 100 }],
-             bossRanks: [{ rank: 'Boss', weight: 100 }] },
-        4: { nodeCount: 5, layout: 'gauntlet',
-             forcedTypes: { 1: 'shop', 2: 'battle', 3: 'battle', 4: 'battle' },
-             weights: null, caps: null,
-             battleRanks: [{ rank: 'Elite', weight: 100 }],
-             bossRanks: [{ rank: 'Elite', weight: 100 }] }
+        1: {
+            nodeCount: 11,
+            layout: 'branching',
+            forcedTypes: { 1: 'capture', 2: 'capture', 3: 'battle' },
+            quotas: { battle: [2, 3], capture: [2, 4], event: [2, 3], shop: [1, 2], attack: [1, 2] },
+            battleRanks: [{ rank: 'Standard', weight: 100 }],
+            bossRanks: [{ rank: 'Boss', weight: 100 }]
+        },
+        2: {
+            nodeCount: 11,
+            layout: 'branching',
+            forcedTypes: {},
+            quotas: { battle: [3, 4], capture: [1, 3], event: [2, 3], shop: [1, 2], attack: [1, 2] },
+            battleRanks: [{ rank: 'Standard', weight: 60 }, { rank: 'Ace', weight: 40 }],
+            bossRanks: [{ rank: 'Boss', weight: 100 }]
+        },
+        3: {
+            nodeCount: 11,
+            layout: 'branching',
+            forcedTypes: {},
+            quotas: { battle: [2, 3], capture: [1, 2], event: [2, 3], shop: [1, 2], attack: [2, 3] },
+            battleRanks: [{ rank: 'Ace', weight: 100 }],
+            bossRanks: [{ rank: 'Elite', weight: 100 }]
+        },
+        4: {
+            nodeCount: 6,
+            layout: 'gauntlet',
+            forcedTypes: { 1: 'shop', 2: 'battle', 3: 'battle', 4: 'shop', 5: 'battle' },
+            quotas: null,
+            battleRanks: [{ rank: 'Elite', weight: 100 }],
+            bossRanks: [{ rank: 'Elite', weight: 100 }]
+        }
     });
 
     const STARTER_DECKS = Object.freeze({
@@ -245,8 +256,12 @@
     // graph — renderers depend on it, so it must not change.
 
     const LANE_COUNT = 5;
-    const OPENING_LINEAR_STEPS = 3;
     const START_NODE_ID = 'start';
+    const MIN_BRANCH_STEP = 4;
+    const ARRANGEMENT_ATTEMPTS = 48;
+    // Order the event quota is re-homed into when a location has no events:
+    // scarcest-first, so disabling events never floods the map with battles.
+    const EVENT_FALLBACK_ORDER = ['capture', 'shop', 'attack', 'battle'];
 
     function bossNodeIdForLevel(level) {
         const config = LEVEL_CONFIG[level] || LEVEL_CONFIG[1];
@@ -290,130 +305,210 @@
         return graphFromColumns(columns, edges);
     }
 
+    /**
+     * Levels 1-3: every start->boss route is exactly 11 nodes (10 + boss),
+     * with exactly one one-step-wide branch of 2-3 lanes. Because a route may
+     * take any lane, the 9 non-branch steps must independently satisfy every
+     * quota minimum; the minimums total 8, so the base multiset is the
+     * minimums plus one free token, and each lane adds 1 to a category that
+     * still has headroom. Quotas hold by construction - no repair pass.
+     */
     function createBranchingGraph(config, includeEvents) {
+        const quotas = resolveQuotas(config, includeEvents);
+        const branchStep = chooseBranchStep(config);
+        const baseCounts = buildBaseCounts(config, quotas);
+        const laneTypes = chooseLaneTypes(quotas, baseCounts, randomInt(2, 3));
+        const stepTypes = buildStepTypes(config, baseCounts, branchStep, laneTypes);
+
+        return assembleBranchingGraph(config, stepTypes, branchStep, laneTypes);
+    }
+
+    // With events disabled the event minimum is re-homed onto the categories
+    // that are currently scarcest, keeping the minimum total at 8 and every
+    // surviving category's headroom (max - min) intact.
+    function resolveQuotas(config, includeEvents) {
+        const quotas = {};
+
+        Object.keys(config.quotas).forEach(type => { quotas[type] = config.quotas[type].slice(); });
+        if (includeEvents !== false || !quotas.event) return quotas;
+
+        const eventMinimum = quotas.event[0];
+
+        quotas.event = [0, 0];
+        for (let i = 0; i < eventMinimum; i += 1) {
+            const target = EVENT_FALLBACK_ORDER
+                .filter(type => quotas[type])
+                .reduce((best, type) => (quotas[type][0] < quotas[best][0] ? type : best));
+
+            quotas[target] = [quotas[target][0] + 1, quotas[target][1] + 1];
+        }
+
+        return quotas;
+    }
+
+    // The branch may not collide with a forced step and may not be the boss.
+    function chooseBranchStep(config) {
+        const forcedSteps = Object.keys(config.forcedTypes || {}).map(Number);
+        const first = Math.max(MIN_BRANCH_STEP,
+            forcedSteps.length > 0 ? Math.max.apply(null, forcedSteps) + 1 : 1);
+
+        return randomInt(first, config.nodeCount - 1);
+    }
+
+    /**
+     * How many of each type fill the 9 non-branch steps: every minimum, plus
+     * the leftover slots handed out one at a time to a UNIFORMLY RANDOM
+     * category that still has headroom. Uniform matters - biasing toward the
+     * widest headroom makes the pick deterministic and strands a minimum
+     * (see failure mode 2 in the phase notes).
+     */
+    function buildBaseCounts(config, quotas) {
+        const types = Object.keys(quotas);
+        const counts = {};
+        let remaining = config.nodeCount - 2;
+
+        types.forEach(type => { counts[type] = quotas[type][0]; remaining -= quotas[type][0]; });
+        if (remaining < 0) throw new Error(`quota minimums exceed ${config.nodeCount - 2} base nodes`);
+
+        while (remaining > 0) {
+            const candidates = types.filter(type => counts[type] < quotas[type][1]);
+
+            if (candidates.length === 0) throw new Error('quota maximums cannot fill the base steps');
+
+            counts[randomPick(candidates)] += 1;
+            remaining -= 1;
+        }
+
+        return counts;
+    }
+
+    // A lane is legal only where the base count is still below the maximum,
+    // so base + 1 stays in range. Lanes are distinct types so the branch is a
+    // real choice; fewer than 2 legal categories means the quotas are broken.
+    function chooseLaneTypes(quotas, baseCounts, laneCount) {
+        const candidates = Object.keys(quotas).filter(type => baseCounts[type] < quotas[type][1]);
+
+        if (candidates.length < 2) throw new Error('quotas leave fewer than 2 branchable categories');
+
+        return shuffle(candidates).slice(0, Math.min(laneCount, candidates.length));
+    }
+
+    /**
+     * Types for every single-node step, keyed by step. The multiset is fixed
+     * by buildBaseCounts; only the ORDER is random. Forced steps claim their
+     * token first. Ordering is best-of-K on a cosmetic penalty, so it can
+     * never break a quota - the worst case is a repetitive-looking map.
+     */
+    function buildStepTypes(config, baseCounts, branchStep, laneTypes) {
+        const baseSteps = [];
+
+        for (let step = 1; step < config.nodeCount; step += 1) {
+            if (step !== branchStep) baseSteps.push(step);
+        }
+
+        const pool = [];
+
+        Object.keys(baseCounts).forEach(type => {
+            for (let i = 0; i < baseCounts[type]; i += 1) pool.push(type);
+        });
+        if (pool.length !== baseSteps.length) {
+            throw new Error(`base counts total ${pool.length}, expected ${baseSteps.length}`);
+        }
+
+        const forced = config.forcedTypes || {};
+        const fixed = {};
+        const freeSteps = [];
+
+        baseSteps.forEach(step => {
+            const type = forced[step];
+
+            if (!type) {
+                freeSteps.push(step);
+                return;
+            }
+
+            const index = pool.indexOf(type);
+
+            if (index === -1) throw new Error(`forced ${type}@${step} exceeds its base count`);
+            pool.splice(index, 1);
+            fixed[step] = type;
+        });
+
+        let best = null;
+        let bestPenalty = Infinity;
+
+        for (let attempt = 0; attempt < ARRANGEMENT_ATTEMPTS; attempt += 1) {
+            const shuffled = shuffle(pool.slice());
+            const candidate = Object.assign({}, fixed);
+
+            freeSteps.forEach((step, index) => { candidate[step] = shuffled[index]; });
+
+            const penalty = layoutPenalty(candidate, config, branchStep, laneTypes);
+
+            if (penalty < bestPenalty) {
+                best = candidate;
+                bestPenalty = penalty;
+            }
+            if (bestPenalty === 0) break;
+        }
+
+        return best;
+    }
+
+    // Three of a type in a row is heavily penalized; a single adjacent repeat
+    // is mildly penalized. A forced pair (L1's capture,capture opening) is
+    // exempt, since the owner locked that opening.
+    function layoutPenalty(stepTypes, config, branchStep, laneTypes) {
+        const forced = config.forcedTypes || {};
+        let penalty = 0;
+
+        laneTypes.forEach(laneType => {
+            const sequence = [];
+
+            for (let step = 1; step < config.nodeCount; step += 1) {
+                sequence.push({ step, type: step === branchStep ? laneType : stepTypes[step] });
+            }
+
+            for (let i = 1; i < sequence.length; i += 1) {
+                if (sequence[i].type !== sequence[i - 1].type) continue;
+                if (!(forced[sequence[i].step] && forced[sequence[i - 1].step])) penalty += 1;
+                if (i >= 2 && sequence[i - 2].type === sequence[i].type) penalty += 100;
+            }
+        });
+
+        return penalty;
+    }
+
+    function assembleBranchingGraph(config, stepTypes, branchStep, laneTypes) {
         const nodeCount = config.nodeCount;
-        const counts = { capture: 0, shop: 0 };
+        const lanes = getBranchLanes(laneTypes.length);
         const edges = [];
         const columns = [[makeNode(START_NODE_ID, 2, 0, 'start', nodeCount)]];
-        let currentNode = columns[0][0];
-        let segmentIndex = 1;
 
-        for (let step = 1; step <= OPENING_LINEAR_STEPS; step += 1) {
-            const node = makeStepNode(step, 0, null, config, counts, includeEvents, nodeCount);
+        for (let step = 1; step <= nodeCount; step += 1) {
+            columns[step] = step === branchStep
+                ? laneTypes.map((type, index) =>
+                    makeNode(`node-${step}-${index + 1}`, lanes[index], step, type, nodeCount))
+                : [makeNode(singleNodeId(step, nodeCount), 2, step,
+                    forcedTypeForStep(step, config, nodeCount) || stepTypes[step], nodeCount)];
 
-            columns[step] = [node];
-            addEdge(edges, currentNode.id, node.id);
-            currentNode = node;
+            columns[step - 1].forEach(from =>
+                columns[step].forEach(to => addEdge(edges, from.id, to.id)));
         }
 
-        while (currentNode.step < nodeCount) {
-            const remainingSteps = nodeCount - currentNode.step;
-
-            if (remainingSteps < 3) {
-                const node = makeStepNode(currentNode.step + 1, 0, null, config, counts, includeEvents, nodeCount);
-
-                columns[node.step] = [node];
-                addEdge(edges, currentNode.id, node.id);
-                currentNode = node;
-                continue;
-            }
-
-            currentNode = addBranchSegment(columns, edges, currentNode, segmentIndex, config, counts, includeEvents, nodeCount);
-            segmentIndex += 1;
-        }
-
-        const graph = graphFromColumns(columns, edges);
-        enforceBranchingGuarantees(graph, config, includeEvents);
-        return graph;
+        return graphFromColumns(columns, edges);
     }
 
-    /**
-     * Levels 1-3 must have >=3 total capture nodes, and every start->boss
-     * path must pass through >=1 qualifying capture (a capture not on a
-     * config-forced step) and, when events are enabled, >=1 event. Runs
-     * after the weighted rolls and forced steps are already placed, so
-     * these conversions may push the capture count past `caps.capture` -
-     * per-path coverage takes priority over the roll cap by design.
-     */
-    function enforceBranchingGuarantees(graph, config, includeEvents) {
-        const isQualifyingCapture = node => node.type === 'capture' &&
-            !(config.forcedTypes && config.forcedTypes[node.step] === 'capture');
-        const isEvent = node => node.type === 'event';
-        const exclude = { nodeId: null, branchStep: -1 };
+    function shuffle(list) {
+        for (let i = list.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const swap = list[i];
 
-        if (!everyPathHas(graph, isQualifyingCapture)) {
-            const converted = convertMandatoryNodeType(graph, config, 'capture', ['battle', 'shop', 'event'], exclude);
-            if (converted) {
-                exclude.nodeId = converted.nodeId;
-                exclude.branchStep = converted.branchStep;
-            }
+            list[i] = list[j];
+            list[j] = swap;
         }
 
-        if (includeEvents && !everyPathHas(graph, isEvent)) {
-            convertMandatoryNodeType(graph, config, 'event', ['battle', 'shop'], exclude);
-        }
-
-        while (countGraphType(graph, 'capture') < 3) {
-            if (!convertRandomBattleNode(graph)) break;
-        }
-    }
-
-    /**
-     * Converts one node that lies on every start->boss path (a single-node
-     * column, excluding start/boss/forced steps) to `targetType`, preferring
-     * the first type in `preferredTypesInOrder` that has an eligible
-     * candidate. `exclude` skips a node/branch-step already converted by an
-     * earlier guarantee pass in the same call, so the two passes never
-     * fight over the same conversion. Falls back to converting every lane of
-     * the earliest branch segment when no single mandatory node qualifies.
-     */
-    function convertMandatoryNodeType(graph, config, targetType, preferredTypesInOrder, exclude) {
-        const mandatory = mandatoryNodes(graph, config).filter(node => node.id !== exclude.nodeId);
-
-        for (const type of preferredTypesInOrder) {
-            const candidates = mandatory.filter(node => node.type === type);
-            if (candidates.length > 0) {
-                const chosen = randomPick(candidates);
-                chosen.type = targetType;
-                return { nodeId: chosen.id, branchStep: -1 };
-            }
-        }
-
-        const branchStep = findBranchStep(graph, exclude.branchStep);
-        if (branchStep === -1) return null;
-
-        graph.columns[branchStep].forEach(node => { node.type = targetType; });
-        return { nodeId: graph.columns[branchStep][0].id, branchStep };
-    }
-
-    // Nodes in a single-node column lie on every start->boss path.
-    function mandatoryNodes(graph, config) {
-        const nodeCount = config.nodeCount;
-        return graph.columns
-            .filter(column => column.length === 1)
-            .map(column => column[0])
-            .filter(node => node.step !== 0 && node.step !== nodeCount)
-            .filter(node => !(config.forcedTypes && config.forcedTypes[node.step]));
-    }
-
-    function findBranchStep(graph, excludeStep) {
-        for (let step = 0; step < graph.columns.length; step += 1) {
-            if (step === excludeStep) continue;
-            if (graph.columns[step].length > 1) return step;
-        }
-        return -1;
-    }
-
-    function countGraphType(graph, type) {
-        return graph.nodes.filter(node => node.type === type).length;
-    }
-
-    function convertRandomBattleNode(graph) {
-        const battleNodes = graph.nodes.filter(node => node.type === 'battle');
-        if (battleNodes.length === 0) return false;
-
-        randomPick(battleNodes).type = 'capture';
-        return true;
+        return list;
     }
 
     /**
@@ -444,56 +539,6 @@
         return paths;
     }
 
-    function everyPathHas(graph, predicate) {
-        const byId = {};
-        graph.nodes.forEach(node => { byId[node.id] = node; });
-
-        return listAllPaths(graph).every(path => path.some(nodeId => predicate(byId[nodeId])));
-    }
-
-    function makeStepNode(step, lane, id, config, counts, includeEvents, nodeCount) {
-        const type = forcedTypeForStep(step, config, nodeCount) || pickRandomType(config, counts, includeEvents);
-
-        tallyType(counts, type);
-        return makeNode(id || singleNodeId(step, nodeCount), lane, step, type, nodeCount);
-    }
-
-    function addBranchSegment(columns, edges, sourceNode, segmentIndex, config, counts, includeEvents, nodeCount) {
-        const remainingSteps = nodeCount - sourceNode.step;
-        const branchLength = chooseBranchLength(remainingSteps);
-        const branchCount = randomInt(2, 3);
-        const lanes = getBranchLanes(branchCount);
-        let previousBranchNodes = [];
-
-        for (let offset = 1; offset <= branchLength; offset += 1) {
-            const step = sourceNode.step + offset;
-            const branchNodes = lanes.map((lane, branchIndex) => {
-                const type = pickRandomType(config, counts, includeEvents);
-
-                tallyType(counts, type);
-                return makeNode(`node-${step}-${branchIndex + 1}`, lane, step, type, nodeCount);
-            });
-
-            columns[step] = branchNodes;
-
-            branchNodes.forEach((node, branchIndex) => {
-                const fromNode = offset === 1 ? sourceNode : previousBranchNodes[branchIndex];
-
-                addEdge(edges, fromNode.id, node.id);
-            });
-
-            previousBranchNodes = branchNodes;
-        }
-
-        const joinStep = sourceNode.step + branchLength + 1;
-        const joinNode = makeStepNode(joinStep, 2, joinNodeId(joinStep, segmentIndex, nodeCount), config, counts, includeEvents, nodeCount);
-
-        columns[joinStep] = [joinNode];
-        previousBranchNodes.forEach(node => addEdge(edges, node.id, joinNode.id));
-
-        return joinNode;
-    }
-
     function makeNode(id, lane, step, type, nodeCount) {
         const x = 5 + ((step / nodeCount) * 90);
         const lanePercent = LANE_COUNT === 1 ? 50 : 18 + ((lane / (LANE_COUNT - 1)) * 64);
@@ -516,52 +561,6 @@
         return forced[step] || null;
     }
 
-    /**
-     * Weighted random node type honoring per-level weights, the event toggle,
-     * and capture/shop caps. Battle is never capped, so the pool is never empty.
-     */
-    function pickRandomType(config, counts, includeEvents) {
-        const weights = config.weights || {};
-        const caps = config.caps || {};
-        const entries = [];
-        const pushWeight = (type, weight) => { if (weight > 0) entries.push({ type, weight }); };
-
-        pushWeight('battle', weights.battle || 0);
-        if ((counts.capture || 0) < (caps.capture != null ? caps.capture : Infinity)) {
-            pushWeight('capture', weights.capture || 0);
-        }
-        if (includeEvents) pushWeight('event', weights.event || 0);
-        if ((counts.shop || 0) < (caps.shop != null ? caps.shop : Infinity)) {
-            pushWeight('shop', weights.shop || 0);
-        }
-
-        if (entries.length === 0) return 'battle';
-
-        const total = entries.reduce((sum, entry) => sum + entry.weight, 0);
-        let roll = Math.random() * total;
-
-        for (const entry of entries) {
-            roll -= entry.weight;
-            if (roll <= 0) return entry.type;
-        }
-
-        return entries[0].type;
-    }
-
-    // Forced and rolled nodes both count toward caps.
-    function tallyType(counts, type) {
-        if (type === 'capture') counts.capture = (counts.capture || 0) + 1;
-        else if (type === 'shop') counts.shop = (counts.shop || 0) + 1;
-    }
-
-    function chooseBranchLength(remainingSteps) {
-        if (remainingSteps <= 3) return 2;
-        if (remainingSteps === 4) return 3;
-        if (remainingSteps === 5) return 3;
-
-        return randomInt(2, 3);
-    }
-
     function getBranchLanes(branchCount) {
         if (branchCount === 3) return [0, 2, 4];
 
@@ -572,12 +571,6 @@
         if (step === nodeCount) return `boss-${nodeCount}`;
 
         return `node-${step}-1`;
-    }
-
-    function joinNodeId(step, segmentIndex, nodeCount) {
-        if (step === nodeCount) return `boss-${nodeCount}`;
-
-        return `node-${step}-join-${segmentIndex}`;
     }
 
     function addEdge(edges, from, to) {

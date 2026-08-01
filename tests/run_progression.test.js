@@ -61,30 +61,46 @@ test('every rank mix weight sums to 100', () => {
 });
 
 test('LEVEL_CONFIG matches the spec table verbatim', () => {
-    assert.deepEqual(P.LEVEL_CONFIG[1].weights, { battle: 38, capture: 26, event: 21, shop: 15 });
-    assert.deepEqual(P.LEVEL_CONFIG[1].caps, { capture: 4, shop: 2 });
+    [1, 2, 3].forEach(level => {
+        assert.equal(P.LEVEL_CONFIG[level].nodeCount, 11, `L${level}: nodeCount`);
+        assert.equal(P.LEVEL_CONFIG[level].layout, 'branching', `L${level}: layout`);
+    });
+
+    assert.deepEqual(P.LEVEL_CONFIG[1].quotas,
+        { battle: [2, 3], capture: [2, 4], event: [2, 3], shop: [1, 2], attack: [1, 2] });
     assert.deepEqual(P.LEVEL_CONFIG[1].forcedTypes, { 1: 'capture', 2: 'capture', 3: 'battle' });
     assert.deepEqual(P.LEVEL_CONFIG[1].battleRanks, [{ rank: 'Standard', weight: 100 }]);
 
-    assert.deepEqual(P.LEVEL_CONFIG[2].weights, { battle: 44, capture: 22, event: 21, shop: 13 });
-    assert.deepEqual(P.LEVEL_CONFIG[2].caps, { capture: 3, shop: 2 });
+    assert.deepEqual(P.LEVEL_CONFIG[2].quotas,
+        { battle: [3, 4], capture: [1, 3], event: [2, 3], shop: [1, 2], attack: [1, 2] });
     assert.deepEqual(P.LEVEL_CONFIG[2].battleRanks, [{ rank: 'Standard', weight: 60 }, { rank: 'Ace', weight: 40 }]);
 
-    assert.deepEqual(P.LEVEL_CONFIG[3].weights, { battle: 52, capture: 16, event: 20, shop: 12 });
-    assert.deepEqual(P.LEVEL_CONFIG[3].caps, { capture: 3, shop: 1 });
+    assert.deepEqual(P.LEVEL_CONFIG[3].quotas,
+        { battle: [2, 3], capture: [1, 2], event: [2, 3], shop: [1, 2], attack: [2, 3] });
     assert.deepEqual(P.LEVEL_CONFIG[3].battleRanks, [{ rank: 'Ace', weight: 100 }]);
-
-    assert.equal(P.LEVEL_CONFIG[1].nodeCount, 12);
-    assert.equal(P.LEVEL_CONFIG[1].layout, 'branching');
+    assert.deepEqual(P.LEVEL_CONFIG[3].bossRanks, [{ rank: 'Elite', weight: 100 }]);
 });
 
-test('L4 is a fixed 5-node gauntlet', () => {
+test('branching levels\' quota minimums total 8, leaving room for the free token and a real branch', () => {
+    [1, 2, 3].forEach(level => {
+        const config = P.LEVEL_CONFIG[level];
+        const quotas = config.quotas;
+        const mins = Object.values(quotas).reduce((sum, [min]) => sum + min, 0);
+        const slack = config.nodeCount - 2 - mins;
+        const roomy = Object.values(quotas).filter(([min, max]) => min < max).length;
+
+        assert.equal(mins, 8, `L${level}: quota minimums`);
+        assert.equal(slack, 1, `L${level}: free-token slack`);
+        assert.ok(roomy >= slack + 2, `L${level}: needs the free token plus 2 distinct branchable lanes`);
+    });
+});
+
+test('L4 is a fixed 6-node gauntlet', () => {
     const level4 = P.LEVEL_CONFIG[4];
-    assert.equal(level4.nodeCount, 5);
+    assert.equal(level4.nodeCount, 6);
     assert.equal(level4.layout, 'gauntlet');
-    assert.equal(level4.weights, null);
-    assert.equal(level4.caps, null);
-    assert.deepEqual(level4.forcedTypes, { 1: 'shop', 2: 'battle', 3: 'battle', 4: 'battle' });
+    assert.equal(level4.quotas, null);
+    assert.deepEqual(level4.forcedTypes, { 1: 'shop', 2: 'battle', 3: 'battle', 4: 'shop', 5: 'battle' });
     assert.deepEqual(level4.battleRanks, [{ rank: 'Elite', weight: 100 }]);
     assert.deepEqual(level4.bossRanks, [{ rank: 'Elite', weight: 100 }]);
 });
@@ -299,14 +315,14 @@ test('createRunState v2 sets the new run fields', () => {
         level: 1
     });
 
-    assert.equal(run.version, 2);
+    assert.equal(run.version, 3);
     assert.equal(run.level, 1);
     assert.equal(run.starterId, 'water');
     assert.equal(run.location.id, 'tidepool-coast');
     assert.deepEqual(run.visitedLocationIds, ['tidepool-coast']);
     assert.equal(run.runCompleted, false);
     assert.equal(run.runCompletedAt, null);
-    assert.equal(run.area.bossNodeId, 'boss-12');
+    assert.equal(run.area.bossNodeId, 'boss-11');
 });
 
 test('createRunState clamps level and defaults starter/location', () => {
@@ -334,7 +350,7 @@ test('save/load round-trips the v2 fields (normalizeRunState)', () => {
     assert.ok(R.saveRunState(run));
     const result = R.loadRunState();
 
-    assert.equal(result.version, 2);
+    assert.equal(result.version, 3);
     assert.equal(result.level, 3);
     assert.equal(result.starterId, 'fire');
     assert.equal(result.location.id, 'cinder-ridge');
@@ -342,7 +358,7 @@ test('save/load round-trips the v2 fields (normalizeRunState)', () => {
     assert.deepEqual(result.visitedLocationIds, ['a', 'cinder-ridge']);
     assert.equal(result.runCompleted, true);
     assert.equal(result.runCompletedAt, '2026-07-13T00:00:00.000Z');
-    assert.equal(result.area.bossNodeId, 'boss-12');
+    assert.equal(result.area.bossNodeId, 'boss-11');
     R.clearRunState();
 });
 
@@ -408,31 +424,6 @@ test('bossNodeIdForLevel matches the generated graph', () => {
     });
 });
 
-test('branching graphs honor forced node types and the shop cap', () => {
-    // Capture guarantees (phase 41) may push the capture count past
-    // `caps.capture` by design, so that cap is no longer asserted here; the
-    // shop cap is untouched by the guarantee pass and still holds.
-    [1, 2, 3].forEach(level => {
-        const config = P.LEVEL_CONFIG[level];
-        for (let seed = 0; seed < 300; seed++) {
-            const graph = P.createAreaGraph(level, { includeEvents: true });
-            const singleByStep = {};
-            graph.columns.forEach((column, step) => {
-                if (column.length === 1) singleByStep[step] = column[0];
-            });
-
-            Object.entries(config.forcedTypes).forEach(([step, type]) => {
-                const node = singleByStep[Number(step)];
-                assert.ok(node, `L${level}: forced step ${step} should be a single-lane node`);
-                assert.equal(node.type, type, `L${level} step ${step} forced type`);
-            });
-
-            const counts = countTypes(graph.nodes);
-            assert.ok((counts.shop || 0) <= config.caps.shop, `L${level}: shop cap`);
-        }
-    });
-});
-
 test('includeEvents:false produces zero event nodes on every branching level', () => {
     [1, 2, 3].forEach(level => {
         for (let seed = 0; seed < 300; seed++) {
@@ -442,73 +433,141 @@ test('includeEvents:false produces zero event nodes on every branching level', (
     });
 });
 
-// --- Phase 41: map generation guarantees for levels 1-3 --------------------
+// --- Phase 79: 11-node branching routes with hard per-route quotas --------
 
-function isQualifyingCapture(node, config) {
-    return node.type === 'capture' && !(config.forcedTypes && config.forcedTypes[node.step] === 'capture');
+const ROUTE_ITERATIONS = 500;
+
+// Mirrors resolveQuotas's deterministic scarcest-first redistribution
+// (map/locations.js) so the events-off case can be checked against the same
+// effective bounds the generator enforces, not the pre-redistribution config
+// values that the free token can legitimately land above.
+const EVENT_FALLBACK_ORDER = ['capture', 'shop', 'attack', 'battle'];
+
+function computeEffectiveQuotas(config, includeEvents) {
+    const quotas = {};
+
+    Object.keys(config.quotas).forEach(type => { quotas[type] = config.quotas[type].slice(); });
+    if (includeEvents !== false || !quotas.event) return quotas;
+
+    const eventMinimum = quotas.event[0];
+
+    quotas.event = [0, 0];
+    for (let i = 0; i < eventMinimum; i += 1) {
+        const target = EVENT_FALLBACK_ORDER
+            .filter(type => quotas[type])
+            .reduce((best, type) => (quotas[type][0] < quotas[best][0] ? type : best));
+
+        quotas[target] = [quotas[target][0] + 1, quotas[target][1] + 1];
+    }
+
+    return quotas;
 }
 
-function nodesById(graph) {
-    const byId = {};
-    graph.nodes.forEach(node => { byId[node.id] = node; });
-    return byId;
-}
-
-test('levels 1-3 always generate at least 3 total capture nodes', () => {
-    [1, 2, 3].forEach(level => {
-        for (let seed = 0; seed < 300; seed++) {
-            const graph = P.createAreaGraph(level, { includeEvents: true });
-            const counts = countTypes(graph.nodes);
-            assert.ok((counts.capture || 0) >= 3, `L${level}: expected >=3 total captures, got ${counts.capture || 0}`);
-        }
-    });
-});
-
-test('every start->boss path has a qualifying capture and (with events on) an event', () => {
+test('levels 1-3 generate exactly-11-node routes with quotas held by construction', () => {
     [1, 2, 3].forEach(level => {
         const config = P.LEVEL_CONFIG[level];
-        for (let seed = 0; seed < 300; seed++) {
-            const graph = P.createAreaGraph(level, { includeEvents: true });
-            const byId = nodesById(graph);
-            const paths = P.listAllPaths(graph);
-            assert.ok(paths.length > 0, `L${level}: at least one start->boss path`);
+        const quotaKeys = Object.keys(config.quotas);
 
-            paths.forEach(path => {
-                const nodes = path.map(id => byId[id]);
-                assert.ok(
-                    nodes.some(node => isQualifyingCapture(node, config)),
-                    `L${level}: path ${path.join(',')} has no qualifying capture`
-                );
-                assert.ok(
-                    nodes.some(node => node.type === 'event'),
-                    `L${level}: path ${path.join(',')} has no event`
-                );
-            });
-        }
+        [true, false].forEach(includeEvents => {
+            const effectiveQuotas = computeEffectiveQuotas(config, includeEvents);
+            const observedByType = {};
+
+            quotaKeys.forEach(type => { observedByType[type] = new Set(); });
+
+            for (let seed = 0; seed < ROUTE_ITERATIONS; seed += 1) {
+                const graph = P.createAreaGraph(level, { includeEvents });
+                const nodeById = {};
+
+                graph.nodes.forEach(node => { nodeById[node.id] = node; });
+
+                assert.equal(graph.columns.length, config.nodeCount + 1, `L${level}: columns.length`);
+                assert.deepEqual(graph.nodes, graph.columns.flat(), `L${level}: nodes match flattened columns`);
+
+                const multiColumns = graph.columns.filter(column => column.length > 1);
+                assert.equal(multiColumns.length, 1, `L${level}: exactly one branch column`);
+
+                const laneCount = multiColumns[0].length;
+                assert.ok(laneCount === 2 || laneCount === 3, `L${level}: branch has 2-3 lanes, got ${laneCount}`);
+                assert.equal(new Set(multiColumns[0].map(node => node.type)).size, laneCount,
+                    `L${level}: branch lane types are distinct`);
+
+                const branchStep = multiColumns[0][0].step;
+                assert.ok(branchStep >= 4 && branchStep <= 10, `L${level}: branch step in 4..10, got ${branchStep}`);
+
+                assert.equal(graph.nodes.length, config.nodeCount + laneCount, `L${level}: nodes.length`);
+                assert.equal(graph.edges.length, (config.nodeCount - 2) + (2 * laneCount), `L${level}: edges.length`);
+
+                const inbound = new Set();
+                const outbound = new Set();
+
+                graph.edges.forEach(edge => { outbound.add(edge.from); inbound.add(edge.to); });
+                graph.nodes.forEach(node => {
+                    if (node.id !== 'start') assert.ok(inbound.has(node.id), `L${level}: ${node.id} lacks an inbound edge`);
+                    if (node.type !== 'boss') assert.ok(outbound.has(node.id), `L${level}: ${node.id} lacks an outbound edge`);
+                });
+
+                if (includeEvents === false) {
+                    assert.equal(graph.nodes.filter(node => node.type === 'event').length, 0,
+                        `L${level}: events off means zero event nodes`);
+                }
+
+                const paths = P.listAllPaths(graph);
+                assert.equal(paths.length, laneCount, `L${level}: one route per lane`);
+
+                paths.forEach(path => {
+                    // listAllPaths includes the leading 'start' node.
+                    assert.equal(path.length - 1, config.nodeCount, `L${level}: route length excluding start`);
+
+                    const routeIds = path.slice(1);
+                    const steps = routeIds.map(id => nodeById[id].step);
+                    assert.deepEqual(steps, Array.from({ length: config.nodeCount }, (_, i) => i + 1),
+                        `L${level}: contiguous steps 1..${config.nodeCount}`);
+
+                    const last = nodeById[routeIds[routeIds.length - 1]];
+                    assert.equal(last.type, 'boss', `L${level}: route ends on a boss node`);
+                    assert.equal(last.id, `boss-${config.nodeCount}`, `L${level}: boss id`);
+
+                    const nonBossIds = routeIds.slice(0, -1);
+                    const nonBossNodes = nonBossIds.map(id => nodeById[id]);
+
+                    nonBossNodes.forEach(node => {
+                        assert.ok(quotaKeys.includes(node.type), `L${level}: ${node.id} has non-quota type ${node.type}`);
+                    });
+
+                    const counts = countTypes(nonBossNodes);
+                    quotaKeys.forEach(type => {
+                        const [min, max] = effectiveQuotas[type];
+                        const count = counts[type] || 0;
+
+                        assert.ok(count >= min && count <= max,
+                            `L${level} includeEvents=${includeEvents}: ${type} count ${count} outside [${min},${max}]`);
+                        observedByType[type].add(count);
+                    });
+
+                    for (let i = 2; i < nonBossNodes.length; i += 1) {
+                        const a = nonBossNodes[i - 2].type;
+                        const b = nonBossNodes[i - 1].type;
+                        const c = nonBossNodes[i].type;
+
+                        assert.ok(!(a === b && b === c), `L${level}: three consecutive ${a} nodes on a route`);
+                    }
+                });
+            }
+
+            if (includeEvents) {
+                quotaKeys.forEach(type => {
+                    const [min] = config.quotas[type];
+
+                    assert.ok(observedByType[type].has(min), `L${level}: ${type} never hit its minimum ${min}`);
+                    assert.ok(observedByType[type].has(min + 1), `L${level}: ${type} never hit min+1 ${min + 1}`);
+                });
+            }
+        });
     });
 });
 
-test('includeEvents:false keeps zero events while every path still has a qualifying capture', () => {
-    [1, 2, 3].forEach(level => {
-        const config = P.LEVEL_CONFIG[level];
-        for (let seed = 0; seed < 300; seed++) {
-            const graph = P.createAreaGraph(level, { includeEvents: false });
-            const counts = countTypes(graph.nodes);
-            assert.equal(counts.event || 0, 0, `L${level}: no events`);
-            assert.ok((counts.capture || 0) >= 3, `L${level}: still >=3 total captures`);
-
-            const byId = nodesById(graph);
-            P.listAllPaths(graph).forEach(path => {
-                const nodes = path.map(id => byId[id]);
-                assert.ok(
-                    nodes.some(node => isQualifyingCapture(node, config)),
-                    `L${level}: path ${path.join(',')} has no qualifying capture with events disabled`
-                );
-            });
-        }
-    });
-});
-
+// The branch may not land on steps 1-3 (MIN_BRANCH_STEP is 4), so these
+// columns are always single-node.
 test('L1 forced steps 1-2 stay captures and step 3 a battle after guarantee conversions', () => {
     for (let seed = 0; seed < 200; seed++) {
         const graph = P.createAreaGraph(1, { includeEvents: true });
@@ -520,14 +579,14 @@ test('L1 forced steps 1-2 stay captures and step 3 a battle after guarantee conv
     }
 });
 
-test('level 4 is a strictly linear 6-node single-lane gauntlet', () => {
+test('level 4 is a strictly linear 7-column single-lane gauntlet', () => {
     for (let seed = 0; seed < 200; seed++) {
         const graph = P.createAreaGraph(4, { includeEvents: true });
 
-        // 6 columns, each a single node.
-        assert.equal(graph.columns.length, 6);
+        // 7 columns (start + 6 steps), each a single node.
+        assert.equal(graph.columns.length, 7);
         graph.columns.forEach(column => assert.equal(column.length, 1));
-        assert.equal(graph.nodes.length, 6);
+        assert.equal(graph.nodes.length, 7);
 
         const typeByStep = {};
         graph.nodes.forEach(node => { typeByStep[node.step] = node.type; });
@@ -535,11 +594,12 @@ test('level 4 is a strictly linear 6-node single-lane gauntlet', () => {
         assert.equal(typeByStep[1], 'shop');
         assert.equal(typeByStep[2], 'battle');
         assert.equal(typeByStep[3], 'battle');
-        assert.equal(typeByStep[4], 'battle');
-        assert.equal(typeByStep[5], 'boss');
+        assert.equal(typeByStep[4], 'shop');
+        assert.equal(typeByStep[5], 'battle');
+        assert.equal(typeByStep[6], 'boss');
 
-        // Strictly linear edges: start -> 1 -> 2 -> 3 -> 4 -> boss-5.
-        const ids = ['start', 'node-1-1', 'node-2-1', 'node-3-1', 'node-4-1', 'boss-5'];
+        // Strictly linear edges: start -> 1 -> 2 -> 3 -> 4 -> 5 -> boss-6.
+        const ids = ['start', 'node-1-1', 'node-2-1', 'node-3-1', 'node-4-1', 'node-5-1', 'boss-6'];
         const expectedEdges = ids.slice(0, -1).map((from, i) => `${from}->${ids[i + 1]}`);
         assert.deepEqual(graph.edges.map(edge => `${edge.from}->${edge.to}`), expectedEdges);
     }
@@ -558,7 +618,7 @@ test('advanceRunToNextLevel bumps the level, refreshes the area, and preserves p
         level: 1,
         location: { id: 'a', name: 'A', terrain: 'A', types: ['WATER', 'ICE'], theme: {}, background: null },
         visitedLocationIds: ['a'],
-        area: { completed: true, graph: makeGraph(), bossNodeId: 'boss-12' },
+        area: { completed: true, graph: makeGraph(), bossNodeId: 'boss-11' },
         battleEncounters: { 'node-3-1': {} },
         captureEncounters: { 'node-1-1': {} },
         martEncounters: { 'node-5-1': {} },
@@ -586,7 +646,7 @@ test('advanceRunToNextLevel bumps the level, refreshes the area, and preserves p
     assert.deepEqual(run.area.visitedNodeIds, ['start']);
     assert.deepEqual(run.area.traveledPathKeys, []);
     assert.equal(run.area.activeBattleNodeId, null);
-    assert.equal(run.area.bossNodeId, 'boss-12');
+    assert.equal(run.area.bossNodeId, 'boss-11');
     assert.ok(run.area.graph.nodes.length > 1);
 
     // Untouched carry-over.
@@ -606,7 +666,7 @@ test('chooseTrainer against real data never returns null or Special and honors r
     // Battle-node rank floor per level (L2 is a Standard/Ace mix, so no strict
     // single rank); the final boss node has its own rank.
     const battleExpect = { 1: 'Standard', 3: 'Ace', 4: 'Elite' };
-    const bossExpect = { 1: 'Boss', 2: 'Boss', 3: 'Boss', 4: 'Elite' };
+    const bossExpect = { 1: 'Boss', 2: 'Boss', 3: 'Elite', 4: 'Elite' };
 
     [1, 2, 3, 4].forEach(level => {
         locations.forEach(location => {

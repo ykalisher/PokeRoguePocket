@@ -7,7 +7,7 @@ const RUN_STORAGE_KEY = 'pokemon-rogue-pocket-run';
 const NEW_RUN_ROUTE = 'starter.html';
 // Must track PokeRun.STORAGE_VERSION — main.js loads no shared modules, so the
 // Continue button reads the run JSON directly and rejects stale save formats.
-const RUN_STORAGE_VERSION = 2;
+const RUN_STORAGE_VERSION = 3;
 
 document.addEventListener('DOMContentLoaded', () => {
     init();
