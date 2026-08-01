@@ -52,7 +52,7 @@ effects that do not have it.
 
 ## Steps
 
-- [ ] 1. **`map/event_effects.js`** — add the resolver and the fallback-aware picker next to
+- [x] 1. **`map/event_effects.js`** — add the resolver and the fallback-aware picker next to
   `getEffectTypes` (~427):
 
   ```js
@@ -88,13 +88,13 @@ effects that do not have it.
       }
   ```
 
-- [ ] 2. **`map/event_effects.js`** — in `gainRandomCards` (~386), change the first line to
+- [x] 2. **`map/event_effects.js`** — in `gainRandomCards` (~386), change the first line to
   `const types = resolveGrantTypes(run, effect);` and the record pick to
   `const record = chooseGrantRecord(run, gameData, cardKind, effect.excludeName, effect);`.
   Leave the rest of the function, including the `No FIRE attack available.` message, exactly
   as it is.
 
-- [ ] 3. **`map/event_effects.js`** — make the baby grant typed:
+- [x] 3. **`map/event_effects.js`** — make the baby grant typed:
   - `applyEffect` (~347): `return gainRandomBaby(run, runStore, gameData, effect);`
   - `gainRandomBaby(run, runStore, gameData, effect)` (~413): first line becomes
     `const pool = getBabyPool(gameData, resolveGrantTypes(run, effect));`
@@ -103,12 +103,12 @@ effects that do not have it.
   - `poolSatisfied` (~70) keeps calling `getBabyPool(gameData)` with **one** argument — it is
     an availability gate for the whole event and must not narrow by location.
 
-- [ ] 4. **`map/event_effects.js`** — in `createReplacementCard` (~531), change the random
+- [x] 4. **`map/event_effects.js`** — in `createReplacementCard` (~531), change the random
   branch from `chooseRandomRecord(gameData, cardKind, getCardName(sourceCard),
   getEffectTypes(replacement))` to
   `chooseGrantRecord(run, gameData, cardKind, getCardName(sourceCard), replacement)`.
 
-- [ ] 5. **`map/locations.js`** — give `getBabyPokemonPool` an optional types argument,
+- [x] 5. **`map/locations.js`** — give `getBabyPokemonPool` an optional types argument,
   mirroring `getWildPokemonPool`'s matched-else-all fallback (~692–700):
 
   ```js
@@ -131,16 +131,16 @@ effects that do not have it.
 
   The existing single-argument callers keep working unchanged.
 
-- [ ] 6. **`map/event.js`** — `describeEffect` (~583–604) is the player-facing preview label.
+- [x] 6. **`map/event.js`** — `describeEffect` (~583–604) is the player-facing preview label.
   Append " from this area" when `effect.locationTypes === true`, for both the
   `gain-random-card` and `gain-random-baby` lines. Keep it a pure string function.
 
-- [ ] 7. **`events.json`** — add `"locationTypes": true` to the single effect of the
+- [x] 7. **`events.json`** — add `"locationTypes": true` to the single effect of the
   `nursery-egg` event (~96–110), so it reads
   `{ "type": "gain-random-baby", "locationTypes": true }`. This is the **only** data edit in
   this phase — do not author anything else.
 
-- [ ] 8. **`dev/editor/tab_events.js`** — make the flag authorable:
+- [x] 8. **`dev/editor/tab_events.js`** — make the flag authorable:
   - `EFFECT_FIELDS` (~43–58): `'gain-random-card': ['cardKind', 'count', 'types',
     'locationTypes', 'excludeName']` and `'gain-random-baby': ['locationTypes']`.
   - `effectFieldHtml` (~665–696): add a case copying the `'strict'` checkbox pattern (~683):
@@ -171,7 +171,7 @@ effects that do not have it.
     (~241–247). An unchecked box must mean "field absent", not `false`, or every existing
     event picks up a spurious diff.
 
-- [ ] 9. **`dev/editor/validate.js`** — extend `validateEvents` (~356–449), next to the
+- [x] 9. **`dev/editor/validate.js`** — extend `validateEvents` (~356–449), next to the
   existing `types` checks (~435–448). Three rules, using the file's `err(...)` /
   issue-code pattern:
   - `locationTypes` present and not a boolean → error `events.effect-location-types-type`.
@@ -184,14 +184,14 @@ effects that do not have it.
   No change to `dev/editor/server.js` or its `EFFECT_TYPES` list — this adds a **field**, not a
   new effect type, so `tests/editor_api.test.js:183` (`effectTypes.length === 14`) still holds.
 
-- [ ] 10. **`tests/data_validation.test.js`** — mirror the three rules in the event schema
+- [x] 10. **`tests/data_validation.test.js`** — mirror the three rules in the event schema
   block (~228–340), next to the existing effect `types` validation (~280–292), so live data is
   checked by `node tests/run_all.js` and not only by the editor.
 
-- [ ] 11. **`tests/editor_validation.test.js`** — add fixtures for the three new issue codes,
+- [x] 11. **`tests/editor_validation.test.js`** — add fixtures for the three new issue codes,
   following the `events: unknown effect type` pattern (~188–217).
 
-- [ ] 12. **`tests/baby_event.test.js`** — extend the existing suite (fixture builders at
+- [x] 12. **`tests/baby_event.test.js`** — extend the existing suite (fixture builders at
   ~20–43, `applyEffects` assertion at ~96–108). Add:
   - a typed baby grant: a run whose `location.types` is `['FIRE']`, a fixture baby pool with
     one FIRE baby and several off-type babies, and `{ type: 'gain-random-baby',
@@ -204,13 +204,13 @@ effects that do not have it.
     locations, `gain-random-baby` with `locationTypes: true` always yields a baby sharing a
     type with that location.
 
-- [ ] 13. **`tests/event_effects`-side coverage** — add to whichever existing file covers
+- [x] 13. **`tests/event_effects`-side coverage** — add to whichever existing file covers
   `gain-random-card` typed grants (grep for
   `gain-random-card with types only grants on-type attacks`): a `locationTypes: true` variant
   proving it draws on-type from `run.location.types`, and that it **wins** when `types` is also
   present and disjoint.
 
-- [ ] 14. **`.claude/skills/data/SKILL.md`** — document the field in the "Event effects
+- [x] 14. **`.claude/skills/data/SKILL.md`** — document the field in the "Event effects
   (`events.json`)" section (~48–64): where it is honored, that it overrides `types`, and the
   fallback-vs-strict difference from the authored `types` filter. Note it is inert on a
   `replacement` that has a `name` (same caveat already recorded for `replacement.types` at
@@ -218,14 +218,14 @@ effects that do not have it.
 
 ## Verification
 
-- [ ] `node --check map/event_effects.js`, `map/locations.js`, `map/event.js`,
+- [x] `node --check map/event_effects.js`, `map/locations.js`, `map/event.js`,
   `dev/editor/tab_events.js`, `dev/editor/validate.js` all pass.
-- [ ] `node tests/run_all.js` green — including `tests/editor_format.test.js`, which asserts
+- [x] `node tests/run_all.js` green — including `tests/editor_format.test.js`, which asserts
   `events.json` is **byte-exact** against `dev/editor/format_json.js`. If it fails, the
   nursery-egg effect object no longer round-trips; fix the formatting, not the test.
-- [ ] `node dev/editor/validate.js` (or whatever entry point the editor exposes) reports no
+- [x] `node dev/editor/validate.js` (or whatever entry point the editor exposes) reports no
   new issues against live data.
-- [ ] Behavioral one-liner — a FIRE/ROCK/FLYING location must produce only on-type babies:
+- [x] Behavioral one-liner — a FIRE/ROCK/FLYING location must produce only on-type babies:
   ```
   node -e "require('./tests/helpers/arena_env.js'); require('./map/locations.js');
   require('./map/run_state.js'); require('./map/event_effects.js');
@@ -243,15 +243,15 @@ effects that do not have it.
     console.log([...names].join(', '));});"
   ```
   Every name printed must be a baby whose non-BABY types intersect FIRE/ROCK/FLYING.
-- [ ] Browser check with the `verify` skill: reach an event node until the Nursery Surprise
+- [x] Browser check with the `verify` skill: reach an event node until the Nursery Surprise
   event appears (or force it via the console), claim the egg, and confirm the hatched baby's
   types overlap the current location. Screenshot as `dev/verify/phase82_typed_baby_grant.png`.
-- [ ] Editor check with the `verify` skill, driver modeled on `dev/verify/drive_editor.py`
+- [x] Editor check with the `verify` skill, driver modeled on `dev/verify/drive_editor.py`
   (it spawns `node dev/editor/server.js --port 8933` itself): open the Events tab, select
   `nursery-egg`, confirm the "Match this location's types" checkbox renders **checked**, and
   confirm that toggling it off and back on leaves `git diff events.json` empty. Screenshot as
   `dev/verify/phase82_editor_location_types.png`.
-- [ ] `git status` shows `events.json` changed by exactly the one added field.
+- [x] `git status` shows `events.json` changed by exactly the one added field.
 
 ## Out of scope / do not touch
 

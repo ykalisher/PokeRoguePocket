@@ -100,7 +100,7 @@
     "body": "A day-care worker presses a warm, wobbling egg into your hands. Before you can even ask, it cracks open right there!",
     "buttonText": "Take the egg!",
     "effects": [
-      { "type": "gain-random-baby" }
+      { "type": "gain-random-baby", "locationTypes": true }
     ],
     "enabled": true,
     "kicker": "egg",

@@ -588,7 +588,7 @@
         if (effect.type === 'gain-cash') return `Gain ${amount} coins`;
         if (effect.type === 'lose-cash') return `Pay ${amount} coins`;
         if (effect.type === 'gain-card') return `Gain ${effect.name}${countSuffix}`;
-        if (effect.type === 'gain-random-card') return `Gain ${amount} random ${cardKind} card${amount === 1 ? '' : 's'}`;
+        if (effect.type === 'gain-random-card') return `Gain ${amount} random ${cardKind} card${amount === 1 ? '' : 's'}${effect.locationTypes === true ? ' from this area' : ''}`;
         if (effect.type === 'lose-random-cards') return `Lose ${amount} random ${cardKind} card${amount === 1 ? '' : 's'}`;
         if (effect.type === 'lose-random-pokemon') return `Lose ${amount} random Pokemon`;
         if (effect.type === 'remove-selected-card') return 'Lose the selected card';
@@ -598,7 +598,7 @@
         if (effect.type === 'replace-random-card') return `Replace ${amount} random ${cardKind} card${amount === 1 ? '' : 's'}`;
         if (effect.type === 'trade-selected-pokemon') return 'Trade the selected Pokemon';
         if (effect.type === 'trade-random-pokemon') return 'Trade a random Pokemon';
-        if (effect.type === 'gain-random-baby') return 'Gain a random baby Pokemon';
+        if (effect.type === 'gain-random-baby') return `Gain a random baby Pokemon${effect.locationTypes === true ? ' from this area' : ''}`;
 
         return '';
     }

@@ -52,6 +52,22 @@ function fixtureGameDataWithoutBaby() {
     return { pokemon: [plain], events: [NURSERY_EVENT] };
 }
 
+function fixtureGameDataWithMixedBabies() {
+    return {
+        pokemon: [
+            makePokemon('Fire Baby', '9101', ['FIRE', 'BABY']),
+            makePokemon('Water Baby', '9102', ['WATER', 'BABY']),
+            makePokemon('Grass Baby', '9103', ['GRASS', 'BABY']),
+            makePokemon('Rock Baby', '9104', ['ROCK', 'BABY'])
+        ],
+        events: [NURSERY_EVENT]
+    };
+}
+
+function makeRunAt(location) {
+    return R.createRunState({ area: makeGraph(), collections: {}, location });
+}
+
 test('chooseEvent can return nursery-egg against real game data (a baby is authored)', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
@@ -123,4 +139,65 @@ test('getEventById resolves nursery-egg regardless of pool state (saved-encounte
 
     assert.equal(E.getEventById(emptyPoolGameData, 'nursery-egg').id, 'nursery-egg');
     assert.equal(E.getEventById(babyPoolGameData, 'nursery-egg').id, 'nursery-egg');
+});
+
+test('gain-random-baby with locationTypes:true only grants a baby matching the location', () => {
+    const gameData = fixtureGameDataWithMixedBabies();
+    const location = { id: 'fixture-fire-loc', types: ['FIRE'] };
+
+    for (let i = 0; i < 100; i += 1) {
+        const run = makeRunAt(location);
+        E.applyEffects(run, [{ type: 'gain-random-baby', locationTypes: true }], {}, { runStore: R, gameData });
+        const granted = [...run.collections.pokemon, ...run.collections.bench.pokemon];
+        assert.equal(granted.length, 1);
+        assert.equal(granted[0].pokemon.name, 'Fire Baby');
+    }
+});
+
+test('gain-random-baby with locationTypes:true falls back to the whole pool when no baby matches', () => {
+    const gameData = fixtureGameDataWithMixedBabies();
+    const location = { id: 'fixture-no-match-loc', types: ['ELECTRIC'] };
+
+    for (let i = 0; i < 20; i += 1) {
+        const run = makeRunAt(location);
+        E.applyEffects(run, [{ type: 'gain-random-baby', locationTypes: true }], {}, { runStore: R, gameData });
+        const granted = [...run.collections.pokemon, ...run.collections.bench.pokemon];
+        assert.equal(granted.length, 1, 'expected the grant to still happen against an off-type location');
+    }
+});
+
+test('gain-random-baby without locationTypes draws from the whole pool regardless of location', () => {
+    const gameData = fixtureGameDataWithMixedBabies();
+    const location = { id: 'fixture-fire-loc-2', types: ['FIRE'] };
+    const seenNames = new Set();
+
+    for (let i = 0; i < 100; i += 1) {
+        const run = makeRunAt(location);
+        E.applyEffects(run, [{ type: 'gain-random-baby' }], {}, { runStore: R, gameData });
+        const granted = [...run.collections.pokemon, ...run.collections.bench.pokemon];
+        seenNames.add(granted[0].pokemon.name);
+    }
+
+    assert.ok(seenNames.size > 1, 'expected more than one distinct baby name across 100 unfiltered rolls');
+});
+
+test('gain-random-baby with locationTypes:true against real game data always matches the location', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const locations = gameData.locations.slice(0, 5);
+
+    locations.forEach(location => {
+        for (let i = 0; i < 20; i += 1) {
+            const run = makeRunAt(location);
+            E.applyEffects(run, [{ type: 'gain-random-baby', locationTypes: true }], {}, { runStore: R, gameData });
+            const granted = [...run.collections.pokemon, ...run.collections.bench.pokemon];
+            assert.equal(granted.length, 1);
+
+            const record = gameData.pokemon.find(entry => entry.name === granted[0].pokemon.name);
+            const recordTypes = [record.type1, record.type2, record.type3];
+            const overlaps = recordTypes.some(type => location.types.includes(type));
+
+            assert.ok(overlaps, `expected ${record.name} (${recordTypes}) to overlap ${location.id} (${location.types})`);
+        }
+    });
 });

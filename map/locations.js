@@ -806,9 +806,20 @@
         return keys.has(record.name) || keys.has(record.id);
     }
 
-    function getBabyPokemonPool(gameData) {
+    /**
+     * Baby pool, optionally narrowed to a location's types. Falls back to every
+     * baby when nothing matches, so a typed grant never comes up empty.
+     */
+    function getBabyPokemonPool(gameData, locationTypes) {
         const pokemon = gameData && Array.isArray(gameData.pokemon) ? gameData.pokemon : [];
-        return uniqueByName(pokemon).filter(isBabyPokemon);
+        const babies = uniqueByName(pokemon).filter(isBabyPokemon);
+        const types = Array.isArray(locationTypes) ? locationTypes : [];
+
+        if (types.length === 0) return babies;
+
+        const matched = babies.filter(record => getRecordTypes(record).some(type => types.includes(type)));
+
+        return matched.length > 0 ? matched : babies;
     }
 
     function isObtainablePokemon(record, gameData) {

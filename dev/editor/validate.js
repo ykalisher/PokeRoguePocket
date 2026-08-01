@@ -446,6 +446,22 @@
                         }
                     });
                 }
+                if (effect.locationTypes !== undefined && typeof effect.locationTypes !== 'boolean') {
+                    issues.push(err('events.json', key, 'events.effect-location-types-type', `${key}: locationTypes must be a boolean`, 'effects'));
+                }
+                if (effect.replacement && effect.replacement.locationTypes !== undefined && typeof effect.replacement.locationTypes !== 'boolean') {
+                    issues.push(err('events.json', key, 'events.effect-location-types-type', `${key}: replacement.locationTypes must be a boolean`, 'effects'));
+                }
+                if (effect.locationTypes === true && Array.isArray(effect.types) && effect.types.length > 0) {
+                    issues.push(warn('events.json', key, 'events.effect-location-types-conflict', `${key}: locationTypes wins; the types list is ignored`, 'effects'));
+                }
+                if (effect.replacement && effect.replacement.locationTypes === true &&
+                    Array.isArray(effect.replacement.types) && effect.replacement.types.length > 0) {
+                    issues.push(warn('events.json', key, 'events.effect-location-types-conflict', `${key}: replacement.locationTypes wins; the replacement types list is ignored`, 'effects'));
+                }
+                if (effect.locationTypes !== undefined && effect.type !== 'gain-random-card' && effect.type !== 'gain-random-baby') {
+                    issues.push(warn('events.json', key, 'events.effect-location-types-unused', `${key}: locationTypes is not read by ${effect.type}`, 'effects'));
+                }
             });
 
             collectEventConditions(event).forEach((condition) => {

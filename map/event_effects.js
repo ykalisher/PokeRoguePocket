@@ -71,9 +71,9 @@
         return true;
     }
 
-    function getBabyPool(gameData) {
+    function getBabyPool(gameData, types) {
         return global.PokeLocations && typeof global.PokeLocations.getBabyPokemonPool === 'function'
-            ? global.PokeLocations.getBabyPokemonPool(gameData)
+            ? global.PokeLocations.getBabyPokemonPool(gameData, types)
             : [];
     }
 
@@ -345,7 +345,7 @@
             case 'gain-random-card':
                 return gainRandomCards(run, runStore, gameData, cardKind, amount, effect);
             case 'gain-random-baby':
-                return gainRandomBaby(run, runStore, gameData);
+                return gainRandomBaby(run, runStore, gameData, effect);
             case 'lose-random-cards':
                 return loseRandomCards(run, cardKind, amount, { keepOnePokemon: cardKind === 'pokemon' });
             case 'lose-random-pokemon':
@@ -384,11 +384,11 @@
     }
 
     function gainRandomCards(run, runStore, gameData, cardKind, count, effect) {
-        const types = getEffectTypes(effect);
+        const types = resolveGrantTypes(run, effect);
         const gainedNames = [];
 
         for (let index = 0; index < count; index += 1) {
-            const record = chooseRandomRecord(gameData, cardKind, effect.excludeName, types);
+            const record = chooseGrantRecord(run, gameData, cardKind, effect.excludeName, effect);
 
             if (!record) {
                 if (types) {
@@ -410,8 +410,8 @@
         return summarizeNames('Gained', gainedNames);
     }
 
-    function gainRandomBaby(run, runStore, gameData) {
-        const pool = getBabyPool(gameData);
+    function gainRandomBaby(run, runStore, gameData, effect) {
+        const pool = getBabyPool(gameData, resolveGrantTypes(run, effect));
 
         if (pool.length === 0) return [];
 
@@ -428,6 +428,37 @@
         const types = Array.isArray(source && source.types) ? source.types : null;
 
         return types && types.length > 0 ? types.map(type => String(type).toUpperCase()) : null;
+    }
+
+    /**
+     * Type filter for a random grant. `locationTypes: true` swaps in the run's
+     * current location types and wins over an authored `types` list; anything
+     * else falls through to the authored list. Returns null for "no filter".
+     */
+    function resolveGrantTypes(run, source) {
+        if (!usesLocationTypes(source)) return getEffectTypes(source);
+
+        const location = run && run.location ? run.location : null;
+        const types = location && Array.isArray(location.types) ? location.types : [];
+
+        return types.length > 0 ? types.map(type => String(type).toUpperCase()) : null;
+    }
+
+    function usesLocationTypes(source) {
+        return Boolean(source && source.locationTypes === true);
+    }
+
+    /**
+     * A location-derived filter falls back to the unfiltered pool: an area with
+     * no on-type card is an environment accident, not an authoring choice, so
+     * the grant still happens. An authored `types` list stays strict.
+     */
+    function chooseGrantRecord(run, gameData, cardKind, excludeName, source) {
+        const record = chooseRandomRecord(gameData, cardKind, excludeName, resolveGrantTypes(run, source));
+
+        if (record || !usesLocationTypes(source)) return record;
+
+        return chooseRandomRecord(gameData, cardKind, excludeName, null);
     }
 
     function loseRandomCards(run, cardKind, count, options = {}) {
@@ -532,7 +563,7 @@
         const cardKind = normalizeCardKind(replacement.cardKind || replacement.kind || sourceKind);
         const record = replacement.name
             ? findRecord(gameData, cardKind, replacement.name)
-            : chooseRandomRecord(gameData, cardKind, getCardName(sourceCard), getEffectTypes(replacement));
+            : chooseGrantRecord(run, gameData, cardKind, getCardName(sourceCard), replacement);
 
         return record ? createCardsFromRecord(run, runStore, cardKind, record, 1)[0] : null;
     }

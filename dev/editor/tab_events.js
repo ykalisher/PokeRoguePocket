@@ -44,8 +44,8 @@
         'gain-cash': ['amount'],
         'lose-cash': ['amount'],
         'gain-card': ['cardKind', 'name', 'count'],
-        'gain-random-card': ['cardKind', 'count', 'types', 'excludeName'],
-        'gain-random-baby': [],
+        'gain-random-card': ['cardKind', 'count', 'types', 'locationTypes', 'excludeName'],
+        'gain-random-baby': ['locationTypes'],
         'lose-random-cards': ['cardKind', 'count', 'strict'],
         'lose-random-pokemon': ['count', 'strict'],
         'remove-selected-card': ['selectionId'],
@@ -351,7 +351,9 @@
             case 'lose-cash': return `Lose ${getAmount(effect)} coins`;
             case 'gain-card': return `Gain ${getCount(effect)}× ${effect.name || '(no card)'} [${kind}]`;
             case 'gain-random-card': {
-                const filter = Array.isArray(effect.types) && effect.types.length ? ` (${effect.types.join('/')})` : '';
+                const filter = effect.locationTypes === true
+                    ? ' (this area\'s types)'
+                    : (Array.isArray(effect.types) && effect.types.length ? ` (${effect.types.join('/')})` : '');
                 const excl = effect.excludeName ? ` excl. ${effect.excludeName}` : '';
                 return `Gain ${getCount(effect)} random ${kind}${filter}${excl}`;
             }
@@ -364,7 +366,7 @@
             case 'replace-random-card': return `Replace ${getCount(effect)} random ${kind} → ${replName}`;
             case 'trade-selected-pokemon': return `Trade selected Pokemon → ${replName}`;
             case 'trade-random-pokemon': return `Trade a random Pokemon → ${replName}`;
-            case 'gain-random-baby': return 'Gain a random baby Pokemon';
+            case 'gain-random-baby': return `Gain a random baby Pokemon${effect.locationTypes === true ? ' (this area\'s types)' : ''}`;
             default: return effect.type || '(unknown effect)';
         }
     }
@@ -656,6 +658,7 @@
                     </label>
                 </div>
                 <label>Type filter${replacementTypesChipsHtml(effect, index, owner)}</label>
+                <label class="editor-form-checkbox"><input type="checkbox" data-scope="eff-repl-location-types" ${base}${repl.locationTypes ? ' checked' : ''}> Match this location's types</label>
             </div>
         `;
     }
@@ -684,6 +687,8 @@
                 return `<label class="editor-form-checkbox"><input type="checkbox" data-scope="eff-strict" ${base}${effect.strict ? ' checked' : ''}> Strict (block if too few)</label>`;
             case 'types':
                 return `<label>Type filter${effectTypesChipsHtml(effect, index, owner)}</label>`;
+            case 'locationTypes':
+                return `<label class="editor-form-checkbox"><input type="checkbox" data-scope="eff-location-types" ${base}${effect.locationTypes ? ' checked' : ''}> Match this location's types</label>`;
             case 'selectionId':
                 return selectionSelectHtml(effect, index, action);
             case 'replacement':
@@ -1142,6 +1147,21 @@
                     effectAt(owner, index).strict = target.checked;
                     repaint = false;
                     break;
+                case 'eff-location-types':
+                    effectAt(owner, index).locationTypes = target.checked;
+                    repaint = true;
+                    break;
+                case 'eff-repl-location-types': {
+                    const effect = effectAt(owner, index);
+                    if (target.checked) {
+                        effect.replacement = effect.replacement || {};
+                        effect.replacement.locationTypes = true;
+                    } else if (effect.replacement) {
+                        delete effect.replacement.locationTypes;
+                        cleanupReplacement(effect);
+                    }
+                    break;
+                }
                 case 'eff-repl-cardkind': {
                     const effect = effectAt(owner, index);
                     if (value) { effect.replacement = effect.replacement || {}; effect.replacement.cardKind = value; }

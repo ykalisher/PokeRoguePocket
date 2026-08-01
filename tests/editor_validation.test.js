@@ -194,6 +194,33 @@ test('events: unknown effect type', () => {
     assert.ok(hasCode(issues, 'events.unknown-effect-type'));
 });
 
+test('events: locationTypes must be a boolean', () => {
+    const data = withEvents((events) => {
+        const eggEvent = events.find((event) => event.id === 'nursery-egg');
+        eggEvent.effects[0].locationTypes = 'yes';
+    });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.effect-location-types-type'));
+});
+
+test('events: locationTypes conflicts with an authored types list', () => {
+    const data = withEvents((events) => {
+        const eggEvent = events.find((event) => event.id === 'nursery-egg');
+        eggEvent.effects[0].types = ['FIRE'];
+    });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.effect-location-types-conflict'));
+});
+
+test('events: locationTypes on an effect type that does not read it', () => {
+    const data = withEvents((events) => {
+        const giftEvent = events.find((event) => event.id === 'sitrus-berry-tree');
+        giftEvent.effects[0].locationTypes = true;
+    });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.effect-location-types-unused'));
+});
+
 test('events: trainer event naming a missing trainer', () => {
     const data = withEvents((events) => {
         const trainerEvent = events.find((event) => event.type === 'trainer');

@@ -290,6 +290,20 @@ test('events.json entries are well-formed', () => {
                     assert.ok(VALID_TYPES.has(type), `${event.id}: bad replacement type filter ${type}`);
                 });
             }
+
+            if (effect.locationTypes !== undefined) {
+                assert.equal(typeof effect.locationTypes, 'boolean', `${event.id}: locationTypes must be a boolean`);
+                assert.ok(effect.type === 'gain-random-card' || effect.type === 'gain-random-baby',
+                    `${event.id}: locationTypes is not read by ${effect.type}`);
+                assert.ok(!(effect.locationTypes === true && Array.isArray(effect.types) && effect.types.length > 0),
+                    `${event.id}: locationTypes wins; the types list is ignored`);
+            }
+
+            if (effect.replacement && effect.replacement.locationTypes !== undefined) {
+                assert.equal(typeof effect.replacement.locationTypes, 'boolean', `${event.id}: replacement.locationTypes must be a boolean`);
+                assert.ok(!(effect.replacement.locationTypes === true && Array.isArray(effect.replacement.types) && effect.replacement.types.length > 0),
+                    `${event.id}: replacement.locationTypes wins; the replacement types list is ignored`);
+            }
         });
 
         collectEventConditions(event).forEach(condition => {

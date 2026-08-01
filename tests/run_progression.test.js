@@ -824,6 +824,46 @@ test('gain-random-card with types only grants on-type attacks', async () => {
     });
 });
 
+test('gain-random-card with locationTypes:true grants attacks matching run.location.types', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const run = R.createRunState({ area: makeGraph(), collections: {}, location: atLocation('fixture-fire-loc', 'Volcanic', ['FIRE']) });
+    const effect = { type: 'gain-random-card', cardKind: 'attack', locationTypes: true, count: 40 };
+
+    E.applyEffects(run, [effect], {}, { runStore: R, gameData });
+
+    const grantedAttacks = [...run.collections.actions, ...run.collections.bench.actions]
+        .map(card => card.attack);
+
+    assert.ok(grantedAttacks.length > 0, 'expected at least one granted attack');
+    grantedAttacks.forEach(attack => {
+        assert.ok(
+            attack.type1 === 'FIRE' || attack.type2 === 'FIRE',
+            `${attack.name} is not a FIRE attack`
+        );
+    });
+});
+
+test('gain-random-card locationTypes:true wins over a disjoint authored types list', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const run = R.createRunState({ area: makeGraph(), collections: {}, location: atLocation('fixture-fire-loc-2', 'Volcanic', ['FIRE']) });
+    const effect = { type: 'gain-random-card', cardKind: 'attack', types: ['WATER'], locationTypes: true, count: 40 };
+
+    E.applyEffects(run, [effect], {}, { runStore: R, gameData });
+
+    const grantedAttacks = [...run.collections.actions, ...run.collections.bench.actions]
+        .map(card => card.attack);
+
+    assert.ok(grantedAttacks.length > 0, 'expected at least one granted attack');
+    grantedAttacks.forEach(attack => {
+        assert.ok(
+            attack.type1 === 'FIRE' || attack.type2 === 'FIRE',
+            `${attack.name} is not a FIRE attack (locationTypes should win over types: WATER)`
+        );
+    });
+});
+
 test('gain-random-card with an unmatched type grants nothing', () => {
     const gameData = { attacks: [{ name: 'Splash', type1: 'WATER', type2: 'NONE' }] };
     const run = R.createRunState({ area: makeGraph(), collections: {} });
