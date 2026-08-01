@@ -568,5 +568,55 @@
     "enabled": true,
     "kicker": "Darkrai",
     "terrains": ["Urban"]
+  },
+  {
+    "type": "choice",
+    "title": "Loose Gadgets on the Floor",
+    "id": "artificial-extraveganza",
+    "body": "While walking around you trip over a bunch of gadgets on the ground. You decide it would be fine if you took one.",
+    "choices": [
+      {
+        "title": "Take an Energize",
+        "id": "energize",
+        "description": "Energize lets a Pokémon use a second attack this turn.",
+        "buttonText": "Choose",
+        "requires": [],
+        "effects": [
+          { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Energize" }
+        ]
+      },
+      {
+        "title": "Take an Increase Capacity",
+        "id": "increase-capacity",
+        "description": "Increase capacity lets the player draw one extra card every turn for the rest of the battle.",
+        "buttonText": "Choose",
+        "requires": [],
+        "effects": [
+          { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Increase Capacity" }
+        ]
+      },
+      {
+        "title": "Take a Recycle",
+        "id": "recycle",
+        "description": "Recycle lets the player play an extra item card this turn.",
+        "buttonText": "Choose",
+        "requires": [],
+        "effects": [
+          { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Recycle" }
+        ]
+      },
+      {
+        "title": "Take a Refresh",
+        "id": "refresh",
+        "description": "Refresh cycles the discard pile back into the deck early.",
+        "buttonText": "Choose",
+        "requires": [],
+        "effects": [
+          { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Refresh" }
+        ]
+      }
+    ],
+    "enabled": true,
+    "kicker": "Artificial Attacks"
   }
 ]
