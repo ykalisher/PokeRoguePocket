@@ -21,7 +21,7 @@
 - [x] #011 added:2026-07-20 done:2026-07-20 needs:- :: Fix gym leaders
 - [x] #012 added:2026-07-20 done:2026-07-31 needs:- :: check ace trainers
 - [x] #013 added:2026-07-20 done:2026-07-31 needs:- :: check event trainers
-- [ ] #014 added:2026-07-20 needs:- :: check standards
+- [x] #014 added:2026-07-20 done:2026-08-01 needs:- :: check standards
 - [x] #015 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Articuno
 - [x] #016 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Zapdos
 - [x] #017 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Moltres

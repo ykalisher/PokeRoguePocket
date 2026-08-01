@@ -428,17 +428,16 @@
     ],
     "attacks": [
       "Mega Punch",
-      "Meditate",
       "Thunder Punch",
       "Thunder Punch",
-      "Mega Punch",
       "Trick",
       "Thunder Punch",
       "Power-up Punch",
-      "Mega Punch",
-      "Mega Punch",
       "Discharge",
-      "Power-up Punch"
+      "Power-up Punch",
+      "Thunder Punch",
+      "Discharge",
+      "Ooze"
     ],
     "items": [
       "Lum Berry",
@@ -494,13 +493,13 @@
       "Iron Defense",
       "Magnetize",
       "Iron Head",
-      "Earth Power",
-      "Earthquake",
       "Swords Dance",
       "Stone Edge",
       "Stone Wall",
       "Flash Cannon",
-      "Iron Head"
+      "Iron Head",
+      "Rock Slide",
+      "Bulldoze"
     ],
     "items": [
       "Sitrus Berry",
@@ -524,14 +523,14 @@
       "Protect",
       "Bulldoze",
       "Inspiring Noise",
-      "Mist",
-      "Earth Power",
-      "Earthquake",
       "Body Slam",
       "Mind Break",
       "Expanding Force",
       "Body Slam",
-      "Inspiring Noise"
+      "Inspiring Noise",
+      "Bulldoze",
+      "Bulldoze",
+      "Surf"
     ],
     "items": [
       "Sitrus Berry",
@@ -554,14 +553,14 @@
       "Hydro Pump",
       "Bulldoze",
       "Muddy Water",
-      "Earthquake",
       "Body Slam",
       "Inspiring Noise",
       "Protect",
-      "Earth Power",
       "Muddy Water",
       "Rain Dance",
-      "Earth Power",
+      "Bulldoze",
+      "Muddy Water",
+      "Hydro Pump",
       "Bulldoze"
     ],
     "items": [
@@ -708,16 +707,16 @@
     "attacks": [
       "Air Slash",
       "Tailwind",
-      "Mega Punch",
       "Karate Smash",
       "Body Slam",
       "Kick in the Face",
       "Inspiring Noise",
       "Air Slash",
-      "Tailwind",
-      "Karate Smash",
-      "Air Slash",
-      "Kick in the Face"
+      "Kick in the Face",
+      "Sky Uppercut",
+      "Sky Uppercut",
+      "Sky Uppercut",
+      "Sky Uppercut"
     ],
     "items": [
       "Sitrus Berry",
@@ -810,13 +809,13 @@
       "Murky Water",
       "Trick",
       "Crunch",
-      "Mega Punch",
       "Meditate",
       "Iron Head",
       "Crunch",
-      "Mega Punch",
       "Protect",
-      "Inspiring Noise"
+      "Inspiring Noise",
+      "Sucker Punch",
+      "Iron Head"
     ],
     "items": [
       "Sitrus Berry",
@@ -837,7 +836,6 @@
     ],
     "attacks": [
       "Flame Thrower",
-      "Mega Punch",
       "Meditate",
       "Power-up Punch",
       "Flame Thrower",
@@ -847,7 +845,8 @@
       "Mind Break",
       "Shadow Ball",
       "Cursed Flame",
-      "Fire Spin"
+      "Fire Spin",
+      "Cursed Flame"
     ],
     "items": [
       "Sitrus Berry",
@@ -873,12 +872,12 @@
       "Dragon Claw",
       "Dragon Dance",
       "Razor Leaf",
-      "Earth Power",
-      "Dragon's Breath",
       "Razor Leaf",
       "Bulldoze",
-      "Earthquake",
-      "Earth Power"
+      "Dragon Claw",
+      "Razor Leaf",
+      "Razor Leaf",
+      "Bulldoze"
     ],
     "items": [
       "Grass Gem",
