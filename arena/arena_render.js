@@ -91,6 +91,11 @@
         [5, '3.5x'],
         [6, '4x']
     ]);
+    const BASE_STAT_KEYS = Object.freeze({
+        attack: 'baseAttack',
+        defense: 'baseDefense',
+        speed: 'baseSpeed'
+    });
     const CARD_BACK_PATHS = Object.freeze({
         deck: 'assets/card-backs/ACTION_CARD_BACK.png',
         'pokemon-deck': 'assets/card-backs/POKEMON_CARD_BACK.png'
@@ -582,10 +587,13 @@
     }
 
     /**
-     * Renders one effective stat cell. Positive/negative stages are shown by
-     * color only so compact cards do not need extra +/- text. Labels are single
-     * letters (A/D/S) so a 3-digit value fits the tiny mobile card column without
-     * clipping; the full name is exposed via title for hover/assistive tech.
+     * Renders one effective stat cell. The number is the true stat after every
+     * multiplier; the color says what moved it. A status touching this stat wins
+     * over the stage color, and its direction comes from the multiplier — a
+     * burned FIGHTING type gets x1.5 attack, so it reads as a boost. Labels stay
+     * single letters (A/D/S) so a 3-digit value fits the tiny mobile card column
+     * without clipping; the full breakdown is exposed via title for hover and
+     * assistive tech.
      */
     function renderStatCell(card, stat) {
         const labels = {
@@ -599,12 +607,44 @@
             speed: 'Speed'
         };
         const stage = arena.Model.getPokemonStatStage(card, stat);
-        const stageClass = stage > 0
-            ? ' stat-cell--up'
-            : stage < 0
-                ? ' stat-cell--down'
-                : '';
-        return `<span class="stat-cell${stageClass}" title="${titles[stat]}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}</span>`;
+        const statusMultiplier = arena.Model.getPokemonStatusMultiplier(card, stat);
+        const modifierClass = getStatCellModifierClass(stage, statusMultiplier);
+        const title = getStatCellTitle(card, stat, titles[stat], stage, statusMultiplier);
+
+        return `<span class="stat-cell${modifierClass}" title="${title}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}</span>`;
+    }
+
+    // Status color beats stage color, per the owner's spec. Direction is read
+    // from the multiplier so FIGHTING's status-triggered attack bonus reads up.
+    function getStatCellModifierClass(stage, statusMultiplier) {
+        if (statusMultiplier > 1) return ' stat-cell--status-up';
+        if (statusMultiplier < 1) return ' stat-cell--status-down';
+        if (stage > 0) return ' stat-cell--up';
+        if (stage < 0) return ' stat-cell--down';
+
+        return '';
+    }
+
+    // "Attack 100 -> 50 (Burn x0.5)". Falls back to the bare stat name when
+    // nothing is modifying it, so unmodified cards keep their plain tooltip.
+    function getStatCellTitle(card, stat, label, stage, statusMultiplier) {
+        const parts = [];
+
+        if (stage !== 0) parts.push(`${arena.Model.formatStatStage(stage)} stage`);
+
+        if (statusMultiplier !== 1) {
+            const statusLabels = arena.Model.getPokemonStatuses(card)
+                .map(status => status.label)
+                .join(', ');
+
+            parts.push(`${statusLabels || 'Status'} ×${Math.round(statusMultiplier * 100) / 100}`);
+        }
+
+        if (parts.length === 0) return label;
+
+        const baseStat = Number(card.pokemon[BASE_STAT_KEYS[stat]]) || 0;
+
+        return `${label} ${baseStat} → ${arena.Model.getPokemonEffectiveStat(card, stat)} (${parts.join(', ')})`;
     }
 
     /**
@@ -996,6 +1036,7 @@
                     <p>Attack, Defense, and Speed each track stages from -6 to +6.</p>
                     <p>Each *_UP adds one stage. Each *_DOWN removes one stage. Effective stats are rounded after stage and status/type multipliers, with a minimum of 1.</p>
                     <p>Damaging attacks roll a 1-in-3 stat-change activation chance. MULTI_ATTACK uses 20%. Non-damaging attacks and items apply stat changes immediately.</p>
+                    <p>Stat colors: green or red means a stat stage moved the number. Blue or purple means a status is changing it — a status always wins the color, and purple means the status is lowering the stat.</p>
                 </div>
                 <div class="stage-reference-table" role="table" aria-label="Stat stage multipliers">
                     <div class="stage-reference-row stage-reference-row--header" role="row">

@@ -1407,6 +1407,16 @@ button.playing-card:focus-visible {
     color: #b04332;
 }
 
+/* A status is raising this stat (e.g. FIGHTING's bonus while any status is up). */
+.stat-grid .stat-cell--status-up {
+    color: #1668cc;
+}
+
+/* A status is lowering this stat (burn, paralysis, fatigue). */
+.stat-grid .stat-cell--status-down {
+    color: #7b2fa8;
+}
+
 /* Card back top/footer labels. */
 .card-topline,
 .card-footer {

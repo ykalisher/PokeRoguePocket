@@ -44,7 +44,7 @@ output in the verification table — transcribe it rather than re-deriving it.
 
 ## Steps
 
-- [ ] 1. **`arena/arena_render.js`** — add a module-level constant next to the other
+- [x] 1. **`arena/arena_render.js`** — add a module-level constant next to the other
   render constants near the top of the IIFE (alongside `STATUS_REFERENCE` / `STAGE_REFERENCE`,
   ~lines 54–78). This mirrors the same map in `arena/arena_controller.js` (~2311):
 
@@ -56,7 +56,7 @@ output in the verification table — transcribe it rather than re-deriving it.
       });
   ```
 
-- [ ] 2. **`arena/arena_render.js`** — replace `renderStatCell` (~590–608) **and its doc
+- [x] 2. **`arena/arena_render.js`** — replace `renderStatCell` (~590–608) **and its doc
   comment** with the version below. Keep it in the same position in the file.
 
   ```js
@@ -126,7 +126,7 @@ output in the verification table — transcribe it rather than re-deriving it.
   (`map/area.js` ~364 uses an em dash). No escaping is needed — every string here comes from
   hardcoded tables, never from card data.
 
-- [ ] 3. **`static/styles.css`** — add these two rules **immediately after** the existing
+- [x] 3. **`static/styles.css`** — add these two rules **immediately after** the existing
   `.stat-grid .stat-cell--down, .stage-down { color: #b04332; }` block (~1405–1407). They must
   come after, and be scoped at the same `.stat-grid .stat-cell--X` depth, so they win over the
   stage rules by source order:
@@ -145,7 +145,7 @@ output in the verification table — transcribe it rather than re-deriving it.
 
   Do **not** add these to `.stage-up` / `.stage-down`, and do not change those two rules.
 
-- [ ] 4. **`arena/arena_render.js`** — in `renderStageReferenceSection` (~991–1014), add one
+- [x] 4. **`arena/arena_render.js`** — in `renderStageReferenceSection` (~991–1014), add one
   `<p>` to the `.rules-reference-copy` block, after the existing "Effective stats are rounded
   …" paragraph, so the color language is documented in-game:
 
@@ -153,7 +153,7 @@ output in the verification table — transcribe it rather than re-deriving it.
                       <p>Stat colors: green or red means a stat stage moved the number. Blue or purple means a status is changing it — a status always wins the color, and purple means the status is lowering the stat.</p>
   ```
 
-- [ ] 5. **`tests/arena_render.test.js`** — new file. Preamble: require
+- [x] 5. **`tests/arena_render.test.js`** — new file. Preamble: require
   `./helpers/arena_env` for `{ arena }`, then `require('../arena/arena_render.js')` (it is a
   `window`-namespace IIFE and the helper already aliases `window` to `globalThis`). Build
   fixtures locally — do **not** load real JSON:
@@ -192,7 +192,7 @@ output in the verification table — transcribe it rather than re-deriving it.
   }
   ```
 
-- [ ] 6. **`tests/arena_render.test.js`** — cover every row of the table below. Each was
+- [x] 6. **`tests/arena_render.test.js`** — cover every row of the table below. Each was
   confirmed against the prototype, so a failure means step 2 drifted.
 
   | card state | stat | expected class | expected title |
@@ -210,22 +210,22 @@ output in the verification table — transcribe it rather than re-deriving it.
   before this change it was **green**. Assert explicitly that the class is not `--up`.
   For the FIGHTING row, clone `SPECIES` with `type1: 'FIGHTING', types: ['FIGHTING']`.
 
-- [ ] 7. **`tests/arena_render.test.js`** — add one guard that the *number* is untouched by
+- [x] 7. **`tests/arena_render.test.js`** — add one guard that the *number* is untouched by
   this phase: a burned card's attack cell still reads `A 50` and a clean card's reads `A 100`.
 
 ## Verification
 
-- [ ] `node --check arena/arena_render.js` passes.
-- [ ] `node --test tests/arena_render.test.js` — all new tests pass.
-- [ ] `node tests/run_all.js` green (230 existing tests plus the new file).
-- [ ] `git diff --stat` shows exactly three paths: `arena/arena_render.js`,
+- [x] `node --check arena/arena_render.js` passes.
+- [x] `node --test tests/arena_render.test.js` — all new tests pass.
+- [x] `node tests/run_all.js` green (230 existing tests plus the new file).
+- [x] `git diff --stat` shows exactly three paths: `arena/arena_render.js`,
   `static/styles.css`, and the new `tests/arena_render.test.js`.
-- [ ] Browser check with the `verify` skill (`dev/verify/lib.py` `serving()` on 8931, and
+- [x] Browser check with the `verify` skill (`dev/verify/lib.py` `serving()` on 8931, and
   `dev/verify/drive_arena.py` or `autoplay_arena.py` as the driver): play until a Pokemon is
   burned or paralyzed, screenshot the board, and confirm the affected stat is **purple** while
   an unaffected stat on the same card is not. Save the screenshot as
   `dev/verify/phase77_stat_status_colors.png`.
-- [ ] In the same browser session, confirm hovering the purple stat shows the
+- [x] In the same browser session, confirm hovering the purple stat shows the
   `Attack 100 → 50 (Burn ×0.5)` tooltip, and that the Stat Stages rules panel shows the new
   color paragraph.
 
