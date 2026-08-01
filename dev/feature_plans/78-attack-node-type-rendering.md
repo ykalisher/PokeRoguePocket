@@ -39,7 +39,7 @@ label is **"Attack Encounter"**. Do not rename internals to match UI text anywhe
 
 ## Steps
 
-- [ ] 1. **`map/area.js`** — add the label to `LOCATION_LABELS`, keeping the keys
+- [x] 1. **`map/area.js`** — add the label to `LOCATION_LABELS`, keeping the keys
   alphabetical (so `attack` goes first, before `battle`):
 
   ```js
@@ -54,7 +54,7 @@ label is **"Attack Encounter"**. Do not rename internals to match UI text anywhe
       });
   ```
 
-- [ ] 2. **`map/area.js`** — in `renderLocationIcon`, add an `'attack'` branch beside the
+- [x] 2. **`map/area.js`** — in `renderLocationIcon`, add an `'attack'` branch beside the
   existing `'event'` and `'shop'` branches (order does not matter; put it above `'event'`):
 
   ```js
@@ -63,7 +63,7 @@ label is **"Attack Encounter"**. Do not rename internals to match UI text anywhe
           }
   ```
 
-- [ ] 3. **`map/area.js`** — in `renderLegendIcon`, add the matching branch:
+- [x] 3. **`map/area.js`** — in `renderLegendIcon`, add the matching branch:
 
   ```js
           if (type === 'attack') {
@@ -71,21 +71,21 @@ label is **"Attack Encounter"**. Do not rename internals to match UI text anywhe
           }
   ```
 
-- [ ] 4. **`map/area.js`** — add `'attack'` to the hardcoded legend array in `renderLegend`
+- [x] 4. **`map/area.js`** — add `'attack'` to the hardcoded legend array in `renderLegend`
   (~442), after `'capture'` so the two card-reward nodes sit together:
 
   ```js
                   ${['capture', 'attack', 'battle', 'shop', 'event', 'boss'].map(type => `
   ```
 
-- [ ] 5. **`map/area.js`** — in `getEnteredLocationText` (~1563), add the article fix above
+- [x] 5. **`map/area.js`** — in `getEnteredLocationText` (~1563), add the article fix above
   the `return`:
 
   ```js
           if (node.type === 'attack') return 'an Attack Encounter';
   ```
 
-- [ ] 6. **`static/area.css`** — add an `.area-icon--attack` block immediately after
+- [x] 6. **`static/area.css`** — add an `.area-icon--attack` block immediately after
   `.area-icon--shop` (~491). Use a crimson pill so it is unmistakable against the shop's gold
   and the event's indigo:
 
@@ -105,11 +105,11 @@ label is **"Attack Encounter"**. Do not rename internals to match UI text anywhe
 
 ## Verification
 
-- [ ] `node --check map/area.js` passes.
-- [ ] `node tests/run_all.js` green. **No test should change** — nothing generates an attack
+- [x] `node --check map/area.js` passes.
+- [x] `node tests/run_all.js` green. **No test should change** — nothing generates an attack
   node yet, so this phase must not move a single assertion.
-- [ ] `git diff --stat` shows exactly two paths: `map/area.js` and `static/area.css`.
-- [ ] Browser proof with the `verify` skill. Serve on 8931 (`dev/verify/lib.py` `serving()`),
+- [x] `git diff --stat` shows exactly two paths: `map/area.js` and `static/area.css`.
+- [x] Browser proof with the `verify` skill. Serve on 8931 (`dev/verify/lib.py` `serving()`),
   start a run to reach `area.html`, then from the page context **temporarily** rewrite one
   saved node's type and reload — this is the only way to see the icon before phase 79:
 
@@ -127,7 +127,7 @@ label is **"Attack Encounter"**. Do not rename internals to match UI text anywhe
   Save the screenshot as `dev/verify/phase78_attack_node_icon.png` and add the driver as
   `dev/verify/phase78_attack_node_icon.py` (model it on
   `dev/verify/phase61_area_selectable.py`).
-- [ ] Clear the injected run afterwards (`localStorage.clear()` in the driver's teardown) so
+- [x] Clear the injected run afterwards (`localStorage.clear()` in the driver's teardown) so
   no doctored save is left behind.
 
 ## Out of scope / do not touch

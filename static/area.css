@@ -489,6 +489,15 @@
     box-shadow: inset 0 2px rgba(255, 255, 255, 0.34);
 }
 
+.area-icon--attack {
+    border: 2px solid rgba(37, 27, 24, 0.48);
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ff9b7a, #b8402a);
+    color: #fbf6e8;
+    font-size: 1rem;
+    box-shadow: inset 0 2px rgba(255, 255, 255, 0.26);
+}
+
 .area-icon--event {
     border: 2px solid rgba(251, 246, 232, 0.78);
     border-radius: 999px;

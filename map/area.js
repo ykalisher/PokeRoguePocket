@@ -8,6 +8,7 @@
     const START_NODE_ID = 'start';
     const DEFAULT_BOSS_NODE_ID = 'boss-12';
     const LOCATION_LABELS = Object.freeze({
+        attack: 'Attack Encounter',
         battle: 'Trainer Battle',
         boss: 'Gym Leader',
         capture: 'Wild Pokemon Encounter',
@@ -425,6 +426,10 @@
             `;
         }
 
+        if (type === 'attack') {
+            return '<span class="area-node-icon area-icon--attack" aria-hidden="true">A</span>';
+        }
+
         if (type === 'event') {
             return '<span class="area-node-icon area-icon--event" aria-hidden="true">!</span>';
         }
@@ -439,7 +444,7 @@
     function renderLegend() {
         return `
             <div class="area-legend" aria-label="Location types">
-                ${['capture', 'battle', 'shop', 'event', 'boss'].map(type => `
+                ${['capture', 'attack', 'battle', 'shop', 'event', 'boss'].map(type => `
                     <span class="area-legend-item">
                         ${renderLegendIcon(type)}
                         <span>${LOCATION_LABELS[type]}</span>
@@ -450,6 +455,10 @@
     }
 
     function renderLegendIcon(type) {
+        if (type === 'attack') {
+            return '<span class="area-legend-icon area-icon--attack" aria-hidden="true">A</span>';
+        }
+
         if (type === 'event') {
             return '<span class="area-legend-icon area-icon--event" aria-hidden="true">!</span>';
         }
@@ -1562,6 +1571,7 @@
     function getEnteredLocationText(node) {
         if (node.type === 'boss') return 'the Gym Leader';
         if (node.type === 'event') return 'an Event';
+        if (node.type === 'attack') return 'an Attack Encounter';
 
         return `a ${LOCATION_LABELS[node.type]}`;
     }
