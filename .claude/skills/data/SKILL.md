@@ -56,6 +56,16 @@ No match in the pool means the grant is skipped (no off-type fallback), not a ra
 draw from the full pool. `tests/data_validation.test.js` validates `types` values
 against the `PokeType` enum.
 
+`gain-random-card`, `gain-random-baby`, and the `replacement` object of `replace-*`/
+`trade-*` also accept a boolean `locationTypes: true`, honored by `map/event_effects.js`.
+When set it swaps in the run's current `run.location.types` and **wins over** an
+authored `types` list on the same object (both may be present; `locationTypes` takes
+priority and validation flags the combination). Unlike the authored `types` filter, an
+empty on-type pool **falls back to the unfiltered pool and still grants** — the
+location is an environment accident, not authoring intent, so the grant always
+happens. Like `replacement.types`, `replacement.locationTypes` is inert on a named
+replacement (`replacement.name` set skips the random path entirely).
+
 Events gate by location via optional top-level `types` (PokeType overlap with the
 location's types). Two optional override lists: `locations` (location ids) and
 `terrains` (terrain labels, matched trimmed/case-insensitive). If either is
@@ -134,8 +144,9 @@ path) — on a named replacement it is inert.
 
 ## Deck construction rules
 
-Two deck paths exist (`arena_model.js`); hand size 6 and knockout limit 4
-apply to both:
+Two deck paths exist (`arena_model.js`); hand size 6 applies to both, and the
+knockout limit is the team's Pokemon count (a side loses once every Pokemon it
+brought is knocked out):
 
 - **Run battles (the real game) use exact cards.** `game.js` builds both
   sides with `exactCards: true` — the player deck is the run's collected
