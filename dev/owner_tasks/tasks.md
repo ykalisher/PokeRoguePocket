@@ -63,3 +63,4 @@
 - [ ] #053 added:2026-07-22 needs:- :: Create event for future archaludon
 - [x] #054 added:2026-07-31 done:2026-08-01 needs:- :: Events to give artificial items or attacks
 - [ ] #055 added:2026-07-31 needs:- :: More attacks for each type with stat-changing effects
+- [ ] #056 added:2026-08-03 needs:- :: Too many human type trainers
