@@ -16,7 +16,6 @@
         shop: 'Shop',
         start: 'Entrance'
     });
-    const LEGENDARY_CAPTURE_CHANCE = 0.3;
     const CARD_BACKS = Object.freeze({
         actions: 'assets/card-backs/ACTION_CARD_BACK.png',
         pokemon: 'assets/card-backs/POKEMON_CARD_BACK.png'
@@ -956,7 +955,7 @@
             return existingEncounter;
         }
 
-        const pokemonOptions = chooseCapturePokemonOptions(node);
+        const pokemonOptions = chooseCapturePokemonOptions();
         const encounter = {
             completed: false,
             createdAt: new Date().toISOString(),
@@ -1173,13 +1172,7 @@
         return getUniqueRecordsByName(records);
     }
 
-    function chooseCapturePokemonOptions(node = null) {
-        if (shouldChooseLegendaryCaptureEncounter(node)) {
-            const legendaryPokemon = chooseLegendaryPokemon();
-
-            if (legendaryPokemon) return [legendaryPokemon];
-        }
-
+    function chooseCapturePokemonOptions() {
         const availablePokemon = getAvailablePokemonForCurrentTerrain();
 
         if (availablePokemon.length === 0) return [];
@@ -1191,28 +1184,6 @@
 
     function getAvailablePokemonForCurrentTerrain() {
         return locations.getWildPokemonPool(arena.GameData, getLocationTypes());
-    }
-
-    function shouldChooseLegendaryCaptureEncounter(node) {
-        return isLastThirdMapNode(node) && Math.random() < LEGENDARY_CAPTURE_CHANCE;
-    }
-
-    function isLastThirdMapNode(node) {
-        return Boolean(node && Number(node.step) > (getMaxStep() * 2 / 3));
-    }
-
-    function chooseLegendaryPokemon() {
-        const legendaryPokemon = getAvailableLegendaryPokemon();
-
-        if (legendaryPokemon.length === 0) return null;
-
-        return legendaryPokemon[randomInt(0, legendaryPokemon.length - 1)];
-    }
-
-    function getAvailableLegendaryPokemon() {
-        return getUniqueGameRecords('pokemon')
-            .filter(isLegendaryPokemon)
-            .filter(record => !locations.isMegaPokemon(record, arena.GameData) && !locations.isBabyPokemon(record) && !locations.isEventOnlyPokemon(record));
     }
 
     function sanitizeCaptureEncounters() {
@@ -1227,26 +1198,18 @@
 
     function sanitizeCaptureEncounter(encounter) {
         const originalOptions = Array.isArray(encounter.options) ? encounter.options : [];
-        const node = getNodeById(encounter.nodeId);
-        const legendaryOptionName = getFirstValidLegendaryOptionName(originalOptions, node);
-        let nextOptions = [];
+        const availablePokemonNames = new Set(getAvailablePokemonForCurrentTerrain().map(pokemon => pokemon.name));
+        const seenNames = new Set();
 
-        if (legendaryOptionName) {
-            nextOptions = [legendaryOptionName];
-        } else {
-            const availablePokemonNames = new Set(getAvailablePokemonForCurrentTerrain().map(pokemon => pokemon.name));
-            const seenNames = new Set();
+        let nextOptions = originalOptions.filter(name => {
+            if (!availablePokemonNames.has(name) || seenNames.has(name)) return false;
 
-            nextOptions = originalOptions.filter(name => {
-                if (!availablePokemonNames.has(name) || seenNames.has(name)) return false;
-
-                seenNames.add(name);
-                return true;
-            });
-        }
+            seenNames.add(name);
+            return true;
+        });
 
         if (nextOptions.length === 0) {
-            nextOptions = chooseCapturePokemonOptions(node).map(pokemon => pokemon.name);
+            nextOptions = chooseCapturePokemonOptions().map(pokemon => pokemon.name);
         }
 
         const changed = nextOptions.length !== originalOptions.length ||
@@ -1333,16 +1296,6 @@
         if (eventRecord) runStore.markEventUsed(state.run, eventRecord.id);
 
         return eventRecord;
-    }
-
-    function getFirstValidLegendaryOptionName(optionNames, node) {
-        if (!isLastThirdMapNode(node)) return null;
-
-        return optionNames.find(name => {
-            const pokemon = findGameRecord('pokemon', name);
-
-            return pokemon && isLegendaryPokemon(pokemon);
-        }) || null;
     }
 
     function sanitizeBattleEncounters() {
@@ -1457,10 +1410,6 @@
     function getRecordTypes(record) {
         return [record.type1, record.type2, record.type3]
             .filter(type => type && type !== 'NONE');
-    }
-
-    function isLegendaryPokemon(pokemon) {
-        return getRecordTypes(pokemon).includes('LEGENDARY');
     }
 
     function shuffleRecords(records) {

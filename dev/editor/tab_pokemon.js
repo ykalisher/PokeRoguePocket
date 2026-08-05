@@ -16,6 +16,12 @@
         return [record.type1, record.type2, record.type3].includes('BABY');
     }
 
+    // Mega convention: id > 9000 (mirrors map/locations.js isMegaByConvention).
+    function isMega(record) {
+        const idNum = parseInt(record && record.id, 10);
+        return Number.isFinite(idNum) && idNum > 9000;
+    }
+
     function bst(record) {
         return (Number(record.baseHealth) || 0)
             + (Number(record.baseAttack) || 0)
@@ -243,6 +249,18 @@
                     const select = row.querySelector('select[name="evolvesInto"]');
                     if (select) select.value = '';
                 }
+            }
+
+            // Baby and mega (id > 9000) pokemon never appear in wild pools regardless
+            // of eventOnly (see map/locations.js isObtainablePokemon), but the flag is
+            // still the accurate/documented state for them, so default it on as soon
+            // as the record becomes one. Never auto-unchecked, since eventOnly may be
+            // set for unrelated reasons (e.g. ARTIFICIAL forms).
+            if ((field === 'type1' || field === 'type2' || field === 'type3' || field === 'id') &&
+                draft.eventOnly !== true && (isBaby(draft) || isMega(draft))) {
+                draft.eventOnly = true;
+                const eventOnlyCheckbox = el.querySelector('input[name="eventOnly"]');
+                if (eventOnlyCheckbox) eventOnlyCheckbox.checked = true;
             }
 
             if (STAT_FIELDS.includes(field)) {

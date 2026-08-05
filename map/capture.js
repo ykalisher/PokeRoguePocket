@@ -15,7 +15,6 @@
         deck: 920,
         complete: 180
     });
-    const LEGENDARY_CAPTURE_CHANCE = 0.3;
 
     const state = {
         cardWindow: null,
@@ -345,26 +344,18 @@
 
     function repairEncounterOptions() {
         const originalOptions = Array.isArray(state.encounter.options) ? state.encounter.options : [];
-        const node = getEncounterNode(state.encounter);
-        const legendaryOptionName = getFirstValidLegendaryOptionName(originalOptions, node);
-        let nextOptions = [];
+        const availablePokemonNames = new Set(getAvailablePokemonForCurrentTerrain().map(pokemon => pokemon.name));
+        const seenNames = new Set();
 
-        if (legendaryOptionName) {
-            nextOptions = [legendaryOptionName];
-        } else {
-            const availablePokemonNames = new Set(getAvailablePokemonForCurrentTerrain().map(pokemon => pokemon.name));
-            const seenNames = new Set();
+        let nextOptions = originalOptions.filter(name => {
+            if (!availablePokemonNames.has(name) || seenNames.has(name)) return false;
 
-            nextOptions = originalOptions.filter(name => {
-                if (!availablePokemonNames.has(name) || seenNames.has(name)) return false;
-
-                seenNames.add(name);
-                return true;
-            });
-        }
+            seenNames.add(name);
+            return true;
+        });
 
         if (nextOptions.length === 0) {
-            nextOptions = chooseCapturePokemonOptions(state.encounter).map(pokemon => pokemon.name);
+            nextOptions = chooseCapturePokemonOptions().map(pokemon => pokemon.name);
         }
 
         const changed = nextOptions.length !== originalOptions.length ||
@@ -375,15 +366,7 @@
         return changed;
     }
 
-    function chooseCapturePokemonOptions(encounter = null) {
-        const node = getEncounterNode(encounter);
-
-        if (shouldChooseLegendaryCaptureEncounter(node)) {
-            const legendaryPokemon = chooseLegendaryPokemon();
-
-            if (legendaryPokemon) return [legendaryPokemon];
-        }
-
+    function chooseCapturePokemonOptions() {
         const availablePokemon = getAvailablePokemonForCurrentTerrain();
 
         if (availablePokemon.length === 0) return [];
@@ -403,80 +386,6 @@
             : [];
     }
 
-    function shouldChooseLegendaryCaptureEncounter(node) {
-        return isLastThirdMapNode(node) && Math.random() < LEGENDARY_CAPTURE_CHANCE;
-    }
-
-    function isLastThirdMapNode(node) {
-        const areaNodeCount = getAreaNodeCount();
-
-        return Boolean(node && areaNodeCount > 0 && Number(node.step) > (areaNodeCount * 2 / 3));
-    }
-
-    function getAreaNodeCount() {
-        return getAreaNodes().reduce((maxStep, node) => Math.max(maxStep, Number(node.step) || 0), 0);
-    }
-
-    function getEncounterNode(encounter) {
-        const nodeId = encounter && encounter.nodeId
-            ? encounter.nodeId
-            : state.run && state.run.area
-                ? state.run.area.activeCaptureNodeId
-                : null;
-
-        if (!nodeId) return null;
-
-        return getAreaNodes().find(node => node.id === nodeId) || null;
-    }
-
-    function getAreaNodes() {
-        return state.run &&
-            state.run.area &&
-            state.run.area.graph &&
-            Array.isArray(state.run.area.graph.nodes)
-            ? state.run.area.graph.nodes
-            : [];
-    }
-
-    function chooseLegendaryPokemon() {
-        const legendaryPokemon = getAvailableLegendaryPokemon();
-
-        if (legendaryPokemon.length === 0) return null;
-
-        return legendaryPokemon[randomInt(0, legendaryPokemon.length - 1)];
-    }
-
-    function getAvailableLegendaryPokemon() {
-        const records = arena.GameData && Array.isArray(arena.GameData.pokemon)
-            ? arena.GameData.pokemon
-            : [];
-
-        return getUniqueRecordsByName(records)
-            .filter(isLegendaryPokemon)
-            .filter(record => !locations.isMegaPokemon(record, arena.GameData) && !locations.isBabyPokemon(record) && !locations.isEventOnlyPokemon(record));
-    }
-
-    function getFirstValidLegendaryOptionName(optionNames, node) {
-        if (!isLastThirdMapNode(node)) return null;
-
-        return optionNames.find(name => {
-            const pokemon = findGameRecord('pokemon', name);
-
-            return pokemon && isLegendaryPokemon(pokemon);
-        }) || null;
-    }
-
-    function getUniqueRecordsByName(records) {
-        const seenNames = new Set();
-
-        return records.filter(record => {
-            if (!record || !record.name || seenNames.has(record.name)) return false;
-
-            seenNames.add(record.name);
-            return true;
-        });
-    }
-
     function shuffleRecords(records) {
         const shuffled = records.slice();
 
@@ -489,22 +398,10 @@
         return shuffled;
     }
 
-    function isLegendaryPokemon(pokemon) {
-        return getRecordTypes(pokemon).includes('LEGENDARY');
-    }
-
     function chooseRandomLearnableAttack(pokemon) {
         const attacks = arena.GameData && Array.isArray(arena.GameData.attacks)
             ? arena.GameData.attacks
             : [];
-
-        if (isLegendaryPokemon(pokemon)) {
-            const legendaryOptions = attacks.filter(attack => legendaryCanUseDualAttack(pokemon, attack));
-            if (legendaryOptions.length > 0) {
-                return legendaryOptions[randomInt(0, legendaryOptions.length - 1)];
-            }
-            // Defensive: no eligible dual-req legendary attack — fall through to the normal roll.
-        }
 
         const learnableAttacks = attacks.filter(attack => pokemonCanLearnCaptureAttack(pokemon, attack));
         const fallbackAttacks = attacks.filter(attack => !requiresBothAttackTypes(attack));
@@ -574,13 +471,6 @@
 
     function requiresBothAttackTypes(attack) {
         return Boolean(attack.full_type_requirements && getRecordTypes(attack, ['type1', 'type2']).length > 1);
-    }
-
-    function legendaryCanUseDualAttack(pokemon, attack) {
-        const attackTypes = getRecordTypes(attack, ['type1', 'type2']);
-        if (!requiresBothAttackTypes(attack) || !attackTypes.includes('LEGENDARY')) return false;
-        const pokemonTypes = getRecordTypes(pokemon);
-        return attackTypes.every(type => pokemonTypes.includes(type));
     }
 
     function getRecordTypes(record, keys = ['type1', 'type2', 'type3']) {
