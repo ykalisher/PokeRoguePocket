@@ -675,8 +675,7 @@
     }
 
     function shouldBenchNewAttack(run, card) {
-        return run.collections.pokemon.length >= ACTIVE_POKEMON_LIMIT &&
-            !activePokemonCanUseAttack(run, card);
+        return !activePokemonCanUseAttack(run, card);
     }
 
     function activePokemonCanUseAttack(run, attackCard) {
