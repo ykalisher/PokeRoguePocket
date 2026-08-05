@@ -14,8 +14,12 @@ const { ROOT } = require('./arena_env');
 
 require(path.join(ROOT, 'arena', 'trainer_sprites.js'));
 require(path.join(ROOT, 'map', 'locations.js'));
+require(path.join(ROOT, 'map', 'profile.js'));
 
-const enums = require('../../scripts/data_options');
+const enums = Object.assign({}, require('../../scripts/data_options'), {
+    statKeys: window.PokeProfile.STAT_KEYS,
+    statPrefixes: window.PokeProfile.STAT_PREFIXES
+});
 
 function readData(fileName) {
     return JSON.parse(fs.readFileSync(path.join(ROOT, fileName), 'utf8'));
@@ -29,7 +33,8 @@ function loadRawData() {
         trainers: readData('trainers.json'),
         events: readData('events.json'),
         locations: readData('locations.json'),
-        starter_decks: readData('starter_decks.json')
+        starter_decks: readData('starter_decks.json'),
+        achievements: readData('achievements.json')
     };
 }
 

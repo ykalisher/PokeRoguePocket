@@ -25,6 +25,7 @@ globalThis.window = globalThis;
 require('../../arena/trainer_sprites.js');
 require('../../arena/arena_data.js');
 require('../../map/locations.js');
+require('../../map/profile.js');
 
 const dataOptions = require('../../scripts/data_options');
 const { formatDataFile } = require('./format_json.js');
@@ -71,12 +72,14 @@ const ENUMS_PAYLOAD = {
     extensions: EXTENSIONS,
     effectTypes: EFFECT_TYPES,
     eventTypes: EVENT_TYPES,
+    statKeys: window.PokeProfile.STAT_KEYS,
+    statPrefixes: window.PokeProfile.STAT_PREFIXES,
     engineRefs: buildEngineRefs()
 };
 
 // -------------------------------------------------------------- constants
 
-const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks'];
+const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks', 'achievements'];
 const UPLOAD_DIR_NAMES = ['portraits', 'sprites', 'items', 'backgrounds'];
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);

@@ -58,7 +58,7 @@
         return JSON.stringify(value);
     }
 
-    const PLAIN_FILES = new Set(['pokemon', 'attacks', 'items', 'trainers']);
+    const PLAIN_FILES = new Set(['pokemon', 'attacks', 'items', 'trainers', 'achievements']);
     const SMART_FILES = new Set(['events', 'locations', 'starter_decks']);
 
     function baseName(fileName) {

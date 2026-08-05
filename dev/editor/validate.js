@@ -29,6 +29,18 @@
     ];
     const DEFAULT_EVENT_TYPES = ['gift', 'choice', 'trainer'];
 
+    // Mirrors STAT_KEYS / STAT_PREFIXES in map/profile.js (the counter
+    // namespace the game actually tracks), kept here as a fallback for when
+    // enums.statKeys / enums.statPrefixes are absent from the /api/enums
+    // payload.
+    const DEFAULT_STAT_KEYS = [
+        'runs.started', 'runs.completed', 'runs.lost', 'battles.won', 'battles.lost',
+        'events.seen', 'captures.completed', 'attacks.claimed', 'marts.visited'
+    ];
+    const DEFAULT_STAT_PREFIXES = [
+        'runs.completed.starter.', 'runs.completed.mono.', 'battles.won.rank.', 'events.seen.'
+    ];
+
     function issue(severity, file, recordKey, code, message, field) {
         const out = { severity, file, recordKey, code, message };
         if (field !== undefined) out.field = field;
@@ -751,6 +763,64 @@
         return issues;
     }
 
+    // ----------------------------------------------------------- achievements
+
+    function isKnownStat(stat, statKeys, statPrefixes) {
+        const value = String(stat || '');
+        if (statKeys.includes(value)) return true;
+        return statPrefixes.some((prefix) => value.startsWith(prefix) && value.length > prefix.length);
+    }
+
+    function validateAchievements(achievements, enums, events) {
+        const issues = [];
+        const statKeys = (enums && enums.statKeys) || DEFAULT_STAT_KEYS;
+        const statPrefixes = (enums && enums.statPrefixes) || DEFAULT_STAT_PREFIXES;
+        const eventIds = new Set((events || []).map((event) => event && event.id).filter(Boolean));
+
+        const seenIds = new Set();
+
+        (achievements || []).forEach((record) => {
+            const key = (record && record.id) || '(unnamed achievement)';
+
+            if (!record || !record.id || typeof record.id !== 'string') {
+                issues.push(err('achievements.json', key, 'achievements.missing-id', `${key}: entry missing id`, 'id'));
+            } else {
+                if (seenIds.has(record.id)) {
+                    issues.push(err('achievements.json', record.id, 'achievements.duplicate-id', `duplicate achievement id ${record.id}`, 'id'));
+                }
+                seenIds.add(record.id);
+                if (!ID_PATTERN.test(record.id)) {
+                    issues.push(err('achievements.json', record.id, 'achievements.bad-id', `${key}: id must match ${ID_PATTERN}`, 'id'));
+                }
+            }
+
+            if (!record) return;
+
+            if (!record.name || typeof record.name !== 'string') {
+                issues.push(err('achievements.json', key, 'achievements.missing-name', `${key}: name must be a non-empty string`, 'name'));
+            }
+
+            if (!isKnownStat(record.stat, statKeys, statPrefixes)) {
+                issues.push(err('achievements.json', key, 'achievements.bad-stat', `${key}: unknown stat ${record.stat}`, 'stat'));
+            } else if (typeof record.stat === 'string' && record.stat.startsWith('events.seen.')) {
+                const eventId = record.stat.slice('events.seen.'.length);
+                if (!eventIds.has(eventId)) {
+                    issues.push(warn('achievements.json', key, 'achievements.unreachable-event', `${key}: stat names unknown event ${eventId}`, 'stat'));
+                }
+            }
+
+            if (!(Number.isInteger(record.atLeast) && record.atLeast >= 1)) {
+                issues.push(err('achievements.json', key, 'achievements.bad-threshold', `${key}: atLeast must be an integer >= 1, got ${record.atLeast}`, 'atLeast'));
+            }
+
+            if (!record.description) {
+                issues.push(warn('achievements.json', key, 'achievements.missing-description', `${key}: description is empty`, 'description'));
+            }
+        });
+
+        return issues;
+    }
+
     // ------------------------------------------------------------- engine refs
 
     function validateEngineRefs(pokemonNames, attackNames, itemNames, engineRefs) {
@@ -887,6 +957,7 @@
         const events = data.events || [];
         const locations = data.locations || [];
         const starterDecks = data.starter_decks || [];
+        const achievements = data.achievements || [];
 
         const pokemonNames = new Set(pokemon.map((record) => record.name));
         const attackNames = new Set(attacks.map((record) => record.name));
@@ -908,6 +979,7 @@
             ...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames }, achievementIds),
             ...validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums),
             ...validateLocations(locations, enums, starterDecks),
+            ...validateAchievements(achievements, enums, events),
             ...validateNameCharacters(data),
             ...validateEngineRefs(pokemonNames, attackNames, itemNames, engineRefs),
             ...validateAssets(data, assetIndex, engineRefs)
@@ -1036,8 +1108,14 @@
             events.forEach((e) => {
                 if (e.trainerName === name) results.push({ file: 'events.json', recordKey: e.id, field: 'trainerName' });
             });
+        } else if (kind === 'achievement') {
+            collectAllConditionRefs(events).forEach(({ event, condition }) => {
+                if (condition.subject === 'achievement' && condition.name === name) {
+                    results.push({ file: 'events.json', recordKey: event.id, field: 'conditions' });
+                }
+            });
         }
-        // events and locations are never referenced elsewhere.
+        // locations are never referenced elsewhere.
 
         return results;
     }

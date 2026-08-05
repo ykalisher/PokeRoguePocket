@@ -71,6 +71,11 @@ function withStarterDecks(mutate) {
     mutate(data.starter_decks);
     return data;
 }
+function withAchievements(mutate) {
+    const data = structuredClone(live.data);
+    mutate(data.achievements);
+    return data;
+}
 
 test('pokemon: bad type', () => {
     const data = withPokemon((pokemon) => { pokemon[0].type1 = 'NOT_A_TYPE'; });
@@ -449,6 +454,71 @@ test('locations.starter-coverage fires when an enabled starter deck type has no 
     data.locations.forEach((location) => { location.types = (location.types || []).filter((type) => type !== 'BABY'); });
     const issues = validateAll(data, { enums: live.enums });
     assert.ok(hasCode(issues, 'locations.starter-coverage'));
+});
+
+test('achievements: missing id', () => {
+    const data = withAchievements((achievements) => { delete achievements[0].id; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'achievements.missing-id'));
+});
+
+test('achievements: duplicate id', () => {
+    const data = withAchievements((achievements) => { achievements[1].id = achievements[0].id; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'achievements.duplicate-id'));
+});
+
+test('achievements: bad id', () => {
+    const data = withAchievements((achievements) => { achievements[0].id = 'Not A Valid Id!'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'achievements.bad-id'));
+});
+
+test('achievements: missing name', () => {
+    const data = withAchievements((achievements) => { achievements[0].name = ''; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'achievements.missing-name'));
+});
+
+test('achievements: bad stat (unknown key)', () => {
+    const data = withAchievements((achievements) => { achievements[0].stat = 'nonsense.key'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'achievements.bad-stat'));
+});
+
+test('achievements: bad stat (prefix with no suffix)', () => {
+    const data = withAchievements((achievements) => { achievements[0].stat = 'events.seen.'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'achievements.bad-stat'));
+});
+
+test('achievements: bad threshold', () => {
+    const data = withAchievements((achievements) => { achievements[0].atLeast = 0; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'achievements.bad-threshold'));
+});
+
+test('achievements: missing description warns', () => {
+    const data = withAchievements((achievements) => { achievements[0].description = ''; });
+    const issues = validateAll(data, { enums: live.enums });
+    const warning = issues.find((issue) => issue.code === 'achievements.missing-description');
+    assert.ok(warning, 'expected an achievements.missing-description warning');
+    assert.equal(warning.severity, 'warning');
+});
+
+test('achievements: unreachable event warns', () => {
+    const data = withAchievements((achievements) => { achievements[0].stat = 'events.seen.not-a-real-event'; });
+    const issues = validateAll(data, { enums: live.enums });
+    const warning = issues.find((issue) => issue.code === 'achievements.unreachable-event');
+    assert.ok(warning, 'expected an achievements.unreachable-event warning');
+    assert.equal(warning.severity, 'warning');
+});
+
+test('findReferences(achievement, champion) includes an event conditioned on it', () => {
+    const data = withCondition('choice', { mode: 'has', subject: 'achievement', name: 'champion' });
+    const refs = findReferences(data, 'achievement', 'champion', live.engineRefs);
+
+    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'sitrus-berry-tree' && ref.field === 'conditions'));
 });
 
 test('names: double quote in an attack name is an error', () => {

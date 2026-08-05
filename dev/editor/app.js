@@ -34,7 +34,8 @@
         'trainers.json': 'trainers',
         'events.json': 'events',
         'locations.json': 'locations',
-        'starter_decks.json': 'starters'
+        'starter_decks.json': 'starters',
+        'achievements.json': 'achievements'
     };
 
     EditorApp.store = {
@@ -522,7 +523,10 @@
         // Reference lookups key on the record's `name`; records without one
         // (events key on id/title) are never referenced, so findReferences
         // ignores the key and we only need a display label for the dialogs.
-        const name = record.name;
+        // Achievements are the exception: pokemon.json also has an unrelated
+        // dex-number `id`, so kind alone (not "has an id field") decides which
+        // key events actually store in condition.name.
+        const name = kind === 'achievement' ? record.id : record.name;
         const displayName = record.name || record.id || record.title || '(record)';
         const refs = window.EditorValidation.findReferences(EditorApp.store.data, kind, name, EditorApp.store.engineRefs);
         if (refs.length > 0) {

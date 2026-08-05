@@ -81,20 +81,20 @@ reports nothing and needs no rework later.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/server.js`** — add `require('../../map/profile.js');` to the engine
+- [x] 1. **`dev/editor/server.js`** — add `require('../../map/profile.js');` to the engine
   load block (~24, after `locations.js`), add `'achievements'` to `FILE_NAMES` (~85), and
   add `statKeys` / `statPrefixes` to `ENUMS_PAYLOAD` (~70).
 
-- [ ] 2. **`dev/editor/format_json.js`** — add `'achievements'` to `PLAIN_FILES` (~64), then
+- [x] 2. **`dev/editor/format_json.js`** — add `'achievements'` to `PLAIN_FILES` (~64), then
   prove byte-exactness:
   `node -e "const {formatDataFile}=require('./dev/editor/format_json.js');const fs=require('fs');const cur=fs.readFileSync('achievements.json','utf8');console.log(formatDataFile('achievements',JSON.parse(cur))===cur?'BYTE-EXACT':'DIFFERS')"`
   If it differs, rewrite `achievements.json` to the formatter's output — the formatter is
   canonical.
 
-- [ ] 3. **`dev/editor/app.js`** — `FILE_TO_TAB` (~30) gains
+- [x] 3. **`dev/editor/app.js`** — `FILE_TO_TAB` (~30) gains
   `'achievements.json': 'achievements'`.
 
-- [ ] 4. **`dev/editor/validate.js`** — `DEFAULT_STAT_KEYS` / `DEFAULT_STAT_PREFIXES`
+- [x] 4. **`dev/editor/validate.js`** — `DEFAULT_STAT_KEYS` / `DEFAULT_STAT_PREFIXES`
   constants beside `DEFAULT_EFFECT_TYPES` (~21), mirroring `map/profile.js` with a comment
   saying so, plus a `validateAchievements(achievements, enums)` next to `validateLocations`.
   All issues on `file: 'achievements.json'`, `recordKey` = the id (or `'(unnamed achievement)'`):
@@ -113,12 +113,12 @@ reports nothing and needs no rework later.
   Wire it into `validateAll` (~769): `const achievements = data.achievements || [];` and
   spread `...validateAchievements(achievements, enums)`.
 
-- [ ] 5. **`dev/editor/validate.js`** — `findReferences` (~858): add an `achievement` kind
+- [x] 5. **`dev/editor/validate.js`** — `findReferences` (~858): add an `achievement` kind
   that scans `collectEventConditions` across `data.events` for
   `condition.subject === 'achievement' && condition.name === name`, pushing
   `{ file: 'events.json', recordKey: event.id, field: 'conditions' }`.
 
-- [ ] 6. **`dev/editor/tab_achievements.js`** (new) — the tab module, standard IIFE header
+- [x] 6. **`dev/editor/tab_achievements.js`** (new) — the tab module, standard IIFE header
   and `EditorApp.registerTab('achievements', { label: 'Achievements', render });` at the
   end.
   - `columns()`: a lock glyph or `editor-dot` for `enabled`, `name` (sortable), `id`
@@ -141,24 +141,24 @@ reports nothing and needs no rework later.
   - Delete goes through `EditorApp.requestDelete('achievement', 'achievements', record)` so
     step 5's reference guard applies.
 
-- [ ] 7. **`dev/editor/index.html`** — add
+- [x] 7. **`dev/editor/index.html`** — add
   `<script src="/dev/editor/tab_achievements.js"></script>` in the tab-module block, before
   `tab_issues.js`.
 
-- [ ] 8. **`tests/editor_format.test.js`** — include `achievements` in its byte-exactness
+- [x] 8. **`tests/editor_format.test.js`** — include `achievements` in its byte-exactness
   coverage.
 
-- [ ] 9. **`tests/editor_validation.test.js`** — one case per rule from step 4, plus one
+- [x] 9. **`tests/editor_validation.test.js`** — one case per rule from step 4, plus one
   asserting `findReferences(data, 'achievement', '<id>', …)` finds an event whose condition
   names it.
 
-- [ ] 10. **`tests/editor_api.test.js`** — `GET /api/data` includes an `achievements` array;
+- [x] 10. **`tests/editor_api.test.js`** — `GET /api/data` includes an `achievements` array;
   `GET /api/enums` includes `statKeys` and `statPrefixes`; a `PUT /api/data/achievements`
   with a bad `stat` returns **409** and leaves the file untouched.
 
-- [ ] 11. **`node tests/run_all.js`** — green.
+- [x] 11. **`node tests/run_all.js`** — green.
 
-- [ ] 12. Drive the editor in a browser. Adapt `dev/verify/drive_editor.py` into
+- [x] 12. Drive the editor in a browser. Adapt `dev/verify/drive_editor.py` into
   `dev/verify/phase97_editor_achievements.py`, screenshotting to
   `dev/verify/phase97_editor_achievements.png`. Exercise: the list shows the seeded
   achievements; opening `champion` shows the preview; the stat picker switches between an
@@ -168,20 +168,20 @@ reports nothing and needs no rework later.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `dev/verify/phase97_editor_achievements.py` runs clean with its screenshot committed
+- [x] `node tests/run_all.js` green.
+- [x] `dev/verify/phase97_editor_achievements.py` runs clean with its screenshot committed
   to the working tree.
-- [ ] Round trip: open an achievement, change nothing, Save → `git diff achievements.json`
+- [x] Round trip: open an achievement, change nothing, Save → `git diff achievements.json`
   empty. Change `atLeast`, Save → the diff is exactly that field. Restore.
-- [ ] Stat picker correctness: choosing "Times a specific event was seen…" + an event id
+- [x] Stat picker correctness: choosing "Times a specific event was seen…" + an event id
   writes `events.seen.<id>` into the record (check the saved JSON, not just the form), and
   reopening the record re-splits it back into the two controls.
-- [ ] `PUT` of an achievement with `stat: "nonsense.key"` is refused with
+- [x] `PUT` of an achievement with `stat: "nonsense.key"` is refused with
   `achievements.bad-stat`.
-- [ ] Delete guard: with an event conditioned on an achievement (add one temporarily),
+- [x] Delete guard: with an event conditioned on an achievement (add one temporarily),
   deleting that achievement is blocked and the dialog links to the event. Remove the
   fixture afterwards and confirm `git diff events.json` is empty.
-- [ ] `curl -s 127.0.0.1:8932/api/issues` reports no **new** errors against the shipped data.
+- [x] `curl -s 127.0.0.1:8932/api/issues` reports no **new** errors against the shipped data.
 
 ## Out of scope / do not touch
 

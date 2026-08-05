@@ -39,7 +39,7 @@ test('starter_decks.json formats byte-exact against the live file', () => {
     assert.equal(formatDataFile('starter_decks', data), raw);
 });
 
-['pokemon.json', 'attacks.json', 'items.json', 'trainers.json'].forEach((fileName) => {
+['pokemon.json', 'attacks.json', 'items.json', 'trainers.json', 'achievements.json'].forEach((fileName) => {
     test(`${fileName} formats as plain JSON.stringify(..., null, 2)`, () => {
         const raw = readRaw(fileName);
         const data = JSON.parse(raw);

@@ -10,7 +10,7 @@ const { ROOT } = require('./helpers/arena_env');
 const { createServer } = require('../dev/editor/server.js');
 const { formatDataFile } = require('../dev/editor/format_json.js');
 
-const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks'];
+const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks', 'achievements'];
 
 // Seeds a fixture data dir from the real, already-valid root JSON files
 // (simpler than hand-rolling minimal fixtures, and it satisfies the
@@ -80,7 +80,7 @@ after(async () => {
 
 // --------------------------------------------------------------- /api/data
 
-test('GET /api/data returns the seven data arrays intact, including starter_decks', async () => {
+test('GET /api/data returns the eight data arrays intact, including starter_decks and achievements', async () => {
     const res = await fetch(`${sharedUrl}/api/data`);
     assert.equal(res.status, 200);
     const body = await res.json();
@@ -200,6 +200,56 @@ test('PUT /api/data/starter_decks introducing an unknown pokemon name is blocked
     }
 });
 
+test('PUT /api/data/achievements with a benign edit writes a byte-exact formatted file', async () => {
+    const dataDir = makeFixtureDir();
+    const server = await bootServer(dataDir);
+    try {
+        const url = baseUrl(server);
+        const data = await (await fetch(`${url}/api/data`)).json();
+        const achievements = data.achievements;
+        achievements[0] = { ...achievements[0], atLeast: achievements[0].atLeast + 1 };
+
+        const putRes = await fetch(`${url}/api/data/achievements`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(achievements)
+        });
+        assert.equal(putRes.status, 200);
+        assert.deepEqual(await putRes.json(), { ok: true, count: achievements.length });
+
+        const onDisk = fs.readFileSync(path.join(dataDir, 'achievements.json'), 'utf8');
+        assert.equal(onDisk, formatDataFile('achievements', achievements));
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('PUT /api/data/achievements with a bad stat is blocked with a 409', async () => {
+    const dataDir = makeFixtureDir();
+    const server = await bootServer(dataDir);
+    try {
+        const url = baseUrl(server);
+        const data = await (await fetch(`${url}/api/data`)).json();
+        const achievements = data.achievements;
+        achievements[0] = { ...achievements[0], stat: 'nonsense.key' };
+
+        const res = await fetch(`${url}/api/data/achievements`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(achievements)
+        });
+        assert.equal(res.status, 409);
+        const body = await res.json();
+        assert.equal(body.blocked, true);
+        assert.ok(body.issues.some((issue) => issue.code === 'achievements.bad-stat'));
+
+        const untouched = JSON.parse(fs.readFileSync(path.join(dataDir, 'achievements.json'), 'utf8'));
+        assert.equal(untouched.length, data.achievements.length);
+    } finally {
+        await closeServer(server);
+    }
+});
+
 test('PUT with a malformed JSON body returns 400', async () => {
     const res = await fetch(`${sharedUrl}/api/data/pokemon`, {
         method: 'PUT',
@@ -232,6 +282,16 @@ test('GET /api/enums returns the five ranks, 14 effect types, and non-empty engi
     assert.deepEqual(body.Rank, ['Standard', 'Ace', 'Special', 'Boss', 'Elite']);
     assert.equal(body.effectTypes.length, 14);
     assert.ok(body.engineRefs.defaultDeck.pokemon.length > 0);
+});
+
+test('GET /api/enums returns the nine stat keys and four stat prefixes', async () => {
+    const res = await fetch(`${sharedUrl}/api/enums`);
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.statKeys.length, 9);
+    assert.ok(body.statKeys.includes('runs.completed'));
+    assert.equal(body.statPrefixes.length, 4);
+    assert.ok(body.statPrefixes.includes('events.seen.'));
 });
 
 // ------------------------------------------------------------- /api/issues
