@@ -6,7 +6,8 @@
     'use strict';
 
     const CARD_BACKS = Object.freeze({
-        actions: 'assets/card-backs/ACTION_CARD_BACK.png'
+        actions: 'assets/card-backs/ACTION_CARD_BACK.png',
+        pokemon: 'assets/card-backs/POKEMON_CARD_BACK.png'
     });
     const PHASE_DURATIONS = Object.freeze({
         claimed: 920,
@@ -149,6 +150,7 @@
                     <h1>${getPhaseTitle()}</h1>
                 </div>
                 <div class="attack-hud" aria-label="Run cards">
+                    ${renderDeckCounter('pokemon', 'Pokemon cards', state.run.collections.pokemon.length)}
                     ${renderDeckCounter('actions', 'Action deck', state.run.collections.actions.length)}
                 </div>
             </header>
