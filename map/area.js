@@ -1051,9 +1051,7 @@
             return existingEncounter;
         }
 
-        const eventRecord = window.PokeEvents && window.PokeEvents.chooseEvent
-            ? window.PokeEvents.chooseEvent(arena.GameData, state.run)
-            : null;
+        const eventRecord = chooseEventForRun();
 
         if (!eventRecord) return null;
 
@@ -1312,9 +1310,7 @@
             return false;
         }
 
-        const replacementEvent = window.PokeEvents && typeof window.PokeEvents.chooseEvent === 'function'
-            ? window.PokeEvents.chooseEvent(arena.GameData, state.run)
-            : null;
+        const replacementEvent = chooseEventForRun();
 
         if (!replacementEvent) return false;
 
@@ -1324,6 +1320,19 @@
         encounter.startedBattle = false;
 
         return true;
+    }
+
+    // Single draw point for events: chooseEvent skips whatever the run already
+    // saw, and the pick is recorded so it stays skipped after a level advance
+    // wipes the encounter maps.
+    function chooseEventForRun() {
+        const eventRecord = window.PokeEvents && typeof window.PokeEvents.chooseEvent === 'function'
+            ? window.PokeEvents.chooseEvent(arena.GameData, state.run)
+            : null;
+
+        if (eventRecord) runStore.markEventUsed(state.run, eventRecord.id);
+
+        return eventRecord;
     }
 
     function getFirstValidLegendaryOptionName(optionNames, node) {
@@ -1394,30 +1403,22 @@
         return locations.isAllowedTrainerRank(trainer, node.type, getRunLevel());
     }
 
+    // Single draw point for battle trainers. excludeNames spans the whole run
+    // (earlier areas included) so no opposing trainer shows up twice; the pick
+    // is recorded so it stays excluded once a level advance wipes the
+    // encounter maps. chooseTrainer drops the exclusions if the pool is too
+    // small to honor them.
     function chooseTrainerForNode(node) {
-        return locations.chooseTrainer(arena.GameData, {
+        const trainer = locations.chooseTrainer(arena.GameData, {
             level: getRunLevel(),
             nodeType: node ? node.type : 'battle',
             locationTypes: getLocationTypes(),
-            excludeNames: getAssignedTrainerNames(node)
-        });
-    }
-
-    // Trainer names already assigned to other battle encounters in this area.
-    // Passed as excludeNames so siblings (and the L4 gauntlet) prefer variety;
-    // chooseTrainer drops the exclusion when the pool is too small.
-    function getAssignedTrainerNames(excludeNode) {
-        if (!state.run || !state.run.battleEncounters) return [];
-
-        const excludeId = excludeNode ? excludeNode.id : null;
-        const names = new Set();
-
-        Object.values(state.run.battleEncounters).forEach(encounter => {
-            if (!encounter || encounter.nodeId === excludeId || !encounter.trainerName) return;
-            names.add(encounter.trainerName);
+            excludeNames: runStore.getExcludedTrainerNames(state.run, node ? node.id : null)
         });
 
-        return Array.from(names);
+        if (trainer) runStore.markTrainerUsed(state.run, trainer.name);
+
+        return trainer;
     }
 
     function isTrainerNodeType(type) {

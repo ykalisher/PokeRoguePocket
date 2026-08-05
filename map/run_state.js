@@ -57,6 +57,8 @@
             runCompletedAt: null,
             savedAt: null,
             starterId: starterId || DEFAULT_STARTER_ID,
+            usedEventIds: [],
+            usedTrainerNames: [],
             version: STORAGE_VERSION,
             visitedLocationIds: locationSnapshot ? [locationSnapshot.id] : []
         };
@@ -176,6 +178,50 @@
         const encounter = run.eventEncounters[nodeId];
 
         return encounter && !encounter.completed ? encounter : null;
+    }
+
+    /**
+     * Run-wide "drawn already" history. Each event and each opposing trainer
+     * appears at most once per run, but advancing a level wipes every
+     * encounter map, so an id/name is copied here the moment it is drawn and
+     * survives for the rest of the run. Returns true when the entry was new.
+     */
+    function markEventUsed(run, eventId) {
+        return markUsed(run, 'usedEventIds', eventId);
+    }
+
+    function markTrainerUsed(run, trainerName) {
+        return markUsed(run, 'usedTrainerNames', trainerName);
+    }
+
+    function markUsed(run, listKey, value) {
+        if (!run || typeof value !== 'string' || !value) return false;
+        if (!Array.isArray(run[listKey])) run[listKey] = [];
+        if (run[listKey].includes(value)) return false;
+
+        run[listKey].push(value);
+
+        return true;
+    }
+
+    /**
+     * Trainer names a new encounter must avoid: every trainer drawn earlier in
+     * the run, plus the ones assigned in the current area (skipping
+     * `excludeNodeId`'s own encounter, which the caller is replacing).
+     * chooseTrainer relaxes the list when the pool cannot honor it.
+     */
+    function getExcludedTrainerNames(run, excludeNodeId) {
+        if (!run) return [];
+
+        const names = new Set(Array.isArray(run.usedTrainerNames) ? run.usedTrainerNames : []);
+
+        Object.values(run.battleEncounters || {}).forEach(encounter => {
+            if (!encounter || encounter.nodeId === excludeNodeId || !encounter.trainerName) return;
+
+            names.add(encounter.trainerName);
+        });
+
+        return Array.from(names);
     }
 
     function createPokemonCard(pokemon, owner, id) {
@@ -418,6 +464,8 @@
             runCompletedAt: run.runCompletedAt || null,
             savedAt: run.savedAt || null,
             starterId: typeof run.starterId === 'string' && run.starterId ? run.starterId : DEFAULT_STARTER_ID,
+            usedEventIds: normalizeIdList(run.usedEventIds),
+            usedTrainerNames: normalizeIdList(run.usedTrainerNames),
             version: STORAGE_VERSION,
             visitedLocationIds: normalizeIdList(run.visitedLocationIds)
         };
@@ -724,9 +772,12 @@
         getActiveCaptureEncounter,
         getActiveEventEncounter,
         getActiveMartEncounter,
+        getExcludedTrainerNames,
         getPendingMegaEvolutions,
         hasSavedRun,
         loadRunState,
+        markEventUsed,
+        markTrainerUsed,
         normalizeLocationSnapshot,
         rebuildActionDeckForActivePokemon,
         saveRunState,

@@ -59,7 +59,24 @@
 
         if (events.length === 0) return null;
 
-        return events[randomInt(0, events.length - 1)];
+        // One of each event per run: anything the run already drew is skipped.
+        // If that empties the pool (a small location pool, a long run), repeat
+        // rather than leave the node with no event at all.
+        const unused = events.filter(event => !isEventUsed(run, event.id));
+        const pool = unused.length > 0 ? unused : events;
+
+        return pool[randomInt(0, pool.length - 1)];
+    }
+
+    // run.usedEventIds is the run-wide history (it outlives the per-area
+    // encounter maps); the encounters are still checked so a save written
+    // before that history existed keeps its per-area variety.
+    function isEventUsed(run, eventId) {
+        if (!run || !eventId) return false;
+        if (Array.isArray(run.usedEventIds) && run.usedEventIds.includes(eventId)) return true;
+
+        return Object.values(run.eventEncounters || {})
+            .some(encounter => encounter && encounter.eventId === eventId);
     }
 
     // Gates events whose pool-backed reward could otherwise be offered with
@@ -899,6 +916,7 @@
         getSelectableCards,
         getTrainerBattleRewardEffects,
         getTrainerPaymentAction,
-        getUnmetConditionReason
+        getUnmetConditionReason,
+        isEventUsed
     };
 })(window);
