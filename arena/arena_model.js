@@ -118,7 +118,10 @@
         rulesWindowOpen: false,
         selectedCardId: null,
         suppressNextClick: false,
-        turnNumber: 0
+        turnNumber: 0,
+        // Per-turn undo history (phase 85). Newest last. Deliberately absent
+        // from serializeBattleState(): undo dies on reload by design.
+        undoStack: []
     };
 
     /**
@@ -170,40 +173,59 @@
     }
 
     /**
+     * Assigns a serialized battle payload onto the live state. Shared by the
+     * localStorage restore path and by undo, so it writes only the fields
+     * serializeBattleState() produces plus the transient per-action fields that
+     * are meaningless once the state is replaced. Window and timer fields
+     * (menuWindowOpen, rulesWindowOpen, pileWindow, flowTimer, popupTimer) are
+     * deliberately left alone: a reload resets them in restoreSavedBattleState(),
+     * but an undo must not close the player's open windows or orphan a timer.
+     */
+    function applyBattleSnapshot(snapshot) {
+        if (!snapshot) return false;
+
+        state.arrivingCardIds = [];
+        state.currentPlayer = snapshot.currentPlayer || 'player';
+        state.drag = null;
+        state.extraAttacks = normalizeExtraAttacks(snapshot.extraAttacks);
+        state.finished = Boolean(snapshot.finished);
+        state.isResolving = false;
+        state.itemAllowance = normalizeItemAllowance(snapshot.itemAllowance);
+        state.itemUsed = normalizeItemUsed(snapshot.itemUsed);
+        state.log = normalizeSavedLog(snapshot.log);
+        state.pendingActionCardId = snapshot.pendingActionCardId || null;
+        state.pendingPokemonReplacements = [];
+        state.pendingUserCardId = snapshot.pendingUserCardId || null;
+        state.phase = snapshot.phase || 'turn';
+        state.plannedActions = normalizePlannedActions(snapshot.plannedActions);
+        state.players = {
+            opponent: normalizeSavedPlayer(snapshot.players && snapshot.players.opponent, 'opponent', 'Rival'),
+            player: normalizeSavedPlayer(snapshot.players && snapshot.players.player, 'player', 'You')
+        };
+        state.selectedCardId = snapshot.selectedCardId || null;
+        state.suppressNextClick = false;
+        state.turnNumber = Number.isFinite(snapshot.turnNumber) ? snapshot.turnNumber : 0;
+
+        return true;
+    }
+
+    /**
      * Restores a saved battle during game.js boot. Unsafe transient phases like
      * resolving/opponent-planning are rolled back to the player's turn.
      */
     function restoreSavedBattleState() {
         const savedBattle = loadSavedBattleState();
 
-        if (!savedBattle) return false;
+        if (!applyBattleSnapshot(savedBattle)) return false;
 
-        state.currentPlayer = savedBattle.currentPlayer || 'player';
-        state.arrivingCardIds = [];
-        state.finished = Boolean(savedBattle.finished);
-        state.isResolving = false;
-        state.log = normalizeSavedLog(savedBattle.log);
-        state.phase = savedBattle.phase || 'turn';
+        // Page-reload-only resets: a fresh page has no open windows and no
+        // live timers, and undo history never survives a reload.
         state.flowTimer = null;
-        state.drag = null;
-        state.extraAttacks = normalizeExtraAttacks(savedBattle.extraAttacks);
-        state.itemAllowance = normalizeItemAllowance(savedBattle.itemAllowance);
-        state.itemUsed = normalizeItemUsed(savedBattle.itemUsed);
         state.menuWindowOpen = false;
-        state.pendingActionCardId = savedBattle.pendingActionCardId || null;
-        state.pendingUserCardId = savedBattle.pendingUserCardId || null;
-        state.pendingPokemonReplacements = [];
         state.pileWindow = null;
-        state.plannedActions = normalizePlannedActions(savedBattle.plannedActions);
-        state.players = {
-            opponent: normalizeSavedPlayer(savedBattle.players && savedBattle.players.opponent, 'opponent', 'Rival'),
-            player: normalizeSavedPlayer(savedBattle.players && savedBattle.players.player, 'player', 'You')
-        };
         state.popupTimer = null;
         state.rulesWindowOpen = false;
-        state.selectedCardId = savedBattle.selectedCardId || null;
-        state.suppressNextClick = false;
-        state.turnNumber = Number.isFinite(savedBattle.turnNumber) ? savedBattle.turnNumber : 0;
+        state.undoStack = [];
 
         if (state.phase === 'resolving' || state.phase === 'opponent-planning') {
             state.currentPlayer = 'player';
@@ -289,6 +311,41 @@
             selectedCardId: state.selectedCardId,
             turnNumber: state.turnNumber
         };
+    }
+
+    /**
+     * Deep-copies the current battle into a detached plain object. The payload
+     * is the same one localStorage round-trips on every repaint, so every value
+     * in it is provably JSON-safe.
+     */
+    function createBattleSnapshot() {
+        return JSON.parse(JSON.stringify(serializeBattleState()));
+    }
+
+    /**
+     * Records the state to return to if the player undoes the action they are
+     * about to commit. `label` is the card name shown in the undo log line.
+     * Callers push BEFORE the action mutates anything.
+     */
+    function pushUndoSnapshot(label) {
+        state.undoStack.push({
+            label: String(label || 'the last action'),
+            snapshot: createBattleSnapshot()
+        });
+
+        return state.undoStack.length;
+    }
+
+    function popUndoSnapshot() {
+        return state.undoStack.pop() || null;
+    }
+
+    function clearUndoStack() {
+        state.undoStack = [];
+    }
+
+    function canUndo() {
+        return state.undoStack.length > 0;
     }
 
     function normalizeSavedLog(log) {
@@ -1838,10 +1895,13 @@
         applyStatus,
         canPokemonUseAttackNow,
         canQueueAnotherAttack,
+        canUndo,
         clearPokemonStatChanges,
         clearPokemonStatuses,
         clearTurnStatuses,
         clearSavedBattleState,
+        clearUndoStack,
+        createBattleSnapshot,
         createPlayer,
         drawCard,
         drawCardsUpToHandSize,
@@ -1849,6 +1909,7 @@
         findHandCard,
         findRevivableFossilIndex,
         applyStatChange,
+        applyBattleSnapshot,
         addDragonGemEffect,
         formatStatusName,
         formatStatStage,
@@ -1899,6 +1960,8 @@
         playOpeningPokemon,
         playerHasCardInHand,
         pokemonCanUseAttack,
+        popUndoSnapshot,
+        pushUndoSnapshot,
         putPokemonOnBottomOfDeck,
         markItemUsed,
         recycleDiscardIntoDeck,

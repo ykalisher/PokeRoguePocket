@@ -47,7 +47,7 @@ JSON-safe: cards are plain objects, no DOM nodes or functions are stored on them
 
 ## Steps
 
-- [ ] 1. **`arena/arena_model.js`** — add the stack field to `state` (~97), directly after
+- [x] 1. **`arena/arena_model.js`** — add the stack field to `state` (~97), directly after
   `turnNumber` so it reads as the last entry:
 
   ```js
@@ -57,7 +57,7 @@ JSON-safe: cards are plain objects, no DOM nodes or functions are stored on them
         undoStack: []
   ```
 
-- [ ] 2. **`arena/arena_model.js`** — add `applyBattleSnapshot` immediately **above**
+- [x] 2. **`arena/arena_model.js`** — add `applyBattleSnapshot` immediately **above**
   `restoreSavedBattleState` (~176), with its doc comment:
 
   ```js
@@ -99,10 +99,10 @@ JSON-safe: cards are plain objects, no DOM nodes or functions are stored on them
     }
   ```
 
-- [ ] 2b. Keep `restoreSavedBattleState`'s existing doc comment ("Restores a saved battle
+- [x] 2b. Keep `restoreSavedBattleState`'s existing doc comment ("Restores a saved battle
   during game.js boot…") on `restoreSavedBattleState`, not on the new function.
 
-- [ ] 3. **`arena/arena_model.js`** — replace the **body** of `restoreSavedBattleState`
+- [x] 3. **`arena/arena_model.js`** — replace the **body** of `restoreSavedBattleState`
   (everything between `function restoreSavedBattleState() {` and its closing brace) with:
 
   ```js
@@ -132,7 +132,7 @@ JSON-safe: cards are plain objects, no DOM nodes or functions are stored on them
   assignments — `applyBattleSnapshot` now returns `false` for a null payload, so the single
   call covers both.
 
-- [ ] 4. **`arena/arena_model.js`** — add the undo-stack API directly **below**
+- [x] 4. **`arena/arena_model.js`** — add the undo-stack API directly **below**
   `serializeBattleState` (~294, above `normalizeSavedLog`):
 
   ```js
@@ -172,7 +172,7 @@ JSON-safe: cards are plain objects, no DOM nodes or functions are stored on them
     }
   ```
 
-- [ ] 5. **`arena/arena_model.js`** — export the five new names plus
+- [x] 5. **`arena/arena_model.js`** — export the five new names plus
   `applyBattleSnapshot` in `arena.Model` (~1837). Insert near their alphabetical
   neighbours, e.g. `applyBattleSnapshot` after `applyStatChange`, `canUndo` after
   `canQueueAnotherAttack`, `clearUndoStack` after `clearSavedBattleState`,
@@ -180,11 +180,11 @@ JSON-safe: cards are plain objects, no DOM nodes or functions are stored on them
   only roughly sorted), and `popUndoSnapshot` / `pushUndoSnapshot` near
   `putPokemonOnBottomOfDeck`.
 
-- [ ] 6. **`arena/arena_model.js`** — confirm by reading that `serializeBattleState()` still
+- [x] 6. **`arena/arena_model.js`** — confirm by reading that `serializeBattleState()` still
   returns exactly its original 13 fields and **no** `undoStack`. This is the one regression
   that would silently bloat every localStorage write.
 
-- [ ] 7. **`tests/battle_undo.test.js`** — new file. Follow the style of
+- [x] 7. **`tests/battle_undo.test.js`** — new file. Follow the style of
   `tests/arena_model.test.js`: `require('./helpers/arena_env')` for `{ arena }`, `node:test`
   + `node:assert/strict`. Cover:
   - `createBattleSnapshot()` is detached — snapshot a state, mutate
@@ -205,15 +205,15 @@ JSON-safe: cards are plain objects, no DOM nodes or functions are stored on them
   existing model tests set one up — read `tests/arena_model.test.js` for the exact
   incantation rather than inventing one.
 
-- [ ] 8. **`node tests/run_all.js`** — green.
+- [x] 8. **`node tests/run_all.js`** — green.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green, with the new `battle_undo` tests appearing in the
+- [x] `node tests/run_all.js` green, with the new `battle_undo` tests appearing in the
   output and the pre-existing count (275) unchanged apart from the additions.
-- [ ] `grep -n "undoStack" arena/arena_model.js` shows it in `state`, in the four stack
+- [x] `grep -n "undoStack" arena/arena_model.js` shows it in `state`, in the four stack
   functions, and in `restoreSavedBattleState` — but **not** inside `serializeBattleState`.
-- [ ] Save/restore still works in the real game: serve with
+- [x] Save/restore still works in the real game: serve with
   `python3 -m http.server 8931 --bind 127.0.0.1`, start a battle at
   `http://127.0.0.1:8931/game.html`, queue an attack, reload the page, and confirm the
   battle resumes with the attack still queued (this is the regression the
