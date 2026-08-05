@@ -362,6 +362,9 @@
             baseHealth: Number(record.baseHealth) || 1,
             baseSpeed: Number(record.baseSpeed) || 0,
             eventOnly: record.eventOnly === true,
+            // A baby's mega target. Dropping it here leaves every baby in a run
+            // unable to resolve its mega, so no baby ever evolves.
+            evolvesInto: record.evolvesInto,
             id: record.id,
             name: record.name,
             type1: record.type1,

@@ -153,3 +153,38 @@ test('getPendingMegaEvolutions is empty and applyMegaEvolutions is inert when th
     assert.deepEqual(summary, []);
     assert.equal(JSON.stringify(run.collections), before, 'no babies -> zero mutation');
 });
+
+// Regression: the fixtures above hand-build species records, so they cannot
+// catch a field dropped by arena_data's normalizePokemon(). The real game only
+// ever sees normalized records, and evolvesInto being stripped there made every
+// baby unresolvable -> zero evolutions in an actual run.
+test('normalized real pokemon keep evolvesInto so real babies resolve to megas', async () => {
+    const { arena, loadRealGameData } = require('./helpers/arena_env');
+
+    await loadRealGameData();
+
+    const gameData = arena.GameData;
+    const babies = gameData.pokemon.filter(record => record.types.includes('BABY'));
+
+    assert.ok(babies.length >= 1, 'expected at least one authored BABY-typed species');
+    babies.forEach(baby => {
+        assert.ok(baby.evolvesInto, `${baby.name}: evolvesInto was dropped by normalization`);
+        assert.ok(
+            globalThis.PokeLocations.findPokemonByNameOrId(gameData, baby.evolvesInto),
+            `${baby.name}: evolvesInto "${baby.evolvesInto}" does not resolve`
+        );
+    });
+
+    const run = R.createRunState({
+        area: { nodes: [{ id: 'start' }], edges: [] },
+        collections: {
+            pokemon: [card(babies[0])],
+            actions: [],
+            bench: { pokemon: [], actions: [] }
+        }
+    });
+    const pending = R.getPendingMegaEvolutions(run, gameData);
+
+    assert.equal(pending.length, 1, 'a real baby in the active deck must be pending evolution');
+    assert.equal(pending[0].babyCard.pokemon.name, babies[0].name);
+});
