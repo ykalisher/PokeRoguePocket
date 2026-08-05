@@ -114,6 +114,7 @@
             ${renderSide('player', pendingAction)}
             ${state.rulesWindowOpen ? renderRulesReferenceWindow() : ''}
             ${state.pileWindow ? renderPileWindow() : ''}
+            ${state.menuWindowOpen ? renderMenuWindow() : ''}
         `;
     }
 
@@ -898,11 +899,13 @@
 
     function renderActionButtons(canEnd, canDiscard) {
         const rulesButton = renderRulesButton();
+        const menuButton = renderMenuButton();
 
         if (state.finished) {
             return `
                 <button class="arena-button" type="button" data-action="reset">Restart</button>
                 ${rulesButton}
+                ${menuButton}
             `;
         }
 
@@ -911,6 +914,7 @@
                 <button class="arena-button" type="button" data-action="cancel-action">Cancel</button>
                 <button class="arena-button arena-button--discard" type="button" data-action="discard-selected" ${canDiscard ? '' : 'disabled'}>Discard</button>
                 ${rulesButton}
+                ${menuButton}
             `;
         }
 
@@ -919,6 +923,7 @@
                 <button class="arena-button arena-button--discard" type="button" disabled>Discard</button>
                 <button class="arena-button arena-button--danger" type="button" disabled>End Turn</button>
                 ${rulesButton}
+                ${menuButton}
             `;
         }
 
@@ -926,6 +931,7 @@
             <button class="arena-button arena-button--discard" type="button" data-action="discard-selected" ${canDiscard ? '' : 'disabled'}>Discard</button>
             <button class="arena-button arena-button--danger" type="button" data-action="end-turn" ${canEnd ? '' : 'disabled'}>End Turn</button>
             ${rulesButton}
+            ${menuButton}
         `;
     }
 
@@ -936,6 +942,17 @@
             <button class="arena-button arena-button--reference" type="button" data-action="toggle-rules" aria-pressed="${pressed}">
                 <span aria-hidden="true">?</span>
                 <span>Rules</span>
+            </button>
+        `;
+    }
+
+    function renderMenuButton() {
+        const pressed = state.menuWindowOpen ? 'true' : 'false';
+
+        return `
+            <button class="arena-button arena-button--reference" type="button" data-action="toggle-menu" aria-pressed="${pressed}">
+                <span aria-hidden="true">&#9776;</span>
+                <span>Menu</span>
             </button>
         `;
     }
@@ -964,6 +981,29 @@
 
     function isTargetingPhase() {
         return state.phase === 'selecting-attack-target' || state.phase === 'selecting-item-target';
+    }
+
+    /**
+     * Pause menu opened from the in-battle Menu button. Reuses the same
+     * overlay/window/action-row classes as the post-battle win/loss screens
+     * (game.js) for visual consistency; "Main Menu" and "New Game" dispatch
+     * through game.js's document-level data-battle-flow-action listener,
+     * while "Resume Battle" stays local via closeMenuWindow().
+     */
+    function renderMenuWindow() {
+        return `
+            <div class="battle-flow-overlay" role="presentation">
+                <section class="battle-result-window" role="dialog" aria-modal="true" aria-labelledby="battle-menu-title">
+                    <span class="battle-flow-kicker">Paused</span>
+                    <h1 id="battle-menu-title">Menu</h1>
+                    <div class="battle-flow-actions">
+                        <button class="arena-button arena-button--danger" type="button" data-battle-flow-action="start-over">New Game</button>
+                        <button class="arena-button" type="button" data-battle-flow-action="main-menu">Main Menu</button>
+                        <button class="arena-button battle-flow-primary" type="button" data-action="close-menu">Resume Battle</button>
+                    </div>
+                </section>
+            </div>
+        `;
     }
 
     function renderRulesReferenceWindow() {

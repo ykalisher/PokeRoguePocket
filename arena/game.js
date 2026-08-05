@@ -73,7 +73,7 @@
         } else if (action === 'continue') {
             continueFromWin();
         } else if (action === 'start-over') {
-            startOver();
+            if (window.confirm('Start a new game? This will discard your current run.')) startOver();
         } else if (action === 'main-menu') {
             window.location.href = 'index.html';
         } else if (action === 'area-map') {

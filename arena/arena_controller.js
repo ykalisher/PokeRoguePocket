@@ -97,6 +97,7 @@
         state.extraAttacks = { opponent: {}, player: {} };
         state.itemAllowance = { opponent: 1, player: 1 };
         state.itemUsed = { opponent: 0, player: 0 };
+        state.menuWindowOpen = false;
         state.pendingActionCardId = null;
         state.pendingUserCardId = null;
         state.pendingPokemonReplacements = [];
@@ -256,6 +257,8 @@
             cancelActionSelection();
         } else if (action === 'close-pile-window') {
             closePileWindow();
+        } else if (action === 'close-menu') {
+            closeMenuWindow();
         } else if (action === 'close-rules') {
             closeRulesWindow();
         } else if (action === 'discard-selected') {
@@ -264,6 +267,8 @@
             endPlayerTurn();
         } else if (action === 'reset') {
             resetPrototype();
+        } else if (action === 'toggle-menu') {
+            toggleMenuWindow();
         } else if (action === 'toggle-rules') {
             toggleRulesWindow();
         }
@@ -274,6 +279,25 @@
      */
     function toggleRulesWindow() {
         state.rulesWindowOpen = !state.rulesWindowOpen;
+        state.menuWindowOpen = false;
+        render();
+    }
+
+    /**
+     * Opens or closes the pause menu (main menu / new game / resume) without
+     * changing turn state; the actual navigation happens in game.js's
+     * document-level data-battle-flow-action listener.
+     */
+    function toggleMenuWindow() {
+        state.menuWindowOpen = !state.menuWindowOpen;
+        state.rulesWindowOpen = false;
+        render();
+    }
+
+    function closeMenuWindow() {
+        if (!state.menuWindowOpen) return;
+
+        state.menuWindowOpen = false;
         render();
     }
 

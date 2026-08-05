@@ -107,6 +107,7 @@
         extraAttacks: { opponent: {}, player: {} },
         itemAllowance: { opponent: 1, player: 1 },
         itemUsed: { opponent: 0, player: 0 },
+        menuWindowOpen: false,
         pendingActionCardId: null,
         pendingUserCardId: null,
         pendingPokemonReplacements: [],
@@ -188,6 +189,7 @@
         state.extraAttacks = normalizeExtraAttacks(savedBattle.extraAttacks);
         state.itemAllowance = normalizeItemAllowance(savedBattle.itemAllowance);
         state.itemUsed = normalizeItemUsed(savedBattle.itemUsed);
+        state.menuWindowOpen = false;
         state.pendingActionCardId = savedBattle.pendingActionCardId || null;
         state.pendingUserCardId = savedBattle.pendingUserCardId || null;
         state.pendingPokemonReplacements = [];
