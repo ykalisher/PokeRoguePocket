@@ -399,8 +399,8 @@
 
     function countRemainingPokemon(player) {
         return [
-            ...player.board,
-            ...player.pokemonDeck
+            ...(player.board || []),
+            ...(player.pokemonDeck || [])
         ].filter(isPokemonCard).length;
     }
 
@@ -434,22 +434,48 @@
         return getInitialPokemonCount(player);
     }
 
+    function isFossilRevivalCandidate(card) {
+        return isPokemonCard(card) &&
+            getCardTypes(card).includes('FOSSIL') &&
+            !card.hasUsedFossilRevival;
+    }
+
+    /**
+     * Index of the knockout-pile Fossil that end-of-turn replacement should
+     * revive, or -1 when none is eligible. A Fossil normally waits for another
+     * ally to be knocked out, so the most recent knockout (index 0) is skipped -
+     * unless its owner has no Pokemon left on the board or in the Pokemon deck,
+     * in which case waiting would end the battle before the revival ever
+     * happened, so it revives at the end of the turn it went down.
+     */
+    function findRevivableFossilIndex(player) {
+        if (!player || !Array.isArray(player.knockout)) return -1;
+
+        const laterIndex = player.knockout.findIndex((card, index) => index > 0 && isFossilRevivalCandidate(card));
+
+        if (laterIndex !== -1) return laterIndex;
+        if (countRemainingPokemon(player) > 0) return -1;
+
+        return isFossilRevivalCandidate(player.knockout[0]) ? 0 : -1;
+    }
+
     /**
      * Counts knockout-pile Fossils that can still revive during end-of-turn
-     * replacement: FOSSIL-typed, revival unused, and not the most recent
-     * knockout (a Fossil only revives after another ally is knocked out).
-     * Must stay in sync with the eligibility scan in the controller's
-     * reviveFossilPokemonFromKnockout().
+     * replacement, following the same eligibility rules as
+     * findRevivableFossilIndex(): each unused Fossil below the most recent
+     * knockout, plus the most recent knockout itself when its owner has no
+     * other Pokemon left.
      */
     function countPendingFossilRevivals(player) {
         if (!player || !Array.isArray(player.knockout)) return 0;
 
-        return player.knockout.filter((card, index) => (
-            index > 0 &&
-            isPokemonCard(card) &&
-            getCardTypes(card).includes('FOSSIL') &&
-            !card.hasUsedFossilRevival
+        const laterCount = player.knockout.filter((card, index) => (
+            index > 0 && isFossilRevivalCandidate(card)
         )).length;
+
+        if (countRemainingPokemon(player) > 0) return laterCount;
+
+        return laterCount + (isFossilRevivalCandidate(player.knockout[0]) ? 1 : 0);
     }
 
     /**
@@ -1821,6 +1847,7 @@
         drawCardsUpToHandSize,
         drawPokemonToBoard,
         findHandCard,
+        findRevivableFossilIndex,
         applyStatChange,
         addDragonGemEffect,
         formatStatusName,

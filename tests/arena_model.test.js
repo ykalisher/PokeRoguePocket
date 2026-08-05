@@ -292,6 +292,36 @@ test('isPlayerDefeated defers the knockout limit while an eligible Fossil can re
     assert.equal(Model.isPlayerDefeated(player), true);
 });
 
+test('a Fossil knocked out with no Pokemon left revives at the end of that turn', () => {
+    const player = Model.createPlayer('player', 'You');
+    const fossil = makePokemonCard(['FOSSIL', 'ROCK']);
+
+    fossil.hasUsedFossilRevival = false;
+    player.board = player.board.map(() => null);
+    player.pokemonDeck = [];
+    player.initialPokemonCount = 2;
+    player.knockoutCount = 2;
+    player.knockout = [fossil, makePokemonCard(['WATER'])];
+
+    // No ally is left to be knocked out later, so the most recent knockout is
+    // the one that revives instead of the battle ending.
+    assert.equal(Model.findRevivableFossilIndex(player), 0);
+    assert.equal(Model.isPlayerDefeated(player), false);
+
+    // With a Pokemon still on the board the Fossil waits for another knockout.
+    player.board[0] = makePokemonCard(['GRASS']);
+    player.knockoutCount = 1;
+    assert.equal(Model.findRevivableFossilIndex(player), -1);
+    assert.equal(Model.isPlayerDefeated(player), false);
+
+    // A spent revival never defers defeat, even as the last Pokemon down.
+    player.board = player.board.map(() => null);
+    player.knockoutCount = 2;
+    fossil.hasUsedFossilRevival = true;
+    assert.equal(Model.findRevivableFossilIndex(player), -1);
+    assert.equal(Model.isPlayerDefeated(player), true);
+});
+
 test('a player is defeated only after every Pokemon on the team is knocked out', () => {
     const player = Model.createPlayer('player', 'You');
 

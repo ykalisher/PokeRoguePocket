@@ -346,6 +346,50 @@ test('a knockout at the limit still queues a replacement when a Fossil can reviv
     assert.equal(state.pendingPokemonReplacements.length, 0);
 });
 
+test('the last Pokemon down revives at the end of the same turn when it is a Fossil', () => {
+    const state = arena.state;
+
+    state.elements = { popup: { hidden: false } };
+    state.log = [];
+    state.pendingPokemonReplacements = [];
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+
+    const player = state.players.player;
+    const fossil = makePokemonCard('player', ['FOSSIL', 'ROCK']);
+
+    player.board = player.board.map(() => null);
+    player.board[0] = fossil;
+    player.pokemonDeck = [];
+    player.initialPokemonCount = 2;
+    player.knockoutCount = 1;
+    player.knockout = [makePokemonCard('player', ['WATER'])];
+
+    Controller.knockOutPokemon('player', fossil);
+
+    // Nothing else can be knocked out to trigger the usual delayed revival, so
+    // the Fossil's own knockout must queue an end-of-turn replacement instead
+    // of ending the battle.
+    assert.equal(player.knockoutCount, 2);
+    assert.equal(Model.isPlayerDefeated(player), false);
+    assert.ok(state.pendingPokemonReplacements.some(replacement => (
+        replacement.ownerId === 'player' && replacement.slotIndex === 0
+    )));
+
+    const revivedCard = Controller.reviveFossilPokemonFromKnockout(player, 0);
+
+    assert.equal(revivedCard && revivedCard.id, fossil.id);
+    assert.equal(player.board[0].id, fossil.id);
+    assert.equal(player.knockout.some(card => card.id === fossil.id), false);
+    assert.equal(player.knockoutCount, 1);
+    assert.equal(fossil.currentHealth, 30);
+    assert.equal(fossil.hasUsedFossilRevival, true);
+    assert.equal(Model.hasPokemonStatus(fossil, 'FATIGUE'), true);
+    assert.equal(Model.isPlayerDefeated(player), false);
+});
+
 test('a damaging attack targets a guaranteed-KO Pokemon over a healthy one', () => {
     const state = arena.state;
 

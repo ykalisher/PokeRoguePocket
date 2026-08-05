@@ -2941,16 +2941,12 @@
      * FOSSIL special rule: during end-of-turn replacement, a once-per-card
      * Fossil already in the knockout pile can return to the vacated slot.
      * Its earlier knockout is refunded so revival grants a real extra life.
+     * Eligibility lives in the model so the defeat check stays in sync.
      */
     function reviveFossilPokemonFromKnockout(owner, slotIndex) {
         if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT || owner.board[slotIndex]) return null;
 
-        const fossilIndex = owner.knockout.findIndex((card, index) => (
-            index > 0 &&
-            model.isPokemonCard(card) &&
-            model.getCardTypes(card).includes('FOSSIL') &&
-            !card.hasUsedFossilRevival
-        ));
+        const fossilIndex = model.findRevivableFossilIndex(owner);
 
         if (fossilIndex === -1) return null;
 
@@ -3458,6 +3454,7 @@
         // knockout-limit deferral.
         damagePokemon,
         knockOutPokemon,
+        reviveFossilPokemonFromKnockout,
         // Exposed for tests: KO-aware/status-aware opponent attack targeting
         // (phase 40).
         chooseOpponentTarget,
