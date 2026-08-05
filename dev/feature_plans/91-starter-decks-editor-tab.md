@@ -77,11 +77,11 @@ that 409 actually fires (verification below).
 
 ## Steps
 
-- [ ] 1. **`dev/editor/tab_starters.js`** — new file with the standard header comment
+- [x] 1. **`dev/editor/tab_starters.js`** — new file with the standard header comment
   (what the tab is, and a pointer to `88-starter-decks-overview.md`), the IIFE wrapper, and
   `const escapeHtml = EditorListView.escapeHtml; const escapeAttr = EditorListView.escapeAttr;`.
 
-- [ ] 2. **`dev/editor/tab_starters.js`** — `columns()` for the list view:
+- [x] 2. **`dev/editor/tab_starters.js`** — `columns()` for the list view:
   - portrait thumbs for the deck's Pokemon (reuse `EditorPreview`'s portrait path helper —
     grep `EditorPreview.` in `tab_trainers.js`/`tab_locations.js` for the exact name);
   - `name` (sortable);
@@ -91,7 +91,7 @@ that 409 actually fires (verification below).
   - an enabled dot: `<span class="editor-dot editor-dot--on|--off">`, exactly as
     `tab_locations.js` does it.
 
-- [ ] 3. **`dev/editor/tab_starters.js`** — `template()` for a new deck, in the canonical
+- [x] 3. **`dev/editor/tab_starters.js`** — `template()` for a new deck, in the canonical
   key order of the data file:
 
   ```js
@@ -100,7 +100,7 @@ that 409 actually fires (verification below).
       }
   ```
 
-- [ ] 4. **`dev/editor/tab_starters.js`** — the three entry helpers:
+- [x] 4. **`dev/editor/tab_starters.js`** — the three entry helpers:
 
   ```js
       function entriesFor(draft, field) {
@@ -124,14 +124,14 @@ that 409 actually fires (verification below).
       }
   ```
 
-- [ ] 5. **`dev/editor/tab_starters.js`** — `renderPreview(el, draft)`: a starter card that
+- [x] 5. **`dev/editor/tab_starters.js`** — `renderPreview(el, draft)`: a starter card that
   mirrors what `starter.html` shows — the type label, the Pokemon portraits with names, and
   the `count× name` card list. Read `map/starter.js`'s `renderDeckCard` (~31) and match its
   content so the preview is honest about what the player will see. Reuse
   `EditorPreview`'s portrait helper; a missing portrait should degrade to the name, not a
   broken image.
 
-- [ ] 6. **`dev/editor/tab_starters.js`** — `renderForm(el, draft, api)`:
+- [x] 6. **`dev/editor/tab_starters.js`** — `renderForm(el, draft, api)`:
   - Row 1: `id` (text, with the hint **"Changing the id of a deck already in use breaks
     saved runs — they fall back to the first deck."**), `name` (text).
   - Row 2: `type` (select over `EditorApp.store.enums.PokeType`, excluding `NONE`;
@@ -146,23 +146,23 @@ that 409 actually fires (verification below).
   - Every mutation ends with `refreshDeckRows(field)` (or `paint()` for the scalar fields),
     `api.markDirty()` and `api.refreshPreview()`.
 
-- [ ] 7. **`dev/editor/tab_starters.js`** — `render(root)`: an `+ Add starter deck` toolbar
+- [x] 7. **`dev/editor/tab_starters.js`** — `render(root)`: an `+ Add starter deck` toolbar
   button plus `EditorListView.createListView({ root: …, columns: columns(), records:
   EditorApp.store.data.starter_decks, getKey: (record) => record.id, searchFields: ['name',
   'id'], filters: [type, enabled], defaultSort: { key: 'name', direction: 'asc' }, onSelect:
   openStarterEditor })`. Copy the filter shapes from `tab_locations.js`.
 
-- [ ] 8. **`dev/editor/tab_starters.js`** — `EditorApp.registerTab('starters', { label:
+- [x] 8. **`dev/editor/tab_starters.js`** — `EditorApp.registerTab('starters', { label:
   'Starters', render });` as the last statement.
 
-- [ ] 9. **`dev/editor/index.html`** — add `<script src="/dev/editor/tab_starters.js"></script>`
+- [x] 9. **`dev/editor/index.html`** — add `<script src="/dev/editor/tab_starters.js"></script>`
   in the tab-module block. Tab bar order follows script order, so put it after
   `tab_locations.js` and before `tab_issues.js`.
 
-- [ ] 10. **`node tests/run_all.js`** — green (it syntax-checks every tracked JS file, which
+- [x] 10. **`node tests/run_all.js`** — green (it syntax-checks every tracked JS file, which
   is the main automated guard for a tab module).
 
-- [ ] 11. Drive the editor in a browser and actually use the tab. Adapt
+- [x] 11. Drive the editor in a browser and actually use the tab. Adapt
   `dev/verify/drive_editor.py` (it spawns `node dev/editor/server.js --port 8933` itself
   and restores any file it writes) into `dev/verify/phase91_editor_starters.py`, and
   screenshot to `dev/verify/phase91_editor_starters.png`. Exercise:
@@ -178,16 +178,16 @@ that 409 actually fires (verification below).
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `dev/verify/phase91_editor_starters.py` runs clean and its screenshot shows the
+- [x] `node tests/run_all.js` green.
+- [x] `dev/verify/phase91_editor_starters.py` runs clean and its screenshot shows the
   Starters tab with a deck open.
-- [ ] Round-trip: open `water`, change nothing, Save → `git diff starter_decks.json` empty.
+- [x] Round-trip: open `water`, change nothing, Save → `git diff starter_decks.json` empty.
   Then bump `Surf` to 3, Save → the diff is exactly that one `count`. Restore the file.
-- [ ] Deleting a starter deck is possible, but deleting the **last enabled** one is refused
+- [x] Deleting a starter deck is possible, but deleting the **last enabled** one is refused
   with `starterDecks.none-enabled` (409). Restore afterwards.
-- [ ] A deck saved with a type no enabled location covers is refused with
+- [x] A deck saved with a type no enabled location covers is refused with
   `locations.starter-coverage` and the message names the fix.
-- [ ] End-to-end: add a fourth deck in the editor, reload `starter.html` (served on 8931),
+- [x] End-to-end: add a fourth deck in the editor, reload `starter.html` (served on 8931),
   confirm four cards render and a run started from the new one gets its cards. Then remove
   the fixture deck and confirm `git status` shows `starter_decks.json` unchanged.
 

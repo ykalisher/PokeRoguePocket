@@ -104,7 +104,7 @@ def main():
 
             tabs = page.query_selector_all("#editor-tabs .editor-tab")
             tab_labels = [t.text_content().strip() for t in tabs]
-            assert len(tabs) == 7, f"expected 7 tabs, found {tab_labels}"
+            assert len(tabs) == 8, f"expected 8 tabs, found {tab_labels}"
 
             page.wait_for_selector("table.editor-table tbody tr.editor-row", timeout=15000)
             rows = page.query_selector_all("table.editor-table tbody tr.editor-row")
