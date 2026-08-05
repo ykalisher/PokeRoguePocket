@@ -402,7 +402,8 @@
             { id: 'champion', name: 'Champion', description: 'Finish a full run.', stat: 'runs.completed', atLeast: 1, hidden: false, enabled: true },
             { id: 'blaze-purist', name: 'Blaze Purist', description: 'Finish a run with only Fire Pokemon.', stat: 'runs.completed.mono.FIRE', atLeast: 1, hidden: true, enabled: true },
             { id: 'wanderer', name: 'Wanderer', description: 'Experience 25 events.', stat: 'events.seen', atLeast: 25, hidden: false, enabled: true }
-        ]
+        ],
+        music: []
     });
 
     /**
@@ -630,6 +631,26 @@
         };
     }
 
+    const MUSIC_CATEGORIES = ['trainer', 'boss', 'elite', 'legendary'];
+
+    /**
+     * Normalizes one music track. Records without an id, or with an unknown
+     * category, are dropped — a bad row must never crash boot or leak into a
+     * category's rotation.
+     */
+    function normalizeMusicTrack(record) {
+        if (!record || !record.id) return null;
+        if (!MUSIC_CATEGORIES.includes(record.category)) return null;
+
+        return {
+            category: record.category,
+            enabled: record.enabled !== false,
+            file: record.file || `assets/music/${record.id}.mp3`,
+            id: record.id,
+            title: record.title || record.id
+        };
+    }
+
     /**
      * Applies record-level normalization to all loaded game data at boot.
      */
@@ -640,6 +661,7 @@
             events: (records.events || []).map(normalizeEvent).filter(Boolean),
             locations: (records.locations || []).map(normalizeLocation).filter(Boolean),
             items: records.items.map(normalizeItem),
+            music: (records.music || []).map(normalizeMusicTrack).filter(Boolean),
             pokemon: records.pokemon.map(normalizePokemon),
             starterDecks: (records.starterDecks || []).map(normalizeStarterDeck).filter(Boolean),
             trainers: (records.trainers || []).map(normalizeTrainer).filter(trainer => trainer.name)
@@ -671,7 +693,7 @@
      * It loads and normalizes all card data, then replaces arena.GameData.
      */
     async function loadGameData() {
-        const [pokemon, attacks, items, trainers, events, locations, starterDecks, achievements] = await Promise.all([
+        const [pokemon, attacks, items, trainers, events, locations, starterDecks, achievements, music] = await Promise.all([
             loadJson('pokemon.json', fallbackRecords.pokemon),
             loadJson('attacks.json', fallbackRecords.attacks),
             loadJson('items.json', fallbackRecords.items),
@@ -679,10 +701,11 @@
             loadJson('events.json', fallbackRecords.events),
             loadJson('locations.json', fallbackRecords.locations),
             loadJson('starter_decks.json', fallbackRecords.starterDecks),
-            loadJson('achievements.json', fallbackRecords.achievements)
+            loadJson('achievements.json', fallbackRecords.achievements),
+            loadJson('music.json', fallbackRecords.music)
         ]);
 
-        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events, locations, starterDecks, achievements });
+        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events, locations, starterDecks, achievements, music });
         return arena.GameData;
     }
 

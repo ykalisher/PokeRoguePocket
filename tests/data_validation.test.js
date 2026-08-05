@@ -20,6 +20,7 @@ const VALID_ITEM_STATUSES = new Set(Object.values(Status));
 const VALID_STAT_CHANGES = new Set(Object.values(StatChange));
 const VALID_TYPES = new Set(Object.values(PokeType));
 const VALID_RANKS = new Set([Rank.STANDARD, Rank.ACE, Rank.SPECIAL, Rank.BOSS, Rank.ELITE]);
+const VALID_MUSIC_CATEGORIES = new Set(['trainer', 'boss', 'elite', 'legendary']);
 
 function readData(fileName) {
     return JSON.parse(fs.readFileSync(path.join(ROOT, fileName), 'utf8'));
@@ -42,6 +43,7 @@ const events = readData('events.json');
 const locations = readData('locations.json');
 const starterDecks = readData('starter_decks.json');
 const achievements = readData('achievements.json');
+const music = readData('music.json');
 
 const HEX_PATTERN = /^#[0-9a-f]{6}$/i;
 
@@ -457,6 +459,27 @@ test('achievements.json entries are well-formed', () => {
         assert.ok(
             PokeProfile.isKnownStat(achievement.stat),
             `${achievement.id}: unknown stat ${achievement.stat}`
+        );
+    });
+});
+
+test('music.json entries are well-formed', () => {
+    assert.ok(Array.isArray(music), 'music.json must be an array');
+
+    const seenIds = new Set();
+
+    music.forEach(track => {
+        assert.ok(track.id && typeof track.id === 'string', 'music.json: entry missing id');
+        assert.ok(!seenIds.has(track.id), `music.json: duplicate id ${track.id}`);
+        seenIds.add(track.id);
+
+        assert.ok(
+            VALID_MUSIC_CATEGORIES.has(track.category),
+            `${track.id}: bad category ${track.category}`
+        );
+        assert.ok(
+            typeof track.file === 'string' && track.file.startsWith('assets/music/'),
+            `${track.id}: file must be under assets/music/`
         );
     });
 });

@@ -58,16 +58,16 @@ inject a deterministic one.
 
 ## Steps
 
-- [ ] 1. **`music.json`** (new, repo root) — exactly `[]` plus a trailing newline. The owner
+- [x] 1. **`music.json`** (new, repo root) — exactly `[]` plus a trailing newline. The owner
   adds tracks through the editor (phase 101).
 
-- [ ] 2. **`assets/music/`** — create the directory. Git does not track empty directories,
+- [x] 2. **`assets/music/`** — create the directory. Git does not track empty directories,
   so add a short `assets/music/README.md` explaining that `.mp3` files here are registered
   in `music.json` and uploaded through the data editor's Music tab. (Do **not** add a
   `.gitkeep`; a README is more useful and the owner confirmed the files themselves are
   committed.)
 
-- [ ] 3. **`arena/arena_data.js`** — add `music: []` to `fallbackRecords` (~60), a
+- [x] 3. **`arena/arena_data.js`** — add `music: []` to `fallbackRecords` (~60), a
   `normalizeMusicTrack(record)` next to the other normalizers, wire it into
   `normalizeGameData` (~533) keeping the alphabetical key order, and add
   `loadJson('music.json', fallbackRecords.music)` to `loadGameData` (~568) with the
@@ -99,7 +99,7 @@ inject a deterministic one.
   live — grep `arena.Constants` in `arena/arena_data.js` first and follow whatever it
   actually does rather than inventing a new home.
 
-- [ ] 4. **`arena/audio.js`** — settings persistence:
+- [x] 4. **`arena/audio.js`** — settings persistence:
 
   ```js
     const STORAGE_KEY = 'pokemon-rogue-pocket-audio';
@@ -125,7 +125,7 @@ inject a deterministic one.
   plus `loadSettings()` / `saveSettings()` wrapped in `try/catch` like
   `map/run_state.js`'s, and a module-level cache so reads are cheap.
 
-- [ ] 5. **`arena/audio.js`** — the pure selector:
+- [x] 5. **`arena/audio.js`** — the pure selector:
 
   ```js
     /**
@@ -146,7 +146,7 @@ inject a deterministic one.
 
   The `Math.min` clamp guards a `randomFn` that returns exactly 1.
 
-- [ ] 6. **`arena/audio.js`** — the element and the autoplay retry:
+- [x] 6. **`arena/audio.js`** — the element and the autoplay retry:
 
   ```js
     let element = null;
@@ -207,7 +207,7 @@ inject a deterministic one.
     }
   ```
 
-- [ ] 7. **`arena/audio.js`** — the public API:
+- [x] 7. **`arena/audio.js`** — the public API:
 
   ```js
     function configure(tracks) { … }              // stores the manifest; does not play
@@ -227,7 +227,7 @@ inject a deterministic one.
   `isMuted`, `pickTrack`, `playCategory`, `setMuted`, `setVolume`, `stop`, plus
   `STORAGE_KEY`.
 
-- [ ] 8. **`tests/music.test.js`** — new file, `node:test` + `node:assert/strict`, requiring
+- [x] 8. **`tests/music.test.js`** — new file, `node:test` + `node:assert/strict`, requiring
   `./helpers/arena_env` first (localStorage shim + `window` alias) then `../arena/audio.js`.
   There is no `Audio` in Node, so every case here exercises the pure and settings paths:
   - `pickTrack` returns only enabled tracks of the requested category;
@@ -243,21 +243,21 @@ inject a deterministic one.
     and does not throw — proof the module is Node-safe;
   - `configure(null)` and `playCategory('nope')` are both safe no-ops.
 
-- [ ] 9. **`tests/data_validation.test.js`** — add a case that `music.json` parses to an
+- [x] 9. **`tests/data_validation.test.js`** — add a case that `music.json` parses to an
   array and every record (currently none) has a unique id, a category in the locked list,
   and a `file` under `assets/music/`. It must pass on the empty file too.
 
-- [ ] 10. **`node tests/run_all.js`** — green.
+- [x] 10. **`node tests/run_all.js`** — green.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green with every case from step 8 passing.
-- [ ] `node -e "globalThis.window=globalThis;require('./arena/audio.js');console.log(Object.keys(window.PokeAudio).sort().join(' '))"`
+- [x] `node tests/run_all.js` green with every case from step 8 passing.
+- [x] `node -e "globalThis.window=globalThis;require('./arena/audio.js');console.log(Object.keys(window.PokeAudio).sort().join(' '))"`
   prints the export list without throwing — proof of load-inertness with no `Audio`, no
   `document`, and no `localStorage`.
-- [ ] `grep -rn "PokeAudio" --include=*.js --include=*.html . | grep -v tests/` shows only
+- [x] `grep -rn "PokeAudio" --include=*.js --include=*.html . | grep -v tests/` shows only
   `arena/audio.js` — nothing is wired up yet, which is this phase's contract.
-- [ ] `git status` shows the new `music.json`, `arena/audio.js`, `assets/music/README.md`,
+- [x] `git status` shows the new `music.json`, `arena/audio.js`, `assets/music/README.md`,
   `tests/music.test.js`, and the `arena/arena_data.js` edit — and no stray `.mp3`.
 
 ## Out of scope / do not touch
