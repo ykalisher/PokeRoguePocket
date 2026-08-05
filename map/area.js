@@ -58,6 +58,7 @@
         window.addEventListener('keydown', handleKeyDown);
 
         await arena.Data.loadGameData();
+        window.PokeProfile.showPendingUnlocks(arena.GameData.achievements);
 
         restoreOrCreateRunState();
         locations.applyLocationTheme(state.run);

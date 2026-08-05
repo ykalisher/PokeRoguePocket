@@ -232,6 +232,64 @@
         return { current: Math.min(current, threshold), threshold, unlocked: isUnlocked(achievement && achievement.id) };
     }
 
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, character => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[character]));
+    }
+
+    /**
+     * Builds and appends one toast element for an unlocked achievement,
+     * staggered by index so several unlocks queue rather than overlap.
+     */
+    function showUnlockToast(name, description, index) {
+        const toast = document.createElement('div');
+
+        toast.className = 'achievement-toast';
+        toast.innerHTML = `
+            <span class="achievement-toast-label">Achievement Unlocked</span>
+            <span class="achievement-toast-name">${escapeHtml(name)}</span>
+            <span class="achievement-toast-description">${escapeHtml(description)}</span>
+        `;
+        toast.style.top = `${18 + index * 76}px`;
+        document.body.appendChild(toast);
+
+        requestAnimationFrame(() => toast.classList.add('is-visible'));
+        setTimeout(() => {
+            toast.classList.remove('is-visible');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000 + index * 220);
+    }
+
+    /**
+     * Drains pendingUnlocks and shows one toast per newly unlocked achievement.
+     * DOM-only: a no-op without a document, so Node tests can require this file.
+     */
+    function showPendingUnlocks(achievements) {
+        if (typeof document === 'undefined' || !document.body) return [];
+
+        const pending = takePendingUnlocks();
+
+        if (pending.length === 0) return [];
+
+        const byId = new Map((Array.isArray(achievements) ? achievements : [])
+            .filter(entry => entry && entry.id)
+            .map(entry => [entry.id, entry]));
+
+        pending.forEach((id, index) => {
+            const achievement = byId.get(id);
+
+            showUnlockToast(achievement ? achievement.name : id,
+                achievement ? achievement.description : '', index);
+        });
+
+        return pending;
+    }
+
     global.PokeProfile = {
         STAT_KEYS,
         STAT_PREFIXES,
@@ -248,6 +306,7 @@
         isKnownStat,
         isUnlocked,
         record,
+        showPendingUnlocks,
         takePendingUnlocks
     };
 })(window);

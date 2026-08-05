@@ -38,6 +38,7 @@
         window.addEventListener('pointercancel', arena.Drag.cancelDrag);
 
         await arena.Data.loadGameData();
+        window.PokeProfile.showPendingUnlocks(arena.GameData.achievements);
 
         loadActiveBattleEncounter();
         configureRunBattle();

@@ -121,6 +121,14 @@ test('getProgress clamps current at threshold and reports unlocked', () => {
     assert.equal(after.unlocked, true);
 });
 
+test('showPendingUnlocks is a no-op that does not drain when document is undefined', () => {
+    PokeProfile.bumpStat('runs.completed', 1);
+    PokeProfile.evaluateAchievements([{ atLeast: 1, id: 'champion', stat: 'runs.completed' }]);
+
+    assert.deepEqual(PokeProfile.showPendingUnlocks([]), []);
+    assert.deepEqual(PokeProfile.takePendingUnlocks(), ['champion']);
+});
+
 test('corrupt storage yields a fresh empty profile without throwing', () => {
     PokeProfile.clearProfile();
     storageMap.set(PokeProfile.STORAGE_KEY, 'not json');

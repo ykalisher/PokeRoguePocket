@@ -37,6 +37,7 @@
         window.addEventListener('keydown', handleKeyDown);
 
         await arena.Data.loadGameData();
+        window.PokeProfile.showPendingUnlocks(arena.GameData.achievements);
 
         state.run = runStore.loadRunState();
         state.encounter = runStore.getActiveCaptureEncounter(state.run);

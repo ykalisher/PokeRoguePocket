@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Rogue Pocket - Achievements</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body class="game-page achievements-page">
+    <a href="index.html" class="btn btn-back">Back</a>
+    <main class="achievements" aria-labelledby="achievements-title">
+        <header class="overview-header">
+            <div>
+                <h1 id="achievements-title">Achievements</h1>
+            </div>
+            <span id="achievement-count" class="selected-pill overview-filter-pill">0 / 0</span>
+        </header>
+        <div id="achievements-root" class="achievements-list">
+            <section class="arena-status arena-status--loading">Loading achievements...</section>
+        </div>
+    </main>
+    <script src="arena/arena_data.js"></script>
+    <script src="arena/arena_model.js"></script>
+    <script src="map/profile.js"></script>
+    <script src="map/achievements.js"></script>
+</body>
+</html>
