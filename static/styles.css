@@ -2031,6 +2031,11 @@ button.playing-card:focus-visible {
     background-color: color-mix(in srgb, var(--gold) 24%, transparent);
 }
 
+/* Undo command variant: secondary to Discard in the same command group. */
+.arena-button--undo {
+    background-color: color-mix(in srgb, var(--aqua) 24%, transparent);
+}
+
 /* Rules/reference button variant in the turn-control box. */
 .arena-button--reference {
     display: inline-flex;

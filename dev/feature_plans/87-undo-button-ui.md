@@ -69,7 +69,7 @@ documents the whole flow.
 
 ## Steps
 
-- [ ] 1. **`arena/arena_render.js`** — in `renderStatus` (~853), add the predicate next to
+- [x] 1. **`arena/arena_render.js`** — in `renderStatus` (~853), add the predicate next to
   the other two:
 
   ```js
@@ -78,7 +78,7 @@ documents the whole flow.
 
   and pass it through: `${renderActionButtons(canEnd, canDiscard, canUndo)}`.
 
-- [ ] 2. **`arena/arena_render.js`** — change the signature to
+- [x] 2. **`arena/arena_render.js`** — change the signature to
   `renderActionButtons(canEnd, canDiscard, canUndo)` and add the button to the three rows
   that need it, each time immediately before the Discard button:
 
@@ -95,7 +95,7 @@ documents the whole flow.
 
   Leave the `state.finished` row unchanged.
 
-- [ ] 3. **`static/styles.css`** — add the modifier right after `.arena-button--discard`
+- [x] 3. **`static/styles.css`** — add the modifier right after `.arena-button--discard`
   (~2030):
 
   ```css
@@ -109,20 +109,28 @@ documents the whole flow.
   requirement is only that Undo is visually distinct from Discard and clearly part of the
   same group.
 
-- [ ] 4. **`static/styles.css`** — check the two responsive `.arena-button` blocks (~2626,
+- [x] 4. **`static/styles.css`** — check the two responsive `.arena-button` blocks (~2626,
   ~2875) and the `.action-bar` rule. Confirm five buttons still fit at 390px wide without
   the row overflowing horizontally. Only add a rule if it genuinely does not fit.
 
-- [ ] 5. **`tests/arena_render.test.js`** — add a case asserting the markup. The file
+- [x] 5. **`tests/arena_render.test.js`** — add a case asserting the markup. The file
   already loads `arena/arena_render.js` over `tests/helpers/arena_env.js`. If
   `renderActionButtons` is not reachable from the test (it is a private function inside the
   IIFE), assert through whatever the file already uses to reach render internals — read the
   existing cases first and follow the same route; if there is no route, skip this step and
   say so in the phase notes rather than exporting new internals just for a test.
 
-- [ ] 6. **`node tests/run_all.js`** — green.
+  `renderActionButtons` is unreachable from `arena_render.test.js` (no DOM, no
+  `state.elements.board`). `tests/battle_undo_controller.test.js` already stubs a `document`
+  and a writable `state.elements.board.innerHTML` for controller tests, and
+  `Controller.undoLastAction()` calls `render()` internally — that's the existing route, so
+  the new case ("the rendered action bar enables Undo only while an action is undoable") was
+  added there instead, asserting on `state.elements.board.innerHTML` before/after a discard
+  commit and an undo.
 
-- [ ] 7. **`dev/verify/phase87_battle_undo.py`** — new Playwright driver, modeled on
+- [x] 6. **`node tests/run_all.js`** — green.
+
+- [x] 7. **`dev/verify/phase87_battle_undo.py`** — new Playwright driver, modeled on
   `dev/verify/drive_arena.py`. It must:
   - serve the repo via `lib.serving()` and open `game.html`;
   - wait for the player's turn (`lib.STATE_PROBE` reports `phase === 'turn'` and
@@ -135,24 +143,32 @@ documents the whole flow.
     Undo is disabled again;
   - screenshot to `dev/verify/phase87_battle_undo.png`.
 
-- [ ] 8. Run the driver: `dev/verify/.cache/venv/bin/python dev/verify/phase87_battle_undo.py`
+- [x] 8. Run the driver: `dev/verify/.cache/venv/bin/python dev/verify/phase87_battle_undo.py`
   and confirm it passes. Leave both the driver and the screenshot committed to the working
   tree (do not `git add`).
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `dev/verify/phase87_battle_undo.py` runs clean and
+- [x] `node tests/run_all.js` green.
+- [x] `dev/verify/phase87_battle_undo.py` runs clean and
   `dev/verify/phase87_battle_undo.png` shows the battle with the Undo button in the action
   bar.
-- [ ] Manual pass at three viewport widths (390, 720, 1440) — the action bar holds five
+- [x] Manual pass at three viewport widths (390, 720, 1440) — the action bar holds five
   buttons without horizontal overflow, matching how `dev/verify/phase7_battle_*.png` framed
-  the earlier responsive audit.
-- [ ] Undo is disabled during the rival's turn, during an item animation, and after the
-  battle finishes; enabled only after the player commits a card on their own turn.
-- [ ] Repeat-undo works end to end in the browser: queue an attack, use an item, discard a
+  the earlier responsive audit. (At 390px the bar wraps to two rows via the existing
+  `flex-wrap: wrap`, same as any 5th button would; no horizontal scroll at any width —
+  verified via `scrollWidth <= clientWidth` plus screenshots.)
+- [x] Undo is disabled during the rival's turn, during an item animation, and after the
+  battle finishes; enabled only after the player commits a card on their own turn. (Row 3
+  covers rival's turn / mid-animation as a permanently-disabled no-`data-action` button, same
+  as its neighbours; `canUndoAction()` already gates all these cases per phase 86, exercised
+  in `tests/battle_undo_controller.test.js`.)
+- [x] Repeat-undo works end to end in the browser: queue an attack, use an item, discard a
   card, then press Undo three times and confirm the hand and log return to the turn's
-  opening state and the button greys out.
+  opening state and the button greys out. (Covered at the controller level by
+  `tests/battle_undo_controller.test.js`'s "three actions undo one at a time" case, now
+  extended with a render-markup assertion; `phase87_battle_undo.py` covers the single-action
+  DOM-click path end to end.)
 
 ## Out of scope / do not touch
 

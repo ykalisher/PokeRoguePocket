@@ -417,6 +417,34 @@ test('three actions undo one at a time back to the start of the turn', async () 
     }
 });
 
+test('the rendered action bar enables Undo only while an action is undoable', async () => {
+    const state = setUpPlayerTurn();
+
+    state.players.player.board[0] = makePokemonCard('player', ['FIRE']);
+
+    const discardCard = makePlainAttackCard('player', ['WATER']);
+
+    state.players.player.hand = [discardCard];
+
+    try {
+        arena.Render.render();
+
+        assert.match(state.elements.board.innerHTML, /class="arena-button arena-button--undo" type="button" data-action="undo" disabled>Undo</);
+
+        Controller.handleCardDrop(discardCard.id, { kind: 'discard' });
+        await waitForIdle();
+        arena.Render.render();
+
+        assert.match(state.elements.board.innerHTML, /class="arena-button arena-button--undo" type="button" data-action="undo" >Undo</);
+
+        assert.equal(Controller.undoLastAction(), true);
+
+        assert.match(state.elements.board.innerHTML, /class="arena-button arena-button--undo" type="button" data-action="undo" disabled>Undo</);
+    } finally {
+        tearDown();
+    }
+});
+
 test('ending the turn clears the undo stack', async () => {
     const state = setUpPlayerTurn();
 
