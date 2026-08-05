@@ -7,6 +7,9 @@
 
     const EVENT_TYPES = ['gift', 'choice', 'trainer'];
     const CARD_KINDS = ['pokemon', 'attack', 'item', 'action'];
+    // Legendary events (a legendary battle, or an event handing out a legendary
+    // card) are held back until the run reaches this level.
+    const LEGENDARY_EVENT_MIN_LEVEL = 2;
 
     function getAvailableEvents(gameData, location) {
         const events = gameData && Array.isArray(gameData.events) ? gameData.events : [];
@@ -55,6 +58,7 @@
         const location = run && run.location ? run.location : undefined;
         const events = getAvailableEvents(gameData, location)
             .filter(event => poolSatisfied(event, gameData))
+            .filter(event => levelAllowsEvent(run, event, gameData))
             .filter(event => eventConditionsMet(run, event));
 
         if (events.length === 0) return null;
@@ -86,6 +90,50 @@
         if (event.requiresPool === 'baby') return getBabyPool(gameData).length > 0;
 
         return true;
+    }
+
+    // Level gate, applied in chooseEvent only (like poolSatisfied): a legendary
+    // event drawn on level 1 outclasses a starting deck, so those events only
+    // enter the pool from level 2 on. A run without a level (older saves, test
+    // stubs) is left ungated.
+    function levelAllowsEvent(run, event, gameData) {
+        const level = Math.floor(Number(run && run.level));
+
+        if (!Number.isFinite(level) || level >= LEGENDARY_EVENT_MIN_LEVEL) return true;
+
+        return !isLegendaryEvent(event, gameData);
+    }
+
+    function isLegendaryEvent(event, gameData) {
+        return getEventPokemonNames(event).some(name => isLegendaryPokemonName(name, gameData));
+    }
+
+    // Every named pokemon the event puts in front of the player: the trainer it
+    // pits you against plus any pokemon card it can grant (gift/choice claims,
+    // trainer battle rewards, payment effects).
+    function getEventPokemonNames(event) {
+        const effects = [
+            ...getEventActions(event).flatMap(action => action.effects),
+            ...getTrainerBattleRewardEffects(event),
+            ...((getTrainerPaymentAction(event) || {}).effects || [])
+        ];
+        const names = effects
+            .filter(effect => effect.type === 'gain-card' && normalizeCardKind(effect.cardKind) === 'pokemon')
+            .map(effect => effect.name);
+
+        if (event && event.trainerName) names.push(event.trainerName);
+
+        return names.filter(name => typeof name === 'string' && name.trim() !== '');
+    }
+
+    function isLegendaryPokemonName(name, gameData) {
+        const records = gameData && Array.isArray(gameData.pokemon) ? gameData.pokemon : [];
+
+        return records.some(record => (
+            record &&
+            record.name === name &&
+            [record.type1, record.type2, record.type3].includes('LEGENDARY')
+        ));
     }
 
     function getBabyPool(gameData, types) {
