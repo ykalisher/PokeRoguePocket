@@ -904,12 +904,15 @@
     /**
      * Rolls the mart trade's two types: `acceptedType` uniform over the
      * distinct types present on the player's active+bench pokemon (what the
-     * player may trade away), `offeredType` uniform over the distinct types
-     * that have at least one obtainable species (what the player may
-     * receive). Returns null if the player owns no pokemon.
+     * player may trade away), excluding LEGENDARY and BABY so the mart never
+     * asks the player to give one up; `offeredType` uniform over the distinct
+     * types that have at least one obtainable species (what the player may
+     * receive — already excludes LEGENDARY/BABY via getObtainablePokemonPool).
+     * Returns null if the player owns no eligible pokemon.
      */
     function rollMartTradeTypes(run, gameData) {
-        const ownedTypes = getDistinctRecordTypes(getRunPokemonRecords(run));
+        const ownedTypes = getDistinctRecordTypes(getRunPokemonRecords(run))
+            .filter(type => type !== 'LEGENDARY' && type !== 'BABY');
         if (ownedTypes.length === 0) return null;
 
         const offerableTypes = getDistinctRecordTypes(getObtainablePokemonPool(gameData));
