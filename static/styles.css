@@ -521,6 +521,13 @@ body {
     bottom: 40px;
 }
 
+/* The effect-boost glyph is dark grey, so its marker uses the light token shell
+   instead of the dark one the gem tokens share. */
+.effect-boost-tray .dragon-gem-token {
+    border-color: rgba(37, 27, 24, 0.45);
+    background-color: rgba(247, 238, 215, 0.94);
+}
+
 /* Generic pile wrapper used for deck/discard/KO columns. */
 .pile {
     min-width: 0;
