@@ -57,7 +57,7 @@ exported from the helper, so a test can clear storage directly between cases.
 
 ## Steps
 
-- [ ] 1. **`map/profile.js`** — the constants and the stat namespace. Both lists are
+- [x] 1. **`map/profile.js`** — the constants and the stat namespace. Both lists are
   exported, because `dev/editor/server.js` will surface them to the editor's
   achievement form (phase 97) and to `validate.js`:
 
@@ -86,7 +86,7 @@ exported from the helper, so a test can clear storage directly between cases.
     ]);
   ```
 
-- [ ] 2. **`map/profile.js`** — `isKnownStat(key)`:
+- [x] 2. **`map/profile.js`** — `isKnownStat(key)`:
 
   ```js
     function isKnownStat(key) {
@@ -98,7 +98,7 @@ exported from the helper, so a test can clear storage directly between cases.
     }
   ```
 
-- [ ] 3. **`map/profile.js`** — `createEmptyProfile()`, `normalizeProfile(raw)`,
+- [x] 3. **`map/profile.js`** — `createEmptyProfile()`, `normalizeProfile(raw)`,
   `loadProfile()`, `saveProfile()`, `canUseStorage()`, following `map/run_state.js`'s
   `loadRunState`/`saveRunState`/`normalizeRunState` structure. `normalizeProfile` must:
   - return a fresh empty profile when `raw` is missing, not an object, or
@@ -108,7 +108,7 @@ exported from the helper, so a test can clear storage directly between cases.
   - keep only string values in `unlocked`;
   - keep only strings in `pendingUnlocks`, de-duplicated.
 
-- [ ] 4. **`map/profile.js`** — the reader/writer API:
+- [x] 4. **`map/profile.js`** — the reader/writer API:
 
   ```js
     function getProfile() { … }                     // cached, normalized
@@ -124,7 +124,7 @@ exported from the helper, so a test can clear storage directly between cases.
   namespace is an *authoring* constraint enforced by the editor, not a runtime one. A bump
   of 0 or a negative amount is ignored.
 
-- [ ] 5. **`map/profile.js`** — unlock evaluation:
+- [x] 5. **`map/profile.js`** — unlock evaluation:
 
   ```js
     /**
@@ -170,7 +170,7 @@ exported from the helper, so a test can clear storage directly between cases.
   Note `record` saves twice in the unlock case (once per `bumpStats`, once per
   `evaluateAchievements`). That is fine — these fire at most once per encounter.
 
-- [ ] 6. **`map/profile.js`** — the pending-toast queue:
+- [x] 6. **`map/profile.js`** — the pending-toast queue:
 
   ```js
     function takePendingUnlocks() {
@@ -197,14 +197,14 @@ exported from the helper, so a test can clear storage directly between cases.
     }
   ```
 
-- [ ] 7. **`map/profile.js`** — export alphabetically on `global.PokeProfile`:
+- [x] 7. **`map/profile.js`** — export alphabetically on `global.PokeProfile`:
   `STAT_KEYS`, `STAT_PREFIXES`, `STORAGE_KEY`, `STORAGE_VERSION`, `bumpStat`, `bumpStats`,
   `clearProfile`, `evaluateAchievements`, `getProfile`, `getProgress`, `getStat`,
   `getUnlockedIds`, `isKnownStat`, `isUnlocked`, `record`, `takePendingUnlocks`.
   **Do not** export `saveProfile`/`normalizeProfile` — every write goes through the
   mutators.
 
-- [ ] 8. **`tests/achievements.test.js`** — new file, `node:test` + `node:assert/strict`,
+- [x] 8. **`tests/achievements.test.js`** — new file, `node:test` + `node:assert/strict`,
   requiring `./helpers/arena_env` first (for the localStorage shim) then
   `../map/profile.js`. Call `PokeProfile.clearProfile()` at the top of each case. Cover:
   - a fresh profile: `getStat('runs.completed') === 0`, `getUnlockedIds()` empty;
@@ -227,15 +227,15 @@ exported from the helper, so a test can clear storage directly between cases.
     so the cache is not serving a stale object — if the cache makes this untestable,
     that is a design smell: make `clearProfile()` drop the cache).
 
-- [ ] 9. **`node tests/run_all.js`** — green.
+- [x] 9. **`node tests/run_all.js`** — green.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green, with every case from step 8 passing.
-- [ ] `node -e "globalThis.window=globalThis;require('./map/profile.js');console.log(Object.keys(window.PokeProfile).sort().join(' '))"`
+- [x] `node tests/run_all.js` green, with every case from step 8 passing.
+- [x] `node -e "globalThis.window=globalThis;require('./map/profile.js');console.log(Object.keys(window.PokeProfile).sort().join(' '))"`
   runs without throwing and prints the full export list — proof the module is load-inert
   and Node-safe even with no `localStorage`.
-- [ ] `grep -rn "PokeProfile" --include=*.js --include=*.html . | grep -v tests/` shows
+- [x] `grep -rn "PokeProfile" --include=*.js --include=*.html . | grep -v tests/` shows
   **only** `map/profile.js` — nothing is wired up yet, which is this phase's contract.
 
 ## Out of scope / do not touch
