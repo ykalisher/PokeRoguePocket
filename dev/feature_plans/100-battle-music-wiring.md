@@ -99,14 +99,14 @@ mute button rather than inventing a new button family.
 
 ## Steps
 
-- [ ] 1. **`game.html`** — add `<script src="arena/audio.js"></script>` before
+- [x] 1. **`game.html`** — add `<script src="arena/audio.js"></script>` before
   `<script src="arena/game.js"></script>`.
 
-- [ ] 2. **`arena/game.js`** — add `MUSIC_CATEGORY_BY_RANK`, `battleMusicCategory()` and
+- [x] 2. **`arena/game.js`** — add `MUSIC_CATEGORY_BY_RANK`, `battleMusicCategory()` and
   `startBattleMusic()` (the snippet in "Context you need"), placed with the other small
   private helpers near the bottom of the IIFE.
 
-- [ ] 3. **`arena/game.js`** `initGame` (~23) — after `await arena.Data.loadGameData()`:
+- [x] 3. **`arena/game.js`** `initGame` (~23) — after `await arena.Data.loadGameData()`:
 
   ```js
         window.PokeAudio.configure(arena.GameData.music);
@@ -118,16 +118,16 @@ mute button rather than inventing a new button family.
   `activeBattleEncounter.outcome` branch (that renders a finished result) or in
   `renderBattleUnavailable()`.
 
-- [ ] 4. **`arena/game.js`** `startRunBattle` (~146) — call `startBattleMusic();` after
+- [x] 4. **`arena/game.js`** `startRunBattle` (~146) — call `startBattleMusic();` after
   `arena.Controller.resetPrototype();`.
 
-- [ ] 5. **`arena/game.js`** `handleBattleFinished` (~156) — `window.PokeAudio.stop();` as
+- [x] 5. **`arena/game.js`** `handleBattleFinished` (~156) — `window.PokeAudio.stop();` as
   the first statement after its existing early-return guard.
 
-- [ ] 6. **`arena/game.js`** — `window.PokeAudio.stop();` in `completeBattleAndReturnToMap`
+- [x] 6. **`arena/game.js`** — `window.PokeAudio.stop();` in `completeBattleAndReturnToMap`
   (~343) and `startOver` (~362), before the `window.location.href` assignment.
 
-- [ ] 7. **`arena/arena_render.js`** `renderMenuWindow` (~993) — add the audio block between
+- [x] 7. **`arena/arena_render.js`** `renderMenuWindow` (~993) — add the audio block between
   the `<h1>` and `.battle-flow-actions`:
 
   ```js
@@ -150,7 +150,7 @@ mute button rather than inventing a new button family.
   `arena_render.js` without `audio.js` — see `dev/editor/index.html`), e.g. via a small
   local `audioApi()` helper returning safe defaults.
 
-- [ ] 8. **`arena/arena_controller.js`** `handleArenaClick` (~193) — add to the
+- [x] 8. **`arena/arena_controller.js`** `handleArenaClick` (~193) — add to the
   `[data-action]` chain:
 
   ```js
@@ -159,7 +159,7 @@ mute button rather than inventing a new button family.
             render();
   ```
 
-- [ ] 9. **`arena/game.js`** `initGame` (~33) — register the slider listener beside the
+- [x] 9. **`arena/game.js`** `initGame` (~33) — register the slider listener beside the
   existing board listeners, and add the handler:
 
   ```js
@@ -180,7 +180,7 @@ mute button rather than inventing a new button family.
     }
   ```
 
-- [ ] 10. **`static/styles.css`** — add `.battle-audio-controls` (a row that wraps),
+- [x] 10. **`static/styles.css`** — add `.battle-audio-controls` (a row that wraps),
   `.battle-audio-volume` (label + slider + value, aligned), and
   `.battle-audio-volume-value` (fixed min-width so the row does not jump as the number
   changes). Use existing colour tokens; style the `input[type="range"]` minimally
@@ -188,9 +188,9 @@ mute button rather than inventing a new button family.
   theme uses). Check the two responsive `.arena-button` blocks (~2626, ~2875) so the
   control row still fits at 390px.
 
-- [ ] 11. **`node tests/run_all.js`** — green.
+- [x] 11. **`node tests/run_all.js`** — green.
 
-- [ ] 12. **`dev/verify/phase100_battle_music.py`** — new Playwright driver, modeled on
+- [x] 12. **`dev/verify/phase100_battle_music.py`** — new Playwright driver, modeled on
   `dev/verify/drive_arena.py`. Because the repo ships **no** song files, the driver must
   seed a fixture first: write a temporary `music.json` with one track per category and
   generate four tiny silent `.mp3` files under `assets/music/`, run the assertions, then
@@ -210,26 +210,26 @@ mute button rather than inventing a new button family.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `dev/verify/phase100_battle_music.py` runs clean, and afterwards
+- [x] `node tests/run_all.js` green.
+- [x] `dev/verify/phase100_battle_music.py` runs clean, and afterwards
   `git status --porcelain` shows **no** stray `.mp3` and `music.json` unchanged.
-- [ ] `dev/verify/phase100_battle_music.png` shows the pause menu with the Mute button and
+- [x] `dev/verify/phase100_battle_music.png` shows the pause menu with the Mute button and
   the volume slider.
-- [ ] Manual pass with real files: drop one MP3 per category into `assets/music/`, register
+- [x] Manual pass with real files: drop one MP3 per category into `assets/music/`, register
   them in `music.json` by hand, serve on 8931, and confirm — a Standard/Ace trainer battle
   plays a `trainer` track, a Gym Leader battle a `boss` track, an Elite an `elite` track,
   and a legendary trainer event battle a `legendary` track. **Remove the fixtures
   afterwards.**
-- [ ] Silence, not errors: with `music.json` back to `[]`, a battle starts with no console
+- [x] Silence, not errors: with `music.json` back to `[]`, a battle starts with no console
   error and no audio.
-- [ ] Autoplay retry: start a battle, reload `game.html` mid-battle (no gesture), confirm no
+- [x] Autoplay retry: start a battle, reload `game.html` mid-battle (no gesture), confirm no
   unhandled rejection in the console and that the music starts on the first click anywhere.
-- [ ] Music stops on the win overlay, on the loss overlay, and when returning to the map.
-- [ ] Mute and volume survive a reload, and the slider does not stutter or lose focus while
+- [x] Music stops on the win overlay, on the loss overlay, and when returning to the map.
+- [x] Mute and volume survive a reload, and the slider does not stutter or lose focus while
   dragging.
-- [ ] The editor still boots (`node dev/editor/server.js`) — it loads `arena_render.js`
+- [x] The editor still boots (`node dev/editor/server.js`) — it loads `arena_render.js`
   **without** `audio.js`, so the step 7 guard is load-bearing.
-- [ ] Stop any servers: `pkill -f "http.server 8931"`.
+- [x] Stop any servers: `pkill -f "http.server 8931"`.
 
 ## Out of scope / do not touch
 

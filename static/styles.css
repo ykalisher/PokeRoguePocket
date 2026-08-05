@@ -2428,6 +2428,40 @@ button.playing-card:focus-visible {
     gap: 10px;
 }
 
+/* --- Pause menu audio controls (phase 100) ----------------------------- */
+.battle-audio-controls {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(251, 246, 232, 0.14);
+    border-bottom: 1px solid rgba(251, 246, 232, 0.14);
+}
+
+.battle-audio-volume {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: rgba(251, 246, 232, 0.74);
+    font-size: 0.82rem;
+}
+
+.battle-audio-volume input[type="range"] {
+    width: 120px;
+    accent-color: var(--gold);
+}
+
+.battle-audio-volume-value {
+    min-width: 2ch;
+    color: #fbf6e8;
+    font-weight: 760;
+    text-align: right;
+}
+
 /* --- Mega evolution cutscene (phase 48) -------------------------------- */
 /* Reuses the battle-flow overlay + battle-result-window look; the baby card
    spins and shines, then swaps to the mega. */

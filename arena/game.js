@@ -37,7 +37,10 @@
         window.addEventListener('pointerup', arena.Drag.handlePointerUp);
         window.addEventListener('pointercancel', arena.Drag.cancelDrag);
 
+        state.elements.board.addEventListener('input', handleAudioSliderInput);
+
         await arena.Data.loadGameData();
+        window.PokeAudio.configure(arena.GameData.music);
         window.PokeProfile.showPendingUnlocks(arena.GameData.achievements);
 
         loadActiveBattleEncounter();
@@ -47,6 +50,7 @@
         if (arena.Model.restoreSavedBattleState()) {
             arena.Render.render();
             arena.Model.saveBattleState();
+            startBattleMusic();
             if (state.finished && activeBattleEncounter) {
                 handleBattleFinished(getSavedBattleOutcome());
             }
@@ -59,6 +63,7 @@
             renderBattleUnavailable();
         } else {
             arena.Controller.resetPrototype();
+            startBattleMusic();
         }
     }
 
@@ -152,10 +157,13 @@
         runStore.saveRunState(activeRun);
         configureRunBattle();
         arena.Controller.resetPrototype();
+        startBattleMusic();
     }
 
     function handleBattleFinished(outcome) {
         if (!activeRun || !activeBattleEncounter) return;
+
+        window.PokeAudio.stop();
 
         activeBattleEncounter.outcome = activeBattleEncounter.outcome || outcome;
         activeBattleEncounter.finishedAt = activeBattleEncounter.finishedAt || new Date().toISOString();
@@ -379,6 +387,7 @@
         }
         runStore.saveRunState(activeRun);
         arena.Model.clearSavedBattleState();
+        window.PokeAudio.stop();
         window.location.href = 'area.html';
     }
 
@@ -387,6 +396,7 @@
         if (runStore && typeof runStore.clearRunState === 'function') {
             runStore.clearRunState();
         }
+        window.PokeAudio.stop();
         window.location.href = 'starter.html';
     }
 
@@ -539,6 +549,41 @@
 
     function getRunLevel() {
         return activeRun && Number.isFinite(activeRun.level) ? activeRun.level : 1;
+    }
+
+    const MUSIC_CATEGORY_BY_RANK = {
+        Standard: 'trainer',
+        Ace: 'trainer',
+        Boss: 'boss',
+        Elite: 'elite',
+        Special: 'legendary'
+    };
+
+    // Rank 'Special' is the legendary slot: map/locations.js excludes it from
+    // every map node, so those trainers are only reached through legendary
+    // trainer events.
+    function battleMusicCategory() {
+        return (activeTrainer && MUSIC_CATEGORY_BY_RANK[activeTrainer.rank]) || 'trainer';
+    }
+
+    function startBattleMusic() {
+        window.PokeAudio.playCategory(battleMusicCategory());
+    }
+
+    function handleAudioSliderInput(event) {
+        const slider = event.target.closest('[data-audio-volume]');
+
+        if (!slider) return;
+
+        const percent = Number(slider.value);
+
+        window.PokeAudio.setVolume(percent / 100);
+
+        // Update the label in place: a full render() would destroy the slider
+        // the user is currently dragging.
+        const label = slider.parentElement.querySelector('[data-audio-volume-label]');
+
+        if (label) label.textContent = String(percent);
     }
 
     /**

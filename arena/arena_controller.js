@@ -271,6 +271,9 @@
             resetPrototype();
         } else if (action === 'toggle-menu') {
             toggleMenuWindow();
+        } else if (action === 'toggle-mute') {
+            window.PokeAudio.setMuted(!window.PokeAudio.isMuted());
+            render();
         } else if (action === 'toggle-rules') {
             toggleRulesWindow();
         } else if (action === 'undo') {

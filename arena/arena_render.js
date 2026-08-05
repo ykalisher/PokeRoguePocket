@@ -995,11 +995,25 @@
      * while "Resume Battle" stays local via closeMenuWindow().
      */
     function renderMenuWindow() {
+        const muted = audioApi().isMuted();
+        const volumePercent = Math.round(audioApi().getVolume() * 100);
+
         return `
             <div class="battle-flow-overlay" role="presentation">
                 <section class="battle-result-window" role="dialog" aria-modal="true" aria-labelledby="battle-menu-title">
                     <span class="battle-flow-kicker">Paused</span>
                     <h1 id="battle-menu-title">Menu</h1>
+                    <div class="battle-audio-controls">
+                        <button class="arena-button arena-button--reference" type="button" data-action="toggle-mute" aria-pressed="${muted ? 'true' : 'false'}">
+                            <span aria-hidden="true">${muted ? '&#128263;' : '&#128266;'}</span>
+                            <span>${muted ? 'Unmute' : 'Mute'}</span>
+                        </button>
+                        <label class="battle-audio-volume">
+                            <span>Volume</span>
+                            <input type="range" min="0" max="100" step="5" value="${volumePercent}" data-audio-volume aria-label="Music volume">
+                            <span class="battle-audio-volume-value" data-audio-volume-label>${volumePercent}</span>
+                        </label>
+                    </div>
                     <div class="battle-flow-actions">
                         <button class="arena-button arena-button--danger" type="button" data-battle-flow-action="start-over">New Game</button>
                         <button class="arena-button" type="button" data-battle-flow-action="main-menu">Main Menu</button>
@@ -1008,6 +1022,14 @@
                 </section>
             </div>
         `;
+    }
+
+    // dev/editor/index.html loads this file without audio.js, so window.PokeAudio
+    // may be absent there; fall back to silent/unmuted defaults in that context.
+    function audioApi() {
+        if (window.PokeAudio) return window.PokeAudio;
+
+        return { getVolume: () => 0.6, isMuted: () => false };
     }
 
     function renderRulesReferenceWindow() {
