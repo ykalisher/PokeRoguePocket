@@ -59,7 +59,7 @@ than inventing a new shim).
 
 ## Steps
 
-- [ ] 1. **`arena/arena_controller.js`** — add the shared guard helper directly **above**
+- [x] 1. **`arena/arena_controller.js`** — add the shared guard helper directly **above**
   `queuePlayerAttackForUser` (~567), so it sits next to its first caller:
 
   ```js
@@ -79,7 +79,7 @@ than inventing a new shim).
     }
   ```
 
-- [ ] 2. **`arena/arena_controller.js`** — `queuePlayerAttackForUser` (~567). Insert one
+- [x] 2. **`arena/arena_controller.js`** — `queuePlayerAttackForUser` (~567). Insert one
   line between the bail-out guard and the removal:
 
   ```js
@@ -93,7 +93,7 @@ than inventing a new shim).
         const attackCard = model.removeCardFromHand(player, cardId);
   ```
 
-- [ ] 3. **`arena/arena_controller.js`** — `usePendingItem` (~624). It currently removes
+- [x] 3. **`arena/arena_controller.js`** — `usePendingItem` (~624). It currently removes
   the card before checking it exists, so look the card up first. Replace the opening of
   the function body:
 
@@ -120,7 +120,7 @@ than inventing a new shim).
 
   Everything from `itemCard.faceUp = true;` down is unchanged.
 
-- [ ] 4. **`arena/arena_controller.js`** — `useDragonGemItemFromHand` (~656). The card is
+- [x] 4. **`arena/arena_controller.js`** — `useDragonGemItemFromHand` (~656). The card is
   already looked up as `itemCard` and validated, so only two edits are needed:
 
   ```js
@@ -134,10 +134,10 @@ than inventing a new shim).
         }
   ```
 
-- [ ] 5. **`arena/arena_controller.js`** — `useEffectBoostItemFromHand` (~717). Same two
+- [x] 5. **`arena/arena_controller.js`** — `useEffectBoostItemFromHand` (~717). Same two
   edits as step 4, same variable names (`itemCard`, `removedCard`).
 
-- [ ] 6. **`arena/arena_controller.js`** — `useArtificialAttackFromHand` (~766). Same two
+- [x] 6. **`arena/arena_controller.js`** — `useArtificialAttackFromHand` (~766). Same two
   edits, but the looked-up card is named `attackCard`:
 
   ```js
@@ -151,7 +151,7 @@ than inventing a new shim).
         }
   ```
 
-- [ ] 7. **`arena/arena_controller.js`** — `discardHandCardFromHand` (~867). Same
+- [x] 7. **`arena/arena_controller.js`** — `discardHandCardFromHand` (~867). Same
   look-up-first restructure as step 3. Replace the opening of the function body:
 
   ```js
@@ -173,7 +173,7 @@ than inventing a new shim).
   The rival AI's call at ~1304 passes `'opponent'`, so `recordUndoPoint` returns `false`
   there and nothing is pushed — verify that by reading the call site, do not assume it.
 
-- [ ] 8. **`arena/arena_controller.js`** — add the two public functions directly **below**
+- [x] 8. **`arena/arena_controller.js`** — add the two public functions directly **below**
   `cancelActionSelection` / `clearPendingAction` (~929):
 
   ```js
@@ -219,7 +219,7 @@ than inventing a new shim).
   restoring the snapshot's phase: the point of undo is "the card is back in my hand and
   nothing is selected", not "I am back in the middle of picking a target".
 
-- [ ] 9. **`arena/arena_controller.js`** — route the click in `handleArenaClick` (~193).
+- [x] 9. **`arena/arena_controller.js`** — route the click in `handleArenaClick` (~193).
   Add to the if/else chain, keeping its existing alphabetical-ish order (after
   `'toggle-rules'` is fine):
 
@@ -229,7 +229,7 @@ than inventing a new shim).
         }
   ```
 
-- [ ] 10. **`arena/arena_controller.js`** — clear the stack at all three turn boundaries:
+- [x] 10. **`arena/arena_controller.js`** — clear the stack at all three turn boundaries:
   - `startPlayerTurn()` (~151): add `model.clearUndoStack();` immediately after
     `state.turnNumber += 1;`.
   - `endPlayerTurn()` (~1710): add `model.clearUndoStack();` immediately after the
@@ -237,11 +237,11 @@ than inventing a new shim).
   - `resetPrototype()` (~85): add `model.clearUndoStack();` immediately after
     `state.turnNumber = 0;`.
 
-- [ ] 11. **`arena/arena_controller.js`** — export both new functions in `arena.Controller`
+- [x] 11. **`arena/arena_controller.js`** — export both new functions in `arena.Controller`
   (~3430). Put them with the other `can*` / action entries: `canUndoAction` after
   `canDiscardSelectedCard`, and `undoLastAction` after `usePendingItem`.
 
-- [ ] 12. **`tests/battle_undo.test.js`** — extend phase 85's file with controller-level
+- [x] 12. **`tests/battle_undo.test.js`** — extend phase 85's file with controller-level
   cases (or add `tests/battle_undo_controller.test.js` if the controller setup shim makes
   one file awkward). Each case: set up a player turn, perform the action, assert the
   effect, call `arena.Controller.undoLastAction()`, assert the world is back:
@@ -259,21 +259,21 @@ than inventing a new shim).
     `model.canUndo()` is `false`.
   - **opponent guard**: driving an opponent discard or item leaves the undo stack empty.
 
-- [ ] 13. **`node tests/run_all.js`** — green.
+- [x] 13. **`node tests/run_all.js`** — green.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green, with every case from step 12 passing.
-- [ ] `grep -n "recordUndoPoint" arena/arena_controller.js` shows exactly **seven** hits:
+- [x] `node tests/run_all.js` green, with every case from step 12 passing.
+- [x] `grep -n "recordUndoPoint" arena/arena_controller.js` shows exactly **seven** hits:
   the definition plus the six commit sites.
-- [ ] Manual browser sanity pass (the button does not exist yet, so drive it from the
+- [x] Manual browser sanity pass (the button does not exist yet, so drive it from the
   console): serve with `python3 -m http.server 8931 --bind 127.0.0.1`, open
   `http://127.0.0.1:8931/game.html`, use an item, then run
   `CardArena.Controller.undoLastAction()` in the devtools console and confirm the card
   reappears in hand and the log shows `Undid <name>.`. Then end the turn and confirm
   `CardArena.Controller.canUndoAction()` is `false`. Stop the server with
   `pkill -f "http.server 8931"`.
-- [ ] Rival regression: let the rival take a full turn (attacks, and a discard if it makes
+- [x] Rival regression: let the rival take a full turn (attacks, and a discard if it makes
   one) and confirm `CardArena.state.undoStack.length` is `0` at the start of your next turn.
 
 ## Out of scope / do not touch

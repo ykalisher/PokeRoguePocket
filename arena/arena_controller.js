@@ -110,6 +110,7 @@
         state.rulesWindowOpen = false;
         state.selectedCardId = null;
         state.turnNumber = 0;
+        model.clearUndoStack();
 
         const openingPlacements = model.playOpeningPokemon();
 
@@ -164,6 +165,7 @@
         state.plannedActions = { opponent: [], player: [] };
         state.selectedCardId = null;
         state.turnNumber += 1;
+        model.clearUndoStack();
 
         const drawnCards = model.drawCardsUpToHandSize(player);
 
@@ -271,6 +273,8 @@
             toggleMenuWindow();
         } else if (action === 'toggle-rules') {
             toggleRulesWindow();
+        } else if (action === 'undo') {
+            undoLastAction();
         }
     }
 
@@ -560,6 +564,21 @@
     }
 
     /**
+     * Records the state to return to if the player undoes the action about to be
+     * committed. Opponent actions are never undoable, so this no-ops for them
+     * and for anything happening outside the player's own turn. Returns whether
+     * a snapshot was actually pushed, so a caller that bails out afterwards can
+     * pop it again.
+     */
+    function recordUndoPoint(ownerId, card) {
+        if (ownerId !== 'player' || state.currentPlayer !== 'player' || !card) return false;
+
+        model.pushUndoSnapshot(model.getCardName(card));
+
+        return true;
+    }
+
+    /**
      * Shared final queue path for click-selected attacks and direct drag-to-target
      * attacks. It revalidates the user and target at drop time before moving the
      * attack card out of hand.
@@ -586,6 +605,8 @@
             cancelActionSelection();
             return false;
         }
+
+        recordUndoPoint('player', queuedCard);
 
         const attackCard = model.removeCardFromHand(player, cardId);
 
@@ -625,9 +646,18 @@
         const player = state.players.player;
         const sourceCenter = getHandCardCenter('player', state.pendingActionCardId);
         const targets = model.getCardsForTargetSelection(selection);
+        const pendingCard = model.findHandCard(player, state.pendingActionCardId);
+
+        if (!pendingCard) {
+            cancelActionSelection();
+            return;
+        }
+
+        const recorded = recordUndoPoint('player', pendingCard);
         const itemCard = model.removeCardFromHand(player, state.pendingActionCardId);
 
         if (!itemCard) {
+            if (recorded) model.popUndoSnapshot();
             cancelActionSelection();
             return;
         }
@@ -663,9 +693,13 @@
         if (!model.isDragonGemItemCard(itemCard) || !canUseDragonGemItem(ownerId, itemCard)) return false;
 
         const sourceCenter = getHandCardCenter(ownerId, cardId);
+        const recorded = recordUndoPoint(ownerId, itemCard);
         const removedCard = model.removeCardFromHand(owner, cardId);
 
-        if (!removedCard) return false;
+        if (!removedCard) {
+            if (recorded) model.popUndoSnapshot();
+            return false;
+        }
 
         removedCard.faceUp = true;
         model.markItemUsed(ownerId);
@@ -724,9 +758,13 @@
         if (!model.isEffectBoostItemCard(itemCard) || !canUseEffectBoostItem(ownerId)) return false;
 
         const sourceCenter = getHandCardCenter(ownerId, cardId);
+        const recorded = recordUndoPoint(ownerId, itemCard);
         const removedCard = model.removeCardFromHand(owner, cardId);
 
-        if (!removedCard) return false;
+        if (!removedCard) {
+            if (recorded) model.popUndoSnapshot();
+            return false;
+        }
 
         removedCard.faceUp = true;
         model.markItemUsed(ownerId);
@@ -775,9 +813,13 @@
         if (!model.canPokemonUseAttackNow(ownerId, userCard, attackCard)) return false;
 
         const sourceCenter = getHandCardCenter(ownerId, cardId);
+        const recorded = recordUndoPoint(ownerId, attackCard);
         const removedCard = model.removeCardFromHand(owner, cardId);
 
-        if (!removedCard) return false;
+        if (!removedCard) {
+            if (recorded) model.popUndoSnapshot();
+            return false;
+        }
 
         removedCard.faceUp = true;
 
@@ -867,12 +909,17 @@
     async function discardHandCardFromHand(ownerId, cardId, messagePrefix = null, options = {}) {
         const owner = state.players[ownerId];
         const sourceCenter = getHandCardCenter(ownerId, cardId) || getArenaCenter();
+        const pendingCard = model.findHandCard(owner, cardId);
+        const recorded = recordUndoPoint(ownerId, pendingCard);
         const card = model.removeCardFromHand(owner, cardId);
         const shouldReleaseInput = options.releaseInput !== undefined
             ? options.releaseInput
             : ownerId === 'player';
 
-        if (!card) return false;
+        if (!card) {
+            if (recorded) model.popUndoSnapshot();
+            return false;
+        }
 
         card.faceUp = true;
         clearPendingAction();
@@ -930,6 +977,43 @@
         state.pendingActionCardId = null;
         state.pendingUserCardId = null;
         state.selectedCardId = null;
+    }
+
+    /**
+     * Reverts the most recent player action of this turn by restoring the
+     * snapshot taken just before it. Repeatable: each press walks one action
+     * further back, until the stack empties at the start of the turn. The
+     * restored snapshot includes the log, so the undone action's log lines
+     * disappear and one "Undid …" line replaces them.
+     */
+    function undoLastAction() {
+        if (!canUndoAction()) return false;
+
+        const entry = model.popUndoSnapshot();
+
+        if (!entry) return false;
+
+        model.applyBattleSnapshot(entry.snapshot);
+        clearPendingAction();
+        state.currentPlayer = 'player';
+        state.phase = 'turn';
+        logEvent(`Undid ${entry.label}.`);
+        render();
+
+        return true;
+    }
+
+    /**
+     * Undo is offered only during the player's own unlocked turn, never while an
+     * item or discard animation is in flight, and never after the battle ends.
+     */
+    function canUndoAction() {
+        return (
+            state.currentPlayer === 'player' &&
+            !state.finished &&
+            !state.isResolving &&
+            model.canUndo()
+        );
     }
 
     /**
@@ -1725,6 +1809,7 @@
         state.isResolving = true;
         state.phase = 'opponent-planning';
         clearPendingAction();
+        model.clearUndoStack();
         render();
 
         clearTimeout(state.flowTimer);
@@ -3433,6 +3518,7 @@
         canPlayerSelectCard,
         canDragPendingActionCard,
         canDiscardSelectedCard,
+        canUndoAction,
         canDropCardOnDiscard,
         cancelActionSelection,
         getDropActionForBoardCard,
@@ -3441,6 +3527,7 @@
         handleArenaClick,
         resetPrototype,
         usePendingItem,
+        undoLastAction,
         useDragonGemItemFromHand,
         useEffectBoostItemFromHand,
         // Exposed for tests: effect-boost roll sites (phase 20).
