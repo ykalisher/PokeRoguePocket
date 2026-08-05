@@ -394,6 +394,14 @@
                 ],
                 enabled: true
             }
+        ],
+        achievements: [
+            { id: 'first-steps', name: 'First Steps', description: 'Start your first run.', stat: 'runs.started', atLeast: 1, hidden: false, enabled: true },
+            { id: 'first-blood', name: 'First Blood', description: 'Win your first battle.', stat: 'battles.won', atLeast: 1, hidden: false, enabled: true },
+            { id: 'gym-challenger', name: 'Gym Challenger', description: 'Beat 5 Gym Leaders.', stat: 'battles.won.rank.Boss', atLeast: 5, hidden: false, enabled: true },
+            { id: 'champion', name: 'Champion', description: 'Finish a full run.', stat: 'runs.completed', atLeast: 1, hidden: false, enabled: true },
+            { id: 'blaze-purist', name: 'Blaze Purist', description: 'Finish a run with only Fire Pokemon.', stat: 'runs.completed.mono.FIRE', atLeast: 1, hidden: true, enabled: true },
+            { id: 'wanderer', name: 'Wanderer', description: 'Experience 25 events.', stat: 'events.seen', atLeast: 25, hidden: false, enabled: true }
         ]
     });
 
@@ -604,10 +612,30 @@
     }
 
     /**
+     * Cleans up one achievement record. Records without an id are dropped; the
+     * threshold is coerced to an integer of at least 1 so a bad value can never
+     * make an achievement unlock for free.
+     */
+    function normalizeAchievement(record) {
+        if (!record || !record.id) return null;
+
+        return {
+            atLeast: Math.max(1, Math.floor(Number(record.atLeast)) || 1),
+            description: record.description || '',
+            enabled: record.enabled !== false,
+            hidden: record.hidden === true,
+            id: record.id,
+            name: record.name || record.id,
+            stat: record.stat || ''
+        };
+    }
+
+    /**
      * Applies record-level normalization to all loaded game data at boot.
      */
     function normalizeGameData(records) {
         return {
+            achievements: (records.achievements || []).map(normalizeAchievement).filter(Boolean),
             attacks: records.attacks.map(normalizeAttack),
             events: (records.events || []).map(normalizeEvent).filter(Boolean),
             locations: (records.locations || []).map(normalizeLocation).filter(Boolean),
@@ -643,17 +671,18 @@
      * It loads and normalizes all card data, then replaces arena.GameData.
      */
     async function loadGameData() {
-        const [pokemon, attacks, items, trainers, events, locations, starterDecks] = await Promise.all([
+        const [pokemon, attacks, items, trainers, events, locations, starterDecks, achievements] = await Promise.all([
             loadJson('pokemon.json', fallbackRecords.pokemon),
             loadJson('attacks.json', fallbackRecords.attacks),
             loadJson('items.json', fallbackRecords.items),
             loadJson('trainers.json', fallbackRecords.trainers),
             loadJson('events.json', fallbackRecords.events),
             loadJson('locations.json', fallbackRecords.locations),
-            loadJson('starter_decks.json', fallbackRecords.starterDecks)
+            loadJson('starter_decks.json', fallbackRecords.starterDecks),
+            loadJson('achievements.json', fallbackRecords.achievements)
         ]);
 
-        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events, locations, starterDecks });
+        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events, locations, starterDecks, achievements });
         return arena.GameData;
     }
 

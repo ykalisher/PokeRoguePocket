@@ -202,6 +202,18 @@
         state.encounter.selectedActionId = actionId;
         state.resultSummary = state.encounter.resultSummary;
         state.run.area.activeEventNodeId = null;
+
+        if (!state.encounter.statsRecorded) {
+            // The record is missing when the event was completed as unavailable,
+            // which still counts as an event seen but has no id to attribute it to.
+            const bumps = { 'events.seen': 1 };
+
+            if (state.eventRecord) bumps[`events.seen.${state.eventRecord.id}`] = 1;
+
+            state.encounter.statsRecorded = true;
+            window.PokeProfile.record(bumps, arena.GameData.achievements);
+        }
+
         runStore.saveRunState(state.run);
         state.activeAction = null;
         state.selections = {};

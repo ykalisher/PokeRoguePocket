@@ -158,6 +158,12 @@
         state.encounter.rewardDragonGemName = dragonGemReward ? dragonGemReward.item.name : null;
         state.encounter.selectedPokemonName = pokemon.name;
         state.run.area.activeCaptureNodeId = null;
+
+        if (!state.encounter.statsRecorded) {
+            state.encounter.statsRecorded = true;
+            window.PokeProfile.record({ 'captures.completed': 1 }, arena.GameData.achievements);
+        }
+
         runStore.saveRunState(state.run);
 
         return {

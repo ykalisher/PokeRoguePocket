@@ -738,6 +738,7 @@
         }));
         ensureBattleNodeEncounters();
         saveRunState();
+        window.PokeProfile.record({ 'runs.started': 1 }, arena.GameData.achievements);
     }
 
     /**

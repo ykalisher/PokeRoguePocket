@@ -462,6 +462,7 @@
             nextCardId: Number.isFinite(run.nextCardId) ? run.nextCardId : 1,
             runCompleted: Boolean(run.runCompleted),
             runCompletedAt: run.runCompletedAt || null,
+            runStatsRecorded: Boolean(run.runStatsRecorded),
             savedAt: run.savedAt || null,
             starterId: typeof run.starterId === 'string' && run.starterId ? run.starterId : DEFAULT_STARTER_ID,
             usedEventIds: normalizeIdList(run.usedEventIds),
@@ -555,6 +556,7 @@
                 sourceEventId: encounter.sourceEventId || null,
                 sourceEventNodeId: encounter.sourceEventNodeId || null,
                 startedAt: encounter.startedAt || null,
+                statsRecorded: Boolean(encounter.statsRecorded),
                 trainerName: encounter.trainerName || null
             }]));
     }
@@ -575,6 +577,7 @@
                 itemNames: normalizeNameList(encounter.itemNames),
                 nodeId: encounter.nodeId || nodeId,
                 releaseUsed: Boolean(encounter.releaseUsed),
+                statsRecorded: Boolean(encounter.statsRecorded),
                 tradeAcceptedType: encounter.tradeAcceptedType || null,
                 tradeOfferedType: encounter.tradeOfferedType || null,
                 tradeUsed: Boolean(encounter.tradeUsed)
@@ -592,6 +595,7 @@
                 nodeId: encounter.nodeId || nodeId,
                 options: Array.isArray(encounter.options) ? encounter.options.filter(Boolean) : [],
                 selectedAttackName: encounter.selectedAttackName || null,
+                statsRecorded: Boolean(encounter.statsRecorded),
                 terrain: encounter.terrain || null
             }]));
     }
@@ -609,6 +613,7 @@
                 rewardAttackName: encounter.rewardAttackName || null,
                 rewardDragonGemName: encounter.rewardDragonGemName || null,
                 selectedPokemonName: encounter.selectedPokemonName || null,
+                statsRecorded: Boolean(encounter.statsRecorded),
                 terrain: encounter.terrain || null
             }]));
     }
@@ -627,7 +632,8 @@
                 nodeId: encounter.nodeId || nodeId,
                 resultSummary: Array.isArray(encounter.resultSummary) ? encounter.resultSummary : [],
                 selectedActionId: encounter.selectedActionId || null,
-                startedBattle: Boolean(encounter.startedBattle)
+                startedBattle: Boolean(encounter.startedBattle),
+                statsRecorded: Boolean(encounter.statsRecorded)
             }]));
     }
 

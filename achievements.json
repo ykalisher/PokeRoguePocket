@@ -1,0 +1,56 @@
+[
+  {
+    "id": "first-steps",
+    "name": "First Steps",
+    "description": "Start your first run.",
+    "stat": "runs.started",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "first-blood",
+    "name": "First Blood",
+    "description": "Win your first battle.",
+    "stat": "battles.won",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "gym-challenger",
+    "name": "Gym Challenger",
+    "description": "Beat 5 Gym Leaders.",
+    "stat": "battles.won.rank.Boss",
+    "atLeast": 5,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "champion",
+    "name": "Champion",
+    "description": "Finish a full run.",
+    "stat": "runs.completed",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "blaze-purist",
+    "name": "Blaze Purist",
+    "description": "Finish a run with only Fire Pokemon.",
+    "stat": "runs.completed.mono.FIRE",
+    "atLeast": 1,
+    "hidden": true,
+    "enabled": true
+  },
+  {
+    "id": "wanderer",
+    "name": "Wanderer",
+    "description": "Experience 25 events.",
+    "stat": "events.seen",
+    "atLeast": 25,
+    "hidden": false,
+    "enabled": true
+  }
+]

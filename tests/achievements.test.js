@@ -136,3 +136,63 @@ test('corrupt storage yields a fresh empty profile without throwing', () => {
     assert.deepEqual(profile.stats, {});
     assert.deepEqual(profile.unlocked, {});
 });
+
+// monoTypeBumps lives inside arena/game.js's page IIFE, which needs a real DOM
+// to boot, so the three-line intersection is replicated here rather than
+// exported. Keep it in step with the helper in arena/game.js.
+function monoTypeBumps(run) {
+    const records = window.PokeLocations.getRunPokemonRecords(run);
+
+    if (records.length === 0) return {};
+
+    const typesOf = record => (Array.isArray(record.types)
+        ? record.types
+        : [record.type1, record.type2, record.type3]).filter(type => type && type !== 'NONE');
+
+    const shared = records
+        .map(typesOf)
+        .reduce((common, types) => common.filter(type => types.includes(type)));
+
+    return Object.fromEntries(shared.map(type => [`runs.completed.mono.${type}`, 1]));
+}
+
+function runWithSpecies(activeSpecies, benchSpecies) {
+    return {
+        collections: {
+            bench: { actions: [], pokemon: benchSpecies.map(pokemon => ({ kind: 'pokemon', pokemon })) },
+            actions: [],
+            pokemon: activeSpecies.map(pokemon => ({ kind: 'pokemon', pokemon }))
+        }
+    };
+}
+
+test('a run sharing two types bumps a mono counter for each', () => {
+    require('../map/locations.js');
+
+    const run = runWithSpecies(
+        [{ name: 'Charizard', type1: 'FIRE', type2: 'FLYING', type3: 'NONE' }],
+        [{ name: 'Talonflame', type1: 'FIRE', type2: 'FLYING', type3: 'NONE' }]
+    );
+
+    assert.deepEqual(monoTypeBumps(run), {
+        'runs.completed.mono.FIRE': 1,
+        'runs.completed.mono.FLYING': 1
+    });
+});
+
+test('a mixed-type run bumps no mono counter', () => {
+    require('../map/locations.js');
+
+    const run = runWithSpecies(
+        [{ name: 'Charizard', type1: 'FIRE', type2: 'FLYING', type3: 'NONE' }],
+        [{ name: 'Blastoise', type1: 'WATER', type2: 'NONE', type3: 'NONE' }]
+    );
+
+    assert.deepEqual(monoTypeBumps(run), {});
+});
+
+test('an empty run bumps no mono counter', () => {
+    require('../map/locations.js');
+
+    assert.deepEqual(monoTypeBumps(runWithSpecies([], [])), {});
+});

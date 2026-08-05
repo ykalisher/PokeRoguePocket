@@ -41,6 +41,7 @@ const trainers = readData('trainers.json');
 const events = readData('events.json');
 const locations = readData('locations.json');
 const starterDecks = readData('starter_decks.json');
+const achievements = readData('achievements.json');
 
 const HEX_PATTERN = /^#[0-9a-f]{6}$/i;
 
@@ -421,6 +422,37 @@ test('starter_decks.json entries are well-formed', () => {
     );
 });
 
+test('achievements.json entries are well-formed', () => {
+    require('../map/profile.js');
+    const { PokeProfile } = globalThis.window;
+
+    assert.ok(Array.isArray(achievements), 'achievements.json must be an array');
+    assert.ok(achievements.length >= 1, 'achievements.json needs at least one achievement');
+
+    const seenIds = new Set();
+
+    achievements.forEach(achievement => {
+        assert.ok(
+            achievement.id && typeof achievement.id === 'string',
+            'achievements.json: entry missing id'
+        );
+        assert.ok(!seenIds.has(achievement.id), `achievements.json: duplicate id ${achievement.id}`);
+        seenIds.add(achievement.id);
+
+        assert.ok(
+            Number.isInteger(achievement.atLeast) && achievement.atLeast >= 1,
+            `${achievement.id}: atLeast must be an integer >= 1`
+        );
+
+        // An unknown counter can never be bumped, so the achievement would sit
+        // unreachable forever.
+        assert.ok(
+            PokeProfile.isKnownStat(achievement.stat),
+            `${achievement.id}: unknown stat ${achievement.stat}`
+        );
+    });
+});
+
 test('every starter type appears in an enabled location', () => {
     const enabled = locations.filter(record => record.enabled !== false);
     starterDecks.filter(deck => deck.enabled !== false).forEach(deck => {
@@ -485,6 +517,7 @@ test('default battle deck references resolve against real data', async () => {
     assert.equal(data.items.length, items.length);
     assert.equal(data.trainers.length, trainers.length);
     assert.equal(data.starterDecks.length, starterDecks.length);
+    assert.equal(data.achievements.length, achievements.length);
 });
 
 // A captured legendary is rewarded a dual-requirement legendary attack (one

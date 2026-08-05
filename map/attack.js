@@ -134,6 +134,12 @@
         state.encounter.completed = true;
         state.encounter.selectedAttackName = attack.name;
         state.run.area.activeAttackNodeId = null;
+
+        if (!state.encounter.statsRecorded) {
+            state.encounter.statsRecorded = true;
+            window.PokeProfile.record({ 'attacks.claimed': 1 }, arena.GameData.achievements);
+        }
+
         runStore.saveRunState(state.run);
 
         return rewardCards;

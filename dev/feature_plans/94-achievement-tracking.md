@@ -72,7 +72,7 @@ tag lists are in the overview's table.
 
 ## Steps
 
-- [ ] 1. **`achievements.json`** (new, repo root) — a small starter set that exercises each
+- [x] 1. **`achievements.json`** (new, repo root) — a small starter set that exercises each
   shape. Keep it to about six records; the owner writes the rest.
 
   ```json
@@ -89,7 +89,7 @@ tag lists are in the overview's table.
   Note the UI wording rule: the *description* says "Gym Leaders" while the *stat* keeps the
   internal rank string `Boss`.
 
-- [ ] 2. **`arena/arena_data.js`** — add `achievements` to `fallbackRecords` (~60) with the
+- [x] 2. **`arena/arena_data.js`** — add `achievements` to `fallbackRecords` (~60) with the
   same six records, add a `normalizeAchievement(record)` next to the other normalizers
   (drop records without an `id`; coerce `atLeast` to an integer ≥ 1; default `hidden` to
   `false` and `enabled` to `true`; default `name` to the id and `description` to `''`), wire
@@ -97,13 +97,13 @@ tag lists are in the overview's table.
   `loadJson('achievements.json', fallbackRecords.achievements)` to `loadGameData` (~568)
   keeping the destructure/argument order aligned.
 
-- [ ] 3. **HTML pages** — add `<script src="map/profile.js"></script>` immediately after the
+- [x] 3. **HTML pages** — add `<script src="map/profile.js"></script>` immediately after the
   `run_state.js` tag on: `area.html`, `game.html`, `event.html`, `capture.html`,
   `attack.html`, `mart.html`. (`starter.html` does not bump anything;
   `index.html` gets its tag in phase 95 if the menu needs it — leave it alone here.)
   Verify each page still boots with no console errors before moving on.
 
-- [ ] 4. **`map/area.js`** `createFreshRunState` (~722) — after `saveRunState();`:
+- [x] 4. **`map/area.js`** `createFreshRunState` (~722) — after `saveRunState();`:
 
   ```js
         window.PokeProfile.record({ 'runs.started': 1 }, arena.GameData.achievements);
@@ -112,7 +112,7 @@ tag lists are in the overview's table.
   Confirm `arena.GameData` is loaded at that point (area.js's init awaits
   `arena.Data.loadGameData()` — read it, do not assume).
 
-- [ ] 5. **`arena/game.js`** `handleBattleFinished` (~156) — add the battle counters,
+- [x] 5. **`arena/game.js`** `handleBattleFinished` (~156) — add the battle counters,
   guarded, after the existing outcome/reward block and **before**
   `runStore.saveRunState(activeRun)`:
 
@@ -131,7 +131,7 @@ tag lists are in the overview's table.
   `runs.lost` rides with `battles.lost` because a lost battle ends the run — see
   `renderLossResultWindow` (~240), whose only exits are "Start over" and "Main menu".
 
-- [ ] 6. **`arena/game.js`** `finalizeRunVictory` (~182) — add the run-completion counters
+- [x] 6. **`arena/game.js`** `finalizeRunVictory` (~182) — add the run-completion counters
   at the end of the function, after `activeRun.runCompletedAt = now;`:
 
   ```js
@@ -147,7 +147,7 @@ tag lists are in the overview's table.
   `outcome === 'win' && isRunVictory()` branch and `activeRun.runCompleted` is set inside
   it. Confirm a reload cannot re-enter it; if it can, add a `statsRecorded`-style guard.
 
-- [ ] 7. **`map/event.js`** `completeEvent` (~197) — before `render();`:
+- [x] 7. **`map/event.js`** `completeEvent` (~197) — before `render();`:
 
   ```js
         if (!state.encounter.statsRecorded) {
@@ -162,33 +162,33 @@ tag lists are in the overview's table.
   Place it **before** `runStore.saveRunState(state.run)` so the flag is persisted by the
   existing save.
 
-- [ ] 8. **`map/capture.js`** `completeCapture` (~136) — same guarded shape with
+- [x] 8. **`map/capture.js`** `completeCapture` (~136) — same guarded shape with
   `{ 'captures.completed': 1 }`, before the existing `runStore.saveRunState(state.run)`.
 
-- [ ] 9. **`map/attack.js`** `completeAttackClaim` (~126) — same, with
+- [x] 9. **`map/attack.js`** `completeAttackClaim` (~126) — same, with
   `{ 'attacks.claimed': 1 }`.
 
-- [ ] 10. **`map/mart.js`** `completeMartAndReturnToMap` (~331) — same, with
+- [x] 10. **`map/mart.js`** `completeMartAndReturnToMap` (~331) — same, with
   `{ 'marts.visited': 1 }`.
 
-- [ ] 11. **`tests/data_validation.test.js`** — add cases over the real `achievements.json`:
+- [x] 11. **`tests/data_validation.test.js`** — add cases over the real `achievements.json`:
   unique non-empty ids, `atLeast` an integer ≥ 1, and every `stat` accepted by
   `PokeProfile.isKnownStat`. Require `../map/profile.js` the same way the file already
   reaches game modules.
 
-- [ ] 12. **`tests/achievements.test.js`** — extend with a `monoTypeBumps`-style case: build
+- [x] 12. **`tests/achievements.test.js`** — extend with a `monoTypeBumps`-style case: build
   a fake run whose collections hold two FIRE/FLYING species and assert both
   `runs.completed.mono.FIRE` and `runs.completed.mono.FLYING` would be bumped; then one
   FIRE and one WATER species and assert neither is. If `monoTypeBumps` lives inside
   `arena/game.js`'s IIFE and is unreachable from Node, replicate the three-line reduce in
   the test rather than exporting it — but say so in a comment.
 
-- [ ] 13. **`node tests/run_all.js`** — green.
+- [x] 13. **`node tests/run_all.js`** — green.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] Full playthrough on a served copy (`python3 -m http.server 8931 --bind 127.0.0.1`).
+- [x] `node tests/run_all.js` green.
+- [x] Full playthrough on a served copy (`python3 -m http.server 8931 --bind 127.0.0.1`).
   With `localStorage.removeItem('pokemon-rogue-pocket-profile')` first, start a run and
   check in the console after each step that
   `JSON.parse(localStorage['pokemon-rogue-pocket-profile']).stats` gained exactly the
@@ -199,18 +199,18 @@ tag lists are in the overview's table.
   - an event → `events.seen: 1` **and** `events.seen.<that event's id>: 1`;
   - an attack encounter → `attacks.claimed: 1`;
   - leaving a mart → `marts.visited: 1`.
-- [ ] Double-count guard: after winning a battle, **reload `game.html`** on the result
+- [x] Double-count guard: after winning a battle, **reload `game.html`** on the result
   screen and confirm `battles.won` did **not** go to 2. Repeat the reload test on the event
   page after completing an event.
-- [ ] `first-steps` and `first-blood` appear in
+- [x] `first-steps` and `first-blood` appear in
   `JSON.parse(localStorage['pokemon-rogue-pocket-profile']).unlocked` after the first
   battle win, and both ids sit in `pendingUnlocks` (phase 95 drains them).
-- [ ] Losing a battle bumps `battles.lost` and `runs.lost` and does **not** bump
+- [x] Losing a battle bumps `battles.lost` and `runs.lost` and does **not** bump
   `runs.completed`.
-- [ ] `localStorage['pokemon-rogue-pocket-profile']` survives New Game and survives a loss —
+- [x] `localStorage['pokemon-rogue-pocket-profile']` survives New Game and survives a loss —
   start over and confirm the counters are still there.
-- [ ] No console errors on any of the six pages.
-- [ ] Stop the server: `pkill -f "http.server 8931"`.
+- [x] No console errors on any of the six pages.
+- [x] Stop the server: `pkill -f "http.server 8931"`.
 
 ## Out of scope / do not touch
 

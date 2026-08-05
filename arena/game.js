@@ -171,6 +171,18 @@
             finalizeRunVictory();
         }
 
+        // Reloading on the result screen re-runs this whole function, so the
+        // lifetime counters need their own flag; saveRunState below persists it.
+        if (!activeBattleEncounter.statsRecorded) {
+            const won = activeBattleEncounter.outcome === 'win';
+            const bumps = won
+                ? { 'battles.won': 1, [`battles.won.rank.${getBattleRank()}`]: 1 }
+                : { 'battles.lost': 1, 'runs.lost': 1 };
+
+            activeBattleEncounter.statsRecorded = true;
+            window.PokeProfile.record(bumps, arena.GameData.achievements);
+        }
+
         runStore.saveRunState(activeRun);
         renderBattleResultOverlay(activeBattleEncounter.outcome);
     }
@@ -190,6 +202,16 @@
         activeRun.area.activeBattleNodeId = null;
         activeRun.runCompleted = true;
         activeRun.runCompletedAt = now;
+
+        // A reload on the victory screen re-enters this function, so the
+        // lifetime counters get their own persisted flag.
+        if (!activeRun.runStatsRecorded) {
+            activeRun.runStatsRecorded = true;
+            window.PokeProfile.record(Object.assign(
+                { 'runs.completed': 1, [`runs.completed.starter.${activeRun.starterId}`]: 1 },
+                monoTypeBumps(activeRun)
+            ), arena.GameData.achievements);
+        }
     }
 
     function renderBattleResultShell() {
@@ -406,6 +428,14 @@
         return activeTrainer && Number.isFinite(activeTrainer.cash) ? activeTrainer.cash : 0;
     }
 
+    // The encounter carries the rank it was created with, so a reload that has
+    // no resolved trainer still counts the win under the right rank.
+    function getBattleRank() {
+        if (activeBattleEncounter && activeBattleEncounter.rank) return activeBattleEncounter.rank;
+
+        return activeTrainer && activeTrainer.rank ? activeTrainer.rank : 'Standard';
+    }
+
     function collectBattleRewards() {
         const rewardSummary = [];
         const cashReward = getBattleReward();
@@ -508,6 +538,28 @@
 
     function getRunLevel() {
         return activeRun && Number.isFinite(activeRun.level) ? activeRun.level : 1;
+    }
+
+    /**
+     * A completed run bumps one mono counter per type shared by every Pokemon
+     * it owns (active + bench), so a team of two FIRE/FLYING birds bumps both
+     * FIRE and FLYING while a mixed team bumps nothing.
+     */
+    function monoTypeBumps(run) {
+        const records = window.PokeLocations.getRunPokemonRecords(run);
+
+        if (records.length === 0) return {};
+
+        const typesOf = record => (Array.isArray(record.types)
+            ? record.types
+            : [record.type1, record.type2, record.type3]).filter(type => type && type !== 'NONE');
+
+        // No initial value: the first Pokemon's types seed the intersection.
+        const shared = records
+            .map(typesOf)
+            .reduce((common, types) => common.filter(type => types.includes(type)));
+
+        return Object.fromEntries(shared.map(type => [`runs.completed.mono.${type}`, 1]));
     }
 
     function getTotalLevels() {

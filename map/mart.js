@@ -332,6 +332,12 @@
         state.encounter.completed = true;
         state.encounter.completedAt = new Date().toISOString();
         state.run.area.activeMartNodeId = null;
+
+        if (!state.encounter.statsRecorded) {
+            state.encounter.statsRecorded = true;
+            window.PokeProfile.record({ 'marts.visited': 1 }, arena.GameData.achievements);
+        }
+
         runStore.saveRunState(state.run);
         window.location.href = 'area.html';
     }
