@@ -29,6 +29,10 @@
     ];
     const DEFAULT_EVENT_TYPES = ['gift', 'choice', 'trainer'];
 
+    // Mirrors MUSIC_CATEGORIES in arena/arena_data.js (the vocabulary the
+    // engine actually accepts when normalizing music.json).
+    const DEFAULT_MUSIC_CATEGORIES = ['trainer', 'boss', 'elite', 'legendary'];
+
     // Mirrors STAT_KEYS / STAT_PREFIXES in map/profile.js (the counter
     // namespace the game actually tracks), kept here as a fallback for when
     // enums.statKeys / enums.statPrefixes are absent from the /api/enums
@@ -821,6 +825,62 @@
         return issues;
     }
 
+    // --------------------------------------------------------------- music
+
+    // `music.missing-file` is deliberately a warning, not an error: the upload
+    // route matches an MP3 to an already-saved record (handleUpload looks the
+    // id up in music.json), so a new track must be saved *before* its file can
+    // exist. An error would make the write guard block that first save and
+    // leave the owner with no way to register a song at all.
+    function validateMusic(music, enums, assetIndex) {
+        const issues = [];
+        const categories = (enums && enums.musicCategories) || DEFAULT_MUSIC_CATEGORIES;
+        const seenIds = new Set();
+        const enabledCategories = new Set();
+
+        (music || []).forEach((record) => {
+            const key = (record && record.id) || '(unnamed track)';
+
+            if (!record || !record.id || typeof record.id !== 'string') {
+                issues.push(err('music.json', key, 'music.missing-id', `${key}: entry missing id`, 'id'));
+            } else {
+                if (seenIds.has(record.id)) {
+                    issues.push(err('music.json', record.id, 'music.duplicate-id', `duplicate music id ${record.id}`, 'id'));
+                }
+                seenIds.add(record.id);
+                if (!ID_PATTERN.test(record.id)) {
+                    issues.push(err('music.json', record.id, 'music.bad-id', `${key}: id must match ${ID_PATTERN} (it becomes the file name)`, 'id'));
+                }
+            }
+
+            if (!record) return;
+
+            if (!categories.includes(record.category)) {
+                issues.push(err('music.json', key, 'music.bad-category', `${key}: category must be one of ${categories.join(', ')}, got ${record.category}`, 'category'));
+            } else if (record.enabled !== false) {
+                enabledCategories.add(record.category);
+            }
+
+            if (record.id && ID_PATTERN.test(record.id)) {
+                const canonical = `assets/music/${record.id}.mp3`;
+                if (record.file !== canonical) {
+                    issues.push(err('music.json', key, 'music.bad-file-path', `${key}: file must be ${canonical}, got ${record.file}`, 'file'));
+                }
+                if (assetIndex && assetIndex.music && !assetIndex.music.has(`${record.id}.mp3`)) {
+                    issues.push(warn('music.json', key, 'music.missing-file', `${key}: no uploaded file at ${canonical}`, 'file'));
+                }
+            }
+        });
+
+        categories.forEach((category) => {
+            if (!enabledCategories.has(category)) {
+                issues.push(warn('music.json', '(dataset)', 'music.empty-category', `no enabled track for category ${category} — those battles play in silence`));
+            }
+        });
+
+        return issues;
+    }
+
     // ------------------------------------------------------------- engine refs
 
     function validateEngineRefs(pokemonNames, attackNames, itemNames, engineRefs) {
@@ -911,6 +971,16 @@
             });
         }
 
+        // Only .mp3 files are considered: assets/music/ also holds a README.
+        if (assetIndex.music) {
+            const musicFileNames = new Set((data.music || []).map((record) => `${record && record.id}.mp3`));
+            assetIndex.music.forEach((fileName) => {
+                if (fileName.endsWith('.mp3') && !musicFileNames.has(fileName)) {
+                    issues.push(warn('assets', fileName, 'music.orphan-file', `orphan music file ${fileName}`));
+                }
+            });
+        }
+
         return issues;
     }
 
@@ -958,6 +1028,7 @@
         const locations = data.locations || [];
         const starterDecks = data.starter_decks || [];
         const achievements = data.achievements || [];
+        const music = data.music || [];
 
         const pokemonNames = new Set(pokemon.map((record) => record.name));
         const attackNames = new Set(attacks.map((record) => record.name));
@@ -980,6 +1051,7 @@
             ...validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums),
             ...validateLocations(locations, enums, starterDecks),
             ...validateAchievements(achievements, enums, events),
+            ...validateMusic(music, enums, assetIndex),
             ...validateNameCharacters(data),
             ...validateEngineRefs(pokemonNames, attackNames, itemNames, engineRefs),
             ...validateAssets(data, assetIndex, engineRefs)

@@ -2,7 +2,7 @@
 
 /**
  * Builds the argument bundles validate.js needs (enums, assetIndex,
- * engineRefs) plus the six raw data arrays, for use by editor test files.
+ * engineRefs) plus the raw data arrays, for use by editor test files.
  * Mirrors the loading trick in arena_env.js (window = globalThis) and adds
  * trainer_sprites.js + locations.js on top, since validate.js's sprite and
  * starter-deck checks depend on both.
@@ -34,7 +34,8 @@ function loadRawData() {
         events: readData('events.json'),
         locations: readData('locations.json'),
         starter_decks: readData('starter_decks.json'),
-        achievements: readData('achievements.json')
+        achievements: readData('achievements.json'),
+        music: readData('music.json')
     };
 }
 
@@ -58,7 +59,8 @@ function buildAssetIndex() {
         portraits: assetsDir('portraits'),
         sprites: assetsDir('sprites'),
         items: assetsDir('items'),
-        backgrounds: assetsDir('backgrounds')
+        backgrounds: assetsDir('backgrounds'),
+        music: assetsDir('music')
     };
 }
 

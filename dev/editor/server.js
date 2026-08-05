@@ -79,10 +79,12 @@ const ENUMS_PAYLOAD = {
 
 // -------------------------------------------------------------- constants
 
-const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks', 'achievements'];
-const UPLOAD_DIR_NAMES = ['portraits', 'sprites', 'items', 'backgrounds'];
+const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks', 'achievements', 'music'];
+const UPLOAD_DIR_NAMES = ['portraits', 'sprites', 'items', 'backgrounds', 'music'];
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
+const MAX_MUSIC_BYTES = 25 * 1024 * 1024;
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+const ID3_MAGIC = Buffer.from([0x49, 0x44, 0x33]); // "ID3"
 
 const MIME_TYPES = {
     '.html': 'text/html',
@@ -91,8 +93,21 @@ const MIME_TYPES = {
     '.json': 'application/json',
     '.png': 'image/png',
     '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon'
+    '.ico': 'image/x-icon',
+    '.mp3': 'audio/mpeg'
 };
+
+function isPng(buffer) {
+    return buffer.length >= 4 && buffer.subarray(0, 4).equals(PNG_MAGIC);
+}
+
+// An MP3 starts with either an ID3v2 tag or a raw MPEG frame sync (11 set
+// bits). This is a local-only dev tool, so a cheap check is enough.
+function isMp3(buffer) {
+    if (buffer.length < 4) return false;
+    if (buffer.subarray(0, 3).equals(ID3_MAGIC)) return true;
+    return buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0;
+}
 
 // Reimplements formatAssetName() in arena/arena_data.js so this file never
 // requires game code beyond the engine-load section above.
@@ -104,22 +119,41 @@ function formatAssetName(name) {
         .replace(/^_+|_+$/g, '');
 }
 
+const PNG_MAGIC_ERROR = 'body is not a PNG (missing magic bytes)';
+
+// Each route declares its own accepted file type (verifyMagic/magicError) and
+// may raise the body cap (maxBytes); songs are megabytes, images are not.
 const UPLOAD_ROUTES = {
     portraits: {
         lookup: (data, key) => data.pokemon.find((record) => record.name === key),
-        deriveFileName: (record) => `${record.name}.png`
+        deriveFileName: (record) => `${record.name}.png`,
+        verifyMagic: isPng,
+        magicError: PNG_MAGIC_ERROR
     },
     sprites: {
         lookup: (data, key) => data.trainers.find((record) => record.name === key),
-        deriveFileName: (record) => resolveSpriteFile(record.name, record.sprite)
+        deriveFileName: (record) => resolveSpriteFile(record.name, record.sprite),
+        verifyMagic: isPng,
+        magicError: PNG_MAGIC_ERROR
     },
     items: {
         lookup: (data, key) => data.items.find((record) => record.name === key),
-        deriveFileName: (record) => `${formatAssetName(record.name)}.png`
+        deriveFileName: (record) => `${formatAssetName(record.name)}.png`,
+        verifyMagic: isPng,
+        magicError: PNG_MAGIC_ERROR
     },
     backgrounds: {
         lookup: (data, key) => data.locations.find((record) => record.id === key),
-        deriveFileName: (record) => `${record.id}.png`
+        deriveFileName: (record) => `${record.id}.png`,
+        verifyMagic: isPng,
+        magicError: PNG_MAGIC_ERROR
+    },
+    music: {
+        lookup: (data, key) => data.music.find((record) => record.id === key),
+        deriveFileName: (record) => `${record.id}.mp3`,
+        verifyMagic: isMp3,
+        magicError: 'body is not an MP3 (expected an ID3 tag or an MPEG frame sync)',
+        maxBytes: MAX_MUSIC_BYTES
     }
 };
 
@@ -150,7 +184,8 @@ function buildAssetIndex(config) {
         portraits: readDirSafe(path.join(config.dataDir, 'assets', 'portraits')),
         sprites: readDirSafe(path.join(config.dataDir, 'assets', 'sprites')),
         items: readDirSafe(path.join(config.dataDir, 'assets', 'items')),
-        backgrounds: readDirSafe(path.join(config.dataDir, 'assets', 'backgrounds'))
+        backgrounds: readDirSafe(path.join(config.dataDir, 'assets', 'backgrounds')),
+        music: readDirSafe(path.join(config.dataDir, 'assets', 'music'))
     };
 }
 
@@ -183,11 +218,11 @@ function parseRequestUrl(req) {
     return { rawPath, searchParams: new URLSearchParams(search) };
 }
 
-// Reads the full request body into a Buffer. Bytes beyond MAX_BODY_BYTES are
+// Reads the full request body into a Buffer. Bytes beyond maxBytes are
 // dropped (not buffered) so memory stays capped, but the stream is drained
 // to completion so the connection stays healthy; once drained, a 413 error
 // is thrown for the caller to report.
-function readRawBody(req) {
+function readRawBody(req, maxBytes = MAX_BODY_BYTES) {
     return new Promise((resolve, reject) => {
         const chunks = [];
         let total = 0;
@@ -195,7 +230,7 @@ function readRawBody(req) {
 
         req.on('data', (chunk) => {
             total += chunk.length;
-            if (total > MAX_BODY_BYTES) {
+            if (total > maxBytes) {
                 tooLarge = true;
                 return;
             }
@@ -203,7 +238,7 @@ function readRawBody(req) {
         });
         req.on('end', () => {
             if (tooLarge) {
-                const err = new Error('request body exceeds 5 MB');
+                const err = new Error(`request body exceeds ${Math.round(maxBytes / (1024 * 1024))} MB`);
                 err.status = 413;
                 reject(err);
                 return;
@@ -334,6 +369,7 @@ function handleGetAssets(res, config) {
         sprites: [...readDirSafe(path.join(config.dataDir, 'assets', 'sprites'))],
         items: [...readDirSafe(path.join(config.dataDir, 'assets', 'items'))],
         backgrounds: [...readDirSafe(path.join(config.dataDir, 'assets', 'backgrounds'))],
+        music: [...readDirSafe(path.join(config.dataDir, 'assets', 'music'))],
         typesSvgs: [...readDirSafe(path.join(config.root, 'assets', 'types-svgs'))],
         statusIcons: [...readDirSafe(path.join(config.root, 'assets', 'status-icons'))]
     });
@@ -355,12 +391,16 @@ function handleGetIssues(res, config) {
 // ----------------------------------------------------------------- uploads
 
 async function handleUpload(req, res, dir, rawKey, config) {
-    // Drain the body (and enforce the 5 MB cap) before any other validation,
-    // so the cap applies uniformly to every upload request.
-    const buffer = await readRawBody(req);
-
+    // The route is resolved first because it owns the body cap, then the body
+    // is drained before any other validation so the cap is enforced uniformly
+    // (and the connection is always read to completion).
     const route = UPLOAD_ROUTES[dir];
-    if (!route) return sendJson(res, 400, { error: `unknown upload dir "${dir}"` });
+    if (!route) {
+        await readRawBody(req).catch(() => null);
+        return sendJson(res, 400, { error: `unknown upload dir "${dir}"` });
+    }
+
+    const buffer = await readRawBody(req, route.maxBytes || MAX_BODY_BYTES);
 
     let key;
     try {
@@ -373,8 +413,8 @@ async function handleUpload(req, res, dir, rawKey, config) {
     const record = route.lookup(data, key);
     if (!record) return sendJson(res, 404, { error: `no ${dir} record for "${key}"` });
 
-    if (buffer.length < 4 || !buffer.subarray(0, 4).equals(PNG_MAGIC)) {
-        return sendJson(res, 400, { error: 'body is not a PNG (missing magic bytes)' });
+    if (!route.verifyMagic(buffer)) {
+        return sendJson(res, 400, { error: route.magicError });
     }
 
     const fileName = route.deriveFileName(record);

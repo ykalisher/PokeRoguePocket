@@ -102,22 +102,22 @@ untouched record must produce an empty `git diff music.json`.
 
 ## Steps
 
-- [ ] 1. **`dev/editor/server.js`** — `FILE_NAMES` (~85) gains `'music'`;
+- [x] 1. **`dev/editor/server.js`** — `FILE_NAMES` (~85) gains `'music'`;
   `UPLOAD_DIR_NAMES` (~86) gains `'music'`; `MIME_TYPES` (~89) gains
   `'.mp3': 'audio/mpeg'`.
 
-- [ ] 2. **`dev/editor/format_json.js`** — add `'music'` to `PLAIN_FILES` (~64), then prove
+- [x] 2. **`dev/editor/format_json.js`** — add `'music'` to `PLAIN_FILES` (~64), then prove
   byte-exactness:
   `node -e "const {formatDataFile}=require('./dev/editor/format_json.js');const fs=require('fs');const cur=fs.readFileSync('music.json','utf8');console.log(formatDataFile('music',JSON.parse(cur))===cur?'BYTE-EXACT':'DIFFERS')"`
   If it differs, rewrite `music.json` to the formatter's output.
 
-- [ ] 3. **`dev/editor/app.js`** — `FILE_TO_TAB` (~30) gains `'music.json': 'music'`;
+- [x] 3. **`dev/editor/app.js`** — `FILE_TO_TAB` (~30) gains `'music.json': 'music'`;
   `assetIndexFrom` (~238) gains `music: new Set(assets.music)`.
 
-- [ ] 4. **`dev/editor/server.js`** — `buildAssetIndex` (~155) and `handleGetAssets` (~336)
+- [x] 4. **`dev/editor/server.js`** — `buildAssetIndex` (~155) and `handleGetAssets` (~336)
   both gain the `music` directory (`path.join(config.dataDir, 'assets', 'music')`).
 
-- [ ] 5. **`dev/editor/server.js`** — per-route magic + cap. Add `isMp3` (the snippet in
+- [x] 5. **`dev/editor/server.js`** — per-route magic + cap. Add `isMp3` (the snippet in
   "Context you need") and a `isPng` wrapping the existing `PNG_MAGIC` comparison, then give
   every `UPLOAD_ROUTES` entry a `verifyMagic` and let `music` set `maxBytes`:
 
@@ -134,18 +134,18 @@ untouched record must produce an empty `git diff music.json`.
   Give the four existing routes `verifyMagic: isPng` and the current PNG error message so
   behavior is byte-identical for them.
 
-- [ ] 6. **`dev/editor/server.js`** — `readRawBody(req, maxBytes = MAX_BODY_BYTES)`: use the
+- [x] 6. **`dev/editor/server.js`** — `readRawBody(req, maxBytes = MAX_BODY_BYTES)`: use the
   parameter in the size check and in the 413 message. Its only other caller is
   `readJsonBody` (~228), which keeps the default.
 
-- [ ] 7. **`dev/editor/server.js`** — `handleUpload` (~362): resolve the route **first**
+- [x] 7. **`dev/editor/server.js`** — `handleUpload` (~362): resolve the route **first**
   (400 on unknown `dir`), then drain with `route.maxBytes || MAX_BODY_BYTES`, then run
   `route.verifyMagic(buffer)` instead of the inline PNG check, reporting
   `route.magicError`. Leave the key decoding, the record lookup, the
   `targetPath.startsWith(targetDir + path.sep)` escape guard, the `mkdirSync`, and the
   `201` response shape exactly as they are.
 
-- [ ] 8. **`dev/editor/validate.js`** — `validateMusic(music, assetIndex)`, wired into
+- [x] 8. **`dev/editor/validate.js`** — `validateMusic(music, assetIndex)`, wired into
   `validateAll` (~769) with `const music = data.music || [];`. Issues on
   `file: 'music.json'`, `recordKey` = the id:
 
@@ -168,12 +168,12 @@ untouched record must produce an empty `git diff music.json`.
   make it a **warning** instead if that ordering proves unworkable during step 12 — decide
   from the actual behavior and record the decision in the phase notes.
 
-- [ ] 9. **`dev/editor/validate.js`** — `validateAssets` (~672) already reports orphaned
+- [x] 9. **`dev/editor/validate.js`** — `validateAssets` (~672) already reports orphaned
   files for other dirs if that pattern exists there; if it does, add the matching
   `music.orphan-file` **warning** for an `.mp3` in `assets/music/` that no record names.
   If it does not, skip this step rather than inventing a new convention.
 
-- [ ] 10. **`dev/editor/tab_music.js`** (new) — the tab module, standard IIFE header,
+- [x] 10. **`dev/editor/tab_music.js`** (new) — the tab module, standard IIFE header,
   `EditorApp.registerTab('music', { label: 'Music', render });` last.
   - `columns()`: `title` (sortable), `id` (sortable), `category` rendered with its **UI
     label** ("Gym Leaders", not `boss`), a file-present `editor-dot`, and an enabled dot.
@@ -195,10 +195,10 @@ untouched record must produce an empty `git diff music.json`.
     searchFields: ['title', 'id'], filters: [category, enabled], defaultSort: { key: 'title',
     direction: 'asc' }, onSelect: openMusicEditor })`.
 
-- [ ] 11. **`dev/editor/index.html`** — add `<script src="/dev/editor/tab_music.js"></script>`
+- [x] 11. **`dev/editor/index.html`** — add `<script src="/dev/editor/tab_music.js"></script>`
   in the tab-module block, before `tab_issues.js`.
 
-- [ ] 12. **`tests/editor_api.test.js`** — extend, using the temp data dir the file already
+- [x] 12. **`tests/editor_api.test.js`** — extend, using the temp data dir the file already
   sets up:
   - `GET /api/data` includes a `music` array and `GET /api/assets` includes a `music` list;
   - `POST /api/assets/music/<id>` with an `ID3`-prefixed buffer writes
@@ -209,12 +209,12 @@ untouched record must produce an empty `git diff music.json`.
     for the per-route refactor);
   - a `PUT /api/data/music` with a bad `category` returns `409`.
 
-- [ ] 13. **`tests/editor_format.test.js`** and **`tests/editor_validation.test.js`** — add
+- [x] 13. **`tests/editor_format.test.js`** and **`tests/editor_validation.test.js`** — add
   `music` to the byte-exactness coverage and one case per rule from step 8.
 
-- [ ] 14. **`node tests/run_all.js`** — green.
+- [x] 14. **`node tests/run_all.js`** — green.
 
-- [ ] 15. Drive the editor. Adapt `dev/verify/drive_editor.py` into
+- [x] 15. Drive the editor. Adapt `dev/verify/drive_editor.py` into
   `dev/verify/phase101_editor_music.py`, screenshotting to
   `dev/verify/phase101_editor_music.png`. Exercise: `+ Add track` → fill id/title/category
   → Save → the Upload button enables → upload a small MP3 → the preview shows an `<audio>`
@@ -223,17 +223,17 @@ untouched record must produce an empty `git diff music.json`.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green, with the PNG regression cases from step 12 passing.
-- [ ] `dev/verify/phase101_editor_music.py` runs clean and afterwards
+- [x] `node tests/run_all.js` green, with the PNG regression cases from step 12 passing.
+- [x] `dev/verify/phase101_editor_music.py` runs clean and afterwards
   `git status --porcelain` shows **no** stray `.mp3` and `music.json` unchanged.
-- [ ] Upload cap: a >25 MB body to `/api/assets/music/<id>` returns **413**, and a >5 MB
+- [x] Upload cap: a >25 MB body to `/api/assets/music/<id>` returns **413**, and a >5 MB
   body to `/api/assets/portraits/<name>` still returns 413 (the per-route cap did not leak).
-- [ ] Path-escape guard intact: a record whose id somehow contains `../` is already
+- [x] Path-escape guard intact: a record whose id somehow contains `../` is already
   impossible via `music.bad-id`, but confirm `handleUpload`'s
   `targetPath.startsWith(targetDir + path.sep)` check is still present and reachable.
-- [ ] `curl -s 127.0.0.1:8932/api/issues` reports the `music.empty-category` warnings (four
+- [x] `curl -s 127.0.0.1:8932/api/issues` reports the `music.empty-category` warnings (four
   of them, since the shipped manifest is empty) and no new errors.
-- [ ] End to end with the game: register one track per category through the editor, upload
+- [x] End to end with the game: register one track per category through the editor, upload
   real MP3s, then serve on 8931 and confirm a battle plays the right category (this is the
   phase-100 behavior, verified here against editor-authored data). **Remove the fixtures
   afterwards.**
@@ -244,3 +244,24 @@ untouched record must produce an empty `git diff music.json`.
 upload behavior, the write guard's logic, the static-file cache headers, or any other
 validator's codes. Do not add non-battle music, sound effects, or a second audio format —
 MP3 only was the owner's decision. Do not commit song files.
+
+## Phase notes
+
+- **`music.missing-file` shipped as a warning, not an error** (step 8's escape hatch).
+  With it as an error the write guard's `inWrittenFile` filter blocks the very first save
+  of a new track — and `handleUpload` looks the id up in `music.json`, so the file cannot
+  exist before that save. Error severity would make registering a song impossible. Pinned
+  by `tests/editor_validation.test.js` ("missing file warns…") and by the 200-status
+  `PUT /api/data/music` test in `tests/editor_api.test.js`.
+- Step 9's orphan pattern did exist in `validateAssets`, so `music.orphan-file` was added
+  there beside the other orphan rules. It ignores non-`.mp3` entries because
+  `assets/music/` also holds a `README.md`.
+- Unknown upload dirs now 400 *before* the body is drained-with-a-cap (the connection is
+  still drained to completion). Previously an oversized body to an unknown dir returned
+  413; it now returns 400, which is the more accurate answer.
+- `dev/verify/drive_editor.py`'s tab-count assertion went 9 → 10 for the new Music tab.
+- End-to-end (last verification bullet) was run with a throwaway script that authored one
+  track per category through the editor's own write path (`PUT /api/data/music` +
+  `POST /api/assets/music/<id>`) and then drove `game.html` on 8931: the battle picked
+  `assets/music/e2e-trainer.mp3`, `loop === true`, `paused === false`. Fixtures removed;
+  `git status` clean afterwards.

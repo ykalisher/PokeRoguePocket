@@ -35,7 +35,8 @@
         'events.json': 'events',
         'locations.json': 'locations',
         'starter_decks.json': 'starters',
-        'achievements.json': 'achievements'
+        'achievements.json': 'achievements',
+        'music.json': 'music'
     };
 
     EditorApp.store = {
@@ -243,7 +244,8 @@
             portraits: new Set(assets.portraits),
             sprites: new Set(assets.sprites),
             items: new Set(assets.items),
-            backgrounds: new Set(assets.backgrounds)
+            backgrounds: new Set(assets.backgrounds),
+            music: new Set(assets.music)
         };
     }
 

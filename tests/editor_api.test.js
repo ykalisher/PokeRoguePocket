@@ -10,7 +10,7 @@ const { ROOT } = require('./helpers/arena_env');
 const { createServer } = require('../dev/editor/server.js');
 const { formatDataFile } = require('../dev/editor/format_json.js');
 
-const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks', 'achievements'];
+const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks', 'achievements', 'music'];
 
 // Seeds a fixture data dir from the real, already-valid root JSON files
 // (simpler than hand-rolling minimal fixtures, and it satisfies the
@@ -43,6 +43,22 @@ const PNG_BYTES = Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     Buffer.from('fake-png-body-for-tests')
 ]);
+
+const MP3_BYTES = Buffer.concat([
+    Buffer.from('ID3'),
+    Buffer.from([0x03, 0x00, 0x00, 0x00]),
+    Buffer.from('fake-mp3-body-for-tests')
+]);
+
+// Writes a music.json into a fixture dir and returns the record it holds.
+function seedMusic(dataDir, overrides) {
+    const record = Object.assign(
+        { id: 'test-theme', title: 'Test Theme', category: 'trainer', file: 'assets/music/test-theme.mp3', enabled: true },
+        overrides || {}
+    );
+    fs.writeFileSync(path.join(dataDir, 'music.json'), formatDataFile('music', [record]));
+    return record;
+}
 
 // Sends a raw HTTP request with an unnormalized path. fetch() would resolve
 // ".." segments client-side via the WHATWG URL parser before the request
@@ -80,7 +96,7 @@ after(async () => {
 
 // --------------------------------------------------------------- /api/data
 
-test('GET /api/data returns the eight data arrays intact, including starter_decks and achievements', async () => {
+test('GET /api/data returns the nine data arrays intact, including starter_decks, achievements and music', async () => {
     const res = await fetch(`${sharedUrl}/api/data`);
     assert.equal(res.status, 200);
     const body = await res.json();
@@ -250,6 +266,53 @@ test('PUT /api/data/achievements with a bad stat is blocked with a 409', async (
     }
 });
 
+test('PUT /api/data/music with a valid track writes a byte-exact formatted file', async () => {
+    const dataDir = makeFixtureDir();
+    const server = await bootServer(dataDir);
+    try {
+        const url = baseUrl(server);
+        const music = [{ id: 'gym-leader-theme', title: 'Gym Leader Theme', category: 'boss', file: 'assets/music/gym-leader-theme.mp3', enabled: true }];
+
+        const putRes = await fetch(`${url}/api/data/music`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(music)
+        });
+        // The file is not uploaded yet: music.missing-file is a warning
+        // precisely so this "save first, then upload" order works.
+        assert.equal(putRes.status, 200);
+        assert.deepEqual(await putRes.json(), { ok: true, count: 1 });
+
+        const onDisk = fs.readFileSync(path.join(dataDir, 'music.json'), 'utf8');
+        assert.equal(onDisk, formatDataFile('music', music));
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('PUT /api/data/music with a bad category is blocked with a 409', async () => {
+    const dataDir = makeFixtureDir();
+    const server = await bootServer(dataDir);
+    try {
+        const url = baseUrl(server);
+        const music = [{ id: 'mystery-theme', title: 'Mystery Theme', category: 'mystery', file: 'assets/music/mystery-theme.mp3', enabled: true }];
+
+        const res = await fetch(`${url}/api/data/music`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(music)
+        });
+        assert.equal(res.status, 409);
+        const body = await res.json();
+        assert.equal(body.blocked, true);
+        assert.ok(body.issues.some((issue) => issue.code === 'music.bad-category'));
+
+        assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dataDir, 'music.json'), 'utf8')), []);
+    } finally {
+        await closeServer(server);
+    }
+});
+
 test('PUT with a malformed JSON body returns 400', async () => {
     const res = await fetch(`${sharedUrl}/api/data/pokemon`, {
         method: 'PUT',
@@ -387,6 +450,18 @@ test('uploading a body without PNG magic bytes returns 400', async () => {
     assert.equal(res.status, 400);
 });
 
+test('uploading a valid PNG to portraits/<pokemon name> still succeeds (per-route magic regression)', async () => {
+    const data = await (await fetch(`${sharedUrl}/api/data`)).json();
+    const pokemonName = data.pokemon[0].name;
+
+    const res = await fetch(`${sharedUrl}/api/assets/portraits/${encodeURIComponent(pokemonName)}`, {
+        method: 'POST',
+        body: PNG_BYTES
+    });
+    assert.equal(res.status, 201);
+    assert.deepEqual(await res.json(), { ok: true, path: `assets/portraits/${pokemonName}.png` });
+});
+
 test('uploading a body over 5 MB returns 413', async () => {
     const data = await (await fetch(`${sharedUrl}/api/data`)).json();
     const pokemonName = data.pokemon[1].name;
@@ -397,4 +472,100 @@ test('uploading a body over 5 MB returns 413', async () => {
         body: oversized
     });
     assert.equal(res.status, 413);
+});
+
+// ----------------------------------------------------------- music uploads
+
+test('GET /api/assets lists the music directory', async () => {
+    const res = await fetch(`${sharedUrl}/api/assets`);
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.ok(Array.isArray(body.music), 'expected a music array in /api/assets');
+});
+
+test('uploading a valid MP3 to music/<id> writes assets/music/<id>.mp3', async () => {
+    const dataDir = makeFixtureDir();
+    const record = seedMusic(dataDir);
+    const server = await bootServer(dataDir);
+    try {
+        const res = await fetch(`${baseUrl(server)}/api/assets/music/${encodeURIComponent(record.id)}`, {
+            method: 'POST',
+            body: MP3_BYTES
+        });
+        assert.equal(res.status, 201);
+        assert.deepEqual(await res.json(), { ok: true, path: `assets/music/${record.id}.mp3` });
+
+        const written = fs.readFileSync(path.join(dataDir, 'assets', 'music', `${record.id}.mp3`));
+        assert.deepEqual(written, MP3_BYTES);
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('a raw MPEG frame sync is accepted as an MP3 too', async () => {
+    const dataDir = makeFixtureDir();
+    const record = seedMusic(dataDir);
+    const server = await bootServer(dataDir);
+    try {
+        const frameSync = Buffer.concat([Buffer.from([0xff, 0xfb, 0x90, 0x00]), Buffer.from('frames')]);
+        const res = await fetch(`${baseUrl(server)}/api/assets/music/${encodeURIComponent(record.id)}`, {
+            method: 'POST',
+            body: frameSync
+        });
+        assert.equal(res.status, 201);
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('uploading a PNG to music/<id> returns 400 with the MP3 magic error', async () => {
+    const dataDir = makeFixtureDir();
+    const record = seedMusic(dataDir);
+    const server = await bootServer(dataDir);
+    try {
+        const res = await fetch(`${baseUrl(server)}/api/assets/music/${encodeURIComponent(record.id)}`, {
+            method: 'POST',
+            body: PNG_BYTES
+        });
+        assert.equal(res.status, 400);
+        assert.match((await res.json()).error, /not an MP3/);
+        assert.ok(!fs.existsSync(path.join(dataDir, 'assets', 'music', `${record.id}.mp3`)));
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('uploading an MP3 for an id that music.json does not have returns 404', async () => {
+    const dataDir = makeFixtureDir();
+    seedMusic(dataDir);
+    const server = await bootServer(dataDir);
+    try {
+        const res = await fetch(`${baseUrl(server)}/api/assets/music/not-a-real-track`, {
+            method: 'POST',
+            body: MP3_BYTES
+        });
+        assert.equal(res.status, 404);
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('the music route raises the body cap to 25 MB and still rejects beyond it', async () => {
+    const dataDir = makeFixtureDir();
+    const record = seedMusic(dataDir);
+    const server = await bootServer(dataDir);
+    try {
+        const url = `${baseUrl(server)}/api/assets/music/${encodeURIComponent(record.id)}`;
+
+        // 8 MB would be a 413 on the PNG routes; music accepts it.
+        const eightMb = Buffer.concat([MP3_BYTES, Buffer.alloc(8 * 1024 * 1024)]);
+        const okRes = await fetch(url, { method: 'POST', body: eightMb });
+        assert.equal(okRes.status, 201);
+
+        const oversized = Buffer.concat([MP3_BYTES, Buffer.alloc(25 * 1024 * 1024)]);
+        const tooBig = await fetch(url, { method: 'POST', body: oversized });
+        assert.equal(tooBig.status, 413);
+    } finally {
+        await closeServer(server);
+    }
 });

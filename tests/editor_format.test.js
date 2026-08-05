@@ -39,7 +39,7 @@ test('starter_decks.json formats byte-exact against the live file', () => {
     assert.equal(formatDataFile('starter_decks', data), raw);
 });
 
-['pokemon.json', 'attacks.json', 'items.json', 'trainers.json', 'achievements.json'].forEach((fileName) => {
+['pokemon.json', 'attacks.json', 'items.json', 'trainers.json', 'achievements.json', 'music.json'].forEach((fileName) => {
     test(`${fileName} formats as plain JSON.stringify(..., null, 2)`, () => {
         const raw = readRaw(fileName);
         const data = JSON.parse(raw);
@@ -49,6 +49,14 @@ test('starter_decks.json formats byte-exact against the live file', () => {
         assert.equal(out, expected);
         assert.equal(out, withSingleTrailingNewline(raw));
     });
+});
+
+test('a populated music.json round-trips through the plain formatter', () => {
+    const data = [{ id: 'gym-leader-theme', title: 'Gym Leader Theme', category: 'boss', file: 'assets/music/gym-leader-theme.mp3', enabled: true }];
+    const out = formatDataFile('music', data);
+
+    assert.equal(out, JSON.stringify(data, null, 2) + '\n');
+    assert.deepEqual(JSON.parse(out), data);
 });
 
 test('unknown file name throws', () => {

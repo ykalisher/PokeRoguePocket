@@ -76,6 +76,18 @@ function withAchievements(mutate) {
     mutate(data.achievements);
     return data;
 }
+// music.json ships empty, so music fixtures replace the array outright.
+function musicTrack(overrides) {
+    return Object.assign(
+        { id: 'gym-leader-theme', title: 'Gym Leader Theme', category: 'boss', file: 'assets/music/gym-leader-theme.mp3', enabled: true },
+        overrides || {}
+    );
+}
+function withMusic(records) {
+    const data = structuredClone(live.data);
+    data.music = records;
+    return data;
+}
 
 test('pokemon: bad type', () => {
     const data = withPokemon((pokemon) => { pokemon[0].type1 = 'NOT_A_TYPE'; });
@@ -519,6 +531,90 @@ test('findReferences(achievement, champion) includes an event conditioned on it'
     const refs = findReferences(data, 'achievement', 'champion', live.engineRefs);
 
     assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'sitrus-berry-tree' && ref.field === 'conditions'));
+});
+
+// ---------------------------------------------------------------- music
+
+test('music: a well-formed track with its file present is clean', () => {
+    const data = withMusic([musicTrack()]);
+    const assetIndex = Object.assign({}, live.assetIndex, { music: new Set(['gym-leader-theme.mp3']) });
+    const issues = validateAll(data, { enums: live.enums, assetIndex, engineRefs: live.engineRefs })
+        .filter((issue) => issue.file === 'music.json' && issue.recordKey === 'gym-leader-theme');
+
+    assert.deepEqual(issues, [], `expected no issues on the track, got: ${JSON.stringify(issues)}`);
+});
+
+test('music: missing id', () => {
+    const data = withMusic([musicTrack({ id: '' })]);
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'music.missing-id'));
+});
+
+test('music: duplicate id', () => {
+    const data = withMusic([musicTrack(), musicTrack({ title: 'Second' })]);
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'music.duplicate-id'));
+});
+
+test('music: bad id (it becomes a file name)', () => {
+    const data = withMusic([musicTrack({ id: 'Gym Leader', file: 'assets/music/Gym Leader.mp3' })]);
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'music.bad-id'));
+});
+
+test('music: bad category', () => {
+    const data = withMusic([musicTrack({ category: 'mystery' })]);
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'music.bad-category'));
+});
+
+test('music: bad file path', () => {
+    const data = withMusic([musicTrack({ file: 'assets/music/other.mp3' })]);
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'music.bad-file-path'));
+});
+
+test('music: missing file warns (so a new track can be saved before its upload)', () => {
+    const data = withMusic([musicTrack()]);
+    const assetIndex = Object.assign({}, live.assetIndex, { music: new Set() });
+    const issues = validateAll(data, { enums: live.enums, assetIndex, engineRefs: live.engineRefs });
+    const warning = issues.find((issue) => issue.code === 'music.missing-file');
+
+    assert.ok(warning, 'expected a music.missing-file warning');
+    assert.equal(warning.severity, 'warning');
+    assert.ok(!issues.some((issue) => issue.file === 'music.json' && issue.severity === 'error'));
+});
+
+test('music: every category without an enabled track warns', () => {
+    const data = withMusic([musicTrack()]);
+    const issues = validateAll(data, { enums: live.enums });
+    const empty = issues.filter((issue) => issue.code === 'music.empty-category');
+
+    assert.equal(empty.length, 3, 'boss is covered, the other three are not');
+    empty.forEach((issue) => {
+        assert.equal(issue.severity, 'warning');
+        assert.equal(issue.recordKey, '(dataset)');
+    });
+    assert.ok(!empty.some((issue) => issue.message.includes('boss')));
+});
+
+test('music: a disabled track does not cover its category', () => {
+    const data = withMusic([musicTrack({ enabled: false })]);
+    const issues = validateAll(data, { enums: live.enums });
+    assert.equal(issues.filter((issue) => issue.code === 'music.empty-category').length, 4);
+});
+
+test('music: an mp3 no record names is an orphan warning; a README is not', () => {
+    const data = withMusic([musicTrack()]);
+    const assetIndex = Object.assign({}, live.assetIndex, {
+        music: new Set(['gym-leader-theme.mp3', 'leftover.mp3', 'README.md'])
+    });
+    const issues = validateAll(data, { enums: live.enums, assetIndex, engineRefs: live.engineRefs });
+    const orphans = issues.filter((issue) => issue.code === 'music.orphan-file');
+
+    assert.equal(orphans.length, 1);
+    assert.equal(orphans[0].recordKey, 'leftover.mp3');
+    assert.equal(orphans[0].severity, 'warning');
 });
 
 test('names: double quote in an attack name is an error', () => {

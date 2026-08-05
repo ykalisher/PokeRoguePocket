@@ -104,7 +104,7 @@ def main():
 
             tabs = page.query_selector_all("#editor-tabs .editor-tab")
             tab_labels = [t.text_content().strip() for t in tabs]
-            assert len(tabs) == 9, f"expected 9 tabs, found {tab_labels}"
+            assert len(tabs) == 10, f"expected 10 tabs, found {tab_labels}"
 
             page.wait_for_selector("table.editor-table tbody tr.editor-row", timeout=15000)
             rows = page.query_selector_all("table.editor-table tbody tr.editor-row")
@@ -159,7 +159,7 @@ def main():
             print(f"  {line}", file=sys.stderr)
         return 1
 
-    print(f"OK: 7 tabs, {len(rows)} pokemon rows, preview rendered, inline stat edit round-tripped")
+    print(f"OK: {len(tab_labels)} tabs, {len(rows)} pokemon rows, preview rendered, inline stat edit round-tripped")
     return 0
 
 

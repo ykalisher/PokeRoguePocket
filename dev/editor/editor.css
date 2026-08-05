@@ -1344,3 +1344,45 @@
     background: var(--panel-deep, rgba(0, 0, 0, 0.24));
     cursor: pointer;
 }
+
+/* --- Music preview panel (phase 101) --- */
+
+.editor-music-panel {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+.editor-music-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #fbf6e8;
+}
+
+.editor-music-category {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.editor-music-player {
+    width: 100%;
+    max-width: 320px;
+}
+
+.editor-music-placeholder {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 16px 10px;
+    border-radius: 8px;
+    border: 1px dashed rgba(251, 246, 232, 0.28);
+    background: rgba(0, 0, 0, 0.22);
+    color: var(--muted);
+    font-size: 0.8rem;
+}
