@@ -48,7 +48,9 @@
         }
     });
 
-    const STARTER_DECKS = Object.freeze({
+    // Built-in fallback used when the loaded starter-deck data is empty/broken,
+    // and by Node tests that require this module without loadGameData().
+    const BUILTIN_STARTER_DECKS = Object.freeze({
         water: Object.freeze({
             id: 'water',
             name: 'Water',
@@ -115,6 +117,20 @@
 
     function getLocations(gameData) {
         return getAllLocations(gameData).filter(location => location && location.enabled !== false);
+    }
+
+    /**
+     * The starter decks the game should offer, keyed by id. Reads the loaded
+     * data file when available and falls back to the frozen builtins, so
+     * modules required in Node without loadGameData() still work.
+     */
+    function getStarterDecks(gameData) {
+        const records = gameData && Array.isArray(gameData.starterDecks) ? gameData.starterDecks : [];
+        const enabled = records.filter(deck => deck && deck.id && deck.enabled !== false);
+
+        if (enabled.length === 0) return BUILTIN_STARTER_DECKS;
+
+        return Object.fromEntries(enabled.map(deck => [deck.id, deck]));
     }
 
     function getLocationById(gameData, id) {
@@ -940,7 +956,9 @@
 
     global.PokeLocations = {
         LEVEL_CONFIG,
-        STARTER_DECKS,
+        // Alias kept so callers that never load game data (Node tests, the
+        // data editor's engine refs) still see the built-in decks.
+        STARTER_DECKS: BUILTIN_STARTER_DECKS,
         TOTAL_LEVELS,
         advanceRunToNextLevel,
         applyLocationTheme,
@@ -960,6 +978,7 @@
         getObtainablePokemonPool,
         getRunAttackRecords,
         getRunPokemonRecords,
+        getStarterDecks,
         getWildPokemonPool,
         isAllowedTrainerRank,
         isBabyPokemon,

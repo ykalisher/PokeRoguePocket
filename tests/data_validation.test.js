@@ -40,11 +40,7 @@ const items = readData('items.json');
 const trainers = readData('trainers.json');
 const events = readData('events.json');
 const locations = readData('locations.json');
-
-// The locations module is a window-namespace IIFE; arena_env aliased window to
-// globalThis when it was required above, so this populates globalThis.PokeLocations.
-require('../map/locations');
-const PokeLocations = globalThis.PokeLocations;
+const starterDecks = readData('starter_decks.json');
 
 const HEX_PATTERN = /^#[0-9a-f]{6}$/i;
 
@@ -385,9 +381,49 @@ test('locations.json entries are well-formed', () => {
     });
 });
 
+test('starter_decks.json entries are well-formed', () => {
+    assert.ok(Array.isArray(starterDecks), 'starter_decks.json must be an array');
+    assert.ok(starterDecks.length >= 1, 'starter_decks.json needs at least one deck');
+    assertUniqueNames(starterDecks, 'starter_decks.json');
+
+    const pokemonNames = new Set(pokemon.map(record => record.name));
+    const attackNames = new Set(attacks.map(record => record.name));
+    const itemNames = new Set(items.map(record => record.name));
+    const seenIds = new Set();
+
+    starterDecks.forEach(deck => {
+        assert.ok(deck.id && typeof deck.id === 'string', 'starter_decks.json: entry missing id');
+        assert.ok(!seenIds.has(deck.id), `starter_decks.json: duplicate id ${deck.id}`);
+        seenIds.add(deck.id);
+
+        assert.ok(VALID_TYPES.has(deck.type), `${deck.id}: bad type ${deck.type}`);
+        assert.notEqual(deck.type, 'NONE', `${deck.id}: NONE is not a starter type`);
+
+        assert.ok(Array.isArray(deck.pokemon) && deck.pokemon.length >= 1, `${deck.id}: needs at least one pokemon`);
+        deck.pokemon.forEach(name => {
+            assert.ok(pokemonNames.has(name), `${deck.id}: unknown pokemon ${name}`);
+        });
+
+        [['attacks', attackNames], ['items', itemNames]].forEach(([field, known]) => {
+            assert.ok(Array.isArray(deck[field]), `${deck.id}: ${field} must be an array`);
+            deck[field].forEach(entry => {
+                assert.ok(known.has(entry.name), `${deck.id}: unknown ${field} entry ${entry.name}`);
+                assert.ok(Number.isInteger(entry.count) && entry.count >= 1, `${deck.id}: ${entry.name} needs a count >= 1`);
+            });
+        });
+
+        assert.ok(deck.attacks.length >= 1, `${deck.id}: needs at least one attack`);
+    });
+
+    assert.ok(
+        starterDecks.some(deck => deck.enabled !== false),
+        'starter_decks.json needs at least one enabled deck or no run can start'
+    );
+});
+
 test('every starter type appears in an enabled location', () => {
     const enabled = locations.filter(record => record.enabled !== false);
-    Object.values(PokeLocations.STARTER_DECKS).forEach(deck => {
+    starterDecks.filter(deck => deck.enabled !== false).forEach(deck => {
         const covered = enabled.some(record => record.types.includes(deck.type));
         assert.ok(covered, `no enabled location contains starter type ${deck.type} (${deck.id})`);
     });
@@ -448,6 +484,7 @@ test('default battle deck references resolve against real data', async () => {
     assert.equal(data.attacks.length, attacks.length);
     assert.equal(data.items.length, items.length);
     assert.equal(data.trainers.length, trainers.length);
+    assert.equal(data.starterDecks.length, starterDecks.length);
 });
 
 // A captured legendary is rewarded a dual-requirement legendary attack (one

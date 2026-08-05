@@ -1,0 +1,53 @@
+[
+  {
+    "id": "water",
+    "name": "Water",
+    "type": "WATER",
+    "pokemon": ["Blastoise", "Feraligatr"],
+    "attacks": [
+      { "name": "Surf", "count": 2 },
+      { "name": "Waterfall", "count": 2 },
+      { "name": "Crunch", "count": 1 },
+      { "name": "Sucker Punch", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true
+  },
+  {
+    "id": "grass",
+    "name": "Grass",
+    "type": "GRASS",
+    "pokemon": ["Venusaur", "Meganium"],
+    "attacks": [
+      { "name": "Razor Leaf", "count": 3 },
+      { "name": "Sleep Powder", "count": 1 },
+      { "name": "Sludge Bomb", "count": 1 },
+      { "name": "Moon Blast", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true
+  },
+  {
+    "id": "fire",
+    "name": "Fire",
+    "type": "FIRE",
+    "pokemon": ["Charizard", "Typhlosion"],
+    "attacks": [
+      { "name": "Flame Thrower", "count": 2 },
+      { "name": "Fire Spin", "count": 2 },
+      { "name": "Air Slash", "count": 1 },
+      { "name": "Shadow Ball", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true
+  }
+]

@@ -237,6 +237,23 @@ test('isAllowedTrainerRank gates ranks by node type and level', () => {
     });
 });
 
+test('getStarterDecks reads starter_decks.json in the tuple shape', async () => {
+    // createCardCollections destructures [name, count], so the normalizer must
+    // keep turning the file's { name, count } objects into tuples.
+    await loadRealGameData();
+    const decks = P.getStarterDecks(arena.GameData);
+
+    assert.deepEqual(Object.keys(decks), ['water', 'grass', 'fire']);
+
+    Object.values(decks).forEach(deck => {
+        [...deck.attacks, ...deck.items].forEach(entry => {
+            assert.ok(Array.isArray(entry) && entry.length === 2, `${deck.id}: ${JSON.stringify(entry)} is not a [name, count] tuple`);
+            assert.equal(typeof entry[0], 'string');
+            assert.ok(Number.isInteger(entry[1]) && entry[1] >= 1, `${deck.id}: bad count for ${entry[0]}`);
+        });
+    });
+});
+
 test('every starter-deck card name resolves to a real record', async () => {
     // findGameRecord uses exact name matching with a silent fallback, so a typo
     // ("Flamethrower" vs "Flame Thrower") would produce dud cards with no error.
@@ -246,7 +263,7 @@ test('every starter-deck card name resolves to a real record', async () => {
     const attackNames = new Set(gameData.attacks.map(record => record.name));
     const itemNames = new Set(gameData.items.map(record => record.name));
 
-    Object.values(P.STARTER_DECKS).forEach(deck => {
+    Object.values(P.getStarterDecks(gameData)).forEach(deck => {
         deck.pokemon.forEach(name => {
             assert.ok(pokemonNames.has(name), `${deck.id} deck: unknown pokemon ${name}`);
         });
@@ -265,7 +282,7 @@ test('every starter-deck type has an enabled location containing it', async () =
     await loadRealGameData();
     const locations = P.getLocations(arena.GameData);
 
-    Object.values(P.STARTER_DECKS).forEach(deck => {
+    Object.values(P.getStarterDecks(arena.GameData)).forEach(deck => {
         const match = locations.some(location => Array.isArray(location.types) && location.types.includes(deck.type));
         assert.ok(match, `${deck.id} deck: no enabled location includes ${deck.type}`);
     });

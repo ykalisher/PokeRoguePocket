@@ -65,7 +65,7 @@ disk reader over the repo root, so a new root JSON file is picked up automatical
 
 ## Steps
 
-- [ ] 1. **`starter_decks.json`** (new, repo root) — the three current decks in the locked
+- [x] 1. **`starter_decks.json`** (new, repo root) — the three current decks in the locked
   shape. Water, grass, fire, in that order. Every `pokemon` / `attacks[].name` /
   `items[].name` string copied verbatim from `map/locations.js:51`. Example first record:
 
@@ -94,11 +94,11 @@ disk reader over the repo root, so a new root JSON file is picked up automatical
   Cross-check every name against the data files before moving on:
   `node -e "const p=require('./pokemon.json'),a=require('./attacks.json'),i=require('./items.json'),s=require('./starter_decks.json');const has=(arr,n)=>arr.some(r=>r.name===n);s.forEach(d=>{d.pokemon.forEach(n=>{if(!has(p,n))console.log('BAD pokemon',n)});d.attacks.forEach(x=>{if(!has(a,x.name))console.log('BAD attack',x.name)});d.items.forEach(x=>{if(!has(i,x.name))console.log('BAD item',x.name)})});console.log('checked')"`
 
-- [ ] 2. **`arena/arena_data.js`** — add `starterDecks` to `fallbackRecords` (~60), holding
+- [x] 2. **`arena/arena_data.js`** — add `starterDecks` to `fallbackRecords` (~60), holding
   the same three records in the **JSON** shape (`{ name, count }` objects, not tuples).
   This is what keeps `file://` boots working.
 
-- [ ] 3. **`arena/arena_data.js`** — add the normalizer next to the other `normalize*`
+- [x] 3. **`arena/arena_data.js`** — add the normalizer next to the other `normalize*`
   functions (above `normalizeGameData`, ~533):
 
   ```js
@@ -126,14 +126,14 @@ disk reader over the repo root, so a new root JSON file is picked up automatical
     }
   ```
 
-- [ ] 4. **`arena/arena_data.js`** — wire it into `normalizeGameData` (~533), keeping the
+- [x] 4. **`arena/arena_data.js`** — wire it into `normalizeGameData` (~533), keeping the
   existing alphabetical key order:
 
   ```js
             starterDecks: (records.starterDecks || []).map(normalizeStarterDeck).filter(Boolean),
   ```
 
-- [ ] 5. **`arena/arena_data.js`** — add the fetch to `loadGameData` (~568). Extend both the
+- [x] 5. **`arena/arena_data.js`** — add the fetch to `loadGameData` (~568). Extend both the
   destructuring array and the `Promise.all` list, and pass it into `normalizeGameData`:
 
   ```js
@@ -146,7 +146,7 @@ disk reader over the repo root, so a new root JSON file is picked up automatical
         arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events, locations, starterDecks });
   ```
 
-- [ ] 6. **`map/locations.js`** — rename the existing frozen literal `STARTER_DECKS` →
+- [x] 6. **`map/locations.js`** — rename the existing frozen literal `STARTER_DECKS` →
   `BUILTIN_STARTER_DECKS` (~51) and convert its `attacks`/`items` to keep the **tuple**
   shape they already have (no change to the values). Add the accessor next to the other
   getters:
@@ -171,7 +171,7 @@ disk reader over the repo root, so a new root JSON file is picked up automatical
   `STARTER_DECKS` as an alias for `BUILTIN_STARTER_DECKS` so nothing external breaks
   mid-phase.
 
-- [ ] 7. **`map/area.js`** — repoint the three sites. Add one small helper near
+- [x] 7. **`map/area.js`** — repoint the three sites. Add one small helper near
   `getStarterType` (~770) and use it in all three:
 
   ```js
@@ -190,43 +190,51 @@ disk reader over the repo root, so a new root JSON file is picked up automatical
   Confirm `arena.GameData` is loaded before any of these run — `map/area.js`'s init awaits
   `arena.Data.loadGameData()`; read the init function and verify rather than assuming.
 
-- [ ] 8. **`map/starter.js`** — `render()` (~26):
+- [x] 8. **`map/starter.js`** — `render()` (~26):
   `const decks = Object.values(locations.getStarterDecks(arena.GameData));`
 
-- [ ] 9. **`static/styles.css`** — grep `.starter-card` / the starter grid container and make
+- [x] 9. **`static/styles.css`** — grep `.starter-card` / the starter grid container and make
   it wrap for any number of decks (`flex-wrap: wrap` or `grid-template-columns:
   repeat(auto-fit, minmax(…, 1fr))`). Do not restyle the cards themselves.
 
-- [ ] 10. **`tests/data_validation.test.js`** — add cases over the real
+- [x] 10. **`tests/data_validation.test.js`** — add cases over the real
   `starter_decks.json`: every record has a unique non-empty `id`, a `type` in `PokeType`,
   a non-empty `pokemon` list, and every `pokemon`/`attacks[].name`/`items[].name` resolves
   in the corresponding data file. Follow the file's existing style (it already reads the
   real JSON files from `ROOT`).
 
-- [ ] 11. **`tests/run_progression.test.js`** — add a case that `loadRealGameData()` then
+- [x] 11. **`tests/run_progression.test.js`** — add a case that `loadRealGameData()` then
   `PokeLocations.getStarterDecks(arena.GameData)` returns three decks whose ids are
   `water`, `grass`, `fire`, and that each deck's `attacks` entries are `[name, count]`
   tuples (guards the normalizer contract `createCardCollections` depends on).
 
-- [ ] 12. **`node tests/run_all.js`** — green.
+- [x] 12. **`node tests/run_all.js`** — green.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] Byte-identical run start: serve with `python3 -m http.server 8931 --bind 127.0.0.1`,
+- [x] `node tests/run_all.js` green.
+- [x] Byte-identical run start: serve with `python3 -m http.server 8931 --bind 127.0.0.1`,
   open `http://127.0.0.1:8931/starter.html`, and start a run from **each** of the three
   decks. For each, check in the devtools console that
   `JSON.parse(localStorage['pokemon-rogue-pocket-run']).collections` holds the same pokemon
   and the same action-card names and counts as before the change. (Capture the "before"
   numbers first with `git stash`, or read them off `map/locations.js` in git history.)
-- [ ] `starter.html` renders all three cards, and still renders sanely when a fourth record
+- [x] `starter.html` renders all three cards, and still renders sanely when a fourth record
   is temporarily added to `starter_decks.json` — then **remove the fixture** and confirm
   `git status` shows `starter_decks.json` back to the three real decks.
-- [ ] `enabled: false` on one deck hides it from the picker without breaking the page.
-- [ ] File-protocol fallback: open `starter.html` directly from disk (`file://`) and confirm
+- [x] `enabled: false` on one deck hides it from the picker without breaking the page.
+- [x] File-protocol fallback: open `starter.html` directly from disk (`file://`) and confirm
   the three fallback decks still render (fetch fails, `fallbackRecords.starterDecks` takes
   over) — a console warning `Using built-in starter_decks.json fallback.` is expected.
-- [ ] Stop the server: `pkill -f "http.server 8931"`.
+- [x] Stop the server: `pkill -f "http.server 8931"`.
+
+Driver: `dev/verify/phase89_starter_decks.py` (fourth-deck fixture, `enabled: false`,
+`file://` fallback; restores `starter_decks.json` in a `finally`). Byte-identical run
+starts were re-confirmed with the existing `dev/verify/drive_starter.py`, whose
+hard-coded per-deck expectations still match; its two `non-real pokemon record`
+complaints reproduce unchanged on a pristine `HEAD` checkout (the driver deep-equals a
+`localStorage` round-trip against `page.evaluate` output, and `evolvesInto: undefined`
+survives only one of those two paths).
 
 ## Out of scope / do not touch
 

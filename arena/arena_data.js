@@ -341,6 +341,59 @@
                 background: 'assets/backgrounds/cinder-ridge.png',
                 enabled: true
             }
+        ],
+        starterDecks: [
+            {
+                id: 'water',
+                name: 'Water',
+                type: 'WATER',
+                pokemon: ['Blastoise', 'Feraligatr'],
+                attacks: [
+                    { name: 'Surf', count: 2 },
+                    { name: 'Waterfall', count: 2 },
+                    { name: 'Crunch', count: 1 },
+                    { name: 'Sucker Punch', count: 1 }
+                ],
+                items: [
+                    { name: 'Sitrus Berry', count: 1 },
+                    { name: 'Withdraw Wand', count: 1 }
+                ],
+                enabled: true
+            },
+            {
+                id: 'grass',
+                name: 'Grass',
+                type: 'GRASS',
+                pokemon: ['Venusaur', 'Meganium'],
+                attacks: [
+                    { name: 'Razor Leaf', count: 3 },
+                    { name: 'Sleep Powder', count: 1 },
+                    { name: 'Sludge Bomb', count: 1 },
+                    { name: 'Moon Blast', count: 1 }
+                ],
+                items: [
+                    { name: 'Sitrus Berry', count: 1 },
+                    { name: 'Withdraw Wand', count: 1 }
+                ],
+                enabled: true
+            },
+            {
+                id: 'fire',
+                name: 'Fire',
+                type: 'FIRE',
+                pokemon: ['Charizard', 'Typhlosion'],
+                attacks: [
+                    { name: 'Flame Thrower', count: 2 },
+                    { name: 'Fire Spin', count: 2 },
+                    { name: 'Air Slash', count: 1 },
+                    { name: 'Shadow Ball', count: 1 }
+                ],
+                items: [
+                    { name: 'Sitrus Berry', count: 1 },
+                    { name: 'Withdraw Wand', count: 1 }
+                ],
+                enabled: true
+            }
         ]
     });
 
@@ -528,6 +581,29 @@
     }
 
     /**
+     * Converts a starter-deck record from its authoring shape ({ name, count }
+     * pairs) into the tuple shape the run builder and starter picker already
+     * consume ([name, count]). Records without an id are dropped.
+     */
+    function normalizeStarterDeck(record) {
+        if (!record || !record.id) return null;
+
+        const pairs = list => (Array.isArray(list) ? list : [])
+            .filter(entry => entry && entry.name)
+            .map(entry => [entry.name, Math.max(1, Math.floor(Number(entry.count)) || 1)]);
+
+        return {
+            attacks: pairs(record.attacks),
+            enabled: record.enabled !== false,
+            id: record.id,
+            items: pairs(record.items),
+            name: record.name || record.id,
+            pokemon: (Array.isArray(record.pokemon) ? record.pokemon : []).filter(Boolean),
+            type: record.type || 'NONE'
+        };
+    }
+
+    /**
      * Applies record-level normalization to all loaded game data at boot.
      */
     function normalizeGameData(records) {
@@ -537,6 +613,7 @@
             locations: (records.locations || []).map(normalizeLocation).filter(Boolean),
             items: records.items.map(normalizeItem),
             pokemon: records.pokemon.map(normalizePokemon),
+            starterDecks: (records.starterDecks || []).map(normalizeStarterDeck).filter(Boolean),
             trainers: (records.trainers || []).map(normalizeTrainer).filter(trainer => trainer.name)
         };
     }
@@ -566,16 +643,17 @@
      * It loads and normalizes all card data, then replaces arena.GameData.
      */
     async function loadGameData() {
-        const [pokemon, attacks, items, trainers, events, locations] = await Promise.all([
+        const [pokemon, attacks, items, trainers, events, locations, starterDecks] = await Promise.all([
             loadJson('pokemon.json', fallbackRecords.pokemon),
             loadJson('attacks.json', fallbackRecords.attacks),
             loadJson('items.json', fallbackRecords.items),
             loadJson('trainers.json', fallbackRecords.trainers),
             loadJson('events.json', fallbackRecords.events),
-            loadJson('locations.json', fallbackRecords.locations)
+            loadJson('locations.json', fallbackRecords.locations),
+            loadJson('starter_decks.json', fallbackRecords.starterDecks)
         ]);
 
-        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events, locations });
+        arena.GameData = normalizeGameData({ pokemon, attacks, items, trainers, events, locations, starterDecks });
         return arena.GameData;
     }
 

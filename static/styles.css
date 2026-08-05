@@ -219,7 +219,7 @@ body {
     text-shadow: 0 8px 22px rgba(0, 0, 0, 0.36);
 }
 
-/* Responsive 3-card row that wraps on narrow viewports. */
+/* Responsive deck row: wraps on narrow viewports and for any deck count. */
 .starter-page .starter-decks {
     display: flex;
     flex-wrap: wrap;

@@ -1,7 +1,7 @@
 /**
  * Pokemon Rogue Pocket - starter picker page
  *
- * Renders the three starter decks (from PokeLocations.STARTER_DECKS) and, on
+ * Renders the enabled starter decks (from starter_decks.json) and, on
  * selection, hands off to a fresh run via area.html?newRun=1&starter=<id>.
  */
 
@@ -23,7 +23,7 @@
     }
 
     function render() {
-        const decks = Object.values(locations.STARTER_DECKS);
+        const decks = Object.values(locations.getStarterDecks(arena.GameData));
         state.root.innerHTML = decks.map(renderDeckCard).join('');
     }
 

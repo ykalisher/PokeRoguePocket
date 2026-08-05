@@ -767,14 +767,21 @@
         return locations.createLocationSnapshot(location);
     }
 
+    function starterDecks() {
+        return locations.getStarterDecks(arena.GameData);
+    }
+
     function getStarterType(starterId) {
-        const deck = locations.STARTER_DECKS[starterId] || locations.STARTER_DECKS.water;
+        const decks = starterDecks();
+        const deck = decks[starterId] || Object.values(decks)[0];
 
         return deck.type;
     }
 
     function normalizeStarterId(starterId) {
-        return starterId && locations.STARTER_DECKS[starterId] ? starterId : 'water';
+        const decks = starterDecks();
+
+        return starterId && decks[starterId] ? starterId : Object.keys(decks)[0];
     }
 
     function getRunLevel() {
@@ -1425,7 +1432,8 @@
     }
 
     function createCardCollections(starterId) {
-        const deck = locations.STARTER_DECKS[starterId] || locations.STARTER_DECKS.water;
+        const decks = starterDecks();
+        const deck = decks[starterId] || Object.values(decks)[0];
         const actions = [];
         const pokemon = [];
 
