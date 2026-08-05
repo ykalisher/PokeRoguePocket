@@ -70,19 +70,19 @@ re-deriving rather than importing).
 
 ## Steps
 
-- [ ] 1. **`dev/editor/server.js`** — add `'starter_decks'` to `FILE_NAMES` (~85), last in
+- [x] 1. **`dev/editor/server.js`** — add `'starter_decks'` to `FILE_NAMES` (~85), last in
   the list.
 
-- [ ] 2. **`dev/editor/format_json.js`** — add `'starter_decks'` to `SMART_FILES` (~64).
+- [x] 2. **`dev/editor/format_json.js`** — add `'starter_decks'` to `SMART_FILES` (~64).
 
-- [ ] 3. **`dev/editor/format_json.js`** — prove byte-exactness before going further:
+- [x] 3. **`dev/editor/format_json.js`** — prove byte-exactness before going further:
   `node -e "const {formatDataFile}=require('./dev/editor/format_json.js');const fs=require('fs');const cur=fs.readFileSync('starter_decks.json','utf8');const out=formatDataFile('starter_decks',JSON.parse(cur));console.log(out===cur?'BYTE-EXACT':'DIFFERS');process.stdout.write(out)"`
   If it differs, rewrite `starter_decks.json` **to the formatter's output** (the formatter
   is canonical for smart files — this is how `events.json` and `locations.json` are
   stored), then re-run until it reports `BYTE-EXACT`. Do not change the formatter to match
   a hand-written file.
 
-- [ ] 4. **`dev/editor/server.js`** — kill the stale require-time `ENGINE_REFS`. Change
+- [x] 4. **`dev/editor/server.js`** — kill the stale require-time `ENGINE_REFS`. Change
   `buildEngineRefs()` to take the loaded data and return only what is still engine-owned,
   and call it per request:
 
@@ -110,13 +110,13 @@ re-deriving rather than importing).
   Remove `starterDecks` and `starterTypes` from `engineRefs` entirely; the rules that used
   them now read `data.starter_decks` directly.
 
-- [ ] 5. **`dev/editor/app.js`** — the browser mirrors the server's refs. In `init()` (~275)
+- [x] 5. **`dev/editor/app.js`** — the browser mirrors the server's refs. In `init()` (~275)
   it does `EditorApp.store.engineRefs = Object.assign({}, enums.engineRefs, { resolveSpriteFile })`;
   that still works unchanged once `enums.engineRefs` no longer carries starter data. Add
   `'starter_decks.json': 'starters'` to `FILE_TO_TAB` (~30) so Issues-tab jump-links resolve
   (the tab itself arrives in phase 91; an unknown tab name simply no-ops until then).
 
-- [ ] 6. **`dev/editor/validate.js`** — new `validateStarterDecks(starterDecks, pokemon,
+- [x] 6. **`dev/editor/validate.js`** — new `validateStarterDecks(starterDecks, pokemon,
   attacks, items, pokemonNames, attackNames, itemNames, enums)`, placed next to
   `validateLocations`. Rules, all on `file: 'starter_decks.json'` with `recordKey` = the
   deck id (or `'(unnamed deck)'`):
@@ -133,11 +133,11 @@ re-deriving rather than importing).
   | `starterDecks.none-enabled` | error | dataset-level (`recordKey: '(dataset)'`), zero records with `enabled !== false` |
   | `starterDecks.unusable-attack` | **warning** | no Pokemon in the deck can legally use that attack (rule in "Context you need") |
 
-- [ ] 7. **`dev/editor/validate.js`** — wire it into `validateAll` (~769): read
+- [x] 7. **`dev/editor/validate.js`** — wire it into `validateAll` (~769): read
   `const starterDecks = data.starter_decks || [];` beside the other collections and spread
   `...validateStarterDecks(...)` into the returned array, before `validateLocations`.
 
-- [ ] 8. **`dev/editor/validate.js`** — repoint `locations.starter-coverage` (~611). It
+- [x] 8. **`dev/editor/validate.js`** — repoint `locations.starter-coverage` (~611). It
   currently loops `engineRefs.starterTypes`; give `validateLocations` the starter records
   instead and loop the **enabled** decks' types:
 
@@ -155,12 +155,12 @@ re-deriving rather than importing).
         });
   ```
 
-- [ ] 9. **`dev/editor/validate.js`** — `validateEngineRefs` (~650): delete the
+- [x] 9. **`dev/editor/validate.js`** — `validateEngineRefs` (~650): delete the
   `engineRefs.starterDecks` branch and the `engine.unknown-starter-deck-ref` code entirely
   (step 6 now covers it, on the real file). Keep the `defaultDeck` branch and
   `engine.unknown-default-deck-ref` untouched.
 
-- [ ] 10. **`dev/editor/validate.js`** — `addEngineDeckRefs` (~844): drop its
+- [x] 10. **`dev/editor/validate.js`** — `addEngineDeckRefs` (~844): drop its
   `engineRefs.starterDecks` branch, and instead report starter references from the real
   data in `findReferences` (~858). Each of the `pokemon` / `attack` / `item` branches gains:
 
@@ -178,35 +178,35 @@ re-deriving rather than importing).
   (adapt `listKey` to each branch: `'pokemon'`, `'attacks'`, `'items'`). This is what makes
   "cannot delete Blastoise — referenced by starter_decks.json / water" clickable.
 
-- [ ] 11. **`tests/editor_format.test.js`** — add `starter_decks` to whatever list drives
+- [x] 11. **`tests/editor_format.test.js`** — add `starter_decks` to whatever list drives
   its byte-exactness cases, so the live file is checked on every run.
 
-- [ ] 12. **`tests/editor_validation.test.js`** — one case per rule from step 6, plus a case
+- [x] 12. **`tests/editor_validation.test.js`** — one case per rule from step 6, plus a case
   that `locations.starter-coverage` fires when a deck's type has no enabled location, and a
   case that `findReferences(data, 'pokemon', 'Blastoise', …)` includes a
   `starter_decks.json` row.
 
-- [ ] 13. **`tests/editor_api.test.js`** — `GET /api/data` includes a `starter_decks` array;
+- [x] 13. **`tests/editor_api.test.js`** — `GET /api/data` includes a `starter_decks` array;
   `PUT /api/data/starter_decks` with a valid array writes the file (through the temp data
   dir the file already uses); a PUT introducing an unknown pokemon name gets a **409** with
   the blocking issue.
 
-- [ ] 14. **`node tests/run_all.js`** — green.
+- [x] 14. **`node tests/run_all.js`** — green.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green.
-- [ ] `grep -rn "starterDecks\|starterTypes" dev/editor/` returns no `engineRefs.` hits —
+- [x] `node tests/run_all.js` green.
+- [x] `grep -rn "starterDecks\|starterTypes" dev/editor/` returns no `engineRefs.` hits —
   only the new data-driven code.
-- [ ] Start the editor (`node dev/editor/server.js`, 127.0.0.1:8932) and check
+- [x] Start the editor (`node dev/editor/server.js`, 127.0.0.1:8932) and check
   `curl -s 127.0.0.1:8932/api/data | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(Object.keys(JSON.parse(s))))"`
   lists `starter_decks`, and `curl -s 127.0.0.1:8932/api/issues` reports the same
   error/warning counts as before this phase (the starter rules moved files but should not
   change the *count* for the current, valid data).
-- [ ] Write guard proof: `curl -X PUT -H 'Content-Type: application/json' -d '[{"id":"x","name":"X","type":"WATER","pokemon":["NotAPokemon"],"attacks":[],"items":[],"enabled":true}]' 127.0.0.1:8932/api/data/starter_decks`
+- [x] Write guard proof: `curl -X PUT -H 'Content-Type: application/json' -d '[{"id":"x","name":"X","type":"WATER","pokemon":["NotAPokemon"],"attacks":[],"items":[],"enabled":true}]' 127.0.0.1:8932/api/data/starter_decks`
   returns **409** with `starterDecks.unknown-pokemon`, and `git status` shows
   `starter_decks.json` unchanged.
-- [ ] `git diff starter_decks.json` is empty after a no-op save through the API (round-trip
+- [x] `git diff starter_decks.json` is empty after a no-op save through the API (round-trip
   fidelity).
 
 ## Out of scope / do not touch

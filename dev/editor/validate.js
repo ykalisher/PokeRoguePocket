@@ -548,9 +548,107 @@
         return issues;
     }
 
+    // -------------------------------------------------------- starter decks
+
+    const ID_PATTERN = /^[a-z0-9-]+$/;
+
+    // Mirrors speciesCanUseAttack() in arena/arena_model.js / pokemonCanUseAttack()
+    // in map/run_state.js, kept local so this module stays require-free.
+    function cardTypes(record) {
+        if (record && Array.isArray(record.types)) return record.types;
+        if (!record) return [];
+        return [record.type1, record.type2, record.type3].filter((type) => type && type !== 'NONE');
+    }
+
+    function speciesCanUseAttack(pokemonRecord, attackRecord) {
+        const pokemonTypes = cardTypes(pokemonRecord);
+        const requiredTypes = cardTypes(attackRecord);
+
+        if (requiredTypes.length === 0) return true;
+        if (attackRecord.full_type_requirements) {
+            return requiredTypes.every((type) => pokemonTypes.includes(type));
+        }
+        return requiredTypes.some((type) => pokemonTypes.includes(type));
+    }
+
+    function validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums) {
+        const issues = [];
+        const validTypes = new Set(Object.values((enums && enums.PokeType) || {}));
+        const pokemonByName = new Map(pokemon.map((record) => [record.name, record]));
+        const attacksByName = new Map(attacks.map((record) => [record.name, record]));
+
+        const seenIds = new Set();
+
+        starterDecks.forEach((deck) => {
+            const key = (deck && deck.id) || '(unnamed deck)';
+
+            if (!deck || !deck.id || typeof deck.id !== 'string') {
+                issues.push(err('starter_decks.json', key, 'starterDecks.missing-id', `${key}: entry missing id`, 'id'));
+            } else {
+                if (seenIds.has(deck.id)) {
+                    issues.push(err('starter_decks.json', deck.id, 'starterDecks.duplicate-id', `duplicate starter deck id ${deck.id}`, 'id'));
+                }
+                seenIds.add(deck.id);
+                if (!ID_PATTERN.test(deck.id)) {
+                    issues.push(err('starter_decks.json', deck.id, 'starterDecks.bad-id', `${key}: id must match ${ID_PATTERN}`, 'id'));
+                }
+            }
+
+            if (!deck) return;
+
+            if (!deck.type || !validTypes.has(deck.type)) {
+                issues.push(err('starter_decks.json', key, 'starterDecks.bad-type', `${key}: bad type ${deck.type}`, 'type'));
+            }
+
+            const deckPokemon = Array.isArray(deck.pokemon) ? deck.pokemon : [];
+            if (deckPokemon.length === 0) {
+                issues.push(err('starter_decks.json', key, 'starterDecks.no-pokemon', `${key}: needs at least one pokemon`, 'pokemon'));
+            }
+            deckPokemon.forEach((name) => {
+                if (!pokemonNames.has(name)) {
+                    issues.push(err('starter_decks.json', key, 'starterDecks.unknown-pokemon', `${key}: unknown pokemon ${name}`, 'pokemon'));
+                }
+            });
+
+            (Array.isArray(deck.attacks) ? deck.attacks : []).forEach((entry) => {
+                if (!entry || !attackNames.has(entry.name)) {
+                    issues.push(err('starter_decks.json', key, 'starterDecks.unknown-attack', `${key}: unknown attack ${entry && entry.name}`, 'attacks'));
+                }
+                if (!entry || !(Number.isInteger(entry.count) && entry.count >= 1)) {
+                    issues.push(err('starter_decks.json', key, 'starterDecks.bad-count', `${key}: attack ${entry && entry.name} needs an integer count >= 1`, 'attacks'));
+                }
+            });
+
+            (Array.isArray(deck.items) ? deck.items : []).forEach((entry) => {
+                if (!entry || !itemNames.has(entry.name)) {
+                    issues.push(err('starter_decks.json', key, 'starterDecks.unknown-item', `${key}: unknown item ${entry && entry.name}`, 'items'));
+                }
+                if (!entry || !(Number.isInteger(entry.count) && entry.count >= 1)) {
+                    issues.push(err('starter_decks.json', key, 'starterDecks.bad-count', `${key}: item ${entry && entry.name} needs an integer count >= 1`, 'items'));
+                }
+            });
+
+            const deckPokemonRecords = deckPokemon.map((name) => pokemonByName.get(name)).filter(Boolean);
+            (Array.isArray(deck.attacks) ? deck.attacks : []).forEach((entry) => {
+                const attackRecord = entry && attacksByName.get(entry.name);
+                if (!attackRecord) return;
+                const usable = deckPokemonRecords.some((pokemonRecord) => speciesCanUseAttack(pokemonRecord, attackRecord));
+                if (!usable) {
+                    issues.push(warn('starter_decks.json', key, 'starterDecks.unusable-attack', `${key}: no pokemon in this deck can legally use ${entry.name}`, 'attacks'));
+                }
+            });
+        });
+
+        if (!starterDecks.some((deck) => deck && deck.enabled !== false)) {
+            issues.push(err('starter_decks.json', '(dataset)', 'starterDecks.none-enabled', 'starter_decks.json needs at least one enabled deck'));
+        }
+
+        return issues;
+    }
+
     // ------------------------------------------------------------- locations
 
-    function validateLocations(locations, enums, engineRefs) {
+    function validateLocations(locations, enums, starterDecks) {
         const issues = [];
         const validTypes = new Set(Object.values((enums && enums.PokeType) || {}));
 
@@ -608,14 +706,17 @@
 
         const enabled = locations.filter((record) => record.enabled !== false);
 
-        if (engineRefs && Array.isArray(engineRefs.starterTypes)) {
-            engineRefs.starterTypes.forEach((type) => {
-                const covered = enabled.some((record) => Array.isArray(record.types) && record.types.includes(type));
-                if (!covered) {
-                    issues.push(err('locations.json', '(dataset)', 'locations.starter-coverage', `no enabled location contains starter type ${type}`));
-                }
-            });
-        }
+        const starterTypes = [...new Set((starterDecks || [])
+            .filter((deck) => deck && deck.enabled !== false && deck.type)
+            .map((deck) => deck.type))];
+
+        starterTypes.forEach((type) => {
+            const covered = enabled.some((record) => Array.isArray(record.types) && record.types.includes(type));
+            if (!covered) {
+                issues.push(err('locations.json', '(dataset)', 'locations.starter-coverage',
+                    `no enabled location contains starter type ${type} — enable a location with that type, or disable that starter deck`));
+            }
+        });
 
         if (enabled.length > 0) {
             const shareType = (a, b) => (a.types || []).some((type) => (b.types || []).includes(type));
@@ -660,9 +761,6 @@
         }
 
         checkDeck(engineRefs.defaultDeck, 'engine.unknown-default-deck-ref');
-        if (engineRefs.starterDecks) {
-            Object.values(engineRefs.starterDecks).forEach((deck) => checkDeck(deck, 'engine.unknown-starter-deck-ref'));
-        }
 
         return issues;
     }
@@ -778,6 +876,7 @@
         const trainers = data.trainers || [];
         const events = data.events || [];
         const locations = data.locations || [];
+        const starterDecks = data.starter_decks || [];
 
         const pokemonNames = new Set(pokemon.map((record) => record.name));
         const attackNames = new Set(attacks.map((record) => record.name));
@@ -796,7 +895,8 @@
             ...validateItems(items, enums),
             ...validateTrainers(trainers, pokemonNames, attackNames, itemNames, enums),
             ...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames }),
-            ...validateLocations(locations, enums, engineRefs),
+            ...validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums),
+            ...validateLocations(locations, enums, starterDecks),
             ...validateNameCharacters(data),
             ...validateEngineRefs(pokemonNames, attackNames, itemNames, engineRefs),
             ...validateAssets(data, assetIndex, engineRefs)
@@ -847,13 +947,17 @@
         if (engineRefs.defaultDeck && Array.isArray(engineRefs.defaultDeck[listKey]) && engineRefs.defaultDeck[listKey].includes(name)) {
             results.push({ file: 'engine', recordKey: 'defaultDeck', field: listKey });
         }
-        if (engineRefs.starterDecks) {
-            Object.entries(engineRefs.starterDecks).forEach(([key, deck]) => {
-                if (deck && Array.isArray(deck[listKey]) && deck[listKey].includes(name)) {
-                    results.push({ file: 'engine', recordKey: `starterDecks.${key}`, field: listKey });
-                }
-            });
-        }
+    }
+
+    function addStarterDeckRefs(results, data, listKey, name) {
+        (data.starter_decks || []).forEach((deck) => {
+            const names = listKey === 'pokemon'
+                ? (deck.pokemon || [])
+                : (deck[listKey] || []).map((entry) => entry && entry.name);
+            if (names.includes(name)) {
+                results.push({ file: 'starter_decks.json', recordKey: deck.id, field: listKey });
+            }
+        });
     }
 
     function findReferences(data, kind, name, engineRefs) {
@@ -879,6 +983,7 @@
             });
             addRequirementRefs(results, events, 'pokemon', name);
             addEngineDeckRefs(results, engineRefs, 'pokemon', name);
+            addStarterDeckRefs(results, data, 'pokemon', name);
         } else if (kind === 'attack') {
             trainers.forEach((t) => {
                 const flat = Array.isArray(t.attacks) ? t.attacks.flat() : [];
@@ -896,6 +1001,7 @@
             });
             addRequirementRefs(results, events, 'attack', name);
             addEngineDeckRefs(results, engineRefs, 'attacks', name);
+            addStarterDeckRefs(results, data, 'attacks', name);
         } else if (kind === 'item') {
             trainers.forEach((t) => {
                 if (Array.isArray(t.items) && t.items.includes(name)) {
@@ -914,6 +1020,7 @@
             });
             addRequirementRefs(results, events, 'item', name);
             addEngineDeckRefs(results, engineRefs, 'items', name);
+            addStarterDeckRefs(results, data, 'items', name);
         } else if (kind === 'trainer') {
             events.forEach((e) => {
                 if (e.trainerName === name) results.push({ file: 'events.json', recordKey: e.id, field: 'trainerName' });

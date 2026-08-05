@@ -33,7 +33,8 @@
         'items.json': 'items',
         'trainers.json': 'trainers',
         'events.json': 'events',
-        'locations.json': 'locations'
+        'locations.json': 'locations',
+        'starter_decks.json': 'starters'
     };
 
     EditorApp.store = {

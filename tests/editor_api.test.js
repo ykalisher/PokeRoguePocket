@@ -10,7 +10,7 @@ const { ROOT } = require('./helpers/arena_env');
 const { createServer } = require('../dev/editor/server.js');
 const { formatDataFile } = require('../dev/editor/format_json.js');
 
-const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations'];
+const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks'];
 
 // Seeds a fixture data dir from the real, already-valid root JSON files
 // (simpler than hand-rolling minimal fixtures, and it satisfies the
@@ -80,7 +80,7 @@ after(async () => {
 
 // --------------------------------------------------------------- /api/data
 
-test('GET /api/data returns the six data arrays intact', async () => {
+test('GET /api/data returns the seven data arrays intact, including starter_decks', async () => {
     const res = await fetch(`${sharedUrl}/api/data`);
     assert.equal(res.status, 200);
     const body = await res.json();
@@ -145,6 +145,56 @@ test('PUT /api/data/pokemon removing a trainer-referenced pokemon is blocked; ?f
         assert.equal(forcedRes.status, 200);
         const forced = JSON.parse(fs.readFileSync(path.join(dataDir, 'pokemon.json'), 'utf8'));
         assert.equal(forced.length, withoutIt.length);
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('PUT /api/data/starter_decks with a valid array writes the file', async () => {
+    const dataDir = makeFixtureDir();
+    const server = await bootServer(dataDir);
+    try {
+        const url = baseUrl(server);
+        const data = await (await fetch(`${url}/api/data`)).json();
+        const decks = data.starter_decks;
+        decks[0] = { ...decks[0], name: `${decks[0].name} Deluxe` };
+
+        const putRes = await fetch(`${url}/api/data/starter_decks`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(decks)
+        });
+        assert.equal(putRes.status, 200);
+        assert.deepEqual(await putRes.json(), { ok: true, count: decks.length });
+
+        const onDisk = fs.readFileSync(path.join(dataDir, 'starter_decks.json'), 'utf8');
+        assert.equal(onDisk, formatDataFile('starter_decks', decks));
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('PUT /api/data/starter_decks introducing an unknown pokemon name is blocked with a 409', async () => {
+    const dataDir = makeFixtureDir();
+    const server = await bootServer(dataDir);
+    try {
+        const url = baseUrl(server);
+        const data = await (await fetch(`${url}/api/data`)).json();
+        const decks = data.starter_decks;
+        decks[0] = { ...decks[0], pokemon: [...decks[0].pokemon, 'Not A Real Pokemon'] };
+
+        const res = await fetch(`${url}/api/data/starter_decks`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(decks)
+        });
+        assert.equal(res.status, 409);
+        const body = await res.json();
+        assert.equal(body.blocked, true);
+        assert.ok(body.issues.some((issue) => issue.code === 'starterDecks.unknown-pokemon'));
+
+        const untouched = JSON.parse(fs.readFileSync(path.join(dataDir, 'starter_decks.json'), 'utf8'));
+        assert.equal(untouched.length, data.starter_decks.length);
     } finally {
         await closeServer(server);
     }

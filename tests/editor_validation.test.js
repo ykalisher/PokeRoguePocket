@@ -66,6 +66,11 @@ function withLocations(mutate) {
     mutate(data.locations);
     return data;
 }
+function withStarterDecks(mutate) {
+    const data = structuredClone(live.data);
+    mutate(data.starter_decks);
+    return data;
+}
 
 test('pokemon: bad type', () => {
     const data = withPokemon((pokemon) => { pokemon[0].type1 = 'NOT_A_TYPE'; });
@@ -368,6 +373,84 @@ test('locations: disconnected graph', () => {
     assert.ok(hasCode(issues, 'locations.graph-disconnected'));
 });
 
+test('starterDecks: missing id', () => {
+    const data = withStarterDecks((decks) => { delete decks[0].id; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.missing-id'));
+});
+
+test('starterDecks: duplicate id', () => {
+    const data = withStarterDecks((decks) => { decks[1].id = decks[0].id; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.duplicate-id'));
+});
+
+test('starterDecks: bad id', () => {
+    const data = withStarterDecks((decks) => { decks[0].id = 'Not A Valid Id!'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.bad-id'));
+});
+
+test('starterDecks: bad type', () => {
+    const data = withStarterDecks((decks) => { decks[0].type = 'NOT_A_TYPE'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.bad-type'));
+});
+
+test('starterDecks: no pokemon', () => {
+    const data = withStarterDecks((decks) => { decks[0].pokemon = []; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.no-pokemon'));
+});
+
+test('starterDecks: unknown pokemon', () => {
+    const data = withStarterDecks((decks) => { decks[0].pokemon.push('Not A Real Pokemon'); });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.unknown-pokemon'));
+});
+
+test('starterDecks: unknown attack', () => {
+    const data = withStarterDecks((decks) => { decks[0].attacks.push({ name: 'Not A Real Attack', count: 1 }); });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.unknown-attack'));
+});
+
+test('starterDecks: unknown item', () => {
+    const data = withStarterDecks((decks) => { decks[0].items.push({ name: 'Not A Real Item', count: 1 }); });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.unknown-item'));
+});
+
+test('starterDecks: bad count', () => {
+    const data = withStarterDecks((decks) => { decks[0].attacks[0].count = 0; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.bad-count'));
+});
+
+test('starterDecks: none enabled', () => {
+    const data = withStarterDecks((decks) => { decks.forEach((deck) => { deck.enabled = false; }); });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.none-enabled'));
+});
+
+test('starterDecks: an attack no deck pokemon can use warns unusable-attack', () => {
+    const data = withStarterDecks((decks) => {
+        decks[0].attacks.push({ name: 'Sleep Powder', count: 1 });
+    });
+    const issues = validateAll(data, { enums: live.enums });
+    const warning = issues.find((issue) => issue.code === 'starterDecks.unusable-attack');
+    assert.ok(warning, 'expected a starterDecks.unusable-attack warning');
+    assert.equal(warning.severity, 'warning');
+});
+
+test('locations.starter-coverage fires when an enabled starter deck type has no covering enabled location', () => {
+    const data = structuredClone(live.data);
+    data.starter_decks[0].type = 'BABY';
+    data.locations.forEach((location) => { location.types = (location.types || []).filter((type) => type !== 'BABY'); });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'locations.starter-coverage'));
+});
+
 test('names: double quote in an attack name is an error', () => {
     const data = withAttacks((attacks) => { attacks[0].name = 'Slash "Deluxe"'; });
     const issues = validateAll(data, { enums: live.enums });
@@ -402,7 +485,7 @@ test('findReferences(pokemon, Blastoise) includes the default deck and the water
     const refs = findReferences(live.data, 'pokemon', 'Blastoise', live.engineRefs);
 
     assert.ok(refs.some((ref) => ref.file === 'engine' && ref.recordKey === 'defaultDeck'));
-    assert.ok(refs.some((ref) => ref.file === 'engine' && ref.recordKey === 'starterDecks.water'));
+    assert.ok(refs.some((ref) => ref.file === 'starter_decks.json' && ref.recordKey === 'water'));
 });
 
 test('findReferences(trainer, Mecha Cop) includes events.json/rogue-mecha-cop', () => {

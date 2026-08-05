@@ -28,13 +28,13 @@ function loadRawData() {
         items: readData('items.json'),
         trainers: readData('trainers.json'),
         events: readData('events.json'),
-        locations: readData('locations.json')
+        locations: readData('locations.json'),
+        starter_decks: readData('starter_decks.json')
     };
 }
 
 function buildEngineRefs() {
     const defaultDeck = window.CardArena.Constants.DEFAULT_BATTLE_DECK;
-    const starterDecks = window.PokeLocations.STARTER_DECKS;
 
     return {
         defaultDeck: {
@@ -42,12 +42,6 @@ function buildEngineRefs() {
             attacks: defaultDeck.pokemon.flatMap((entry) => entry.attacks),
             items: defaultDeck.items
         },
-        starterDecks: Object.fromEntries(Object.entries(starterDecks).map(([key, deck]) => [key, {
-            pokemon: deck.pokemon,
-            attacks: deck.attacks.map((pair) => pair[0]),
-            items: deck.items.map((pair) => pair[0])
-        }])),
-        starterTypes: Object.values(starterDecks).map((deck) => deck.type),
         resolveSpriteFile: (name, sprite) => window.PokeRogue.TrainerSprites.resolveSprite(name, sprite).file
     };
 }

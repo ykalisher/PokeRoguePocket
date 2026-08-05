@@ -59,7 +59,7 @@
     }
 
     const PLAIN_FILES = new Set(['pokemon', 'attacks', 'items', 'trainers']);
-    const SMART_FILES = new Set(['events', 'locations']);
+    const SMART_FILES = new Set(['events', 'locations', 'starter_decks']);
 
     function baseName(fileName) {
         return String(fileName || '').replace(/\.json$/, '');

@@ -33,9 +33,8 @@ const { validateAll } = require('./validate.js');
 const resolveSpriteFile = (name, explicitSprite) =>
     window.PokeRogue.TrainerSprites.resolveSprite(name, explicitSprite).file;
 
-function buildEngineRefs() {
+function buildEngineRefs(data) {
     const defaultDeck = window.CardArena.Constants.DEFAULT_BATTLE_DECK;
-    const starterDecks = window.PokeLocations.STARTER_DECKS;
 
     return {
         defaultDeck: {
@@ -43,17 +42,9 @@ function buildEngineRefs() {
             attacks: defaultDeck.pokemon.flatMap((entry) => entry.attacks),
             items: defaultDeck.items
         },
-        starterDecks: Object.fromEntries(Object.entries(starterDecks).map(([key, deck]) => [key, {
-            pokemon: deck.pokemon,
-            attacks: deck.attacks.map((pair) => pair[0]),
-            items: deck.items.map((pair) => pair[0])
-        }])),
-        starterTypes: Object.values(starterDecks).map((deck) => deck.type),
         resolveSpriteFile
     };
 }
-
-const ENGINE_REFS = buildEngineRefs();
 
 const EFFECT_TYPES = [
     'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card', 'gain-random-baby',
@@ -80,12 +71,12 @@ const ENUMS_PAYLOAD = {
     extensions: EXTENSIONS,
     effectTypes: EFFECT_TYPES,
     eventTypes: EVENT_TYPES,
-    engineRefs: ENGINE_REFS
+    engineRefs: buildEngineRefs()
 };
 
 // -------------------------------------------------------------- constants
 
-const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations'];
+const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locations', 'starter_decks'];
 const UPLOAD_DIR_NAMES = ['portraits', 'sprites', 'items', 'backgrounds'];
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
@@ -310,10 +301,11 @@ async function handlePutData(req, res, fileName, searchParams, config) {
         const before = readAllData(config.dataDir);
         const after = { ...before, [fileName]: body };
         const assetIndex = buildAssetIndex(config);
-        const validateOptions = { enums: ENUMS_PAYLOAD, assetIndex, engineRefs: ENGINE_REFS };
 
-        const beforeErrors = validateAll(before, validateOptions).filter((issue) => issue.severity === 'error');
-        const afterErrors = validateAll(after, validateOptions).filter((issue) => issue.severity === 'error');
+        const beforeErrors = validateAll(before, { enums: ENUMS_PAYLOAD, assetIndex, engineRefs: buildEngineRefs(before) })
+            .filter((issue) => issue.severity === 'error');
+        const afterErrors = validateAll(after, { enums: ENUMS_PAYLOAD, assetIndex, engineRefs: buildEngineRefs(after) })
+            .filter((issue) => issue.severity === 'error');
         const beforeKeys = new Set(beforeErrors.map(issueKey));
 
         const targetFile = `${fileName}.json`;
@@ -349,7 +341,7 @@ function handleGetAssets(res, config) {
 function handleGetIssues(res, config) {
     const data = readAllData(config.dataDir);
     const assetIndex = buildAssetIndex(config);
-    const issues = validateAll(data, { enums: ENUMS_PAYLOAD, assetIndex, engineRefs: ENGINE_REFS });
+    const issues = validateAll(data, { enums: ENUMS_PAYLOAD, assetIndex, engineRefs: buildEngineRefs(data) });
     const counts = {
         error: issues.filter((issue) => issue.severity === 'error').length,
         warning: issues.filter((issue) => issue.severity === 'warning').length
