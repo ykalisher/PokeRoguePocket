@@ -59,7 +59,7 @@
         const events = getAvailableEvents(gameData, location)
             .filter(event => poolSatisfied(event, gameData))
             .filter(event => levelAllowsEvent(run, event, gameData))
-            .filter(event => eventConditionsMet(run, event));
+            .filter(event => eventConditionsMet(run, event, gameData));
 
         if (events.length === 0) return null;
 
@@ -206,18 +206,48 @@
 
     // Event-level card gates. Applied in chooseEvent only (like poolSatisfied),
     // so an already-saved encounter still resolves via getEventById.
-    function eventConditionsMet(run, eventRecord) {
-        return getUnmetConditionReason(run, eventRecord) === '';
+    function eventConditionsMet(run, eventRecord, gameData) {
+        return getUnmetConditionReason(run, eventRecord, gameData) === '';
     }
 
     function getActionConditions(action) {
         return normalizeConditions(action && action.conditions);
     }
 
+    // Achievement gates read the persistent profile, not the run. With no
+    // profile module loaded (Node tests), nothing is unlocked — fail closed.
+    function achievementUnlocked(id) {
+        return Boolean(global.PokeProfile &&
+            typeof global.PokeProfile.isUnlocked === 'function' &&
+            global.PokeProfile.isUnlocked(id));
+    }
+
+    function getAchievementLabel(gameData, id) {
+        const records = gameData && Array.isArray(gameData.achievements) ? gameData.achievements : [];
+        const record = records.find(entry => entry && entry.id === id);
+
+        return record && record.name ? record.name : id;
+    }
+
     // Card-ownership gates. Unlike a requirement (which renders a picker), a
     // condition selects nothing: it only reports why an action is unavailable.
-    function getUnmetConditionReason(run, action) {
+    function getUnmetConditionReason(run, action, gameData) {
         for (const condition of getActionConditions(action)) {
+            if (condition.subject === 'achievement') {
+                const unlocked = achievementUnlocked(condition.name);
+                const label = getAchievementLabel(gameData, condition.name);
+
+                if (condition.mode === 'lacks' && unlocked) {
+                    return condition.text || `Only before earning "${label}".`;
+                }
+
+                if (condition.mode === 'has' && !unlocked) {
+                    return condition.text || `Requires the "${label}" achievement.`;
+                }
+
+                continue;
+            }
+
             const owned = runHasCardNamed(run, condition.cardKind, condition.name);
 
             if (condition.mode === 'lacks' && owned) {
@@ -267,7 +297,7 @@
     }
 
     function getBlockedReason(run, action, selections, context = {}) {
-        const unmetConditionReason = getUnmetConditionReason(run, action);
+        const unmetConditionReason = getUnmetConditionReason(run, action, context.gameData);
 
         if (unmetConditionReason) return unmetConditionReason;
 
@@ -895,6 +925,7 @@
                 cardKind: normalizeCardKind(condition.cardKind || condition.kind),
                 mode: condition.mode === 'lacks' ? 'lacks' : 'has',
                 name: condition.name.trim(),
+                subject: condition.subject === 'achievement' ? 'achievement' : 'card',
                 text: typeof condition.text === 'string' ? condition.text : ''
             }));
     }

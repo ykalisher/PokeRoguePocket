@@ -118,7 +118,15 @@ test('cardKind item ownership is found after gain-card of an item (items live in
 test('malformed condition entries are dropped; a bare name normalizes to mode has, cardKind attack', () => {
     const conditions = E.getActionConditions({ conditions: [null, {}, { name: '   ' }, { name: 'X' }] });
 
-    assert.deepEqual(conditions, [{ cardKind: 'attack', mode: 'has', name: 'X', text: '' }]);
+    assert.deepEqual(conditions, [{ cardKind: 'attack', mode: 'has', name: 'X', subject: 'card', text: '' }]);
+});
+
+test('normalizeConditions always carries subject and never mutates its input', () => {
+    const input = { mode: 'has', cardKind: 'pokemon', name: 'Rotom' };
+    const conditions = E.getActionConditions({ conditions: [input] });
+
+    assert.deepEqual(conditions, [{ cardKind: 'pokemon', mode: 'has', name: 'Rotom', subject: 'card', text: '' }]);
+    assert.equal(input.subject, undefined);
 });
 
 test('an action with no conditions is unaffected', () => {
@@ -181,6 +189,104 @@ test('chooseEvent(gameData, {}) does not throw for a bare run, as older callers 
     }];
 
     assert.doesNotThrow(() => E.chooseEvent(gameData, {}));
+});
+
+test('achievement condition: has mode fails closed with no profile module, then passes once unlocked', () => {
+    const run = newRun();
+    const action = { conditions: [{ subject: 'achievement', mode: 'has', name: 'champion' }] };
+
+    assert.equal(E.getUnmetConditionReason(run, action), 'Requires the "champion" achievement.');
+
+    globalThis.PokeProfile = { isUnlocked: id => id === 'champion' };
+    try {
+        assert.equal(E.getUnmetConditionReason(run, action), '');
+    } finally {
+        delete globalThis.PokeProfile;
+    }
+});
+
+test('achievement condition: lacks mode mirrors has mode', () => {
+    const run = newRun();
+    const action = { conditions: [{ subject: 'achievement', mode: 'lacks', name: 'champion' }] };
+
+    assert.equal(E.getUnmetConditionReason(run, action), '');
+
+    globalThis.PokeProfile = { isUnlocked: id => id === 'champion' };
+    try {
+        assert.equal(E.getUnmetConditionReason(run, action), 'Only before earning "champion".');
+    } finally {
+        delete globalThis.PokeProfile;
+    }
+});
+
+test('achievement condition: a custom text overrides both default messages', () => {
+    const run = newRun();
+    const hasAction = { conditions: [{ subject: 'achievement', mode: 'has', name: 'champion', text: 'Beat the champion first!' }] };
+    const lacksAction = { conditions: [{ subject: 'achievement', mode: 'lacks', name: 'champion', text: 'Too late now.' }] };
+
+    assert.equal(E.getUnmetConditionReason(run, hasAction), 'Beat the champion first!');
+
+    globalThis.PokeProfile = { isUnlocked: () => true };
+    try {
+        assert.equal(E.getUnmetConditionReason(run, lacksAction), 'Too late now.');
+    } finally {
+        delete globalThis.PokeProfile;
+    }
+});
+
+test('achievement condition: gameData swaps the id for its display name in the default message', () => {
+    const run = newRun();
+    const gameData = { achievements: [{ id: 'champion', name: 'League Champion' }] };
+    const action = { conditions: [{ subject: 'achievement', mode: 'has', name: 'champion' }] };
+
+    assert.equal(E.getUnmetConditionReason(run, action, gameData), 'Requires the "League Champion" achievement.');
+});
+
+test('a condition without subject behaves exactly as before (regression guard)', () => {
+    const gameData = fixtureGameData();
+    const run = newRun();
+    const action = { conditions: [{ mode: 'has', cardKind: 'pokemon', name: 'Rotom' }] };
+
+    assert.equal(E.getUnmetConditionReason(run, action, gameData), 'Requires Rotom.');
+
+    grant(run, gameData, 'pokemon', 'Rotom');
+
+    assert.equal(E.getUnmetConditionReason(run, action, gameData), '');
+});
+
+test('event-level achievement condition blocks chooseEvent until the achievement is unlocked', () => {
+    const gameData = fixtureGameData();
+    gameData.events = [
+        {
+            id: 'gated-achievement',
+            type: 'gift',
+            conditions: [{ subject: 'achievement', mode: 'has', name: 'champion' }],
+            effects: [{ type: 'gain-cash', amount: 1 }]
+        },
+        {
+            id: 'ungated',
+            type: 'gift',
+            effects: [{ type: 'gain-cash', amount: 1 }]
+        }
+    ];
+    const run = newRun();
+
+    for (let i = 0; i < 300; i += 1) {
+        const chosen = E.chooseEvent(gameData, run);
+        assert.notEqual(chosen && chosen.id, 'gated-achievement');
+    }
+
+    globalThis.PokeProfile = { isUnlocked: id => id === 'champion' };
+    try {
+        let sawGated = false;
+        for (let i = 0; i < 300 && !sawGated; i += 1) {
+            const chosen = E.chooseEvent(gameData, run);
+            if (chosen && chosen.id === 'gated-achievement') sawGated = true;
+        }
+        assert.ok(sawGated, 'expected the achievement-gated event to be reachable once unlocked');
+    } finally {
+        delete globalThis.PokeProfile;
+    }
 });
 
 test('live events.json is never fully gated: a card-less run can still be offered an event', async () => {

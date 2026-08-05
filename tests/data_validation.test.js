@@ -231,6 +231,7 @@ test('events.json entries are well-formed', () => {
         attack: new Set(attacks.map(record => record.name)),
         item: new Set(items.map(record => record.name))
     };
+    const achievementIds = new Set(achievements.map(record => record.id));
     const locationIds = new Set(locations.map(location => location.id));
     const terrainSet = new Set(locations.map(location => String(location.terrain || '').trim().toLowerCase()).filter(Boolean));
     const seenIds = new Set();
@@ -309,9 +310,16 @@ test('events.json entries are well-formed', () => {
             assert.ok(condition.mode === 'has' || condition.mode === 'lacks',
                 `${event.id}: condition mode must be has or lacks, got ${condition.mode}`);
 
-            const names = conditionCardNames[condition.cardKind];
-            assert.ok(names, `${event.id}: condition cardKind must be pokemon, attack or item, got ${condition.cardKind}`);
-            assert.ok(names.has(condition.name), `${event.id}: condition names unknown ${condition.cardKind} ${condition.name}`);
+            assert.ok(condition.subject === undefined || condition.subject === 'card' || condition.subject === 'achievement',
+                `${event.id}: condition subject must be card or achievement, got ${condition.subject}`);
+
+            if (condition.subject === 'achievement') {
+                assert.ok(achievementIds.has(condition.name), `${event.id}: condition names unknown achievement ${condition.name}`);
+            } else {
+                const names = conditionCardNames[condition.cardKind];
+                assert.ok(names, `${event.id}: condition cardKind must be pokemon, attack or item, got ${condition.cardKind}`);
+                assert.ok(names.has(condition.name), `${event.id}: condition names unknown ${condition.cardKind} ${condition.name}`);
+            }
 
             if (condition.text !== undefined) {
                 assert.equal(typeof condition.text, 'string', `${event.id}: condition text must be a string`);

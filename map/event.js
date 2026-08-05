@@ -617,7 +617,7 @@
     }
 
     function getActionAvailabilityReason(action) {
-        const unmetConditionReason = eventSystem.getUnmetConditionReason(state.run, action);
+        const unmetConditionReason = eventSystem.getUnmetConditionReason(state.run, action, arena.GameData);
 
         if (unmetConditionReason) return unmetConditionReason;
 

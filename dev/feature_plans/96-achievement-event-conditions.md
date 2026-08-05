@@ -95,7 +95,7 @@ the author leaves as a card condition must **not** gain `"subject": "card"`.
 
 ## Steps
 
-- [ ] 1. **`map/event_effects.js`** — `normalizeConditions` (~891): carry `subject` through,
+- [x] 1. **`map/event_effects.js`** — `normalizeConditions` (~891): carry `subject` through,
   defaulting to `'card'`:
 
   ```js
@@ -104,7 +104,7 @@ the author leaves as a card condition must **not** gain `"subject": "card"`.
 
   Keep the object's keys alphabetical (`cardKind`, `mode`, `name`, `subject`, `text`).
 
-- [ ] 2. **`map/event_effects.js`** — add the two achievement helpers directly above
+- [x] 2. **`map/event_effects.js`** — add the two achievement helpers directly above
   `getUnmetConditionReason` (~219):
 
   ```js
@@ -124,7 +124,7 @@ the author leaves as a card condition must **not** gain `"subject": "card"`.
     }
   ```
 
-- [ ] 3. **`map/event_effects.js`** — rewrite `getUnmetConditionReason` to branch on
+- [x] 3. **`map/event_effects.js`** — rewrite `getUnmetConditionReason` to branch on
   `subject`, taking the new optional third argument:
 
   ```js
@@ -160,7 +160,7 @@ the author leaves as a card condition must **not** gain `"subject": "card"`.
     }
   ```
 
-- [ ] 4. **`map/event_effects.js`** — thread `gameData` through the two internal callers:
+- [x] 4. **`map/event_effects.js`** — thread `gameData` through the two internal callers:
   - `eventConditionsMet(run, eventRecord)` → `eventConditionsMet(run, eventRecord, gameData)`,
     forwarding to `getUnmetConditionReason(run, eventRecord, gameData)`. Its only caller is
     `chooseEvent(gameData, run)` (~57), whose filter line becomes
@@ -170,12 +170,12 @@ the author leaves as a card condition must **not** gain `"subject": "card"`.
     `const unmetConditionReason = getUnmetConditionReason(run, action, context.gameData);`
     Do not change its signature.
 
-- [ ] 5. **`map/event.js`** — `getActionAvailabilityReason` (~606): pass the page's game
+- [x] 5. **`map/event.js`** — `getActionAvailabilityReason` (~606): pass the page's game
   data, `eventSystem.getUnmetConditionReason(state.run, action, arena.GameData)`. Grep the
   file for how it already names the arena namespace (it destructures `arena` in its IIFE
   header) and match it.
 
-- [ ] 6. **`dev/editor/validate.js`** — in the condition block inside `validateEvents`
+- [x] 6. **`dev/editor/validate.js`** — in the condition block inside `validateEvents`
   (~467), branch on `subject` before the card-kind checks. Add the achievement id set to
   `validateEvents`'s parameters (it already receives `cardNames`; pass a new
   `achievementIds` `Set` built in `validateAll` from `data.achievements`):
@@ -196,7 +196,7 @@ the author leaves as a card condition must **not** gain `"subject": "card"`.
 
   The `mode` and `text` checks stay outside the branch and apply to both subjects.
 
-- [ ] 7. **`dev/editor/tab_events.js`** — the UI. In `conditionRowHtml` (~780), add a
+- [x] 7. **`dev/editor/tab_events.js`** — the UI. In `conditionRowHtml` (~780), add a
   **Subject** select as the first control and make the rest of the row switch on it:
 
   ```js
@@ -216,7 +216,7 @@ the author leaves as a card condition must **not** gain `"subject": "card"`.
     (`EditorApp.store.data.achievements || []`) so this phase does not depend on it.
   - "Locked text" row is unchanged for both subjects.
 
-- [ ] 8. **`dev/editor/tab_events.js`** — handlers:
+- [x] 8. **`dev/editor/tab_events.js`** — handlers:
   - `change` listener: add a `'cond-subject'` case beside `'cond-mode'` / `'cond-cardkind'`.
     Setting it to `'achievement'` must `delete cond.cardKind` and clear `cond.name`
     (a card name is never a valid achievement id); setting it back to `'card'` must
@@ -225,12 +225,12 @@ the author leaves as a card condition must **not** gain `"subject": "card"`.
     diff-clean. Both cases repaint.
   - `newCondition()` (~199) is unchanged — new conditions still default to a card gate.
 
-- [ ] 9. **`dev/editor/tab_events.js`** — `conditionsPreviewHtml` (~403): render achievement
+- [x] 9. **`dev/editor/tab_events.js`** — `conditionsPreviewHtml` (~403): render achievement
   conditions distinctly, e.g. `Requires achievement <name>` / `Only without achievement
   <name>`, resolving the id to its name from `EditorApp.store.data.achievements` when
   available.
 
-- [ ] 10. **`tests/event_conditions.test.js`** — extend. The file already builds fake runs
+- [x] 10. **`tests/event_conditions.test.js`** — extend. The file already builds fake runs
   and actions; add:
   - `subject: 'achievement'`, `mode: 'has'`, no profile module → returns
     `Requires the "<id>" achievement.` (fail-closed, id fallback);
@@ -246,33 +246,40 @@ the author leaves as a card condition must **not** gain `"subject": "card"`.
   Stub the profile by assigning `global.PokeProfile = { isUnlocked: id => id === 'champion' }`
   and deleting it afterwards, so the fail-closed case still runs.
 
-- [ ] 11. **`tests/data_validation.test.js`** — mirror the two new validation rules against
+- [x] 11. **`tests/data_validation.test.js`** — mirror the two new validation rules against
   the real `events.json` (which has no achievement conditions today, so both should report
   zero issues — that is the regression guard).
 
-- [ ] 12. **`node tests/run_all.js`** — green.
+- [x] 12. **`node tests/run_all.js`** — green.
 
-- [ ] 13. Browser proof. Temporarily add one achievement-gated event to `events.json`,
-  serve on 8931, and confirm: with the achievement locked, the choice button is greyed with
-  the reason underneath; after unlocking it (set the profile in the console), the button
-  works. Then **restore `events.json`** (`git checkout -- events.json`) and confirm
-  `git status` shows it unchanged. Screenshot to
-  `dev/verify/phase96_achievement_conditions.png`; adapt
-  `dev/verify/phase73_event_conditions.py`, which already drives exactly this screen.
+- [x] 13. Browser proof. Adapted `dev/verify/phase73_event_conditions.py` into
+  `dev/verify/phase96_achievement_conditions.py`: fixture `events.json` is served via
+  `page.route` (never touches the tracked file), so no restore step is needed. Confirmed
+  with the achievement locked, the choice button is greyed with the default reason
+  underneath; after unlocking it via the persistent-profile localStorage key, the button
+  works and resolves the event. Screenshot at
+  `dev/verify/phase96_achievement_conditions.png`.
 
 ## Verification
 
-- [ ] `node tests/run_all.js` green, with every case from step 10 passing.
-- [ ] `git diff events.json` is empty at the end of the phase.
-- [ ] Editor round trip: open an event with existing card conditions, change nothing, Save →
-  empty diff. Add an achievement condition, Save → the diff contains exactly
-  `"subject": "achievement"` plus `mode`/`name`, and **no** `cardKind`. Flip it back to a
-  card condition, Save → the `subject` key is gone. Restore the file.
-- [ ] `dev/verify/phase96_achievement_conditions.png` shows a gated choice greyed with its
+- [x] `node tests/run_all.js` green, with every case from step 10 passing.
+- [x] `git diff events.json` is empty at the end of the phase (never written to).
+- [x] Editor round trip (`dev/verify/phase96_editor_roundtrip.py`, against a temp copy of
+  the data files): opened `rotom-appliances` (existing card conditions), unchanged Save →
+  byte-identical file. Switching Subject to achievement removes the Card kind control and
+  clears the name; the write guard blocks the save with
+  `events.unknown-condition-achievement` (achievements.json isn't wired into the editor's
+  data yet — that's phase 97 — so no id can ever validate there today, which is the
+  correct, expected outcome, and the blocked save never touches the file on disk). Flipping
+  back to card restores `cardKind: 'pokemon'` and clears the name, confirmed via the
+  rendered DOM. The preview pane also correctly rendered "Requires achievement first-blood"
+  while the achievement subject was selected (step 9).
+- [x] `dev/verify/phase96_achievement_conditions.png` shows a gated choice greyed with its
   reason.
-- [ ] Event-level gating: an event whose top-level `conditions` name a locked achievement is
-  never picked by `chooseEvent` (assert in Node, not just by eye).
-- [ ] Node safety: `node -e "globalThis.window=globalThis;require('./map/event_effects.js')"`
+- [x] Event-level gating: an event whose top-level `conditions` name a locked achievement is
+  never picked by `chooseEvent` (asserted in Node: "event-level achievement condition
+  blocks chooseEvent until the achievement is unlocked", `tests/event_conditions.test.js`).
+- [x] Node safety: `node -e "globalThis.window=globalThis;require('./map/event_effects.js')"`
   still runs without `map/profile.js` loaded.
 
 ## Out of scope / do not touch

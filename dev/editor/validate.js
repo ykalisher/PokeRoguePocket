@@ -353,7 +353,7 @@
 
     // ----------------------------------------------------------------- events
 
-    function validateEvents(events, trainerNames, enums, locations, cardNames) {
+    function validateEvents(events, trainerNames, enums, locations, cardNames, achievementIds) {
         const issues = [];
         const validTypes = new Set(Object.values((enums && enums.PokeType) || {}));
         const validEffectTypes = new Set((enums && enums.effectTypes) || DEFAULT_EFFECT_TYPES);
@@ -479,13 +479,23 @@
                     issues.push(err('events.json', key, 'events.bad-condition-mode',
                         `${key}: condition mode must be has or lacks, got ${condition.mode}`, 'conditions'));
                 }
-                const names = cardNames && cardNames[condition.cardKind];
-                if (!names) {
-                    issues.push(err('events.json', key, 'events.bad-condition-kind',
-                        `${key}: condition cardKind must be pokemon, attack or item, got ${condition.cardKind}`, 'conditions'));
-                } else if (!names.has(condition.name)) {
-                    issues.push(err('events.json', key, 'events.unknown-condition-card',
-                        `${key}: condition names unknown ${condition.cardKind} ${condition.name}`, 'conditions'));
+                if (condition.subject !== undefined && condition.subject !== 'card' && condition.subject !== 'achievement') {
+                    issues.push(err('events.json', key, 'events.bad-condition-subject',
+                        `${key}: condition subject must be card or achievement, got ${condition.subject}`, 'conditions'));
+                } else if (condition.subject === 'achievement') {
+                    if (!achievementIds || !achievementIds.has(condition.name)) {
+                        issues.push(err('events.json', key, 'events.unknown-condition-achievement',
+                            `${key}: condition names unknown achievement ${condition.name}`, 'conditions'));
+                    }
+                } else {
+                    const names = cardNames && cardNames[condition.cardKind];
+                    if (!names) {
+                        issues.push(err('events.json', key, 'events.bad-condition-kind',
+                            `${key}: condition cardKind must be pokemon, attack or item, got ${condition.cardKind}`, 'conditions'));
+                    } else if (!names.has(condition.name)) {
+                        issues.push(err('events.json', key, 'events.unknown-condition-card',
+                            `${key}: condition names unknown ${condition.cardKind} ${condition.name}`, 'conditions'));
+                    }
                 }
                 if (condition.text !== undefined && typeof condition.text !== 'string') {
                     issues.push(err('events.json', key, 'events.bad-condition',
@@ -882,6 +892,7 @@
         const attackNames = new Set(attacks.map((record) => record.name));
         const itemNames = new Set(items.map((record) => record.name));
         const trainerNames = new Set(trainers.map((record) => record.name));
+        const achievementIds = new Set((data.achievements || []).map((record) => record && record.id).filter(Boolean));
         const eventGrantedPokemon = new Set(
             collectAllEffectRefs(events)
                 .map((ref) => ref.effect)
@@ -894,7 +905,7 @@
             ...validateAttacks(attacks, enums),
             ...validateItems(items, enums),
             ...validateTrainers(trainers, pokemonNames, attackNames, itemNames, enums),
-            ...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames }),
+            ...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames }, achievementIds),
             ...validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums),
             ...validateLocations(locations, enums, starterDecks),
             ...validateNameCharacters(data),

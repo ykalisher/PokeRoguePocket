@@ -24,12 +24,17 @@
         { value: 'has', label: 'Must have' },
         { value: 'lacks', label: 'Must not have' }
     ];
+    const CONDITION_SUBJECTS = [
+        { value: 'card', label: 'Card' },
+        { value: 'achievement', label: 'Achievement' }
+    ];
     const STORE_FOR_KIND = { pokemon: 'pokemon', attack: 'attacks', item: 'items' };
     const DATALIST_ID = {
         pokemon: 'editor-events-pokemon-datalist',
         attacks: 'editor-events-attacks-datalist',
         items: 'editor-events-items-datalist',
-        trainers: 'editor-events-trainers-datalist'
+        trainers: 'editor-events-trainers-datalist',
+        achievements: 'editor-events-achievements-datalist'
     };
 
     const SELECTION_EFFECT_TYPES = [
@@ -400,11 +405,17 @@
         return `<li class="editor-events-preview-effect"><span>${escapeHtml(effectSummaryText(effect))}</span>${cardHtml}</li>`;
     }
 
+    function achievementLabel(id) {
+        const record = (EditorApp.store.data.achievements || []).find((entry) => entry && entry.id === id);
+        return record && record.name ? record.name : id;
+    }
+
     function conditionsPreviewHtml(conditions) {
         const list = (Array.isArray(conditions) ? conditions : []).filter((cond) => cond && cond.name);
         if (!list.length) return '';
-        const parts = list.map((cond) =>
-            `${cond.mode === 'lacks' ? 'Only without' : 'Requires'} ${cond.name}`);
+        const parts = list.map((cond) => (cond.subject === 'achievement'
+            ? `${cond.mode === 'lacks' ? 'Only without' : 'Requires'} achievement ${achievementLabel(cond.name)}`
+            : `${cond.mode === 'lacks' ? 'Only without' : 'Requires'} ${cond.name}`));
         return `<p class="editor-events-preview-desc">${escapeHtml(parts.join(' · '))}</p>`;
     }
 
@@ -509,6 +520,12 @@
         ).join('');
     }
 
+    function conditionSubjectOptions(current) {
+        return CONDITION_SUBJECTS.map(({ value, label }) =>
+            `<option value="${escapeAttr(value)}"${value === current ? ' selected' : ''}>${escapeHtml(label)}</option>`
+        ).join('');
+    }
+
     function textField(label, scopeAttrs, value) {
         return `<label>${escapeHtml(label)}<input type="text" ${scopeAttrs} value="${escapeAttr(value || '')}"></label>`;
     }
@@ -519,6 +536,12 @@
 
     function unknownBadge(store, name) {
         if (!name || findCardRecord(store, name)) return '';
+        return '<span class="editor-badge editor-badge--warning">unknown</span>';
+    }
+
+    function unknownAchievementBadge(id) {
+        const known = (EditorApp.store.data.achievements || []).some((record) => record && record.id === id);
+        if (!id || known) return '';
         return '<span class="editor-badge editor-badge--warning">unknown</span>';
     }
 
@@ -779,14 +802,19 @@
 
     function conditionRowHtml(cond, index, owner) {
         const base = `data-owner="${escapeAttr(owner)}" data-index="${index}"`;
+        const subject = cond.subject === 'achievement' ? 'achievement' : 'card';
         const kind = cond.cardKind || 'pokemon';
         const store = STORE_FOR_KIND[kind] || 'pokemon';
+        const subjectField = subject === 'achievement'
+            ? `<label>Achievement<input type="text" list="${DATALIST_ID.achievements}" data-scope="cond" ${base} data-field="name" value="${escapeAttr(cond.name || '')}">${unknownAchievementBadge(cond.name)}</label>`
+            : `<label>Card kind<select data-scope="cond-cardkind" ${base}>${optionTags(CARD_KINDS_UI, kind)}</select></label>
+                    <label>Card<input type="text" list="${datalistForStore(store)}" data-scope="cond" ${base} data-field="name" value="${escapeAttr(cond.name || '')}">${unknownBadge(store, cond.name)}</label>`;
         return `
             <li class="editor-events-req-row">
                 <div class="editor-form-row">
                     <label>Rule<select data-scope="cond-mode" ${base}>${conditionModeOptions(cond.mode || 'has')}</select></label>
-                    <label>Card kind<select data-scope="cond-cardkind" ${base}>${optionTags(CARD_KINDS_UI, kind)}</select></label>
-                    <label>Card<input type="text" list="${datalistForStore(store)}" data-scope="cond" ${base} data-field="name" value="${escapeAttr(cond.name || '')}">${unknownBadge(store, cond.name)}</label>
+                    <label>Subject<select data-scope="cond-subject" ${base}>${conditionSubjectOptions(subject)}</select></label>
+                    ${subjectField}
                     <button type="button" class="editor-btn editor-btn--danger editor-events-row-remove" data-action="remove-cond" ${base}>Remove</button>
                 </div>
                 <div class="editor-form-row">
@@ -984,7 +1012,8 @@
         return datalistHtml(DATALIST_ID.pokemon, (data.pokemon || []).map((r) => r.name))
             + datalistHtml(DATALIST_ID.attacks, (data.attacks || []).map((r) => r.name))
             + datalistHtml(DATALIST_ID.items, (data.items || []).map((r) => r.name))
-            + datalistHtml(DATALIST_ID.trainers, (data.trainers || []).map((r) => r.name));
+            + datalistHtml(DATALIST_ID.trainers, (data.trainers || []).map((r) => r.name))
+            + datalistHtml(DATALIST_ID.achievements, (data.achievements || []).map((r) => r.id));
     }
 
     function formHtml(draft) {
@@ -1131,6 +1160,19 @@
                     // Repaints: the datalist and the unknown badge follow the kind.
                     conditionAt(owner, index).cardKind = value;
                     break;
+                case 'cond-subject': {
+                    const cond = conditionAt(owner, index);
+                    if (value === 'achievement') {
+                        cond.subject = 'achievement';
+                        delete cond.cardKind;
+                        cond.name = '';
+                    } else {
+                        delete cond.subject;
+                        cond.cardKind = 'pokemon';
+                        cond.name = '';
+                    }
+                    break;
+                }
                 case 'eff-type': {
                     const effect = effectAt(owner, index);
                     effect.type = value;
