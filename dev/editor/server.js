@@ -1,8 +1,12 @@
 /**
  * Data editor local server: static repo serving + JSON API + write guard +
- * PNG uploads. Node built-ins only (http, fs, path). See
- * dev/feature_plans/25-data-editor-overview.md ("Server + HTTP API") for the
- * full contract this file implements.
+ * PNG/audio uploads. Node built-ins only (http, fs, path, os, child_process).
+ * See dev/feature_plans/25-data-editor-overview.md ("Server + HTTP API") for
+ * the full contract this file implements.
+ *
+ * The one non-built-in this touches is the `ffmpeg` binary, used only to
+ * transcode uploaded M4A tracks to MP3 (owner-approved August 2026, dev tool
+ * only — nothing the game loads in the browser depends on it).
  *
  * Usage: node dev/editor/server.js [--port N] [--data-dir <path>]
  */
@@ -10,7 +14,12 @@
 
 const http = require('node:http');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
+const { execFile } = require('node:child_process');
+const { promisify } = require('node:util');
+
+const execFileAsync = promisify(execFile);
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
@@ -85,6 +94,10 @@ const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const MAX_MUSIC_BYTES = 25 * 1024 * 1024;
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
 const ID3_MAGIC = Buffer.from([0x49, 0x44, 0x33]); // "ID3"
+const FTYP_MAGIC = Buffer.from([0x66, 0x74, 0x79, 0x70]); // "ftyp"
+
+const FFMPEG_BITRATE = '192k';
+const FFMPEG_TIMEOUT_MS = 120000;
 
 const MIME_TYPES = {
     '.html': 'text/html',
@@ -107,6 +120,56 @@ function isMp3(buffer) {
     if (buffer.length < 4) return false;
     if (buffer.subarray(0, 3).equals(ID3_MAGIC)) return true;
     return buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0;
+}
+
+// M4A/MP4 audio is an ISO base-media file: a size prefix, then an "ftyp" box
+// tag at bytes 4-8. Brands vary ("M4A ", "mp42", "isom"), so only the box tag
+// is checked here — ffmpeg decides whether the streams inside are decodable.
+function isM4a(buffer) {
+    return buffer.length >= 12 && buffer.subarray(4, 8).equals(FTYP_MAGIC);
+}
+
+// Read per call, not once at load, so a non-PATH install (or a test) can
+// point at another binary without restarting the process.
+function ffmpegBin() {
+    return process.env.POKEROGUE_FFMPEG || 'ffmpeg';
+}
+
+function httpError(status, message) {
+    const err = new Error(message);
+    err.status = status;
+    return err;
+}
+
+// Transcodes an M4A upload to MP3 via ffmpeg. Temp files rather than stdio
+// pipes because the MP4 demuxer needs a seekable input (a piped file whose
+// moov atom sits at the end fails outright). -vn drops embedded cover art.
+async function convertToMp3(buffer) {
+    const binary = ffmpegBin();
+    const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pokerogue-music-'));
+    const inputPath = path.join(workDir, 'input.m4a');
+    const outputPath = path.join(workDir, 'output.mp3');
+    try {
+        fs.writeFileSync(inputPath, buffer);
+        await execFileAsync(binary, [
+            '-v', 'error',
+            '-y',
+            '-i', inputPath,
+            '-vn',
+            '-codec:a', 'libmp3lame',
+            '-b:a', FFMPEG_BITRATE,
+            outputPath
+        ], { timeout: FFMPEG_TIMEOUT_MS });
+        return fs.readFileSync(outputPath);
+    } catch (err) {
+        if (err && err.code === 'ENOENT') {
+            throw httpError(501, `ffmpeg not found (looked for "${binary}") — install it, or set POKEROGUE_FFMPEG to its full path`);
+        }
+        const detail = String((err && err.stderr) || (err && err.message) || err).trim().split('\n')[0];
+        throw httpError(400, `ffmpeg could not convert the upload: ${detail}`);
+    } finally {
+        fs.rmSync(workDir, { recursive: true, force: true });
+    }
 }
 
 // Reimplements formatAssetName() in arena/arena_data.js so this file never
@@ -151,8 +214,13 @@ const UPLOAD_ROUTES = {
     music: {
         lookup: (data, key) => data.music.find((record) => record.id === key),
         deriveFileName: (record) => `${record.id}.mp3`,
-        verifyMagic: isMp3,
-        magicError: 'body is not an MP3 (expected an ID3 tag or an MPEG frame sync)',
+        verifyMagic: (buffer) => isMp3(buffer) || isM4a(buffer),
+        magicError: 'body is not an MP3 or M4A (expected an ID3 tag, an MPEG frame sync, or an MP4 "ftyp" box)',
+        // M4A is transcoded on the way in so the stored asset stays
+        // <id>.mp3 and every .mp3 assumption downstream is left alone.
+        transform: async (buffer) => (isMp3(buffer)
+            ? { buffer, converted: false }
+            : { buffer: await convertToMp3(buffer), converted: true }),
         maxBytes: MAX_MUSIC_BYTES
     }
 };
@@ -400,7 +468,7 @@ async function handleUpload(req, res, dir, rawKey, config) {
         return sendJson(res, 400, { error: `unknown upload dir "${dir}"` });
     }
 
-    const buffer = await readRawBody(req, route.maxBytes || MAX_BODY_BYTES);
+    let buffer = await readRawBody(req, route.maxBytes || MAX_BODY_BYTES);
 
     let key;
     try {
@@ -417,6 +485,19 @@ async function handleUpload(req, res, dir, rawKey, config) {
         return sendJson(res, 400, { error: route.magicError });
     }
 
+    // Runs after the record lookup so a bad key fails fast, before any
+    // transcode work. Nothing is written unless the transform succeeds.
+    let converted = false;
+    if (route.transform) {
+        try {
+            const result = await route.transform(buffer);
+            buffer = result.buffer;
+            converted = result.converted;
+        } catch (err) {
+            return sendJson(res, (err && err.status) || 500, { error: String((err && err.message) || err) });
+        }
+    }
+
     const fileName = route.deriveFileName(record);
     const targetDir = path.join(config.dataDir, 'assets', dir);
     const targetPath = path.resolve(targetDir, fileName);
@@ -426,7 +507,9 @@ async function handleUpload(req, res, dir, rawKey, config) {
 
     fs.mkdirSync(targetDir, { recursive: true });
     fs.writeFileSync(targetPath, buffer);
-    return sendJson(res, 201, { ok: true, path: `assets/${dir}/${fileName}` });
+    const payload = { ok: true, path: `assets/${dir}/${fileName}` };
+    if (converted) payload.converted = true;
+    return sendJson(res, 201, payload);
 }
 
 // ------------------------------------------------------------------- router

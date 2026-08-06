@@ -261,7 +261,7 @@
             EditorApp.store.assets = assets;
             EditorApp.store.assetIndex = assetIndexFrom(assets);
             EditorApp.computeIssues();
-            showToast(`Uploaded ${payload.path}`);
+            showToast(payload.converted ? `Converted to MP3 and uploaded ${payload.path}` : `Uploaded ${payload.path}`);
             return payload;
         } catch (err) {
             showToast(`Upload failed: ${err.message}`, 'error');

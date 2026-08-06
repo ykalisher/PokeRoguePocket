@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const http = require('node:http');
+const { spawnSync } = require('node:child_process');
 const { ROOT } = require('./helpers/arena_env');
 const { createServer } = require('../dev/editor/server.js');
 const { formatDataFile } = require('../dev/editor/format_json.js');
@@ -49,6 +50,29 @@ const MP3_BYTES = Buffer.concat([
     Buffer.from([0x03, 0x00, 0x00, 0x00]),
     Buffer.from('fake-mp3-body-for-tests')
 ]);
+
+// M4A conversion shells out to ffmpeg, which the owner has installed
+// everywhere but a bare checkout may not — those tests skip rather than fail,
+// so `node tests/run_all.js` stays green with Node built-ins alone.
+const HAS_FFMPEG = spawnSync('ffmpeg', ['-version'], { encoding: 'utf8' }).status === 0;
+const SKIP_NO_FFMPEG = HAS_FFMPEG ? false : 'ffmpeg is not installed';
+
+// A real (tiny) silent M4A, since the point is to exercise the actual decode.
+function makeM4aBytes() {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'editor-m4a-'));
+    const file = path.join(dir, 'fixture.m4a');
+    try {
+        const result = spawnSync('ffmpeg', [
+            '-v', 'error', '-y',
+            '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono',
+            '-t', '0.3', '-c:a', 'aac', file
+        ], { encoding: 'utf8' });
+        assert.equal(result.status, 0, `ffmpeg fixture build failed: ${result.stderr}`);
+        return fs.readFileSync(file);
+    } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+    }
+}
 
 // Writes a music.json into a fixture dir and returns the record it holds.
 function seedMusic(dataDir, overrides) {
@@ -531,6 +555,99 @@ test('uploading a PNG to music/<id> returns 400 with the MP3 magic error', async
         assert.match((await res.json()).error, /not an MP3/);
         assert.ok(!fs.existsSync(path.join(dataDir, 'assets', 'music', `${record.id}.mp3`)));
     } finally {
+        await closeServer(server);
+    }
+});
+
+test('uploading an M4A converts it and writes a real MP3 at <id>.mp3', { skip: SKIP_NO_FFMPEG }, async () => {
+    const dataDir = makeFixtureDir();
+    const record = seedMusic(dataDir);
+    const server = await bootServer(dataDir);
+    try {
+        const m4a = makeM4aBytes();
+        const res = await fetch(`${baseUrl(server)}/api/assets/music/${encodeURIComponent(record.id)}`, {
+            method: 'POST',
+            body: m4a
+        });
+        assert.equal(res.status, 201);
+        assert.deepEqual(await res.json(), {
+            ok: true,
+            path: `assets/music/${record.id}.mp3`,
+            converted: true
+        });
+
+        // The stored bytes must be MP3, not the M4A that was posted.
+        const written = fs.readFileSync(path.join(dataDir, 'assets', 'music', `${record.id}.mp3`));
+        assert.notDeepEqual(written, m4a);
+        const isMp3 = written.subarray(0, 3).toString() === 'ID3'
+            || (written[0] === 0xff && (written[1] & 0xe0) === 0xe0);
+        assert.ok(isMp3, `expected MP3 magic bytes, got ${written.subarray(0, 4).toString('hex')}`);
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('an MP3 upload is stored byte-for-byte and reports no conversion', { skip: SKIP_NO_FFMPEG }, async () => {
+    const dataDir = makeFixtureDir();
+    const record = seedMusic(dataDir);
+    const server = await bootServer(dataDir);
+    try {
+        const res = await fetch(`${baseUrl(server)}/api/assets/music/${encodeURIComponent(record.id)}`, {
+            method: 'POST',
+            body: MP3_BYTES
+        });
+        const body = await res.json();
+        assert.equal(body.converted, undefined, 'pass-through uploads must not claim a conversion');
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('an "ftyp" file ffmpeg cannot decode returns 400 and writes nothing', { skip: SKIP_NO_FFMPEG }, async () => {
+    const dataDir = makeFixtureDir();
+    const record = seedMusic(dataDir);
+    const server = await bootServer(dataDir);
+    try {
+        // Passes the cheap magic check, but there is no decodable stream.
+        const bogus = Buffer.concat([
+            Buffer.from([0x00, 0x00, 0x00, 0x18]),
+            Buffer.from('ftypM4A '),
+            Buffer.from('not actually an audio file')
+        ]);
+        const res = await fetch(`${baseUrl(server)}/api/assets/music/${encodeURIComponent(record.id)}`, {
+            method: 'POST',
+            body: bogus
+        });
+        assert.equal(res.status, 400);
+        assert.match((await res.json()).error, /ffmpeg could not convert/);
+        assert.ok(!fs.existsSync(path.join(dataDir, 'assets', 'music', `${record.id}.mp3`)));
+    } finally {
+        await closeServer(server);
+    }
+});
+
+test('a missing ffmpeg binary returns 501 rather than a 500', async () => {
+    const dataDir = makeFixtureDir();
+    const record = seedMusic(dataDir);
+    const server = await bootServer(dataDir);
+    const previous = process.env.POKEROGUE_FFMPEG;
+    process.env.POKEROGUE_FFMPEG = path.join(dataDir, 'no-such-ffmpeg-binary');
+    try {
+        const m4aShaped = Buffer.concat([
+            Buffer.from([0x00, 0x00, 0x00, 0x18]),
+            Buffer.from('ftypM4A '),
+            Buffer.from('body')
+        ]);
+        const res = await fetch(`${baseUrl(server)}/api/assets/music/${encodeURIComponent(record.id)}`, {
+            method: 'POST',
+            body: m4aShaped
+        });
+        assert.equal(res.status, 501);
+        assert.match((await res.json()).error, /ffmpeg not found/);
+        assert.ok(!fs.existsSync(path.join(dataDir, 'assets', 'music', `${record.id}.mp3`)));
+    } finally {
+        if (previous === undefined) delete process.env.POKEROGUE_FFMPEG;
+        else process.env.POKEROGUE_FFMPEG = previous;
         await closeServer(server);
     }
 });

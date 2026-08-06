@@ -126,9 +126,9 @@
                     ${isCanonical ? 'Canonical path set' : 'Set canonical path'}
                 </button>
                 <button type="button" class="editor-btn" data-role="upload-music-btn" ${draft.id ? '' : 'disabled'}>Upload…</button>
-                <input type="file" accept="audio/mpeg,.mp3" data-role="upload-music-input" hidden>
+                <input type="file" accept="audio/mpeg,.mp3,audio/mp4,.m4a" data-role="upload-music-input" hidden>
             </div>
-            <span class="editor-hint">Save the track first, then upload its file — the upload is matched to the saved record's id.</span>
+            <span class="editor-hint">Save the track first, then upload its file — the upload is matched to the saved record's id. M4A uploads are converted to MP3 by the server (needs ffmpeg installed).</span>
         `;
     }
 
