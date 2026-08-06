@@ -45,6 +45,26 @@
         return record && record.id ? `assets/music/${record.id}.mp3` : '';
     }
 
+    // Derives the id (and, if blank, the title) from an uploaded file's name
+    // so the owner never has to type a slug or a file path by hand — see
+    // dev/feature_plans (music tab) for why: the owner just picks a category
+    // and uploads a track.
+    function slugify(text) {
+        return String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'track';
+    }
+
+    function baseName(fileName) {
+        return String(fileName || '').replace(/\.[^./]+$/, '');
+    }
+
+    function uniqueId(base) {
+        const existing = new Set(EditorApp.store.data.music.map((record) => record.id));
+        if (!existing.has(base)) return base;
+        let n = 2;
+        while (existing.has(`${base}-${n}`)) n += 1;
+        return `${base}-${n}`;
+    }
+
     function dotHtml(on, onTitle, offTitle) {
         return `<span class="editor-dot ${on ? 'editor-dot--on' : 'editor-dot--off'}" title="${escapeAttr(on ? onTitle : offTitle)}"></span>`;
     }
@@ -77,7 +97,7 @@
     // ------------------------------------------------------------ preview
 
     function playerHtml(draft) {
-        if (!draft.id) return '<div class="editor-music-placeholder">Enter an id to name the file.</div>';
+        if (!draft.id) return '<div class="editor-music-placeholder">Upload a file to name and save this track.</div>';
         if (!hasFile(draft)) {
             return `
                 <div class="editor-music-placeholder">
@@ -110,25 +130,20 @@
     }
 
     function fileRowHtml(draft) {
-        const canonical = canonicalPath(draft);
-        const isCanonical = Boolean(draft.file) && draft.file === canonical;
         const uploaded = hasFile(draft);
         return `
             <div class="editor-form-row">
                 <span class="editor-hint">
-                    ${draft.file ? `Current: <code>${escapeHtml(draft.file)}</code>` : 'No file path set.'}
-                    ${draft.id ? ` (canonical: <code>${escapeHtml(canonical)}</code>)` : ' (enter an id to compute the canonical path)'}
-                    ${uploaded ? ' — file uploaded.' : ''}
+                    ${draft.id
+                        ? `File: <code>${escapeHtml(canonicalPath(draft))}</code>${uploaded ? ' — uploaded.' : ' — not uploaded yet.'}`
+                        : 'Upload a file below to name and save this track automatically.'}
                 </span>
             </div>
             <div class="editor-form-row">
-                <button type="button" class="editor-btn" data-action="set-canonical-file" ${draft.id ? '' : 'disabled'}>
-                    ${isCanonical ? 'Canonical path set' : 'Set canonical path'}
-                </button>
-                <button type="button" class="editor-btn" data-role="upload-music-btn" ${draft.id ? '' : 'disabled'}>Upload…</button>
+                <button type="button" class="editor-btn" data-role="upload-music-btn">Upload…</button>
                 <input type="file" accept="audio/mpeg,.mp3,audio/mp4,.m4a" data-role="upload-music-input" hidden>
             </div>
-            <span class="editor-hint">Save the track first, then upload its file — the upload is matched to the saved record's id. M4A uploads are converted to MP3 by the server (needs ffmpeg installed).</span>
+            <span class="editor-hint">Pick a category, then upload an MP3 or M4A — the id, title, and file name are filled in and saved automatically. M4A uploads are converted to MP3 by the server (needs ffmpeg installed).</span>
         `;
     }
 
@@ -137,7 +152,7 @@
             <div class="editor-form-row">
                 <label>ID (slug)
                     <input type="text" name="id" value="${escapeAttr(draft.id)}">
-                    <span class="editor-hint">Lowercase, digits and dashes — it becomes the MP3 file name.</span>
+                    <span class="editor-hint">Lowercase, digits and dashes — it becomes the MP3 file name. Auto-filled from the uploaded file's name if left blank.</span>
                 </label>
                 <label>Title
                     <input type="text" name="title" value="${escapeAttr(draft.title)}">
@@ -169,7 +184,11 @@
                 draft[field] = target.value;
             }
 
+            // The id is the only field the file path derives from, so keep
+            // `file` in lockstep whenever it changes — the owner never edits
+            // `file` directly.
             if (field === 'id') {
+                draft.file = canonicalPath(draft);
                 const row = el.querySelector('[data-role="file-row"]');
                 if (row) row.innerHTML = fileRowHtml(draft);
             }
@@ -179,30 +198,39 @@
         });
 
         el.addEventListener('click', (event) => {
-            const canonicalBtn = event.target.closest('[data-action="set-canonical-file"]');
-            if (canonicalBtn && draft.id) {
-                draft.file = canonicalPath(draft);
-                paint();
-                api.markDirty();
-                api.refreshPreview();
-                return;
-            }
-
             const uploadBtn = event.target.closest('[data-role="upload-music-btn"]');
-            if (uploadBtn && draft.id) {
+            if (uploadBtn) {
                 el.querySelector('[data-role="upload-music-input"]').click();
             }
         });
 
+        // Upload does everything: a brand-new track has no id yet, so one is
+        // derived from the file name (deduped against existing tracks) and
+        // the title is filled in too if blank; the record is saved first
+        // (the server's upload route matches a file to an already-saved
+        // record by id) and then the file itself is uploaded. Reopening the
+        // editor on the saved record afterwards avoids holding onto a
+        // `draft` reference that saveFile has since replaced.
         el.addEventListener('change', (event) => {
             const input = event.target.closest('[data-role="upload-music-input"]');
-            if (!input || !input.files[0] || !draft.id) return;
-            EditorApp.uploadAsset('music', draft.id, input.files[0])
+            if (!input || !input.files[0]) return;
+            const file = input.files[0];
+
+            if (!draft.id) {
+                draft.id = uniqueId(slugify(baseName(file.name)));
+                if (!draft.title) draft.title = baseName(file.name);
+                draft.file = canonicalPath(draft);
+            }
+
+            EditorApp.saveFile('music')
+                .then(() => EditorApp.uploadAsset('music', draft.id, file))
                 .then(() => {
-                    paint();
-                    api.refreshPreview();
+                    const saved = EditorApp.store.data.music.find((record) => record.id === draft.id);
+                    if (saved) openMusicEditor(saved);
                 })
-                .catch(() => {});
+                .catch((err) => {
+                    if (err && err.status === 409) EditorApp.showIssuesDialog('Save blocked', err.issues || []);
+                });
         });
     }
 

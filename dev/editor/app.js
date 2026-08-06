@@ -396,6 +396,11 @@
         showModal({ title, bodyHtml });
     }
 
+    // Exposed so tab modules that drive their own save (e.g. the music tab's
+    // upload-implies-save flow) can report a 409 the same way the main Save
+    // button does, instead of re-implementing the dialog.
+    EditorApp.showIssuesDialog = showIssuesDialog;
+
     function jumpTo(tabName, key) {
         if (!confirmLeaveIfDirty()) return;
         currentEditor = null;

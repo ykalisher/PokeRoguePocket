@@ -1,17 +1,17 @@
 """Phase 101 verification: the Music tab and MP3 uploads in the data editor.
 
 Spawns `node dev/editor/server.js` on port 8933 (same pattern as
-drive_editor.py / phase97_editor_achievements.py) and drives the new Music
-tab end to end:
+drive_editor.py / phase97_editor_achievements.py) and drives the Music tab
+end to end:
 
 - the tab exists and starts empty (music.json ships as []);
-- "+ Add track" -> fill id/title/category -> Save writes the record while its
-  MP3 is still missing (music.missing-file is a warning on purpose, so the
-  "save first, then upload" order works at all);
-- the Upload button is disabled until an id is entered;
-- uploading a tiny silent MP3 through the hidden file input writes
-  assets/music/<id>.mp3, and the preview swaps its "no file uploaded yet"
-  placeholder for an <audio> player;
+- "+ Add track" -> the Upload button works immediately, with no id typed in
+  first (that requirement was removed after an owner tried it and got
+  blocked by a validation error — see the "M4A upload" bugfix session);
+- uploading a tiny silent MP3 through the hidden file input derives the id
+  and title from the file's name, saves the record, uploads the file to
+  assets/music/<id>.mp3, and the preview swaps its "upload a file" placeholder
+  for an <audio> player;
 - back in the list, the file dot for that row turns on;
 - /api/issues reports music.empty-category warnings for the three categories
   still without an enabled track, and no music errors.
@@ -62,7 +62,10 @@ def main():
     failure = None
 
     with tempfile.TemporaryDirectory() as tmp:
-        upload_source = Path(tmp) / "verify.mp3"
+        # Named so the tab's derive-from-filename logic produces exactly
+        # TRACK_ID (slugified) and "Verify Gym Theme" (the raw base name) as
+        # the title, without typing either in by hand.
+        upload_source = Path(tmp) / "Verify Gym Theme.mp3"
         upload_source.write_bytes(SILENT_MP3)
 
         with serving_editor() as base_url, sync_playwright() as p:
@@ -82,20 +85,19 @@ def main():
                 assert page.query_selector_all(ROWS) == [], "expected the shipped music.json to be empty"
                 print("OK: the Music tab renders with an empty list")
 
-                # --- 1. add a track; the Upload button waits for an id ---
+                # --- 1. add a track; Upload works with no id typed in ---
                 page.click("[data-action='add-track']")
                 page.wait_for_selector('input[name="id"]', timeout=15000)
-                assert page.is_disabled('[data-role="upload-music-btn"]'), "Upload must be disabled with no id"
+                assert not page.is_disabled('[data-role="upload-music-btn"]'), "Upload must not require an id up front"
+                placeholder = page.text_content(".editor-music-placeholder")
+                assert "Upload a file" in placeholder, f"expected the upload-first placeholder, got {placeholder!r}"
+                print("OK: a new track's Upload button works immediately, with no id required first")
 
-                page.fill('input[name="id"]', TRACK_ID)
-                page.fill('input[name="title"]', "Verify Gym Theme")
                 page.select_option('select[name="category"]', "boss")
-                assert not page.is_disabled('[data-role="upload-music-btn"]'), "Upload must enable once an id is set"
-                print("OK: the Upload button is disabled without an id and enables once one is entered")
 
-                page.click('[data-action="set-canonical-file"]')
-                page.click('[data-action="save"]')
-                page.wait_for_timeout(500)
+                # --- 2. uploading alone derives the id/title, saves, uploads ---
+                page.set_input_files('[data-role="upload-music-input"]', str(upload_source))
+                page.wait_for_selector("audio.editor-music-player", timeout=15000)
 
                 saved = json.loads(DATA.read_text())
                 assert len(saved) == 1, f"expected exactly one saved track, got {saved}"
@@ -106,20 +108,13 @@ def main():
                     "file": f"assets/music/{TRACK_ID}.mp3",
                     "enabled": True,
                 }, f"unexpected saved record: {saved[0]}"
-                print("OK: saving before the upload works and writes the locked record shape")
-
-                # --- 2. the preview says the file is missing, then plays it ---
-                placeholder = page.text_content(".editor-music-placeholder")
-                assert "no file uploaded yet" in placeholder, f"expected the missing-file placeholder, got {placeholder!r}"
-
-                page.set_input_files('[data-role="upload-music-input"]', str(upload_source))
-                page.wait_for_selector("audio.editor-music-player", timeout=15000)
+                print("OK: uploading derived the id/title from the file name and saved the record")
 
                 assert TRACK_FILE.exists(), f"expected {TRACK_FILE} to be written"
                 assert TRACK_FILE.read_bytes() == SILENT_MP3, "uploaded bytes must land byte-for-byte"
                 src = page.get_attribute("audio.editor-music-player", "src")
                 assert src.endswith(f"assets/music/{TRACK_ID}.mp3"), f"unexpected audio src {src!r}"
-                print("OK: uploading the MP3 writes assets/music/<id>.mp3 and the preview becomes an <audio> player")
+                print("OK: the file landed at assets/music/<id>.mp3 and the preview became an <audio> player")
 
                 page.screenshot(path=screenshot_path)
                 print(f"screenshot: {screenshot_path}")
@@ -164,7 +159,7 @@ def main():
             print(f"  {line}", file=sys.stderr)
         return 1
 
-    print("OK: Music tab list, save-then-upload flow, MP3 upload, inline preview and issue reporting all verified")
+    print("OK: Music tab list, upload-derives-and-saves flow, MP3 upload, inline preview and issue reporting all verified")
     return 0
 
 
