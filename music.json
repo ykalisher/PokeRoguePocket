@@ -1,1 +1,163 @@
-[]
+[
+  {
+    "id": "oras-mt-pyre",
+    "title": "ORAS - Mt Pyre",
+    "category": "trainer",
+    "file": "assets/music/oras-mt-pyre.mp3",
+    "enabled": true
+  },
+  {
+    "id": "oras-mt-chimney",
+    "title": "ORAS - Mt Chimney",
+    "category": "trainer",
+    "file": "assets/music/oras-mt-chimney.mp3",
+    "enabled": true
+  },
+  {
+    "id": "bdsp-route-216-m4a",
+    "title": "BDSP — Route 216.m4a",
+    "category": "trainer",
+    "file": "assets/music/bdsp-route-216-m4a.mp3",
+    "enabled": true
+  },
+  {
+    "id": "bdsp-route-228-m4a",
+    "title": "BDSP — Route 228.m4a",
+    "category": "trainer",
+    "file": "assets/music/bdsp-route-228-m4a.mp3",
+    "enabled": true
+  },
+  {
+    "id": "bw-driftveil-city",
+    "title": "BW - Driftveil City",
+    "category": "trainer",
+    "file": "assets/music/bw-driftveil-city.mp3",
+    "enabled": true
+  },
+  {
+    "id": "dppt-mt-coronet",
+    "title": "DPPt - Mt Coronet",
+    "category": "trainer",
+    "file": "assets/music/dppt-mt-coronet.mp3",
+    "enabled": true
+  },
+  {
+    "id": "dppt-route-209",
+    "title": "DPPt - Route 209",
+    "category": "trainer",
+    "file": "assets/music/dppt-route-209.mp3",
+    "enabled": true
+  },
+  {
+    "id": "dppt-sunnyshore-city-night",
+    "title": "DPPt - Sunnyshore City (Night)",
+    "category": "trainer",
+    "file": "assets/music/dppt-sunnyshore-city-night.mp3",
+    "enabled": true
+  },
+  {
+    "id": "hgss-game-corner-m4a",
+    "title": "HGSS — Game Corner.m4a",
+    "category": "trainer",
+    "file": "assets/music/hgss-game-corner-m4a.mp3",
+    "enabled": true
+  },
+  {
+    "id": "xy-victory-road",
+    "title": "XY - Victory Road",
+    "category": "legendary",
+    "file": "assets/music/xy-victory-road.mp3",
+    "enabled": true
+  },
+  {
+    "id": "usum-ultra-necrozma-battle",
+    "title": "USUM - Ultra Necrozma Battle",
+    "category": "legendary",
+    "file": "assets/music/usum-ultra-necrozma-battle.mp3",
+    "enabled": true
+  },
+  {
+    "id": "sv-ruin-quartet-theme",
+    "title": "SV — Ruin Quartet Theme",
+    "category": "legendary",
+    "file": "assets/music/sv-ruin-quartet-theme.mp3",
+    "enabled": true
+  },
+  {
+    "id": "sv-area-zero-wild-battle-music",
+    "title": "SV — Area Zero Wild Battle Music",
+    "category": "legendary",
+    "file": "assets/music/sv-area-zero-wild-battle-music.mp3",
+    "enabled": true
+  },
+  {
+    "id": "frlg-champion-theme",
+    "title": "FRLG — Champion Theme",
+    "category": "elite",
+    "file": "assets/music/frlg-champion-theme.mp3",
+    "enabled": true
+  },
+  {
+    "id": "sv-ai-professor-battle-theme",
+    "title": "SV — AI Professor Battle Theme",
+    "category": "elite",
+    "file": "assets/music/sv-ai-professor-battle-theme.mp3",
+    "enabled": true
+  },
+  {
+    "id": "swsh-mustard-battle",
+    "title": "SwSh - Mustard Battle",
+    "category": "elite",
+    "file": "assets/music/swsh-mustard-battle.mp3",
+    "enabled": true
+  },
+  {
+    "id": "sv-elite-four-battle-theme",
+    "title": "SV — Elite Four Battle Theme",
+    "category": "elite",
+    "file": "assets/music/sv-elite-four-battle-theme.mp3",
+    "enabled": true
+  },
+  {
+    "id": "swsh-peony-s-theme",
+    "title": "SwSh - Peony’s Theme",
+    "category": "elite",
+    "file": "assets/music/swsh-peony-s-theme.mp3",
+    "enabled": true
+  },
+  {
+    "id": "mystery-dungeon-temporal-tower",
+    "title": "Mystery Dungeon — Temporal Tower",
+    "category": "legendary",
+    "file": "assets/music/mystery-dungeon-temporal-tower.mp3",
+    "enabled": true
+  },
+  {
+    "id": "hgss-johto-gym-leader-battle",
+    "title": "HGSS — Johto Gym Leader Battle",
+    "category": "boss",
+    "file": "assets/music/hgss-johto-gym-leader-battle.mp3",
+    "enabled": true
+  },
+  {
+    "id": "hgss-kanto-gym-leader-battle",
+    "title": "HGSS — Kanto Gym Leader Battle",
+    "category": "boss",
+    "file": "assets/music/hgss-kanto-gym-leader-battle.mp3",
+    "enabled": true
+  },
+  {
+    "id": "rbg-gym-leader-theme",
+    "title": "RBG — Gym Leader Theme",
+    "category": "boss",
+    "file": "assets/music/rbg-gym-leader-theme.mp3",
+    "enabled": true
+  },
+  {
+    "id": "hgss-ho-oh",
+    "title": "HGSS — Ho-oh",
+    "category": "legendary",
+    "file": "assets/music/hgss-ho-oh.mp3",
+    "enabled": true
+  }
+]
