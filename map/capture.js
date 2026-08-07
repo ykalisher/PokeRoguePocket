@@ -47,6 +47,8 @@
             return;
         }
 
+        runStore.ensureLevelMusic(state.run, arena.GameData.music);
+
         if (repairEncounterOptions()) {
             runStore.saveRunState(state.run);
         }

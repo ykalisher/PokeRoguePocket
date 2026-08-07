@@ -45,6 +45,8 @@
             return;
         }
 
+        runStore.ensureLevelMusic(state.run, arena.GameData.music);
+
         const actionChanges = runStore.rebuildActionDeckForActivePokemon(state.run);
 
         if (

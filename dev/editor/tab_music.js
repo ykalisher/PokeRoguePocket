@@ -15,9 +15,11 @@
     const escapeAttr = EditorListView.escapeAttr;
 
     // Mirrors MUSIC_CATEGORIES in arena/arena_data.js, in the order the owner
-    // reads them (trainer rank ascending).
+    // reads them (trainer rank ascending). The stored value stays 'trainer',
+    // but that category is now the map level's music: it plays across the whole
+    // level, standard/ace battles included.
     const CATEGORY_LABELS = {
-        trainer: 'Standard/Ace Trainers',
+        trainer: 'Map & Standard Trainers',
         boss: 'Gym Leaders',
         elite: 'Elites',
         legendary: 'Legendary Battles'

@@ -1,5 +1,16 @@
 # Battle music — batch overview
 
+> **Amended 2026-08-07 (owner request), after the batch shipped.** The `trainer`
+> category is no longer per-battle music: it is the **map level's** music. One track is
+> picked when a level's map loads, stored on the run as `musicTrackId`, and played across
+> every page of that level — map, mart, capture, event, attack, and standard/ace battles —
+> resuming its position across page loads (`localStorage['pokemon-rogue-pocket-audio-track']`).
+> Only `boss` / `elite` / `legendary` battles interrupt it with their own song, and the
+> level track returns when the battle ends. A level advance clears `musicTrackId`, so each
+> level gets a new song. The sections below describe the original per-battle wiring;
+> `arena/audio.js`, `map/run_state.js` (`ensureLevelMusic`), and `arena/game.js` are the
+> current source of truth.
+
 ## Ground rules (binding)
 
 - **Never** `git add` / `git commit` / `git push`. Read-only git (`log`, `diff`, `status`,

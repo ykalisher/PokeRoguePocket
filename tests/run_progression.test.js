@@ -342,6 +342,58 @@ test('createRunState v2 sets the new run fields', () => {
     assert.equal(run.area.bossNodeId, 'boss-11');
 });
 
+test('the level music track round-trips on the run and defaults to none', () => {
+    R.clearRunState();
+    const run = R.createRunState({
+        area: makeGraph(),
+        collections: {},
+        location: makeSnapshot(),
+        starterId: 'water',
+        level: 1
+    });
+
+    assert.equal(run.musicTrackId, null);
+
+    run.musicTrackId = 'dppt-route-209';
+    assert.ok(R.saveRunState(run));
+    assert.equal(R.loadRunState().musicTrackId, 'dppt-route-209');
+
+    run.musicTrackId = 42;
+    assert.ok(R.saveRunState(run));
+    assert.equal(R.loadRunState().musicTrackId, null);
+});
+
+test('ensureLevelMusic stores the chosen track on the run and keeps it across calls', () => {
+    R.clearRunState();
+
+    const tracks = [
+        { id: 'map-a', category: 'trainer', enabled: true, file: 'assets/music/map-a.mp3' },
+        { id: 'boss-a', category: 'boss', enabled: true, file: 'assets/music/boss-a.mp3' }
+    ];
+    const run = R.createRunState({ area: makeGraph(), collections: {}, location: makeSnapshot(), level: 1 });
+
+    // No PokeAudio (the achievements/editor pages never load it) is a no-op.
+    assert.equal(R.ensureLevelMusic(run, tracks), null);
+    assert.equal(run.musicTrackId, null);
+
+    require('../arena/audio.js');
+    globalThis.PokeAudio = globalThis.window.PokeAudio;
+
+    try {
+        assert.equal(R.ensureLevelMusic(run, tracks), 'map-a');
+        assert.equal(run.musicTrackId, 'map-a');
+        assert.equal(R.loadRunState().musicTrackId, 'map-a');
+
+        // A gym leader battle interrupts, then the level track comes back.
+        globalThis.PokeAudio.playCategory('boss');
+        assert.equal(R.ensureLevelMusic(run, tracks), 'map-a');
+        assert.equal(globalThis.PokeAudio.getCurrentTrack().id, 'map-a');
+    } finally {
+        delete globalThis.PokeAudio;
+        delete require.cache[require.resolve('../arena/audio.js')];
+    }
+});
+
 test('createRunState clamps level and defaults starter/location', () => {
     const run = R.createRunState({ area: makeGraph(), collections: {}, level: 99 });
 
@@ -643,6 +695,7 @@ test('advanceRunToNextLevel bumps the level, refreshes the area, and preserves p
         eventEncounters: { 'node-6-1': {} },
         collections: { pokemon: ['keep'] },
         cash: 250,
+        musicTrackId: 'level-one-theme',
         nextCardId: 9,
         starterId: 'water'
     };
@@ -650,6 +703,8 @@ test('advanceRunToNextLevel bumps the level, refreshes the area, and preserves p
     P.advanceRunToNextLevel(run, gameData, { includeEvents: false });
 
     assert.equal(run.level, 2);
+    // A new level means a new song.
+    assert.equal(run.musicTrackId, null);
     assert.equal(run.location.id, 'b');
     assert.ok(run.location.types.some(type => ['WATER', 'ICE'].includes(type)), 'shares a type with the old location');
     assert.deepEqual(run.visitedLocationIds, ['a', 'b']);

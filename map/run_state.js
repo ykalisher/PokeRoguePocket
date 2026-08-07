@@ -52,6 +52,7 @@
             level: clampLevel(level),
             location: locationSnapshot,
             martEncounters: {},
+            musicTrackId: null,
             nextCardId: 1,
             runCompleted: false,
             runCompletedAt: null,
@@ -115,6 +116,9 @@
     }
 
     function clearRunState() {
+        // The level music belongs to the run that is being thrown away.
+        if (global.PokeAudio) global.PokeAudio.resetLevelMusic();
+
         if (!canUseStorage()) return false;
 
         try {
@@ -124,6 +128,29 @@
             console.warn('Could not clear run state.', error);
             return false;
         }
+    }
+
+    /**
+     * Starts (or keeps) the music for the run's current map level: one track,
+     * chosen once per level, playing across every page of that level. The pick
+     * is stored on the run so a level advance is what changes the song.
+     *
+     * Safe to call on every render — the audio module ignores a request for the
+     * track it is already playing.
+     */
+    function ensureLevelMusic(run, tracks) {
+        if (!run || !global.PokeAudio) return null;
+
+        global.PokeAudio.configure(tracks);
+
+        const trackId = global.PokeAudio.playLevelTrack(run.musicTrackId || null);
+
+        if (trackId && trackId !== run.musicTrackId) {
+            run.musicTrackId = trackId;
+            saveRunState(run);
+        }
+
+        return trackId;
     }
 
     function hasSavedRun() {
@@ -459,6 +486,7 @@
             level: clampLevel(run.level),
             location: normalizeLocationSnapshot(run.location),
             martEncounters: normalizeMartEncounters(run.martEncounters),
+            musicTrackId: typeof run.musicTrackId === 'string' && run.musicTrackId ? run.musicTrackId : null,
             nextCardId: Number.isFinite(run.nextCardId) ? run.nextCardId : 1,
             runCompleted: Boolean(run.runCompleted),
             runCompletedAt: run.runCompletedAt || null,
@@ -772,6 +800,7 @@
         createItemCard,
         createPokemonCard,
         createRunState,
+        ensureLevelMusic,
         getActiveAttackEncounter,
         getActiveBattleEncounter,
         getActiveCaptureEncounter,

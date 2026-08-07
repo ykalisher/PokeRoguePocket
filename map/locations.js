@@ -615,12 +615,14 @@
      * location sharing a type with the current one, regenerates a fresh area
      * graph, and wipes every per-area encounter map. Collections, cash,
      * nextCardId, and starterId are left untouched. Caller guards level bounds.
+     * The level's music track is cleared so the new level picks a new song.
      */
     function advanceRunToNextLevel(run, gameData, options) {
         const opts = options || {};
         const includeEvents = opts.includeEvents !== false;
 
         run.level += 1;
+        run.musicTrackId = null;
 
         const nextLocation = chooseNextLocation(gameData, {
             previousTypes: run.location ? run.location.types : [],

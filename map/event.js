@@ -42,6 +42,8 @@
             return;
         }
 
+        runStore.ensureLevelMusic(state.run, arena.GameData.music);
+
         state.eventRecord = eventSystem.getEventById(arena.GameData, state.encounter.eventId);
 
         const actionChanges = runStore.rebuildActionDeckForActivePokemon(state.run);

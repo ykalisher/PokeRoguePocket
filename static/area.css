@@ -233,6 +233,17 @@
     line-height: 1;
 }
 
+.area-mute-button {
+    padding: 8px 10px;
+    line-height: 1;
+}
+
+.area-mute-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+}
+
 .area-map-panel {
     min-width: 0;
     min-height: 0;

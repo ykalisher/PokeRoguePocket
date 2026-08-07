@@ -320,6 +320,9 @@ test('PUT /api/data/music with a bad category is blocked with a 409', async () =
     try {
         const url = baseUrl(server);
         const music = [{ id: 'mystery-theme', title: 'Mystery Theme', category: 'mystery', file: 'assets/music/mystery-theme.mp3', enabled: true }];
+        // The fixture is a copy of the repo's music.json, whatever it holds
+        // today; a blocked PUT must leave it exactly as it was.
+        const before = fs.readFileSync(path.join(dataDir, 'music.json'), 'utf8');
 
         const res = await fetch(`${url}/api/data/music`, {
             method: 'PUT',
@@ -331,7 +334,7 @@ test('PUT /api/data/music with a bad category is blocked with a 409', async () =
         assert.equal(body.blocked, true);
         assert.ok(body.issues.some((issue) => issue.code === 'music.bad-category'));
 
-        assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dataDir, 'music.json'), 'utf8')), []);
+        assert.equal(fs.readFileSync(path.join(dataDir, 'music.json'), 'utf8'), before);
     } finally {
         await closeServer(server);
     }

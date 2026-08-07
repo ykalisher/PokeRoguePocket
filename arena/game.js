@@ -59,8 +59,10 @@
             handleBattleFinished(activeBattleEncounter.outcome);
         } else if (activeBattleEncounter && activeTrainer) {
             renderTrainerIntro();
+            startLevelMusic();
         } else if (activeBattleEncounter) {
             renderBattleUnavailable();
+            startLevelMusic();
         } else {
             arena.Controller.resetPrototype();
             startBattleMusic();
@@ -163,7 +165,9 @@
     function handleBattleFinished(outcome) {
         if (!activeRun || !activeBattleEncounter) return;
 
-        window.PokeAudio.stop();
+        // The battle is over, so a gym leader / elite / legendary song hands
+        // back to the level music the map will keep playing.
+        startLevelMusic();
 
         activeBattleEncounter.outcome = activeBattleEncounter.outcome || outcome;
         activeBattleEncounter.finishedAt = activeBattleEncounter.finishedAt || new Date().toISOString();
@@ -387,7 +391,8 @@
         }
         runStore.saveRunState(activeRun);
         arena.Model.clearSavedBattleState();
-        window.PokeAudio.stop();
+        // No stop(): the map picks the level's music up where this page leaves
+        // it, and unload flushes the position.
         window.location.href = 'area.html';
     }
 
@@ -551,9 +556,9 @@
         return activeRun && Number.isFinite(activeRun.level) ? activeRun.level : 1;
     }
 
+    // Ranks that get their own battle song. Standard and Ace are absent on
+    // purpose: those battles keep playing the map level's music.
     const MUSIC_CATEGORY_BY_RANK = {
-        Standard: 'trainer',
-        Ace: 'trainer',
         Boss: 'boss',
         Elite: 'elite',
         Special: 'legendary'
@@ -563,11 +568,36 @@
     // every map node, so those trainers are only reached through legendary
     // trainer events.
     function battleMusicCategory() {
-        return (activeTrainer && MUSIC_CATEGORY_BY_RANK[activeTrainer.rank]) || 'trainer';
+        return (activeTrainer && MUSIC_CATEGORY_BY_RANK[activeTrainer.rank]) || null;
     }
 
+    /**
+     * Standard/ace battles carry the level's music straight through; gym
+     * leaders, elites, and legendaries interrupt it with their own category.
+     */
     function startBattleMusic() {
-        window.PokeAudio.playCategory(battleMusicCategory());
+        const category = battleMusicCategory();
+
+        if (category) {
+            window.PokeAudio.playCategory(category);
+            return;
+        }
+
+        startLevelMusic();
+    }
+
+    /**
+     * Resumes the map level's song where the previous page left it. The
+     * prototype battle has no run and therefore no level, so it just plays a
+     * random map track.
+     */
+    function startLevelMusic() {
+        if (activeRun) {
+            runStore.ensureLevelMusic(activeRun, arena.GameData.music);
+            return;
+        }
+
+        window.PokeAudio.playCategory('trainer');
     }
 
     function handleAudioSliderInput(event) {

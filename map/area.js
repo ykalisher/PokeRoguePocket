@@ -69,6 +69,14 @@
     }
 
     function handleAreaClick(event) {
+        const muteButton = event.target.closest('[data-toggle-mute]');
+
+        if (muteButton && window.PokeAudio) {
+            window.PokeAudio.setMuted(!window.PokeAudio.isMuted());
+            render();
+            return;
+        }
+
         const closeButton = event.target.closest('[data-close-card-window]');
 
         if (closeButton) {
@@ -283,6 +291,10 @@
     }
 
     function render() {
+        // Here rather than in init(): a level advance happens between renders,
+        // and that is what swaps the level's song.
+        runStore.ensureLevelMusic(state.run, arena.GameData.music);
+
         const currentNode = getCurrentNode();
         const selectableNodeIds = new Set(getAvailableNextNodes().map(node => node.id));
 
@@ -303,6 +315,7 @@
                     </div>
                 </div>
                 <div class="area-hud" aria-label="Run resources and decks">
+                    ${renderMuteButton()}
                     ${renderMoney()}
                     ${renderDeckButton('actions', 'Action deck', state.collections.actions.length)}
                     ${renderDeckButton('pokemon', 'Pokemon cards', state.collections.pokemon.length)}
@@ -343,6 +356,31 @@
             <button class="area-deck-button" type="button" data-card-window="${collectionKey}" aria-label="Open ${label}" title="${label}">
                 <img src="${CARD_BACKS[collectionKey]}" alt="">
                 <span class="area-deck-count">${count}</span>
+            </button>
+        `;
+    }
+
+    /**
+     * Music now starts on the map, so the map needs its own way to silence it.
+     * The volume slider stays in the battle pause menu.
+     */
+    function renderMuteButton() {
+        if (!window.PokeAudio) return '';
+
+        const muted = window.PokeAudio.isMuted();
+        const label = muted ? 'Unmute music' : 'Mute music';
+        // Inline SVG rather than a speaker emoji: the HUD sits next to the card
+        // art, and an emoji renders differently (or not at all) per platform.
+        const wave = muted
+            ? '<path d="M16 9l6 6M22 9l-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>'
+            : '<path d="M16 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>';
+
+        return `
+            <button class="area-bench-button area-mute-button" type="button" data-toggle-mute aria-pressed="${muted ? 'true' : 'false'}" aria-label="${label}" title="${label}">
+                <svg class="area-mute-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 9h3.5L12 5v14L7.5 15H4z" fill="currentColor"></path>
+                    ${wave}
+                </svg>
             </button>
         `;
     }
