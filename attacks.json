@@ -102,9 +102,9 @@
   {
     "name": "Crunch",
     "type1": "MONSTER",
-    "type2": "DARK",
+    "type2": "NONE",
     "basePower": 55,
-    "status": "FLINCH",
+    "status": "NONE",
     "statChanges": [
       "DEFENSE_DOWN"
     ],
@@ -126,7 +126,7 @@
     "type1": "WATER",
     "type2": "FAIRY",
     "basePower": 0,
-    "status": "HEAL_STATUS",
+    "status": "FULL_HEAL",
     "statChanges": [],
     "target": "ALL_ALLIES",
     "full_type_requirements": true
@@ -202,8 +202,7 @@
     "basePower": 0,
     "status": "HEAL_STATUS",
     "statChanges": [
-      "ATTACK_UP",
-      "DEFENSE_UP"
+      "ATTACK_UP"
     ],
     "target": "SELF",
     "full_type_requirements": false
@@ -213,7 +212,7 @@
     "type1": "HUMAN",
     "type2": "NONE",
     "basePower": 0,
-    "status": "CONFUSION",
+    "status": "NONE",
     "statChanges": [
       "SPEED_DOWN",
       "DEFENSE_DOWN",
@@ -242,7 +241,6 @@
     "basePower": 55,
     "status": "NONE",
     "statChanges": [
-      "DEFENSE_DOWN",
       "DEFENSE_DOWN"
     ],
     "target": "OPPONENT",
@@ -529,9 +527,7 @@
     "type2": "NONE",
     "basePower": 55,
     "status": "FLINCH",
-    "statChanges": [
-      "SPEED_DOWN"
-    ],
+    "statChanges": [],
     "target": "OPPONENT",
     "full_type_requirements": false
   },
@@ -597,7 +593,7 @@
     "basePower": 0,
     "status": "HEAL",
     "statChanges": [
-      "DEFENSE_UP"
+      "SPEED_UP"
     ],
     "target": "ALL_ALLIES",
     "full_type_requirements": true
@@ -908,7 +904,7 @@
     "basePower": 55,
     "status": "NONE",
     "statChanges": [
-      "DEFENSE_DOWN"
+      "ATTACK_DOWN"
     ],
     "target": "OPPONENT",
     "full_type_requirements": false
@@ -916,12 +912,12 @@
   {
     "name": "Helping Hand",
     "type1": "FAIRY",
-    "type2": "NONE",
+    "type2": "NORMAL",
     "basePower": 0,
     "status": "NONE",
     "statChanges": [
       "ATTACK_UP",
-      "ATTACK_UP"
+      "SPEED_UP"
     ],
     "target": "ALLY",
     "full_type_requirements": false
@@ -940,7 +936,7 @@
     "name": "Ancient Power",
     "type1": "FOSSIL",
     "type2": "LEGENDARY",
-    "basePower": 80,
+    "basePower": 55,
     "status": "SELF_INFLICT",
     "statChanges": [
       "ATTACK_UP",
@@ -967,7 +963,6 @@
     "basePower": 55,
     "status": "NONE",
     "statChanges": [
-      "ATTACK_DOWN",
       "ATTACK_DOWN"
     ],
     "target": "OPPONENT",
@@ -1061,7 +1056,7 @@
     "status": "NONE",
     "statChanges": [
       "ATTACK_UP",
-      "ATTACK_UP"
+      "DEFENSE_UP"
     ],
     "target": "SELF",
     "full_type_requirements": false
@@ -1505,7 +1500,6 @@
     "basePower": 60,
     "status": "NONE",
     "statChanges": [
-      "DEFENSE_DOWN",
       "ATTACK_DOWN"
     ],
     "target": "ALL_OPPONENTS",
@@ -1565,5 +1559,17 @@
     "statChanges": [],
     "target": "ALL_OPPONENTS",
     "full_type_requirements": true
+  },
+  {
+    "name": "Energy Ball",
+    "type1": "GRASS",
+    "type2": "NONE",
+    "basePower": 55,
+    "status": "NONE",
+    "statChanges": [
+      "DEFENSE_DOWN"
+    ],
+    "target": "OPPONENT",
+    "full_type_requirements": false
   }
 ]

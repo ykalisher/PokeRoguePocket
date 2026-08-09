@@ -2659,18 +2659,6 @@
     "baseSpeed": 62
   },
   {
-    "name": "Bulbasaur",
-    "type1": "BABY",
-    "type2": "GRASS",
-    "type3": "NONE",
-    "id": "0001",
-    "baseHealth": 60,
-    "baseAttack": 64,
-    "baseDefense": 66,
-    "baseSpeed": 40,
-    "evolvesInto": "Mega Venusaur"
-  },
-  {
     "name": "Mega Blastoise",
     "type1": "WATER",
     "type2": "MONSTER",
@@ -2682,18 +2670,6 @@
     "baseSpeed": 80
   },
   {
-    "name": "Squirtle",
-    "type1": "BABY",
-    "type2": "WATER",
-    "type3": "NONE",
-    "id": "0007",
-    "baseHealth": 60,
-    "baseAttack": 50,
-    "baseDefense": 65,
-    "baseSpeed": 55,
-    "evolvesInto": "Mega Blastoise"
-  },
-  {
     "name": "Mega Charizard",
     "type1": "FIRE",
     "type2": "FLYING",
@@ -2703,18 +2679,6 @@
     "baseAttack": 115,
     "baseDefense": 85,
     "baseSpeed": 100
-  },
-  {
-    "name": "Charmander",
-    "type1": "BABY",
-    "type2": "FIRE",
-    "type3": "NONE",
-    "id": "0004",
-    "baseHealth": 50,
-    "baseAttack": 70,
-    "baseDefense": 50,
-    "baseSpeed": 60,
-    "evolvesInto": "Mega Charizard"
   },
   {
     "name": "Mega Kangaskhan",

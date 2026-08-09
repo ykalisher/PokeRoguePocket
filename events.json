@@ -618,5 +618,80 @@
     ],
     "enabled": true,
     "kicker": "Artificial Attacks"
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-venu",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Venusaur!\"",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "cardKind": "pokemon",
+        "count": 1,
+        "name": "Mega Venusaur",
+        "selectionId": "venu",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Venusaur" }
+      }
+    ],
+    "enabled": true,
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Venusaur" }
+    ],
+    "requires": [
+      { "id": "venu", "cardKind": "pokemon", "name": "Venusaur" }
+    ],
+    "kicker": "Mega Venusaur",
+    "actionTitle": "Mega Evolve!",
+    "buttonText": "Take the stone"
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-char",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Charizard!\"",
+    "buttonText": "Take the stone!",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "char",
+        "replacement": { "name": "Mega Charizard", "cardKind": "pokemon" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Charizard",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Charizard" }
+    ],
+    "requires": [
+      { "id": "char", "cardKind": "pokemon", "name": "Charizard" }
+    ],
+    "actionTitle": "Mega evolve!"
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-blast",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Blastoise!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "blast",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Blastoise" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Blastoise",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Blastoise" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "blast", "cardKind": "pokemon", "name": "Blastoise" }
+    ]
   }
 ]
