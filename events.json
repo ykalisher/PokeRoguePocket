@@ -693,5 +693,437 @@
     "requires": [
       { "id": "blast", "cardKind": "pokemon", "name": "Blastoise" }
     ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-abomasnow",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Abomasnow!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "abomasnow",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Abomasnow" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Abomasnow",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Abomasnow" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "abomasnow", "cardKind": "pokemon", "name": "Abomasnow" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-aggron",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Aggron!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "aggron",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Aggron" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Aggron",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Aggron" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "aggron", "cardKind": "pokemon", "name": "Aggron" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-alakazam",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Alakazam!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "alakazam",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Alakazam" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Alakazam",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Alakazam" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "alakazam", "cardKind": "pokemon", "name": "Alakazam" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-altaria",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Altaria!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "altaria",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Altaria" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Altaria",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Altaria" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "altaria", "cardKind": "pokemon", "name": "Altaria" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-ampharos",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Ampharos!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "ampharos",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Ampharos" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Ampharos",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Ampharos" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "ampharos", "cardKind": "pokemon", "name": "Ampharos" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-blaziken",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Blaziken!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "blaziken",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Blaziken" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Blaziken",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Blaziken" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "blaziken", "cardKind": "pokemon", "name": "Blaziken" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-camerupt",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Camerupt!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "camerupt",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Camerupt" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Camerupt",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Camerupt" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "camerupt", "cardKind": "pokemon", "name": "Camerupt" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-gengar",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Gengar!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "gengar",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Gengar" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Gengar",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Gengar" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "gengar", "cardKind": "pokemon", "name": "Gengar" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-gyarados-gift",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Gyarados!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "gyarados",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Gyarados" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Gyarados",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Gyarados" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "gyarados", "cardKind": "pokemon", "name": "Gyarados" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-manectric",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Manectric!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "manectric",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Manectric" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Manectric",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Manectric" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "manectric", "cardKind": "pokemon", "name": "Manectric" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-salamence",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Salamence!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "salamence",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Salamence" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Salamence",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Salamence" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "salamence", "cardKind": "pokemon", "name": "Salamence" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-sceptile",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Sceptile!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "sceptile",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Sceptile" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Sceptile",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Sceptile" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "sceptile", "cardKind": "pokemon", "name": "Sceptile" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-scizor",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Scizor!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "scizor",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Scizor" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Scizor",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Scizor" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "scizor", "cardKind": "pokemon", "name": "Scizor" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-sharpedo",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Sharpedo!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "sharpedo",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Sharpedo" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Sharpedo",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Sharpedo" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "sharpedo", "cardKind": "pokemon", "name": "Sharpedo" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-slowbro",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Slowbro!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "slowbro",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Slowbro" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Slowbro",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Slowbro" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "slowbro", "cardKind": "pokemon", "name": "Slowbro" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-steelix",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Steelix!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "steelix",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Steelix" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Steelix",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Steelix" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "steelix", "cardKind": "pokemon", "name": "Steelix" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-swampert",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Swampert!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "swampert",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Swampert" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Swampert",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Swampert" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "swampert", "cardKind": "pokemon", "name": "Swampert" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-tyranitar",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Tyranitar!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "tyranitar",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Tyranitar" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Tyranitar",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Tyranitar" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "tyranitar", "cardKind": "pokemon", "name": "Tyranitar" }
+    ]
   }
 ]
