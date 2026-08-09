@@ -77,6 +77,14 @@
                 }
             },
             {
+                key: 'requiresAchievement',
+                label: 'Unlocked by',
+                render: (record) => (record.requiresAchievement
+                    ? `${escapeHtml(achievementLabel(record.requiresAchievement))}${unknownAchievementBadge(record.requiresAchievement)}`
+                    : '<span class="editor-muted">—</span>'),
+                sortValue: (record) => (record.requiresAchievement ? achievementLabel(record.requiresAchievement) : '')
+            },
+            {
                 key: 'enabled',
                 label: 'Enabled',
                 render: (record) => `<span class="editor-dot ${isEnabled(record) ? 'editor-dot--on' : 'editor-dot--off'}" title="${isEnabled(record) ? 'Enabled' : 'Disabled'}"></span>`
@@ -84,9 +92,43 @@
         ];
     }
 
-    // Canonical new-record key order (88-starter-decks-overview.md).
+    // Canonical new-record key order (88-starter-decks-overview.md). A deck with
+    // no achievement gate omits `requiresAchievement` entirely, so the field is
+    // absent from the template and set/deleted by the form.
     function template() {
         return { id: '', name: '', type: '', pokemon: [], attacks: [], items: [], enabled: true };
+    }
+
+    // ------------------------------------------------------ achievement gate
+
+    function achievements() {
+        return (EditorApp.store.data.achievements || []).filter((record) => record && record.id);
+    }
+
+    function achievementLabel(id) {
+        const record = achievements().find((entry) => entry.id === id);
+        return record && record.name ? record.name : id;
+    }
+
+    function unknownAchievementBadge(id) {
+        if (!id || achievements().some((record) => record.id === id)) return '';
+        return ' <span class="editor-badge editor-badge--warning">unknown</span>';
+    }
+
+    function achievementSelectHtml(draft) {
+        const current = draft.requiresAchievement || '';
+        const options = achievements().map((record) =>
+            `<option value="${escapeAttr(record.id)}"${record.id === current ? ' selected' : ''}>${escapeHtml(record.name || record.id)}</option>`
+        ).join('');
+        // An id that no longer exists in achievements.json still has to show up
+        // as the selected value, or opening the deck would silently clear it.
+        const orphan = current && !achievements().some((record) => record.id === current)
+            ? `<option value="${escapeAttr(current)}" selected>${escapeHtml(current)} (unknown)</option>`
+            : '';
+
+        return `<select name="requiresAchievement">`
+            + `<option value=""${current ? '' : ' selected'}>Always available</option>`
+            + `${options}${orphan}</select>`;
     }
 
     // -------------------------------------------------------- entry helpers
@@ -160,6 +202,9 @@
                 <div class="editor-form-row">
                     ${draft.type ? EditorPreview.typeIconHtml(draft.type) : ''}
                     <span class="editor-badge">${escapeHtml(draft.type || 'no type')}</span>
+                    ${draft.requiresAchievement
+                        ? `<span class="editor-badge">Unlocked by ${escapeHtml(achievementLabel(draft.requiresAchievement))}</span>${unknownAchievementBadge(draft.requiresAchievement)}`
+                        : ''}
                 </div>
                 <div class="editor-trainer-deck-sections">
                     <div class="editor-trainer-deck-section">
@@ -230,6 +275,11 @@
             <div class="editor-form-row">
                 <label>Type${selectHtml('type', draft.type, typeValues(), 'Select type…')}</label>
                 <label class="editor-form-checkbox"><input type="checkbox" name="enabled" ${draft.enabled !== false ? 'checked' : ''}> Enabled</label>
+            </div>
+            <div class="editor-form-row">
+                <label>Unlocked by achievement${achievementSelectHtml(draft)}
+                    <span class="editor-hint">The deck shows as locked on the starter picker until this achievement is unlocked. "Always available" leaves it open from the start — at least one enabled deck must stay always available.</span>
+                </label>
             </div>
             <div class="editor-deck-builder">
                 ${DECK_KINDS.map((spec) => deckBuilderSectionHtml(spec, draft)).join('')}
@@ -305,7 +355,11 @@
             const field = target.name;
             if (!field) return;
 
-            draft[field] = target.value;
+            // "Always available" drops the key rather than storing "", keeping
+            // ungated decks byte-identical to how they read today.
+            if (field === 'requiresAchievement' && !target.value) delete draft.requiresAchievement;
+            else draft[field] = target.value;
+
             api.markDirty();
             api.refreshPreview();
         });

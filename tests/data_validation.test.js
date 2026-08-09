@@ -424,11 +424,28 @@ test('starter_decks.json entries are well-formed', () => {
         });
 
         assert.ok(deck.attacks.length >= 1, `${deck.id}: needs at least one attack`);
+
+        if (deck.requiresAchievement !== undefined) {
+            assert.ok(
+                typeof deck.requiresAchievement === 'string' && deck.requiresAchievement.trim() !== '',
+                `${deck.id}: requiresAchievement must be a non-empty achievement id (omit it for an always-available deck)`
+            );
+            assert.ok(
+                new Set(achievements.map(record => record.id)).has(deck.requiresAchievement),
+                `${deck.id}: requiresAchievement names unknown achievement ${deck.requiresAchievement}`
+            );
+        }
     });
 
     assert.ok(
         starterDecks.some(deck => deck.enabled !== false),
         'starter_decks.json needs at least one enabled deck or no run can start'
+    );
+
+    assert.ok(
+        starterDecks.some(deck => deck.enabled !== false && !deck.requiresAchievement),
+        'starter_decks.json needs at least one enabled deck with no requiresAchievement, '
+        + 'or a fresh profile opens the starter picker with every deck locked'
     );
 });
 

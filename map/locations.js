@@ -133,6 +133,37 @@
         return Object.fromEntries(enabled.map(deck => [deck.id, deck]));
     }
 
+    /**
+     * A deck with `requiresAchievement` set stays locked until that achievement
+     * id is unlocked in the local profile. Fails closed when the profile module
+     * is absent (same rule as achievement event conditions in event_effects.js);
+     * validation guarantees at least one enabled deck carries no requirement, so
+     * the picker always has something to offer.
+     */
+    function isStarterDeckUnlocked(deck) {
+        const required = deck && typeof deck.requiresAchievement === 'string'
+            ? deck.requiresAchievement.trim()
+            : '';
+
+        if (!required) return true;
+
+        return Boolean(global.PokeProfile && global.PokeProfile.isUnlocked(required));
+    }
+
+    /**
+     * getStarterDecks() minus the decks still locked behind an achievement.
+     * Falls back to the full set if every deck is locked, so a bad data state
+     * can never leave a run with no deck to build from.
+     */
+    function getUnlockedStarterDecks(gameData) {
+        const decks = getStarterDecks(gameData);
+        const unlocked = Object.entries(decks).filter(([, deck]) => isStarterDeckUnlocked(deck));
+
+        if (unlocked.length === 0) return decks;
+
+        return Object.fromEntries(unlocked);
+    }
+
     function getLocationById(gameData, id) {
         return getAllLocations(gameData).find(location => location && location.id === id) || null;
     }
@@ -981,6 +1012,7 @@
         getRunAttackRecords,
         getRunPokemonRecords,
         getStarterDecks,
+        getUnlockedStarterDecks,
         getWildPokemonPool,
         isAllowedTrainerRank,
         isBabyPokemon,
@@ -988,6 +1020,7 @@
         isMartOfferAllowed,
         isMegaPokemon,
         isObtainablePokemon,
+        isStarterDeckUnlocked,
         listAllPaths,
         rollMartTradeTypes,
         runHasDragonGemPrereqs,

@@ -325,6 +325,43 @@ body {
     background-color: color-mix(in srgb, var(--aqua) 42%, transparent);
 }
 
+/* A deck still gated behind an achievement: dimmed, inert, no hover lift. */
+.starter-page .starter-card--locked {
+    cursor: not-allowed;
+    opacity: 0.62;
+    filter: saturate(0.35);
+}
+
+.starter-page .starter-card--locked:hover,
+.starter-page .starter-card--locked:focus-visible {
+    transform: none;
+    border-color: rgba(251, 246, 232, 0.16);
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.14), 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+/* Replaces the call-to-action on a locked deck. */
+.starter-page .starter-card-lock {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 18px;
+    border-radius: 6px;
+    border: 1px dashed rgba(251, 246, 232, 0.28);
+    background-color: rgba(0, 0, 0, 0.22);
+}
+
+.starter-page .starter-card-lock-title {
+    font-weight: 760;
+}
+
+.starter-page .starter-card-lock-hint {
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
 .starter-page .starter-loading {
     color: var(--muted);
 }

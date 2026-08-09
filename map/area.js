@@ -760,7 +760,8 @@
 
     function createFreshRunState(requestedStarterId) {
         // The starter choice from starter.html threads in via the newRun URL;
-        // an invalid or missing choice falls back to the water starter.
+        // a missing, invalid or still-locked choice falls back to the first
+        // unlocked deck.
         const starterId = normalizeStarterId(requestedStarterId);
         const location = chooseLevelLocation({
             requiredType: getStarterType(starterId)
@@ -807,8 +808,17 @@
         return locations.createLocationSnapshot(location);
     }
 
+    // Every deck, keyed by id — used to resolve a deck already baked into a
+    // saved run, which stays playable even if its achievement gate is added
+    // (or the profile is cleared) afterwards.
     function starterDecks() {
         return locations.getStarterDecks(arena.GameData);
+    }
+
+    // Only the decks the profile has unlocked — what a NEW run may pick from,
+    // so a hand-typed area.html?starter=<locked id> cannot skip the gate.
+    function selectableStarterDecks() {
+        return locations.getUnlockedStarterDecks(arena.GameData);
     }
 
     function getStarterType(starterId) {
@@ -819,7 +829,7 @@
     }
 
     function normalizeStarterId(starterId) {
-        const decks = starterDecks();
+        const decks = selectableStarterDecks();
 
         return starterId && decks[starterId] ? starterId : Object.keys(decks)[0];
     }

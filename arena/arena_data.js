@@ -593,6 +593,10 @@
      * Converts a starter-deck record from its authoring shape ({ name, count }
      * pairs) into the tuple shape the run builder and starter picker already
      * consume ([name, count]). Records without an id are dropped.
+     *
+     * `requiresAchievement` is an achievement id that must be unlocked before
+     * the deck can be picked; an empty string means the deck is always
+     * available (see PokeLocations.isStarterDeckUnlocked).
      */
     function normalizeStarterDeck(record) {
         if (!record || !record.id) return null;
@@ -608,6 +612,7 @@
             items: pairs(record.items),
             name: record.name || record.id,
             pokemon: (Array.isArray(record.pokemon) ? record.pokemon : []).filter(Boolean),
+            requiresAchievement: typeof record.requiresAchievement === 'string' ? record.requiresAchievement.trim() : '',
             type: record.type || 'NONE'
         };
     }

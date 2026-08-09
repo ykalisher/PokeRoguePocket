@@ -597,7 +597,7 @@
         return requiredTypes.some((type) => pokemonTypes.includes(type));
     }
 
-    function validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums) {
+    function validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums, achievementIds) {
         const issues = [];
         const validTypes = new Set(Object.values((enums && enums.PokeType) || {}));
         const pokemonByName = new Map(pokemon.map((record) => [record.name, record]));
@@ -624,6 +624,16 @@
 
             if (!deck.type || !validTypes.has(deck.type)) {
                 issues.push(err('starter_decks.json', key, 'starterDecks.bad-type', `${key}: bad type ${deck.type}`, 'type'));
+            }
+
+            if (deck.requiresAchievement !== undefined) {
+                if (typeof deck.requiresAchievement !== 'string' || deck.requiresAchievement.trim() === '') {
+                    issues.push(err('starter_decks.json', key, 'starterDecks.bad-achievement',
+                        `${key}: requiresAchievement must be a non-empty achievement id (omit it for an always-available deck)`, 'requiresAchievement'));
+                } else if (!achievementIds || !achievementIds.has(deck.requiresAchievement)) {
+                    issues.push(err('starter_decks.json', key, 'starterDecks.unknown-achievement',
+                        `${key}: requiresAchievement names unknown achievement ${deck.requiresAchievement}`, 'requiresAchievement'));
+                }
             }
 
             const deckPokemon = Array.isArray(deck.pokemon) ? deck.pokemon : [];
@@ -667,6 +677,11 @@
 
         if (!starterDecks.some((deck) => deck && deck.enabled !== false)) {
             issues.push(err('starter_decks.json', '(dataset)', 'starterDecks.none-enabled', 'starter_decks.json needs at least one enabled deck'));
+        } else if (!starterDecks.some((deck) => deck && deck.enabled !== false && !deck.requiresAchievement)) {
+            // Otherwise a brand-new profile opens the starter picker with every
+            // deck locked and no way to earn the achievement that unlocks one.
+            issues.push(err('starter_decks.json', '(dataset)', 'starterDecks.none-unlocked',
+                'starter_decks.json needs at least one enabled deck with no requiresAchievement'));
         }
 
         return issues;
@@ -1048,7 +1063,7 @@
             ...validateItems(items, enums),
             ...validateTrainers(trainers, pokemonNames, attackNames, itemNames, enums),
             ...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames }, achievementIds),
-            ...validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums),
+            ...validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums, achievementIds),
             ...validateLocations(locations, enums, starterDecks),
             ...validateAchievements(achievements, enums, events),
             ...validateMusic(music, enums, assetIndex),
@@ -1184,6 +1199,11 @@
             collectAllConditionRefs(events).forEach(({ event, condition }) => {
                 if (condition.subject === 'achievement' && condition.name === name) {
                     results.push({ file: 'events.json', recordKey: event.id, field: 'conditions' });
+                }
+            });
+            (data.starter_decks || []).forEach((deck) => {
+                if (deck && deck.requiresAchievement === name) {
+                    results.push({ file: 'starter_decks.json', recordKey: deck.id, field: 'requiresAchievement' });
                 }
             });
         }

@@ -450,6 +450,44 @@ test('starterDecks: none enabled', () => {
     assert.ok(hasCode(issues, 'starterDecks.none-enabled'));
 });
 
+test('starterDecks: gating a deck on a known achievement is clean', () => {
+    const data = withStarterDecks((decks) => { decks[1].requiresAchievement = 'champion'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.equal(hasCode(issues, 'starterDecks.unknown-achievement'), false);
+    assert.equal(hasCode(issues, 'starterDecks.none-unlocked'), false);
+});
+
+test('starterDecks: unknown achievement', () => {
+    const data = withStarterDecks((decks) => { decks[0].requiresAchievement = 'not-a-real-achievement'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.unknown-achievement'));
+});
+
+test('starterDecks: a non-string or blank requiresAchievement is rejected', () => {
+    const blank = withStarterDecks((decks) => { decks[0].requiresAchievement = ''; });
+    assert.ok(hasCode(validateAll(blank, { enums: live.enums }), 'starterDecks.bad-achievement'));
+
+    const wrongType = withStarterDecks((decks) => { decks[0].requiresAchievement = 7; });
+    assert.ok(hasCode(validateAll(wrongType, { enums: live.enums }), 'starterDecks.bad-achievement'));
+});
+
+test('starterDecks: gating every enabled deck leaves a new profile with nothing to pick', () => {
+    const data = withStarterDecks((decks) => {
+        decks.forEach((deck) => { deck.requiresAchievement = 'champion'; });
+    });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'starterDecks.none-unlocked'));
+});
+
+test('findReferences(achievement, champion) includes a starter deck gated on it', () => {
+    const data = withStarterDecks((decks) => { decks[1].requiresAchievement = 'champion'; });
+    const refs = findReferences(data, 'achievement', 'champion', live.engineRefs);
+
+    assert.ok(refs.some((ref) => ref.file === 'starter_decks.json'
+        && ref.recordKey === data.starter_decks[1].id
+        && ref.field === 'requiresAchievement'));
+});
+
 test('starterDecks: an attack no deck pokemon can use warns unusable-attack', () => {
     const data = withStarterDecks((decks) => {
         decks[0].attacks.push({ name: 'Sleep Powder', count: 1 });
@@ -475,7 +513,9 @@ test('achievements: missing id', () => {
 });
 
 test('achievements: duplicate id', () => {
-    const data = withAchievements((achievements) => { achievements[1].id = achievements[0].id; });
+    // Appends rather than writing achievements[1]: achievements.json is still
+    // short enough that a second record is not guaranteed to exist.
+    const data = withAchievements((achievements) => { achievements.push(structuredClone(achievements[0])); });
     const issues = validateAll(data, { enums: live.enums });
     assert.ok(hasCode(issues, 'achievements.duplicate-id'));
 });

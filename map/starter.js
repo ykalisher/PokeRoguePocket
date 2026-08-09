@@ -3,6 +3,9 @@
  *
  * Renders the enabled starter decks (from starter_decks.json) and, on
  * selection, hands off to a fresh run via area.html?newRun=1&starter=<id>.
+ *
+ * A deck with `requiresAchievement` renders locked and unclickable until the
+ * profile has unlocked that achievement.
  */
 
 (function bootStarterPage(arena, locations) {
@@ -32,14 +35,41 @@
         const cards = [...deck.attacks, ...deck.items]
             .map(([name, count]) => `<li>${count}× ${escapeHtml(name)}</li>`)
             .join('');
+        const unlocked = locations.isStarterDeckUnlocked(deck);
 
         return `
-            <button type="button" class="starter-card" data-starter="${escapeHtml(deck.id)}">
+            <button type="button" class="starter-card${unlocked ? '' : ' starter-card--locked'}"
+                    data-starter="${escapeHtml(deck.id)}"${unlocked ? '' : ' disabled'}>
                 <span class="starter-card-type">${formatType(deck.type)}</span>
                 <span class="starter-card-pokemon">${pokemon}</span>
                 <ul class="starter-card-cards">${cards}</ul>
-                <span class="starter-card-cta">Choose this deck</span>
+                ${unlocked ? '<span class="starter-card-cta">Choose this deck</span>' : renderLock(deck)}
             </button>`;
+    }
+
+    /**
+     * The requirement blurb on a locked deck. A hidden achievement the player
+     * has not earned yet stays masked as "???", matching achievements.html.
+     */
+    function renderLock(deck) {
+        const achievement = findAchievement(deck.requiresAchievement);
+        const masked = achievement && achievement.hidden;
+        const name = achievement && !masked ? achievement.name : '???';
+        const description = achievement && !masked ? achievement.description : '';
+
+        return `
+            <span class="starter-card-lock">
+                <span class="starter-card-lock-title">Locked — ${escapeHtml(name)}</span>
+                ${description ? `<span class="starter-card-lock-hint">${escapeHtml(description)}</span>` : ''}
+            </span>`;
+    }
+
+    function findAchievement(id) {
+        const records = arena.GameData && arena.GameData.achievements;
+
+        return Array.isArray(records)
+            ? records.find(record => record && record.id === id) || null
+            : null;
     }
 
     function renderPokemon(name) {
@@ -58,7 +88,7 @@
     function handleSelectClick(event) {
         const card = event.target.closest('[data-starter]');
 
-        if (!card) return;
+        if (!card || card.disabled) return;
 
         const starterId = card.getAttribute('data-starter');
         window.location.href = `area.html?newRun=1&starter=${encodeURIComponent(starterId)}`;
