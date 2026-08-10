@@ -47,9 +47,9 @@
   {
     "id": "safari-zone",
     "name": "Safari Zone",
-    "terrain": "Safari",
-    "types": ["NORMAL", "GOURMET", "DRAGON"],
-    "theme": { "accent": "#fffefe", "glow": "#ff8473", "surface": "#311f13", "bgDeep": "#221315", "bgMid": "#3b1f21" },
+    "terrain": "Jungle",
+    "types": ["NORMAL", "DRAGON", "GRASS"],
+    "theme": { "accent": "#fffefe", "glow": "#b87333", "surface": "#08300d", "bgDeep": "#17100e", "bgMid": "#271a13" },
     "background": "assets/backgrounds/safari-zone.png",
     "enabled": true
   },
@@ -75,8 +75,8 @@
     "id": "castelia-city",
     "name": "Castelia City",
     "terrain": "Urban",
-    "types": ["NORMAL", "POISON", "HUMAN", "GOURMET"],
-    "theme": { "accent": "#fffefe", "glow": "#88d7a0", "surface": "#281c15", "bgDeep": "#221315", "bgMid": "#3b1f21" },
+    "types": ["NORMAL", "HUMAN", "GOURMET"],
+    "theme": { "accent": "#fffefe", "glow": "#fdbb8b", "surface": "#4c2526", "bgDeep": "#130f0e", "bgMid": "#201814" },
     "background": "assets/backgrounds/castelia-city.png",
     "enabled": true
   },
@@ -84,8 +84,8 @@
     "id": "new-mauville",
     "name": "New Mauville",
     "terrain": "Factory",
-    "types": ["ELECTRIC", "STEEL", "FLYING"],
-    "theme": { "accent": "#fdff4a", "glow": "#dbdbdb", "surface": "#2f4652", "bgDeep": "#16171b", "bgMid": "#25272b" },
+    "types": ["ELECTRIC", "STEEL", "ARTIFICIAL"],
+    "theme": { "accent": "#fdff4a", "glow": "#dbdbdb", "surface": "#111924", "bgDeep": "#16171b", "bgMid": "#25272b" },
     "background": "assets/backgrounds/new-mauville.png",
     "enabled": true
   },
@@ -146,7 +146,7 @@
   {
     "id": "mt-chimney",
     "name": "Mt. Chimney",
-    "terrain": "Mountain",
+    "terrain": "Volcanic",
     "types": ["FIRE", "DARK", "POISON"],
     "theme": { "accent": "#ff9024", "glow": "#a6a6a6", "surface": "#23302a", "bgDeep": "#0b0d11", "bgMid": "#121419" },
     "background": "assets/backgrounds/mt-chimney.png",
@@ -174,8 +174,8 @@
     "id": "mt-silver",
     "name": "Mt. Silver",
     "terrain": "Mountain",
-    "types": ["ROCK", "GROUND", "WATER"],
-    "theme": { "accent": "#e7e5af", "glow": "#c6964a", "surface": "#081f4a", "bgDeep": "#120f0d", "bgMid": "#1f1713" },
+    "types": ["ROCK", "FIGHTING", "WATER"],
+    "theme": { "accent": "#e7e5af", "glow": "#f33218", "surface": "#081f4a", "bgDeep": "#1b0c0f", "bgMid": "#2f1216" },
     "background": "assets/backgrounds/mt-silver.png",
     "enabled": true
   },
@@ -246,8 +246,8 @@
     "id": "great-marsh",
     "name": "Great Marsh",
     "terrain": "Swamp",
-    "types": ["BUG", "POISON", "GROUND"],
-    "theme": { "accent": "#fffe66", "glow": "#88d7a0", "surface": "#261a12", "bgDeep": "#111717", "bgMid": "#1c2724" },
+    "types": ["BUG", "POISON", "GRASS"],
+    "theme": { "accent": "#fffe66", "glow": "#88d7a0", "surface": "#08300d", "bgDeep": "#111717", "bgMid": "#1c2724" },
     "background": "",
     "enabled": true
   },
@@ -275,6 +275,132 @@
     "terrain": "Urban",
     "types": ["FIRE", "FLYING", "NORMAL"],
     "theme": { "accent": "#ff9024", "glow": "#b2e9ff", "surface": "#2b2d30", "bgDeep": "#162027", "bgMid": "#253741" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "celestial-tower",
+    "name": "Celestial Tower",
+    "terrain": "Urban",
+    "types": ["DRAGON", "FIRE", "GHOST"],
+    "theme": { "accent": "#b87333", "glow": "#ff9024", "surface": "#181923", "bgDeep": "#22130b", "bgMid": "#3d1f0f" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "giant-chasm",
+    "name": "Giant Chasm",
+    "terrain": "Cave",
+    "types": ["DRAGON", "ICE", "ROCK"],
+    "theme": { "accent": "#b87333", "glow": "#c3e4ee", "surface": "#2d2e2d", "bgDeep": "#0f191d", "bgMid": "#192a2f" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "origin-cave",
+    "name": "Origin Cave",
+    "terrain": "Cave",
+    "types": ["DRAGON", "GHOST", "POISON"],
+    "theme": { "accent": "#b87333", "glow": "#876dad", "surface": "#23302a", "bgDeep": "#0d0e14", "bgMid": "#14161e" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "kanto-power-plant",
+    "name": "Kanto Power Plant",
+    "terrain": "Factory",
+    "types": ["ELECTRIC", "FLYING", "WATER"],
+    "theme": { "accent": "#fdff4a", "glow": "#b2e9ff", "surface": "#081f4a", "bgDeep": "#162027", "bgMid": "#253741" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "relic-castle",
+    "name": "Relic Castle",
+    "terrain": "Desert",
+    "types": ["BUG", "GROUND", "FIRE"],
+    "theme": { "accent": "#fffe66", "glow": "#c6964a", "surface": "#4f250d", "bgDeep": "#120f0d", "bgMid": "#1f1713" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "lake-valor",
+    "name": "Lake Valor",
+    "terrain": "Lake",
+    "types": ["PSYCHIC", "WATER", "FAIRY"],
+    "theme": { "accent": "#b955d2", "glow": "#2da2fd", "surface": "#34212f", "bgDeep": "#061124", "bgMid": "#091b3b" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "lake-verity",
+    "name": "Lake Verity",
+    "terrain": "Lake",
+    "types": ["PSYCHIC", "WATER", "NORMAL"],
+    "theme": { "accent": "#b955d2", "glow": "#2da2fd", "surface": "#2b2d30", "bgDeep": "#061124", "bgMid": "#091b3b" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "lake-acuity",
+    "name": "Lake Acuity",
+    "terrain": "Lake",
+    "types": ["PSYCHIC", "ICE", "FIGHTING"],
+    "theme": { "accent": "#b955d2", "glow": "#c3e4ee", "surface": "#3c1417", "bgDeep": "#0f191d", "bgMid": "#192a2f" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "undella-beach",
+    "name": "Undella Beach",
+    "terrain": "Beach",
+    "types": ["WATER", "GOURMET", "HUMAN"],
+    "theme": { "accent": "#2da2fd", "glow": "#ff8473", "surface": "#281c15", "bgDeep": "#221315", "bgMid": "#3b1f21" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "stark-mountain",
+    "name": "Stark Mountain",
+    "terrain": "Volcanic",
+    "types": ["FIRE", "STEEL", "GROUND"],
+    "theme": { "accent": "#ff9024", "glow": "#dbdbdb", "surface": "#261a12", "bgDeep": "#16171b", "bgMid": "#25272b" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "mt-coronet",
+    "name": "Mt. Coronet",
+    "terrain": "Mountain",
+    "types": ["DARK", "DRAGON", "STEEL"],
+    "theme": { "accent": "#a6a6a6", "glow": "#b87333", "surface": "#2e3034", "bgDeep": "#17100e", "bgMid": "#271a13" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "cold-storage",
+    "name": "Driftveil Cold Storage",
+    "terrain": "Factory",
+    "types": ["ICE", "FIRE", "FIGHTING"],
+    "theme": { "accent": "#c3e4ee", "glow": "#ff9024", "surface": "#3c1417", "bgDeep": "#22130b", "bgMid": "#3d1f0f" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "lacunosa-town",
+    "name": "Lacunosa Town",
+    "terrain": "Urban",
+    "types": ["DARK", "ICE", "DRAGON"],
+    "theme": { "accent": "#a6a6a6", "glow": "#c3e4ee", "surface": "#311f13", "bgDeep": "#0f191d", "bgMid": "#192a2f" },
+    "background": "",
+    "enabled": true
+  },
+  {
+    "id": "chamber-of-emptiness",
+    "name": "Chamber of Emptiness",
+    "terrain": "Cave",
+    "types": ["GHOST", "ARTIFICIAL", "DARK"],
+    "theme": { "accent": "#876dad", "glow": "#ededed", "surface": "#15171b", "bgDeep": "#0a0e15", "bgMid": "#101620" },
     "background": "",
     "enabled": true
   }

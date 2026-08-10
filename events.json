@@ -261,9 +261,9 @@
     ],
     "enabled": true,
     "kicker": "Zapdos",
-    "locations": ["new-mauville"],
     "battleTitle": "Battle Zapdos!",
-    "battleButtonText": "Let's go!"
+    "battleButtonText": "Let's go!",
+    "locations": ["kanto-power-plant"]
   },
   {
     "type": "trainer",
@@ -331,7 +331,7 @@
     "kicker": "Suicune",
     "battleTitle": "Battle Suicune!",
     "battleButtonText": "Let's go!",
-    "terrains": ["Beach", "Lake", "Island"]
+    "terrains": ["Beach", "Lake"]
   },
   {
     "type": "trainer",
@@ -348,7 +348,7 @@
     "kicker": "Raikou",
     "battleTitle": "Battle Raikou!",
     "battleButtonText": "Let's go!",
-    "terrains": ["Jungle", "Safari", "Forest"]
+    "terrains": ["Factory", "Island"]
   },
   {
     "type": "trainer",
