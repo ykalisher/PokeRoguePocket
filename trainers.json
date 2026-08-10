@@ -4077,5 +4077,405 @@
       "Liechi Berry",
       "Salac Berry"
     ]
+  },
+  {
+    "name": "Dialga",
+    "sprite": "Dialga",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "STEEL",
+    "pokemon": [
+      "Dialga"
+    ],
+    "attacks": [
+      "Metal Burst",
+      "Iron Head",
+      "Dragon Claw",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Palkia",
+    "sprite": "Palkia",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "WATER",
+    "pokemon": [
+      "Palkia"
+    ],
+    "attacks": [
+      "Great Flood",
+      "Hydro Pump",
+      "Dragon Claw",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Giratina",
+    "sprite": "Giratina",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "GHOST",
+    "pokemon": [
+      "Giratina"
+    ],
+    "attacks": [
+      "Lovecraftian Horror",
+      "Shadow Ball",
+      "Dragon Claw",
+      "Divine Power"
+    ],
+    "items": [
+      "Babiri Berry",
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Reshiram",
+    "sprite": "Reshiram",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "FIRE",
+    "pokemon": [
+      "Reshiram"
+    ],
+    "attacks": [
+      "Eruption",
+      "Flame Thrower",
+      "Dragon Claw",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Zekrom",
+    "sprite": "Zekrom",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ELECTRIC",
+    "pokemon": [
+      "Zekrom"
+    ],
+    "attacks": [
+      "Thunder Storm",
+      "Thunder Bolt",
+      "Dragon Claw",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Kyurem",
+    "sprite": "Kyurem",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ICE",
+    "pokemon": [
+      "Kyurem"
+    ],
+    "attacks": [
+      "Blizzard",
+      "Ice Beam",
+      "Dragon Claw",
+      "Divine Power"
+    ],
+    "items": [
+      "Babiri Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Cobalion",
+    "sprite": "Cobalion",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "STEEL",
+    "pokemon": [
+      "Cobalion"
+    ],
+    "attacks": [
+      "Sacred Sword",
+      "Metal Burst",
+      "Iron Defense",
+      "Divine Power"
+    ],
+    "items": [
+      "Babiri Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Terrakion",
+    "sprite": "Terrakion",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ROCK",
+    "pokemon": [
+      "Terrakion"
+    ],
+    "attacks": [
+      "Sacred Sword",
+      "Precipice Blades",
+      "Rock Slide",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Virizion",
+    "sprite": "Virizion",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "GRASS",
+    "pokemon": [
+      "Virizion"
+    ],
+    "attacks": [
+      "Sacred Sword",
+      "Frenzy Plant",
+      "Vine Whip",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Keldeo",
+    "sprite": "Keldeo",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "WATER",
+    "pokemon": [
+      "Keldeo"
+    ],
+    "attacks": [
+      "Sacred Sword",
+      "Soaking Smash",
+      "Hydro Pump",
+      "Divine Power"
+    ],
+    "items": [
+      "Salac Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Tapu Koko",
+    "sprite": "Tapu Koko",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "ELECTRIC",
+    "pokemon": [
+      "Tapu Koko"
+    ],
+    "attacks": [
+      "Thunder Storm",
+      "Fairy Light",
+      "Moon Blast",
+      "Divine Power"
+    ],
+    "items": [
+      "Salac Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Tapu Lele",
+    "sprite": "Tapu Lele",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "PSYCHIC",
+    "pokemon": [
+      "Tapu Lele"
+    ],
+    "attacks": [
+      "Shatter Reality",
+      "Dazzling Gleam",
+      "Moon Blast",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Tapu Bulu",
+    "sprite": "Tapu Bulu",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "GRASS",
+    "pokemon": [
+      "Tapu Bulu"
+    ],
+    "attacks": [
+      "Frenzy Plant",
+      "Nature's Blessing",
+      "Moon Blast",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Tapu Fini",
+    "sprite": "Tapu Fini",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "WATER",
+    "pokemon": [
+      "Tapu Fini"
+    ],
+    "attacks": [
+      "Great Flood",
+      "Mist",
+      "Moon Blast",
+      "Divine Power"
+    ],
+    "items": [
+      "Babiri Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Okidogi",
+    "sprite": "Okidogi",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "POISON",
+    "pokemon": [
+      "Okidogi"
+    ],
+    "attacks": [
+      "Gunk Shot",
+      "Karate Smash",
+      "Sludge Bomb",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Munkidori",
+    "sprite": "Munkidori",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "POISON",
+    "pokemon": [
+      "Munkidori"
+    ],
+    "attacks": [
+      "Gunk Shot",
+      "Mind Break",
+      "Expanding Force",
+      "Divine Power"
+    ],
+    "items": [
+      "Babiri Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Fezandipiti",
+    "sprite": "Fezandipiti",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "POISON",
+    "pokemon": [
+      "Fezandipiti"
+    ],
+    "attacks": [
+      "Gunk Shot",
+      "Moon Blast",
+      "Ooze",
+      "Divine Power"
+    ],
+    "items": [
+      "Babiri Berry",
+      "Liechi Berry"
+    ]
+  },
+  {
+    "name": "Volcarona",
+    "sprite": "Volcarona",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "BUG",
+    "pokemon": [
+      "Volcarona"
+    ],
+    "attacks": [
+      "Roaring Swarm",
+      "Eruption",
+      "Flame Thrower",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Salac Berry"
+    ]
+  },
+  {
+    "name": "Xerneas",
+    "sprite": "Xerneas",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "FAIRY",
+    "pokemon": [
+      "Xerneas"
+    ],
+    "attacks": [
+      "Dazzling Aura",
+      "Divine Wrath",
+      "Divine Wrath",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Babiri Berry"
+    ]
+  },
+  {
+    "name": "Yveltal",
+    "sprite": "Yveltal",
+    "cash": 0,
+    "rank": "Special",
+    "typeSpecialization": "DARK",
+    "pokemon": [
+      "Yveltal"
+    ],
+    "attacks": [
+      "Dreadful Atmosphere",
+      "Dreadful Atmosphere",
+      "Divine Wrath",
+      "Divine Power"
+    ],
+    "items": [
+      "Liechi Berry",
+      "Salac Berry"
+    ]
   }
 ]

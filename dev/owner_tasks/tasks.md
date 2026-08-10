@@ -36,7 +36,7 @@
 - [ ] #026 added:2026-07-22 needs:- :: Create event for Dialga
 - [ ] #027 added:2026-07-22 needs:- :: Create event for Palkia
 - [ ] #028 added:2026-07-22 needs:- :: Create event for Giratina
-- [ ] #029 added:2026-07-22 needs:- :: Create event for Darkrai
+- [x] #029 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Darkrai
 - [ ] #030 added:2026-07-22 needs:- :: Create event for Volcarona
 - [ ] #031 added:2026-07-22 needs:- :: Create event for Cobalion
 - [ ] #032 added:2026-07-22 needs:- :: Create event for Terrakion
