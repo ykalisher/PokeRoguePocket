@@ -230,14 +230,18 @@ test('a full run of real event draws never repeats an event', async () => {
 
     // Ungated location so the whole event list is eligible: with the pool wide
     // enough, three event nodes per level across levels 1-3 stay distinct.
-    [1, 2, 3].forEach(() => {
+    [1, 2, 3].forEach(level => {
         for (let index = 0; index < 3; index += 1) {
             const eventRecord = drawEvent(gameData, run);
 
-            if (eventRecord) drawn.push(eventRecord.id);
+            // Asserted per draw rather than as a total count: a shrinking pool
+            // shows up here as "draw 2 of level 3 came back empty" instead of a
+            // bare count mismatch, and no number needs updating when the owner
+            // authors more events.
+            assert.ok(eventRecord, `level ${level}, draw ${index + 1}: the pool ran dry`);
+            drawn.push(eventRecord.id);
         }
     });
 
-    assert.equal(drawn.length, 9);
     assert.equal(new Set(drawn).size, drawn.length, `repeated event in ${drawn.join(', ')}`);
 });

@@ -2,13 +2,75 @@
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { buildLiveEditorEnv } = require('./helpers/editor_env');
+const fs = require('node:fs');
+const path = require('node:path');
+const { ROOT, buildLiveEditorEnv } = require('./helpers/editor_env');
+const { pick, pickIndex } = require('./helpers/pick');
 const { validateAll, findReferences } = require('../dev/editor/validate.js');
 
 const live = buildLiveEditorEnv();
 
 function hasCode(issues, code) {
     return issues.some((issue) => issue.code === code);
+}
+
+// ------------------------------------------------- live-data fixture pickers
+//
+// These mutate a clone of the live data to provoke one validation error. Which
+// record gets corrupted is irrelevant to what is being tested, so select it by
+// the property the test actually depends on. Anchoring on an authored name
+// ("Numel", "sitrus-berry-tree") breaks whenever the owner reworks content.
+
+const typesOf = (record) => [record.type1, record.type2, record.type3].filter((type) => type && type !== 'NONE');
+
+// Effects that read effect.locationTypes, per map/event_effects.js.
+const LOCATION_TYPE_EFFECTS = ['gain-random-card', 'gain-random-baby'];
+
+function pickBaby(pokemon) {
+    return pick(pokemon, (record) => typesOf(record).includes('BABY') && record.evolvesInto, 'a BABY species with evolvesInto');
+}
+
+function pickNonMega(pokemon) {
+    return pick(pokemon, (record) => parseInt(record.id, 10) <= 9000, 'a non-Mega species (id <= 9000)');
+}
+
+// An event whose first effect does NOT read locationTypes.
+function pickPlainEffectEvent(events) {
+    return pick(
+        events,
+        (event) => Array.isArray(event.effects) && event.effects[0] && !LOCATION_TYPE_EFFECTS.includes(event.effects[0].type),
+        'an event whose first effect ignores locationTypes'
+    );
+}
+
+// An event whose first effect DOES read locationTypes.
+function pickLocationTypeEffectEvent(events) {
+    return pick(
+        events,
+        (event) => Array.isArray(event.effects) && event.effects[0] && LOCATION_TYPE_EFFECTS.includes(event.effects[0].type),
+        'an event whose first effect reads locationTypes'
+    );
+}
+
+// withCondition/withRequirement graft onto whichever event pickPlainEffectEvent
+// selects; the predicate is deterministic and structuredClone preserves order,
+// so this id identifies the same record the mutators touched. Two real card
+// names go with them — conditions must reference a pokemon that exists.
+const HOST_EVENT_ID = pickPlainEffectEvent(live.data.events).id;
+const [SAMPLE_POKEMON, OTHER_POKEMON] = live.data.pokemon.slice(0, 2).map((record) => record.name);
+
+// The music vocabulary lives in arena/arena_data.js; validate.js keeps a mirror
+// (DEFAULT_MUSIC_CATEGORIES) that it does not export. Read the engine's copy so
+// the empty-category tests below count categories instead of hardcoding "3" and
+// "4" — and so they fail loudly if the two copies ever drift apart.
+function engineMusicCategories() {
+    const src = fs.readFileSync(path.join(ROOT, 'arena', 'arena_data.js'), 'utf8');
+    const match = src.match(/MUSIC_CATEGORIES\s*=\s*\[([^\]]*)\]/);
+    assert.ok(match, 'MUSIC_CATEGORIES not found in arena/arena_data.js — update this helper');
+
+    const categories = [...match[1].matchAll(/'([a-z]+)'/g)].map((entry) => entry[1]);
+    assert.ok(categories.length > 0, 'parsed no music categories — update this helper');
+    return categories;
 }
 
 // ------------------------------------------------------------- live parity
@@ -20,15 +82,25 @@ test('live data: zero error-severity issues', () => {
     assert.deepEqual(errors, [], `expected zero errors, got: ${JSON.stringify(errors)}`);
 });
 
-test('live data: asset warnings include the missing backgrounds', () => {
+test('live data: every asset warning is well-formed and names a real record', () => {
+    // No count is asserted. How many locations are still waiting on artwork is
+    // an authoring artifact that moves every time the owner draws one; what must
+    // hold is that each warning is actionable — right severity, and a recordKey
+    // the owner can actually go and open.
     const issues = validateAll(live.data, { enums: live.enums, assetIndex: live.assetIndex, engineRefs: live.engineRefs });
     const warnings = issues.filter((issue) => issue.severity === 'warning');
-    const missingBackgrounds = warnings.filter((issue) => issue.code === 'assets.missing-background');
+    const locationIds = new Set(live.data.locations.map((location) => location.id));
 
-    assert.ok(missingBackgrounds.length >= 8, `expected >=8 assets.missing-background warnings, got ${missingBackgrounds.length}`);
-    // No specific orphan portrait is asserted: the live assets currently have
-    // none (the former Linoone.png orphan was cleaned up). Any orphan-portrait
-    // warnings that do surface must still be well-formed.
+    warnings
+        .filter((issue) => issue.code === 'assets.missing-background')
+        .forEach((issue) => {
+            assert.ok(issue.recordKey, 'missing-background warning must name a recordKey');
+            assert.ok(
+                locationIds.has(issue.recordKey),
+                `missing-background warning names ${issue.recordKey}, which is not a location id`
+            );
+        });
+
     warnings
         .filter((issue) => issue.code === 'assets.orphan-portrait')
         .forEach((issue) => assert.ok(issue.recordKey, 'orphan-portrait warning must name a recordKey'));
@@ -140,7 +212,7 @@ test('pokemon: eventOnly granted by a gain-card event has no unreachable warning
 
 test('pokemon: BABY with no evolvesInto is a baby-missing-mega error', () => {
     const data = withPokemon((pokemon) => {
-        const baby = pokemon.find((record) => record.name === 'Numel');
+        const baby = pickBaby(pokemon);
         delete baby.evolvesInto;
     });
     const issues = validateAll(data, { enums: live.enums });
@@ -149,8 +221,8 @@ test('pokemon: BABY with no evolvesInto is a baby-missing-mega error', () => {
 
 test('pokemon: BABY evolvesInto naming a non-Mega is a baby-missing-mega error', () => {
     const data = withPokemon((pokemon) => {
-        const baby = pokemon.find((record) => record.name === 'Numel');
-        baby.evolvesInto = 'Blastoise';
+        const baby = pickBaby(pokemon);
+        baby.evolvesInto = pickNonMega(pokemon).name;
     });
     const issues = validateAll(data, { enums: live.enums });
     assert.ok(hasCode(issues, 'pokemon.baby-missing-mega'));
@@ -209,7 +281,7 @@ test('trainers: bad rank', () => {
 
 test('events: unknown effect type', () => {
     const data = withEvents((events) => {
-        const giftEvent = events.find((event) => event.id === 'sitrus-berry-tree');
+        const giftEvent = pickPlainEffectEvent(events);
         giftEvent.effects[0].type = 'not-a-real-effect';
     });
     const issues = validateAll(data, { enums: live.enums });
@@ -218,7 +290,7 @@ test('events: unknown effect type', () => {
 
 test('events: locationTypes must be a boolean', () => {
     const data = withEvents((events) => {
-        const eggEvent = events.find((event) => event.id === 'nursery-egg');
+        const eggEvent = pickLocationTypeEffectEvent(events);
         eggEvent.effects[0].locationTypes = 'yes';
     });
     const issues = validateAll(data, { enums: live.enums });
@@ -227,7 +299,8 @@ test('events: locationTypes must be a boolean', () => {
 
 test('events: locationTypes conflicts with an authored types list', () => {
     const data = withEvents((events) => {
-        const eggEvent = events.find((event) => event.id === 'nursery-egg');
+        const eggEvent = pickLocationTypeEffectEvent(events);
+        eggEvent.effects[0].locationTypes = true;
         eggEvent.effects[0].types = ['FIRE'];
     });
     const issues = validateAll(data, { enums: live.enums });
@@ -236,7 +309,7 @@ test('events: locationTypes conflicts with an authored types list', () => {
 
 test('events: locationTypes on an effect type that does not read it', () => {
     const data = withEvents((events) => {
-        const giftEvent = events.find((event) => event.id === 'sitrus-berry-tree');
+        const giftEvent = pickPlainEffectEvent(events);
         giftEvent.effects[0].locationTypes = true;
     });
     const issues = validateAll(data, { enums: live.enums });
@@ -273,7 +346,7 @@ const CONDITION_CODES = [
 
 function withCondition(placement, condition) {
     return withEvents((events) => {
-        const event = events.find((record) => record.id === 'sitrus-berry-tree');
+        const event = pickPlainEffectEvent(events);
         if (placement === 'event') event.conditions = [condition];
         if (placement === 'payment') event.payment = { conditions: [condition] };
         if (placement === 'choice') event.choices = [{ label: 'Take it', conditions: [condition] }];
@@ -282,7 +355,7 @@ function withCondition(placement, condition) {
 
 test('events: well-formed conditions raise no condition issues', () => {
     ['event', 'payment', 'choice'].forEach((placement) => {
-        const data = withCondition(placement, { mode: 'has', cardKind: 'pokemon', name: 'Blastoise', text: 'Needs Blastoise' });
+        const data = withCondition(placement, { mode: 'has', cardKind: 'pokemon', name: SAMPLE_POKEMON, text: `Needs ${SAMPLE_POKEMON}` });
         const issues = validateAll(data, { enums: live.enums });
         CONDITION_CODES.forEach((code) => assert.ok(!hasCode(issues, code), `${placement}: unexpected ${code}`));
     });
@@ -295,19 +368,19 @@ test('events: condition without a name', () => {
 });
 
 test('events: condition text must be a string', () => {
-    const data = withCondition('event', { mode: 'has', cardKind: 'pokemon', name: 'Blastoise', text: 7 });
+    const data = withCondition('event', { mode: 'has', cardKind: 'pokemon', name: SAMPLE_POKEMON, text: 7 });
     const issues = validateAll(data, { enums: live.enums });
     assert.ok(hasCode(issues, 'events.bad-condition'));
 });
 
 test('events: choice condition with a bad mode', () => {
-    const data = withCondition('choice', { mode: 'maybe', cardKind: 'pokemon', name: 'Blastoise' });
+    const data = withCondition('choice', { mode: 'maybe', cardKind: 'pokemon', name: SAMPLE_POKEMON });
     const issues = validateAll(data, { enums: live.enums });
     assert.ok(hasCode(issues, 'events.bad-condition-mode'));
 });
 
 test('events: payment condition with a bad cardKind', () => {
-    const data = withCondition('payment', { mode: 'has', cardKind: 'trainer', name: 'Blastoise' });
+    const data = withCondition('payment', { mode: 'has', cardKind: 'trainer', name: SAMPLE_POKEMON });
     const issues = validateAll(data, { enums: live.enums });
     assert.ok(hasCode(issues, 'events.bad-condition-kind'));
 });
@@ -326,7 +399,7 @@ const REQUIREMENT_CODES = [
 
 function withRequirement(placement, requirement) {
     return withEvents((events) => {
-        const event = events.find((record) => record.id === 'sitrus-berry-tree');
+        const event = pickPlainEffectEvent(events);
         if (placement === 'event') event.requires = [requirement];
         if (placement === 'payment') event.payment = { requires: [requirement] };
         if (placement === 'choice') event.choices = [{ label: 'Take it', requires: [requirement] }];
@@ -337,8 +410,8 @@ test('events: well-formed requirements raise no requirement issues, filtered or 
     ['event', 'payment', 'choice'].forEach((placement) => {
         [
             { id: 'pick', cardKind: 'pokemon' },
-            { id: 'pick', cardKind: 'pokemon', name: 'Blastoise' },
-            { id: 'pick', cardKind: 'pokemon', names: ['Blastoise', 'Charizard'] }
+            { id: 'pick', cardKind: 'pokemon', name: SAMPLE_POKEMON },
+            { id: 'pick', cardKind: 'pokemon', names: [SAMPLE_POKEMON, OTHER_POKEMON] }
         ].forEach((requirement) => {
             const issues = validateAll(withRequirement(placement, requirement), { enums: live.enums });
             REQUIREMENT_CODES.forEach((code) => assert.ok(!hasCode(issues, code), `${placement}: unexpected ${code}`));
@@ -377,14 +450,29 @@ test('locations: bad hex theme color', () => {
 });
 
 test('locations: disconnected graph', () => {
-    // Isolation types must be types NO enabled location uses. FOSSIL became a
-    // real location type in the 2026-07-18 location expansion, so BABY +
-    // ARTIFICIAL (card-only types) are used instead. lavender-town's real
-    // types (GHOST/HUMAN/MONSTER) are all covered by other enabled locations
-    // and include no starter type, so isolating it breaks only connectivity.
+    // Build the smallest disconnected graph out of whatever the data holds:
+    // keep exactly two enabled locations that share no type, disable the rest.
+    // Every record stays otherwise valid, so the only thing provoked is the
+    // connectivity check.
+    //
+    // The previous fixture retyped one location to a hardcoded pair of types
+    // "no location uses". That rots as soon as the owner adopts one for a real
+    // location, and it did — twice (FOSSIL, 2026-07-18; ARTIFICIAL, 2026-08).
+    // Only one PokeType is unused today, so a hardcoded pair cannot be picked
+    // at all. Derive the fixture instead.
     const data = withLocations((locations) => {
-        const isolated = locations.find((location) => location.id === 'lavender-town');
-        isolated.types = ['BABY', 'ARTIFICIAL'];
+        const enabled = locations.filter((location) => location.enabled !== false);
+        assert.ok(enabled.length >= 2, 'need two enabled locations to disconnect');
+
+        const first = enabled[0];
+        const partner = enabled.find((location) => (
+            location !== first && !location.types.some((type) => first.types.includes(type))
+        ));
+        assert.ok(partner, 'expected two enabled locations sharing no type');
+
+        locations.forEach((location) => {
+            if (location !== first && location !== partner) location.enabled = false;
+        });
     });
     const issues = validateAll(data, { enums: live.enums, engineRefs: live.engineRefs });
     assert.ok(hasCode(issues, 'locations.graph-disconnected'));
@@ -570,7 +658,7 @@ test('findReferences(achievement, champion) includes an event conditioned on it'
     const data = withCondition('choice', { mode: 'has', subject: 'achievement', name: 'champion' });
     const refs = findReferences(data, 'achievement', 'champion', live.engineRefs);
 
-    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'sitrus-berry-tree' && ref.field === 'conditions'));
+    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === HOST_EVENT_ID && ref.field === 'conditions'));
 });
 
 // ---------------------------------------------------------------- music
@@ -626,11 +714,13 @@ test('music: missing file warns (so a new track can be saved before its upload)'
 });
 
 test('music: every category without an enabled track warns', () => {
+    // musicTrack() is category 'boss', so every OTHER category is uncovered.
+    const categories = engineMusicCategories();
     const data = withMusic([musicTrack()]);
     const issues = validateAll(data, { enums: live.enums });
     const empty = issues.filter((issue) => issue.code === 'music.empty-category');
 
-    assert.equal(empty.length, 3, 'boss is covered, the other three are not');
+    assert.equal(empty.length, categories.length - 1, 'boss is covered, every other category is not');
     empty.forEach((issue) => {
         assert.equal(issue.severity, 'warning');
         assert.equal(issue.recordKey, '(dataset)');
@@ -639,9 +729,11 @@ test('music: every category without an enabled track warns', () => {
 });
 
 test('music: a disabled track does not cover its category', () => {
+    const categories = engineMusicCategories();
     const data = withMusic([musicTrack({ enabled: false })]);
     const issues = validateAll(data, { enums: live.enums });
-    assert.equal(issues.filter((issue) => issue.code === 'music.empty-category').length, 4);
+
+    assert.equal(issues.filter((issue) => issue.code === 'music.empty-category').length, categories.length);
 });
 
 test('music: an mp3 no record names is an orphan warning; a README is not', () => {
@@ -678,7 +770,11 @@ test('names: apostrophes stay legal', () => {
 
 test('engine: deleting a defaultDeck pokemon strands the engine reference', () => {
     const data = withPokemon((pokemon) => {
-        const index = pokemon.findIndex((record) => record.name === 'Blastoise');
+        const index = pickIndex(
+            pokemon,
+            (record) => live.engineRefs.defaultDeck.pokemon.includes(record.name),
+            'a species the engine default deck references'
+        );
         pokemon.splice(index, 1);
     });
     const issues = validateAll(data, { enums: live.enums, engineRefs: live.engineRefs });
@@ -687,31 +783,49 @@ test('engine: deleting a defaultDeck pokemon strands the engine reference', () =
 
 // ------------------------------------------------------------- findReferences
 
-test('findReferences(pokemon, Blastoise) includes the default deck and the water starter deck', () => {
-    const refs = findReferences(live.data, 'pokemon', 'Blastoise', live.engineRefs);
+test('findReferences(pokemon) finds both the engine default deck and the starter deck naming it', () => {
+    // Any species that is in the default deck AND in some starter deck exercises
+    // both reference sources at once.
+    const deck = pick(
+        live.data.starter_decks,
+        (record) => (record.pokemon || []).some((name) => live.engineRefs.defaultDeck.pokemon.includes(name)),
+        'a starter deck sharing a pokemon with the engine default deck'
+    );
+    const name = deck.pokemon.find((entry) => live.engineRefs.defaultDeck.pokemon.includes(entry));
 
-    assert.ok(refs.some((ref) => ref.file === 'engine' && ref.recordKey === 'defaultDeck'));
-    assert.ok(refs.some((ref) => ref.file === 'starter_decks.json' && ref.recordKey === 'water'));
+    const refs = findReferences(live.data, 'pokemon', name, live.engineRefs);
+
+    assert.ok(refs.some((ref) => ref.file === 'engine' && ref.recordKey === 'defaultDeck'), `${name}: no engine ref`);
+    assert.ok(
+        refs.some((ref) => ref.file === 'starter_decks.json' && ref.recordKey === deck.id),
+        `${name}: no starter_decks.json/${deck.id} ref`
+    );
 });
 
-test('findReferences(trainer, Mecha Cop) includes events.json/rogue-mecha-cop', () => {
-    const refs = findReferences(live.data, 'trainer', 'Mecha Cop', live.engineRefs);
+test('findReferences(trainer) finds the trainer event that summons them', () => {
+    const event = pick(
+        live.data.events,
+        (record) => record.type === 'trainer' && record.trainerName,
+        'a trainer-type event naming a trainer'
+    );
 
-    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'rogue-mecha-cop'));
+    const refs = findReferences(live.data, 'trainer', event.trainerName, live.engineRefs);
+
+    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === event.id));
 });
 
-test('findReferences(pokemon, Blastoise) includes an event that gates on it', () => {
-    const data = withCondition('choice', { mode: 'has', cardKind: 'pokemon', name: 'Blastoise' });
-    const refs = findReferences(data, 'pokemon', 'Blastoise', live.engineRefs);
+test('findReferences(pokemon) includes an event that gates on it', () => {
+    const data = withCondition('choice', { mode: 'has', cardKind: 'pokemon', name: SAMPLE_POKEMON });
+    const refs = findReferences(data, 'pokemon', SAMPLE_POKEMON, live.engineRefs);
 
-    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'sitrus-berry-tree' && ref.field === 'conditions'));
+    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === HOST_EVENT_ID && ref.field === 'conditions'));
 });
 
-test('findReferences(pokemon, Blastoise) includes an event whose requirement filters on it', () => {
-    const data = withRequirement('choice', { id: 'pick', cardKind: 'pokemon', name: 'Blastoise' });
-    const refs = findReferences(data, 'pokemon', 'Blastoise', live.engineRefs);
+test('findReferences(pokemon) includes an event whose requirement filters on it', () => {
+    const data = withRequirement('choice', { id: 'pick', cardKind: 'pokemon', name: SAMPLE_POKEMON });
+    const refs = findReferences(data, 'pokemon', SAMPLE_POKEMON, live.engineRefs);
 
-    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === 'sitrus-berry-tree' && ref.field === 'requires'));
+    assert.ok(refs.some((ref) => ref.file === 'events.json' && ref.recordKey === HOST_EVENT_ID && ref.field === 'requires'));
 });
 
 test('findReferences(pokemon, Rotom) includes the live rotom-appliances requirement filters', () => {

@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
 // arena_env aliases window to globalThis, so map/locations.js and
 // map/run_state.js attach to the globalThis namespaces below.
 const { loadRealGameData, arena } = require('./helpers/arena_env');
+const { pick } = require('./helpers/pick');
 require('../map/locations');
 require('../map/run_state');
 
@@ -39,12 +40,6 @@ function typesOf(record) {
 function itemIsDragonGem(item) {
     return Boolean(item && Array.isArray(item.status) && item.status.includes('DRAGON_GEM'));
 }
-function pick(records, predicate, label) {
-    const record = records.find(predicate);
-    assert.ok(record, `expected real data to contain ${label}`);
-    return record;
-}
-
 // Draw mimics the shuffle-and-slice used by chooseMartCardNames/chooseOfferNames,
 // filtered through isMartOfferAllowed exactly as the real draw paths do.
 function drawNames(records, collectionKey, run, count) {

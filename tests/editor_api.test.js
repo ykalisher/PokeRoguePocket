@@ -365,23 +365,58 @@ test('POST /api/data/x returns 405', async () => {
 
 // -------------------------------------------------------------- /api/enums
 
-test('GET /api/enums returns the five ranks, 14 effect types, and non-empty engine refs', async () => {
+// The effect vocabulary is hand-copied into three places (dev/editor/server.js
+// EFFECT_TYPES, dev/editor/validate.js DEFAULT_EFFECT_TYPES, and
+// tests/data_validation.test.js VALID_EFFECT_TYPES), but the one that decides
+// whether an effect does anything is the switch in applyEffect. An entry the
+// editor offers that the engine never dispatches on is a dead dropdown option;
+// an engine case the editor omits is unreachable authoring. Compare the two.
+function engineEffectTypes() {
+    const src = fs.readFileSync(path.join(ROOT, 'map', 'event_effects.js'), 'utf8');
+    const start = src.indexOf('function applyEffect(run, effect');
+    assert.ok(start !== -1, 'applyEffect not found in map/event_effects.js — update this helper');
+
+    const rest = src.slice(start + 10);
+    const end = rest.indexOf('\n    function ');
+    const body = end === -1 ? rest : rest.slice(0, end);
+    const cases = [...body.matchAll(/case '([a-z-]+)':/g)].map((match) => match[1]);
+
+    assert.ok(cases.length > 0, 'no case labels parsed out of applyEffect — update this helper');
+    return cases;
+}
+
+test('GET /api/enums serves the ranks, the engine effect vocabulary, and non-empty engine refs', async () => {
     const res = await fetch(`${sharedUrl}/api/enums`);
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.deepEqual(body.Rank, ['Standard', 'Ace', 'Special', 'Boss', 'Elite']);
-    assert.equal(body.effectTypes.length, 14);
+
+    const engine = engineEffectTypes();
+    const served = new Set(body.effectTypes);
+    const dispatched = new Set(engine);
+    assert.deepEqual(
+        [...served].filter((type) => !dispatched.has(type)),
+        [],
+        'the API offers effect types applyEffect never dispatches on'
+    );
+    assert.deepEqual(
+        [...dispatched].filter((type) => !served.has(type)),
+        [],
+        'applyEffect handles effect types the API never offers'
+    );
+
     assert.ok(body.engineRefs.defaultDeck.pokemon.length > 0);
 });
 
-test('GET /api/enums returns the eight stat keys and four stat prefixes', async () => {
+test('GET /api/enums serves the profile stat keys and prefixes verbatim', async () => {
+    require('../map/profile.js');
+    const { PokeProfile } = globalThis.window;
+
     const res = await fetch(`${sharedUrl}/api/enums`);
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert.equal(body.statKeys.length, 8);
-    assert.ok(body.statKeys.includes('runs.completed'));
-    assert.equal(body.statPrefixes.length, 4);
-    assert.ok(body.statPrefixes.includes('events.seen.'));
+    assert.deepEqual(body.statKeys, [...PokeProfile.STAT_KEYS]);
+    assert.deepEqual(body.statPrefixes, [...PokeProfile.STAT_PREFIXES]);
 });
 
 // ------------------------------------------------------------- /api/issues

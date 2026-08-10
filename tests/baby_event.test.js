@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
 // arena_env aliases window to globalThis, so these IIFEs attach to the
 // globalThis namespaces below.
 const { loadRealGameData, arena } = require('./helpers/arena_env');
+const { pick } = require('./helpers/pick');
 require('../map/locations');
 require('../map/run_state');
 require('../map/event_effects');
@@ -68,24 +69,30 @@ function makeRunAt(location) {
     return R.createRunState({ area: makeGraph(), collections: {}, location });
 }
 
-test('chooseEvent can return nursery-egg against real game data (a baby is authored)', async () => {
+test('chooseEvent can return a baby-granting event against real game data', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
 
-    assert.ok(gameData.events.some(event => event.id === 'nursery-egg'), 'expected nursery-egg to be seeded in events.json');
+    // Selected by what the test depends on — an event that grants a baby — not
+    // by id. Which event fills that role is the owner's to change.
+    const babyEvent = pick(
+        gameData.events,
+        event => (event.effects || []).some(effect => effect.type === 'gain-random-baby'),
+        'an event with a gain-random-baby effect'
+    );
     assert.ok(
         gameData.pokemon.some(record => [record.type1, record.type2, record.type3].includes('BABY')),
-        'expected at least one BABY-typed pokemon authored (e.g. Numel)'
+        'expected at least one BABY-typed pokemon authored'
     );
 
     // The baby pool is non-empty, so the baby-gated event is reachable. It hits
     // ~15% of rolls in real data, so 200 rolls is effectively certain.
-    let sawNursery = false;
-    for (let i = 0; i < 200 && !sawNursery; i += 1) {
+    let sawBabyEvent = false;
+    for (let i = 0; i < 200 && !sawBabyEvent; i += 1) {
         const chosen = E.chooseEvent(gameData, {});
-        if (chosen && chosen.id === 'nursery-egg') sawNursery = true;
+        if (chosen && chosen.id === babyEvent.id) sawBabyEvent = true;
     }
-    assert.ok(sawNursery, 'expected nursery-egg to be reachable now that a baby exists');
+    assert.ok(sawBabyEvent, `expected ${babyEvent.id} to be reachable now that a baby exists`);
 });
 
 test('chooseEvent can return nursery-egg once a baby exists in the pool', () => {

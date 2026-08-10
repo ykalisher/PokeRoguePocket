@@ -36,6 +36,30 @@ Binding rules for all agents (imported):
 - `node --test 'tests/**/*.test.js'` — tests only; `node --check <file>` — one file (a PostToolUse hook also runs this on every edit).
 - Serve: `python3 -m http.server 8931 --bind 127.0.0.1` (repo root); stop: `pkill -f "http.server 8931"`.
 
+## Test conventions
+
+**Never assert how many records exist.** No test may pin an exact count, floor, or ceiling
+on the size of a JSON data file or any pool derived from it, and none may hardcode a list of
+record names/ids drawn from live data. The owner authors content continuously, so such a
+test fails when authoring succeeds and passes when the data is genuinely broken — the exact
+inverse of what a regression suite is for. Instead **iterate every record and assert each one
+fits the schema**, or derive the expected value from the same source the runtime code reads.
+
+- **Allowed:** `assert.ok(pool.length > 0)` as an anti-vacuity guard before a `forEach`;
+  counts over fixtures the test itself constructs; comparing two derived collections
+  (`loaded.length === raw.length`); per-record shape bounds (`record.types.length` is 2–4).
+- **Banned:** `assert.equal(pokemon.length, 271)`, `assert.ok(elites.length >= 4)`,
+  `assert.ok(artificial.length <= 6)`,
+  `assert.deepEqual(Object.keys(decks), ['water', 'grass', 'fire'])`.
+- **Picking a fixture out of live data:** use a predicate plus a clear failure message —
+  `pick(collection, predicate, label)` in `tests/helpers/pick.js` — never a hardcoded name.
+  `pick(gameData.pokemon, p => types(p).includes('BABY'), 'a baby species')`, not
+  `find(p => p.name === 'Numel')`.
+- **Vocabularies duplicated between engine and tooling** (effect types, stat keys, statuses)
+  get a parity assertion against the real source, not a count of them.
+- Model to imitate: `tests/location_theme.test.js` — walks every live location, validates
+  format, pins no values.
+
 ## Token discipline
 
 - Grep before Read on any file over ~800 lines; then Read with offset/limit.

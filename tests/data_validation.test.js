@@ -100,16 +100,26 @@ test('attacks.json entries are well-formed', () => {
     });
 });
 
-test('artificial attacks stay a small, TRAINER-targeted set', () => {
+test('artificial attacks are TRAINER-targeted and carry a status the engine implements', () => {
     const artificial = attacks.filter(record => record.type1 === 'ARTIFICIAL' || record.type2 === 'ARTIFICIAL');
 
+    assert.ok(artificial.length > 0, 'attacks.json should author at least one ARTIFICIAL attack');
     artificial.forEach(record => {
         assert.equal(record.target, 'TRAINER', `${record.name}: artificial attacks target TRAINER`);
         assert.ok(ARTIFICIAL_ATTACK_STATUSES.includes(record.status), `${record.name}: unhandled artificial status ${record.status}`);
     });
-    // Intentional design constraint: this set stays small. Growing it should be
-    // a deliberate decision, so bump the bound only when the owner adds one.
-    assert.ok(artificial.length <= 6, `artificial attack count ${artificial.length} exceeds expected small set`);
+
+    // ARTIFICIAL_ATTACK_STATUSES is a hand-maintained mirror of what
+    // useArtificialAttackFromHand actually branches on. A status listed here but
+    // never handled there would let an authored card do nothing at all, and the
+    // per-record loop above would happily pass it.
+    const controllerSource = fs.readFileSync(path.join(ROOT, 'arena', 'arena_controller.js'), 'utf8');
+    ARTIFICIAL_ATTACK_STATUSES.forEach(status => {
+        assert.ok(
+            controllerSource.includes(`'${status}'`),
+            `${status} is listed as an artificial status but arena_controller.js never handles it`
+        );
+    });
 });
 
 test('items.json entries are well-formed', () => {
@@ -156,16 +166,49 @@ test('trainers.json entries are well-formed and cross-reference real data', () =
     });
 });
 
-test('the roster has enough seeded Elite and Ace trainers with specializations', () => {
+test('seeded Elite and Ace trainers all carry a valid typeSpecialization', () => {
     const elites = trainers.filter(record => record.rank === Rank.ELITE);
     const aces = trainers.filter(record => record.rank === Rank.ACE);
 
-    assert.ok(elites.length >= 4, `expected >=4 Elite trainers, found ${elites.length}`);
-    assert.ok(aces.length >= 6, `expected >=6 Ace trainers, found ${aces.length}`);
+    assert.ok(elites.length > 0, 'trainers.json should author at least one Elite trainer');
+    assert.ok(aces.length > 0, 'trainers.json should author at least one Ace trainer');
 
     elites.concat(aces).forEach(record => {
         assert.ok(record.typeSpecialization, `${record.name}: seeded Elite/Ace needs a typeSpecialization`);
         assert.ok(VALID_TYPES.has(record.typeSpecialization), `${record.name}: bad typeSpecialization`);
+    });
+});
+
+// This is what the old ">=4 Elites / >=6 Aces" floors were really proxying for.
+// createAreaGraph rolls a rank from the level's mix and chooseTrainer then hunts
+// for a trainer of that rank; if the roster has none, it silently relaxes down a
+// tier and the level plays at the wrong difficulty with no error anywhere. Derive
+// the requirement from LEVEL_CONFIG so it tracks the difficulty table instead of
+// a number someone picked once.
+test('every rollable trainer rank has at least one trainer to fill it', () => {
+    require('./helpers/arena_env');
+    require('../map/locations');
+    const { LEVEL_CONFIG } = globalThis.PokeLocations;
+
+    const levels = Object.entries(LEVEL_CONFIG);
+    assert.ok(levels.length > 0, 'LEVEL_CONFIG must define at least one level');
+
+    levels.forEach(([level, config]) => {
+        [['battle', config.battleRanks], ['boss', config.bossRanks]].forEach(([nodeType, mix]) => {
+            assert.ok(Array.isArray(mix) && mix.length > 0, `L${level} ${nodeType}: no rank mix defined`);
+
+            mix.forEach(entry => {
+                // isAllowedTrainerRank excludes rank 'Special' at every rung, so a
+                // Special-only rank could never be filled.
+                const fillable = trainers.filter(record => (
+                    record.rank === entry.rank && record.rank !== Rank.SPECIAL
+                ));
+                assert.ok(
+                    fillable.length > 0,
+                    `L${level} ${nodeType} can roll rank ${entry.rank}, but no non-Special trainer has that rank`
+                );
+            });
+        });
     });
 });
 
@@ -361,8 +404,9 @@ test('events.json entries are well-formed', () => {
 });
 
 test('locations.json entries are well-formed', () => {
+    // No floor on how many locations exist — the per-record checks below plus
+    // the connectivity and starter-coverage tests are the real guard.
     assert.ok(Array.isArray(locations), 'locations.json must be an array');
-    assert.ok(locations.length >= 8, `locations.json should have >=8 records, has ${locations.length}`);
     assertUniqueNames(locations, 'locations.json');
 
     const seenIds = new Set();

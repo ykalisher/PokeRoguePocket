@@ -243,7 +243,18 @@ test('getStarterDecks reads starter_decks.json in the tuple shape', async () => 
     await loadRealGameData();
     const decks = P.getStarterDecks(arena.GameData);
 
-    assert.deepEqual(Object.keys(decks), ['water', 'grass', 'fire']);
+    // Derived, never hardcoded: the roster grows as the owner authors decks.
+    // What matters is that every enabled deck is present and keyed by its own
+    // id — createCardCollections looks decks up by that key.
+    const expectedIds = arena.GameData.starterDecks
+        .filter(deck => deck && deck.id && deck.enabled !== false)
+        .map(deck => deck.id);
+
+    assert.ok(expectedIds.length > 0, 'starter_decks.json must ship at least one enabled deck');
+    assert.deepEqual(Object.keys(decks), expectedIds);
+    Object.entries(decks).forEach(([key, deck]) => {
+        assert.equal(key, deck.id, `deck map key ${key} does not match its own id ${deck.id}`);
+    });
 
     Object.values(decks).forEach(deck => {
         [...deck.attacks, ...deck.items].forEach(entry => {
