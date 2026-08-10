@@ -1485,5 +1485,37 @@
     "battleButtonText": "Let's go!",
     "resultTitle": "Fezandipiti Joins your Team",
     "terrains": ["Forest", "Urban"]
+  },
+  {
+    "type": "choice",
+    "title": "Divine Intervention",
+    "id": "divine-intervention",
+    "body": "You suddenly hear a voice in your head. It asks you, \"would you wrather have divine power, or divine wrath?\"",
+    "buttonText": "Take reward",
+    "effects": [],
+    "enabled": true,
+    "kicker": "Legendary Card",
+    "choices": [
+      {
+        "title": "Divine Power",
+        "id": "divine-power",
+        "description": "Take Divine Power, which boosts a legendary Pokémon's stats and heals statuses.",
+        "buttonText": "Take Card",
+        "requires": [],
+        "effects": [
+          { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Divine Power" }
+        ]
+      },
+      {
+        "title": "Divine Wrath",
+        "id": "divine-power",
+        "description": "Take Divine Wrath, a card that deals damage to all opponents.",
+        "buttonText": "Take Card",
+        "requires": [],
+        "effects": [
+          { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Divine Wrath" }
+        ]
+      }
+    ]
   }
 ]
