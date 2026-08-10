@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - game flow and player actions for the arena prototype
+ * Pocket Nuzlocke - game flow and player actions for the arena prototype
  *
  * Battle flow:
  * 1. game.js calls arena.Data.loadGameData(), then either restores a saved

@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - persistent player profile (lifetime stats + achievements)
+ * Pocket Nuzlocke - persistent player profile (lifetime stats + achievements)
  */
 
 (function attachProfile(global) {
@@ -13,7 +13,6 @@
     const STAT_KEYS = Object.freeze([
         'runs.started',
         'runs.completed',
-        'runs.lost',
         'battles.won',
         'battles.lost',
         'events.seen',

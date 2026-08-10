@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - card arena rendering
+ * Pocket Nuzlocke - card arena rendering
  *
  * Render flow: controller mutates arena.state, then calls arena.Render.render()
  * through its render/save wrapper. This module redraws the board from state and
@@ -505,9 +505,9 @@
     function renderCardContent(card, reveal, options = {}) {
         if (!reveal) {
             return `
-                <div class="card-topline">Rogue</div>
+                <div class="card-topline">Pocket</div>
                 <div class="card-body">?</div>
-                <div class="card-footer">Pocket</div>
+                <div class="card-footer">Nuzlocke</div>
             `;
         }
 

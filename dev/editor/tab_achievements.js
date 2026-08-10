@@ -20,7 +20,6 @@
     const STAT_LABELS = {
         'runs.started': 'Runs started',
         'runs.completed': 'Runs completed',
-        'runs.lost': 'Runs lost',
         'battles.won': 'Battles won',
         'battles.lost': 'Battles lost',
         'events.seen': 'Events seen (total)',

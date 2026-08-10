@@ -1,9 +1,9 @@
 ---
 name: verify
-description: Verify PokeRoguePocket in a real browser — serve on 8931, drive battles with the committed Playwright drivers in dev/verify/, inspect window.CardArena.state, screenshot. Use when a change needs visual or behavioral confirmation beyond the Node tests.
+description: Verify Pocket Nuzlocke in a real browser — serve on 8931, drive battles with the committed Playwright drivers in dev/verify/, inspect window.CardArena.state, screenshot. Use when a change needs visual or behavioral confirmation beyond the Node tests.
 ---
 
-# Verify PokeRoguePocket in a browser
+# Verify Pocket Nuzlocke in a browser
 
 Static site, no build step. Surface is the browser GUI. Committed drivers live
 in `dev/verify/` — use them, do not rebuild them from scratch.

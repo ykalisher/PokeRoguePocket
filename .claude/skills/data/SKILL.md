@@ -3,7 +3,7 @@ name: data
 description: Edit or validate the card-data JSON files (pokemon.json, attacks.json, items.json, trainers.json, events.json) — schemas, canonical enums, deck-construction rules, validation commands.
 ---
 
-# Editing PokeRoguePocket card data
+# Editing Pocket Nuzlocke card data
 
 The five root JSON files are the game's card database. Edit them directly with
 Edit/Write — the `scripts/manage_*.js` CLIs are interactive tools for the

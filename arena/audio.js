@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - battle music
+ * Pocket Nuzlocke - battle music
  */
 
 (function attachAudio(global) {

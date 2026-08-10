@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - mart page
+ * Pocket Nuzlocke - mart page
  */
 
 (function bootMartPage(arena, runStore, locations) {

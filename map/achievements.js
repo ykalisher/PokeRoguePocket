@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - achievements page
+ * Pocket Nuzlocke - achievements page
  */
 
 (function bootAchievementsPage(arena) {

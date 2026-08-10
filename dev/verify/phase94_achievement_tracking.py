@@ -23,7 +23,7 @@ Checks:
                                   types every owned Pokemon shares, plus the
                                   battle counters; reload-safe
   8. New Game                  -> the profile survives, runs.started goes to 2
-  9. battle lost               -> battles.lost + runs.lost, runs.completed unchanged
+  9. battle lost               -> battles.lost, runs.completed unchanged
 
 Usage: .cache/venv/bin/python phase94_achievement_tracking.py
 """
@@ -312,14 +312,12 @@ def main():
         title = page.inner_text(".battle-result-window h1")
         check(problems, title == "You lose", f"loss result screen shown (title: {title!r})")
         check_stat(problems, page, "battles.lost", 1)
-        check_stat(problems, page, "runs.lost", 1)
         check_stat(problems, page, "runs.completed", 1)
         check_stat(problems, page, "battles.won", 2)
 
         page.reload()
         page.wait_for_selector(".battle-result-window", timeout=20000)
         check_stat(problems, page, "battles.lost", 1)
-        check_stat(problems, page, "runs.lost", 1)
 
         browser.close()
 

@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - starter picker page
+ * Pocket Nuzlocke - starter picker page
  *
  * Renders the enabled starter decks (from starter_decks.json) and, on
  * selection, hands off to a fresh run via area.html?newRun=1&starter=<id>.

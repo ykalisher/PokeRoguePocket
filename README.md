@@ -1,6 +1,6 @@
-# Pokemon Rogue Pocket
+# Pocket Nuzlocke
 
-Pokemon Rogue Pocket is a browser-based card arena prototype built with plain
+Pocket Nuzlocke is a browser-based card arena prototype built with plain
 JavaScript, HTML, and CSS. It runs directly from local files in a modern browser,
 or from a simple static server.
 

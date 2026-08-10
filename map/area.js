@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - overworld area map prototype
+ * Pocket Nuzlocke - overworld area map prototype
  */
 
 (function bootAreaMap(arena, area, runStore, locations) {

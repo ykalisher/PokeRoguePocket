@@ -59,7 +59,7 @@ current=""   # first phase file (numeric order) that is WIP, else first TODO
 files=$(ls "$DIR"/[0-9]*-*.md 2>/dev/null | sort -V)
 
 if [[ "${1:-}" != "--current" ]]; then
-  echo "${B}PokeRoguePocket — feature plan status${RST}"
+  echo "${B}Pocket Nuzlocke — feature plan status${RST}"
   echo "${DIM}$DIR${RST}"
   echo
 fi

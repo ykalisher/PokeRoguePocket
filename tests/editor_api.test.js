@@ -374,11 +374,11 @@ test('GET /api/enums returns the five ranks, 14 effect types, and non-empty engi
     assert.ok(body.engineRefs.defaultDeck.pokemon.length > 0);
 });
 
-test('GET /api/enums returns the nine stat keys and four stat prefixes', async () => {
+test('GET /api/enums returns the eight stat keys and four stat prefixes', async () => {
     const res = await fetch(`${sharedUrl}/api/enums`);
     assert.equal(res.status, 200);
     const body = await res.json();
-    assert.equal(body.statKeys.length, 9);
+    assert.equal(body.statKeys.length, 8);
     assert.ok(body.statKeys.includes('runs.completed'));
     assert.equal(body.statPrefixes.length, 4);
     assert.ok(body.statPrefixes.includes('events.seen.'));

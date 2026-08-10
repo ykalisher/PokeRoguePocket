@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - persistent run state helpers
+ * Pocket Nuzlocke - persistent run state helpers
  */
 
 (function attachRunState(global) {

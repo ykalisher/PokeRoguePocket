@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - capture encounter page
+ * Pocket Nuzlocke - capture encounter page
  */
 
 (function bootCapturePage(arena, runStore, locations) {

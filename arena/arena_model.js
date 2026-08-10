@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - state and model helpers for the card arena prototype
+ * Pocket Nuzlocke - state and model helpers for the card arena prototype
  *
  * Model responsibilities: own the shared arena.state object, create decks and
  * cards from arena.GameData, persist/restore safe battle states, normalize card

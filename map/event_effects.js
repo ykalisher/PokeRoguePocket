@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - shared event helpers
+ * Pocket Nuzlocke - shared event helpers
  */
 
 (function attachPokeEvents(global) {

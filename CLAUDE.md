@@ -1,8 +1,10 @@
-# PokeRoguePocket
+# Pocket Nuzlocke
 
-Bespoke plain-JS/HTML/CSS browser card game ("Pokemon Rogue Pocket") — a
-card-battle reimagining, NOT upstream PokeRogue's codebase. No package.json,
-no build step, no third-party runtime dependencies.
+Bespoke plain-JS/HTML/CSS browser card game ("Pocket Nuzlocke" — the repo
+directory is still `PokeRoguePocket`, as are the `window.PokeRogue` global and
+the `pokemon-rogue-pocket-*` localStorage keys) — a card-battle reimagining, NOT
+upstream PokeRogue's codebase. No package.json, no build step, no third-party
+runtime dependencies.
 
 Binding rules for all agents (imported):
 

@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - main menu logic
+ * Pocket Nuzlocke - main menu logic
  */
 
 const CURRENT_BATTLE_STORAGE_KEY = 'card-arena-current-battle';

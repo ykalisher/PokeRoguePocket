@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - card overview page
+ * Pocket Nuzlocke - card overview page
  */
 
 (function bootCardOverview(arena) {

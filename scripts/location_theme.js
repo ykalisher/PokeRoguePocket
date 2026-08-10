@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - type-derived location theme defaults (dev tooling).
+ * Pocket Nuzlocke - type-derived location theme defaults (dev tooling).
  *
  * Canonical per-type colors extracted from the type icon SVGs
  * (assets/types-svgs/<TYPE>.svg): `bright` is the icon circle's fill, `mid`

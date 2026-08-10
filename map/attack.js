@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - attack encounter page
+ * Pocket Nuzlocke - attack encounter page
  */
 
 (function bootAttackPage(arena, runStore, locations) {

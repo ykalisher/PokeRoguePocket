@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - card arena prototype
+ * Pocket Nuzlocke - card arena prototype
  */
 
 (function bootCardArena(arena, runStore, locations) {
@@ -190,7 +190,7 @@
             const won = activeBattleEncounter.outcome === 'win';
             const bumps = won
                 ? { 'battles.won': 1, [`battles.won.rank.${getBattleRank()}`]: 1 }
-                : { 'battles.lost': 1, 'runs.lost': 1 };
+                : { 'battles.lost': 1 };
 
             activeBattleEncounter.statsRecorded = true;
             window.PokeProfile.record(bumps, arena.GameData.achievements);

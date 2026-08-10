@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - locations framework
+ * Pocket Nuzlocke - locations framework
  *
  * Pure selection/config logic for the locations system: level structure,
  * starter decks, location selection, trainer selection, and wild pools.

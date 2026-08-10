@@ -38,7 +38,7 @@
     // enums.statKeys / enums.statPrefixes are absent from the /api/enums
     // payload.
     const DEFAULT_STAT_KEYS = [
-        'runs.started', 'runs.completed', 'runs.lost', 'battles.won', 'battles.lost',
+        'runs.started', 'runs.completed', 'battles.won', 'battles.lost',
         'events.seen', 'captures.completed', 'attacks.claimed', 'marts.visited'
     ];
     const DEFAULT_STAT_PREFIXES = [

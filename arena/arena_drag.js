@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - pointer drag/drop behavior for player hand cards
+ * Pocket Nuzlocke - pointer drag/drop behavior for player hand cards
  *
  * Drag flow: game.js sends pointerdown/move/up/cancel here. This module creates
  * temporary drag state and visual affordances only; Controller owns every rule

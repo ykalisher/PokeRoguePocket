@@ -1,5 +1,5 @@
 /**
- * Pokemon Rogue Pocket - event page
+ * Pocket Nuzlocke - event page
  */
 
 (function bootEventPage(arena, runStore, eventSystem, locations) {
