@@ -4,11 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pocket Nuzlocke</title>
+    <link rel="icon" href="assets/icons/nuzlocke-icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/icons/nuzlocke-icon-200.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#e3350d">
     <link rel="stylesheet" href="static/styles.css">
 </head>
-<body class="menu-page">
+<body class="menu-page pokeball-theme pokeball-page">
     <div class="main-menu">
-        <h1>Pocket Nuzlocke</h1>
+        <h1 class="menu-title">
+            <!-- src is set by main.js, which picks a random icon before first paint. -->
+            <img id="menu-title-icon" class="menu-title-icon" alt="" width="40" height="40">
+            <span>Pocket Nuzlocke</span>
+        </h1>
         <div class="button-container">
             <button id="btn-new-game" class="btn">New Game</button>
             <button id="btn-load-game" class="btn">Continue Game</button>

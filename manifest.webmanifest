@@ -1,0 +1,28 @@
+{
+    "name": "Pocket Nuzlocke",
+    "short_name": "Nuzlocke",
+    "description": "A card-battle Nuzlocke run you play in the browser.",
+    "start_url": "index.html",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#10161f",
+    "theme_color": "#1b2836",
+    "icons": [
+        {
+            "src": "assets/icons/nuzlocke-icon.png",
+            "sizes": "40x40",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/icons/nuzlocke-icon-200.png",
+            "sizes": "200x200",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/icons/nuzlocke-icon-520.png",
+            "sizes": "520x520",
+            "type": "image/png"
+        }
+    ]
+}

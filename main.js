@@ -9,9 +9,39 @@ const NEW_RUN_ROUTE = 'starter.html';
 // Continue button reads the run JSON directly and rejects stale save formats.
 const RUN_STORAGE_VERSION = 3;
 
+// Mascot icons shown beside the title; one is picked at random per page load.
+// The first entry doubles as the favicon / PWA icon.
+const TITLE_ICONS = [
+    'nuzlocke-icon.png',
+    'angry.png',
+    'dizzy.png',
+    'inspired.png',
+    'normal.png',
+    'shouting.png',
+    'sigh.png',
+    'stunned.png',
+];
+
+// Runs at parse time (the script tag sits after the title) so the icon is set
+// before the first paint and never swaps visibly.
+pickTitleIcon();
+
 document.addEventListener('DOMContentLoaded', () => {
     init();
 });
+
+/**
+ * Points the title icon at a random mascot image.
+ */
+function pickTitleIcon() {
+    const icon = document.getElementById('menu-title-icon');
+
+    if (!icon) return;
+
+    const name = TITLE_ICONS[Math.floor(Math.random() * TITLE_ICONS.length)];
+
+    icon.src = `assets/icons/${name}`;
+}
 
 /**
  * Initializes the home page event listeners and state.

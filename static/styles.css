@@ -146,14 +146,43 @@ body {
     box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.14), 0 20px 48px rgba(0, 0, 0, 0.28);
 }
 
-/* Main menu title override; sized so the longest word ("POKEMON") stays
-   inside the panel's content box and does not skew the grid column. */
+/* Main menu title override; sized so the longest word stays inside the panel's
+   content box and does not skew the grid column. */
 .menu-page h1 {
     margin: 0;
     color: #fbf6e8;
     font-size: clamp(2.5rem, 10vw, 3.75rem);
     letter-spacing: 0;
     text-shadow: 0 8px 22px rgba(0, 0, 0, 0.36);
+}
+
+/* Home title: mascot icon beside mixed-case text. The icon is tall enough that
+   the words wrap under each other at every width, so the pair reads as one
+   lockup; nowrap keeps the icon on the text's line instead of stacking above
+   it, and the font is sized so the longest word clears the panel from ~320px
+   up. */
+.menu-page .menu-title {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+    font-size: clamp(1.35rem, 7vw, 1.75rem);
+    text-transform: none;
+}
+
+/* Lets the words wrap inside the row instead of overflowing on a narrow or
+   large-font viewport where the one-line fit fails. */
+.menu-page .menu-title span {
+    min-width: 0;
+}
+
+/* Icon rides the title's font size, at 3x its height. */
+.menu-title-icon {
+    flex: none;
+    width: auto;
+    height: 3em;
+    image-rendering: pixelated;
 }
 
 /* Constrains the menu button column width. */
@@ -364,6 +393,238 @@ body {
 
 .starter-page .starter-loading {
     color: var(--muted);
+}
+
+/* --- Poke Ball theme --- */
+
+/*
+ * Palette for the pages that never receive a location theme (home, starter
+ * picker, card overview, achievements, 404) — a Poke Ball read: red shell,
+ * off-white shell, dark grey-black band. Pages opt in with `pokeball-theme` on
+ * <body>; the run pages keep their location themes untouched.
+ */
+.pokeball-theme {
+    --pb-red: #e3350d;
+    --pb-red-deep: #b8250a;
+    --pb-red-dark: #7d1605;
+    --pb-white: #ffffff;
+    --pb-shell: #eef0f2;
+    --pb-ink: #24272c;
+    --pb-ink-soft: #565d67;
+    --pb-steel: #c3c8cf;
+    /* Thickness of the ball's centre band. */
+    --pb-band: clamp(16px, 4vh, 30px);
+}
+
+/* Menu-family pages (home, starter picker) go light: shell-coloured ground,
+   ink text, red as the single accent. Both the shared --gold/--aqua accents and
+   --muted are re-pointed so the panel rules above land on the light palette. */
+.menu-page.pokeball-theme {
+    --gold: var(--pb-red);
+    --aqua: var(--pb-red);
+    --muted: var(--pb-ink-soft);
+    background-color: var(--pb-shell);
+    background-image: none;
+    color: var(--pb-ink);
+}
+
+.menu-page.pokeball-theme h1 {
+    color: var(--pb-ink);
+    text-shadow: none;
+}
+
+/* Menu buttons become the ball's red with an ink outline. */
+.menu-page.pokeball-theme .btn {
+    border: 2px solid var(--pb-ink);
+    background-color: var(--pb-red);
+    color: var(--pb-white);
+    box-shadow: 0 3px 0 rgba(36, 39, 44, 0.28);
+}
+
+.menu-page.pokeball-theme .btn:hover:not(:disabled),
+.menu-page.pokeball-theme .btn:focus-visible:not(:disabled) {
+    background-color: var(--pb-red-deep);
+}
+
+.menu-page.pokeball-theme .btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgba(36, 39, 44, 0.28);
+}
+
+.menu-page.pokeball-theme .btn:disabled {
+    border-color: var(--pb-steel);
+    background-color: var(--pb-steel);
+    color: var(--pb-ink-soft);
+    box-shadow: none;
+}
+
+/* The corner back link is a white chip so it reads on both ball halves. */
+.menu-page.pokeball-theme .btn-back {
+    border: 2px solid var(--pb-ink);
+    background-color: var(--pb-white);
+    color: var(--pb-ink);
+}
+
+.menu-page.pokeball-theme .btn-back:hover {
+    background-color: var(--pb-shell);
+}
+
+/* --- Home page: the ball itself --- */
+
+/*
+ * index.html paints a whole Poke Ball: red top half, dark band across the
+ * middle, off-white bottom half, with the menu panel as the centre button.
+ * Percentage stops are relative to the body box, which is at least the
+ * viewport tall, so the band tracks the middle of the page at any size.
+ */
+.menu-page.pokeball-page {
+    background-color: var(--pb-shell);
+    background-image:
+        radial-gradient(circle at 26% 16%,
+            rgba(255, 255, 255, 0.26), transparent 46%),
+        linear-gradient(180deg,
+            var(--pb-red) 0,
+            var(--pb-red) calc(50% - var(--pb-band) / 2),
+            var(--pb-ink) calc(50% - var(--pb-band) / 2),
+            var(--pb-ink) calc(50% + var(--pb-band) / 2),
+            var(--pb-shell) calc(50% + var(--pb-band) / 2),
+            var(--pb-shell) 100%);
+}
+
+/* The menu panel is the ball's centre button: white face, thick ink ring, and
+   a shell-coloured halo separating the ring from the band. */
+.pokeball-page .main-menu {
+    /* Narrower than the default panel so the band and both ball halves stay
+       visible around it on a phone, where the panel cannot go fully round. */
+    width: min(86vw, 460px);
+    padding: clamp(22px, 6vw, 40px);
+    border: clamp(4px, 1vw, 8px) solid var(--pb-ink);
+    border-radius: clamp(28px, 9vw, 48px);
+    background: var(--pb-white);
+    color: var(--pb-ink);
+    box-shadow:
+        0 0 0 clamp(4px, 1.1vw, 9px) var(--pb-shell),
+        0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+.pokeball-page .menu-title {
+    color: var(--pb-ink);
+}
+
+/* Wide and tall enough for a true circle: the panel goes round and its rows
+   centre inside it. Below this it stays a rounded plate so the buttons never
+   get squeezed off a small screen. */
+@media (min-width: 620px) and (min-height: 700px) {
+    .pokeball-page .main-menu {
+        /* Wider than the default panel so the title and the four buttons clear
+           the circle's edges without crowding. */
+        width: min(92vw, 520px);
+        aspect-ratio: 1;
+        align-content: center;
+        gap: 22px;
+        padding: clamp(34px, 5vw, 54px);
+        border-radius: 50%;
+    }
+}
+
+/* --- Starter picker --- */
+
+/*
+ * The starter page wears the ball's top half as a header strip: red behind the
+ * heading, the band beneath it, shell below for the deck row. The strip is
+ * sized in px/vh so it stays put however long the deck list grows.
+ */
+.starter-page.pokeball-theme {
+    --pb-header: clamp(150px, 22vh, 200px);
+    /* Mirrors the shell's own top padding so the heading can fill the strip. */
+    --pb-shell-pad: clamp(56px, 9vh, 96px);
+
+    background-color: var(--pb-shell);
+    background-image: linear-gradient(180deg,
+        var(--pb-red) 0,
+        var(--pb-red) var(--pb-header),
+        var(--pb-ink) var(--pb-header),
+        var(--pb-ink) calc(var(--pb-header) + var(--pb-band)),
+        var(--pb-shell) calc(var(--pb-header) + var(--pb-band)));
+    background-repeat: no-repeat;
+}
+
+/* The row gap has to clear the band, so the band never touches the deck row. */
+.starter-page.pokeball-theme .starter-shell {
+    padding-top: var(--pb-shell-pad);
+    gap: calc(var(--pb-band) + clamp(14px, 2vh, 24px));
+}
+
+/* The heading sits on the red strip, and is stretched to fill it so the band
+   lands in the gap between the heading and the deck row at any viewport size.
+   The strip is sized to hold two wrapped lines at every width tested; a longer
+   heading would grow past it and push the deck row down, which loses the band
+   under the text but never collides with the cards. */
+.starter-page.pokeball-theme h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(var(--pb-header) - var(--pb-shell-pad));
+    color: var(--pb-white);
+    text-shadow: 0 4px 14px rgba(80, 12, 2, 0.45);
+}
+
+/* Deck cards become white plates with ink text. */
+.starter-page.pokeball-theme .starter-card {
+    border: 2px solid var(--pb-ink);
+    background: var(--pb-white);
+    box-shadow: 0 10px 26px rgba(36, 39, 44, 0.18);
+    color: var(--pb-ink);
+}
+
+.starter-page.pokeball-theme .starter-card:hover,
+.starter-page.pokeball-theme .starter-card:focus-visible {
+    border-color: var(--pb-red);
+    box-shadow: 0 18px 36px rgba(36, 39, 44, 0.26);
+}
+
+.starter-page.pokeball-theme .starter-card-type,
+.starter-page.pokeball-theme .starter-card-cta {
+    border: 2px solid var(--pb-ink);
+    background-color: var(--pb-red);
+    color: var(--pb-white);
+}
+
+.starter-page.pokeball-theme .starter-card:hover .starter-card-cta,
+.starter-page.pokeball-theme .starter-card:focus-visible .starter-card-cta {
+    background-color: var(--pb-red-deep);
+}
+
+.starter-page.pokeball-theme .starter-card-lock {
+    border: 2px dashed var(--pb-ink-soft);
+    background-color: var(--pb-shell);
+}
+
+.starter-page.pokeball-theme .starter-card--locked:hover,
+.starter-page.pokeball-theme .starter-card--locked:focus-visible {
+    border-color: var(--pb-steel);
+    box-shadow: 0 10px 26px rgba(36, 39, 44, 0.18);
+}
+
+/* --- Dark pokeball pages (card overview, achievements) --- */
+
+/*
+ * These keep their dark shell — the card art needs it — so the theme lands as
+ * ink-charcoal panels with the ball's red as the accent and steel as the glow.
+ */
+.game-page.pokeball-theme {
+    --loc-accent: var(--pb-red);
+    --loc-glow: #aeb6c1;
+    --loc-surface: #2b3038;
+    --loc-bg-mid: #22262c;
+    --loc-bg-deep: #131619;
+    /* Red shell washing down into the charcoal band, so the page reads as the
+       ball without lightening the ground the card art sits on. */
+    --page-bg: linear-gradient(180deg,
+        color-mix(in srgb, var(--pb-red) 78%, var(--loc-bg-deep)) 0,
+        color-mix(in srgb, var(--pb-red) 24%, var(--loc-bg-mid)) 190px,
+        var(--loc-bg-mid) 300px,
+        var(--loc-bg-deep) 100%);
 }
 
 /* --- Arena Prototype --- */
@@ -1733,11 +1994,12 @@ button.playing-card:focus-visible {
     margin-bottom: clamp(22px, 4vw, 42px);
 }
 
-/* Overview page title. */
+/* Overview page title. The lower bound keeps a long single-word title (e.g.
+   "Achievements") inside a 320px-wide phone, where it cannot wrap. */
 .overview-header h1 {
     margin: 0;
     color: #fbf6e8;
-    font-size: clamp(2.3rem, 7vw, 4.6rem);
+    font-size: clamp(1.9rem, 7vw, 4.6rem);
     letter-spacing: 0;
     line-height: 0.95;
     text-transform: uppercase;
