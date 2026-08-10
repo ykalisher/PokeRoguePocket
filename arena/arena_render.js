@@ -856,6 +856,7 @@
         const selectedText = renderSelectedText(pendingActionCard, selectedCard);
         const canEnd = arena.Controller.canPlayerEndTurn();
         const canDiscard = arena.Controller.canDiscardSelectedCard();
+        const canDiscardHand = arena.Controller.canDiscardPlayerHand();
         const canUndo = arena.Controller.canUndoAction();
 
         return `
@@ -866,7 +867,7 @@
                 </div>
                 <span class="selected-pill">${selectedText}</span>
                 <div class="action-bar">
-                    ${renderActionButtons(canEnd, canDiscard, canUndo)}
+                    ${renderActionButtons(canEnd, canDiscard, canDiscardHand, canUndo)}
                 </div>
                 <ul class="event-log" aria-label="Battle log">
                     ${state.log.map(entry => `<li>${entry}</li>`).join('')}
@@ -898,7 +899,7 @@
         return 'Use one item, ready attacks, or discard cards.';
     }
 
-    function renderActionButtons(canEnd, canDiscard, canUndo) {
+    function renderActionButtons(canEnd, canDiscard, canDiscardHand, canUndo) {
         const rulesButton = renderRulesButton();
         const menuButton = renderMenuButton();
 
@@ -915,6 +916,7 @@
                 <button class="arena-button" type="button" data-action="cancel-action">Cancel</button>
                 <button class="arena-button arena-button--undo" type="button" data-action="undo" ${canUndo ? '' : 'disabled'}>Undo</button>
                 <button class="arena-button arena-button--discard" type="button" data-action="discard-selected" ${canDiscard ? '' : 'disabled'}>Discard</button>
+                <button class="arena-button arena-button--discard-hand" type="button" disabled>Discard Hand</button>
                 ${rulesButton}
                 ${menuButton}
             `;
@@ -924,6 +926,7 @@
             return `
                 <button class="arena-button arena-button--undo" type="button" disabled>Undo</button>
                 <button class="arena-button arena-button--discard" type="button" disabled>Discard</button>
+                <button class="arena-button arena-button--discard-hand" type="button" disabled>Discard Hand</button>
                 <button class="arena-button arena-button--danger" type="button" disabled>End Turn</button>
                 ${rulesButton}
                 ${menuButton}
@@ -933,6 +936,7 @@
         return `
             <button class="arena-button arena-button--undo" type="button" data-action="undo" ${canUndo ? '' : 'disabled'}>Undo</button>
             <button class="arena-button arena-button--discard" type="button" data-action="discard-selected" ${canDiscard ? '' : 'disabled'}>Discard</button>
+            <button class="arena-button arena-button--discard-hand" type="button" data-action="discard-hand" ${canDiscardHand ? '' : 'disabled'}>Discard Hand</button>
             <button class="arena-button arena-button--danger" type="button" data-action="end-turn" ${canEnd ? '' : 'disabled'}>End Turn</button>
             ${rulesButton}
             ${menuButton}

@@ -263,6 +263,8 @@
             closeMenuWindow();
         } else if (action === 'close-rules') {
             closeRulesWindow();
+        } else if (action === 'discard-hand') {
+            discardPlayerHand();
         } else if (action === 'discard-selected') {
             discardSelectedPlayerCard();
         } else if (action === 'end-turn') {
@@ -582,6 +584,17 @@
     }
 
     /**
+     * SWITCH cards (Withdraw Wand) send a Pokemon to the bottom of its deck and
+     * immediately draw a replacement, so undoing one would let the player reroll
+     * that draw. Such a card is therefore not undoable itself, and it wipes the
+     * whole stack with it: every earlier action of the turn now sits behind a
+     * random draw too. Cards played after it build a fresh, undoable stack.
+     */
+    function isUndoResettingCard(card) {
+        return model.getActionStatuses(card).includes('SWITCH');
+    }
+
+    /**
      * Shared final queue path for click-selected attacks and direct drag-to-target
      * attacks. It revalidates the user and target at drop time before moving the
      * attack card out of hand.
@@ -656,7 +669,8 @@
             return;
         }
 
-        const recorded = recordUndoPoint('player', pendingCard);
+        const resetsUndo = isUndoResettingCard(pendingCard);
+        const recorded = !resetsUndo && recordUndoPoint('player', pendingCard);
         const itemCard = model.removeCardFromHand(player, state.pendingActionCardId);
 
         if (!itemCard) {
@@ -664,6 +678,8 @@
             cancelActionSelection();
             return;
         }
+
+        if (resetsUndo) model.clearUndoStack();
 
         itemCard.faceUp = true;
         model.markItemUsed('player');
@@ -909,11 +925,36 @@
         return discardHandCardFromHand('player', cardId, `${state.players.player.name} discarded`);
     }
 
+    /**
+     * Discards every card left in the player's hand as one command. The sweep is
+     * a single undo step: one snapshot is taken up front and the per-card
+     * discards skip their own, so one Undo press restores the whole hand.
+     */
+    async function discardPlayerHand() {
+        if (!canDiscardPlayerHand()) return false;
+
+        const player = state.players.player;
+        const cardIds = player.hand.map(card => card.id);
+
+        model.pushUndoSnapshot('discarding your hand');
+
+        for (let index = 0; index < cardIds.length; index += 1) {
+            await discardHandCardFromHand('player', cardIds[index], `${player.name} discarded`, {
+                recordUndo: false,
+                releaseInput: index === cardIds.length - 1
+            });
+        }
+
+        return true;
+    }
+
     async function discardHandCardFromHand(ownerId, cardId, messagePrefix = null, options = {}) {
         const owner = state.players[ownerId];
         const sourceCenter = getHandCardCenter(ownerId, cardId) || getArenaCenter();
         const pendingCard = model.findHandCard(owner, cardId);
-        const recorded = recordUndoPoint(ownerId, pendingCard);
+        const recorded = options.recordUndo === false
+            ? false
+            : recordUndoPoint(ownerId, pendingCard);
         const card = model.removeCardFromHand(owner, cardId);
         const shouldReleaseInput = options.releaseInput !== undefined
             ? options.releaseInput
@@ -962,6 +1003,14 @@
         const cardId = state.pendingActionCardId || state.selectedCardId;
 
         return Boolean(cardId) && canPlayerDiscardHandCard(cardId);
+    }
+
+    /**
+     * Discarding the whole hand is offered only from the unlocked main-turn
+     * phase, so it never competes with an in-progress target selection.
+     */
+    function canDiscardPlayerHand() {
+        return canPlayerAct() && state.players.player.hand.length > 0;
     }
 
     /**
@@ -3521,9 +3570,11 @@
         canPlayerSelectCard,
         canDragPendingActionCard,
         canDiscardSelectedCard,
+        canDiscardPlayerHand,
         canUndoAction,
         canDropCardOnDiscard,
         cancelActionSelection,
+        discardPlayerHand,
         getDropActionForBoardCard,
         getDropActionForTargetGroup,
         handleCardDrop,

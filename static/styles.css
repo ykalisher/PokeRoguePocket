@@ -2661,6 +2661,11 @@ button.playing-card:focus-visible {
     background-color: color-mix(in srgb, var(--gold) 24%, transparent);
 }
 
+/* Discard-the-whole-hand variant: same family as Discard, dialed down. */
+.arena-button--discard-hand {
+    background-color: color-mix(in srgb, var(--gold) 15%, transparent);
+}
+
 /* Undo command variant: secondary to Discard in the same command group. */
 .arena-button--undo {
     background-color: color-mix(in srgb, var(--aqua) 24%, transparent);
@@ -3291,10 +3296,12 @@ button.playing-card:focus-visible {
         justify-content: stretch;
     }
 
-    /* Wide action button sizing. */
+    /* Wide action button sizing: buttons share a row evenly but never shrink
+       below their label, so a full command bar wraps to a second row instead of
+       overlapping itself. */
     .arena-button {
         flex: 1 1 0;
-        min-width: 0;
+        min-width: max-content;
         font-size: clamp(0.9rem, 0.95vw, 1rem);
     }
 

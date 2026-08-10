@@ -615,9 +615,9 @@
 
         if (!replacementCard) return [];
 
-        const removedName = removeCardAtLocation(run, entry);
+        const removedName = replaceCardAtLocation(run, runStore, entry, replacementCard);
 
-        addCardToRun(run, runStore, replacementCard);
+        if (!removedName) return [];
 
         return [`Replaced ${removedName} with ${getCardName(replacementCard)}.`];
     }
@@ -631,9 +631,10 @@
 
             if (!replacementCard) return;
 
-            const removedName = removeCardAtLocation(run, entry);
+            const removedName = replaceCardAtLocation(run, runStore, entry, replacementCard);
 
-            addCardToRun(run, runStore, replacementCard);
+            if (!removedName) return;
+
             summary.push(`Replaced ${removedName} with ${getCardName(replacementCard)}.`);
         });
 
@@ -790,10 +791,9 @@
         }));
     }
 
-    function removeCardAtLocation(run, entry) {
+    function getCollectionAtLocation(run, entry) {
         if (!entry || !entry.card || !run || !run.collections) return null;
 
-        const name = getCardName(entry.card);
         const collections = run.collections;
         const bench = collections.bench || {};
         let cards = null;
@@ -804,14 +804,49 @@
 
         if (entry.collectionKey === 'pokemon' && entry.zone === 'bench') cards = bench.pokemon;
 
-        if (!Array.isArray(cards)) return null;
+        return Array.isArray(cards) ? cards : null;
+    }
+
+    function removeCardAtLocation(run, entry) {
+        const cards = getCollectionAtLocation(run, entry);
+
+        if (!cards) return null;
 
         const index = cards.findIndex(card => card.id === entry.card.id);
 
         if (index === -1) return null;
 
         cards.splice(index, 1);
-        return name;
+        return getCardName(entry.card);
+    }
+
+    // Swaps the replacement into the slot the old card occupied, so trading away
+    // an active Pokemon leaves its replacement active instead of demoting it to
+    // the bench behind whoever balancePokemonCollections would promote. Only
+    // Pokemon inherit their slot: action cards are re-sorted between the deck
+    // and the bench by rebuildActionDeckForActivePokemon anyway, so they go
+    // through the normal add path. Returns the removed card's name, or null.
+    function replaceCardAtLocation(run, runStore, entry, replacementCard) {
+        const cards = getCollectionAtLocation(run, entry);
+        const keepsSlot = Boolean(cards) &&
+            getCardKind(entry.card) === 'pokemon' &&
+            getCardKind(replacementCard) === 'pokemon';
+
+        if (!keepsSlot) {
+            const removedName = removeCardAtLocation(run, entry);
+
+            if (!removedName) return null;
+
+            addCardToRun(run, runStore, replacementCard);
+            return removedName;
+        }
+
+        const index = cards.findIndex(card => card.id === entry.card.id);
+
+        if (index === -1) return null;
+
+        cards.splice(index, 1, replacementCard);
+        return getCardName(entry.card);
     }
 
     function findRecord(gameData, cardKind, name) {

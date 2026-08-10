@@ -3,6 +3,7 @@
 const { after, before, test } = require('node:test');
 const assert = require('node:assert/strict');
 const { arena, loadRealGameData } = require('./helpers/arena_env');
+const { pick } = require('./helpers/pick');
 
 require('../arena/arena_render.js');
 require('../arena/arena_controller.js');
@@ -358,6 +359,121 @@ test('undoing a discard takes the card back out of the discard pile', async () =
     }
 });
 
+test('discarding the hand empties it and one undo brings every card back', async () => {
+    const state = setUpPlayerTurn();
+    const player = state.players.player;
+
+    player.board[0] = makePokemonCard('player', ['FIRE']);
+    player.hand = [
+        makePlainAttackCard('player', ['FIRE']),
+        makePlainAttackCard('player', ['WATER']),
+        makeItemCard('player', pick(arena.GameData.items, item => (
+            Array.isArray(item.status) && item.status.includes('HEAL')
+        ), 'a healing item'))
+    ];
+
+    const startingHandIds = handIds('player');
+    const startingDiscardIds = cardIds(player.discard);
+
+    try {
+        assert.equal(Controller.canDiscardPlayerHand(), true);
+
+        await Controller.discardPlayerHand();
+        await waitForIdle();
+
+        assert.equal(handIds('player').length, 0);
+        assert.deepEqual(
+            cardIds(state.players.player.discard).slice().sort(),
+            startingHandIds.concat(startingDiscardIds).slice().sort()
+        );
+        assert.equal(Controller.canDiscardPlayerHand(), false, 'an empty hand has nothing left to discard');
+        assert.equal(arena.state.undoStack.length, 1, 'the whole sweep is one undo step');
+
+        assert.equal(Controller.undoLastAction(), true);
+
+        assert.deepEqual(handIds('player').slice().sort(), startingHandIds.slice().sort());
+        assert.deepEqual(cardIds(state.players.player.discard), startingDiscardIds);
+        assert.ok(state.log[0].includes('Undid discarding your hand.'));
+        assert.equal(Controller.canUndoAction(), false);
+    } finally {
+        tearDown();
+    }
+});
+
+test('discarding the hand is unavailable outside the unlocked main turn', async () => {
+    const state = setUpPlayerTurn();
+
+    state.players.player.board[0] = makePokemonCard('player', ['FIRE']);
+    state.players.player.hand = [makePlainAttackCard('player', ['FIRE'])];
+
+    try {
+        state.phase = 'selecting-attack-target';
+        assert.equal(Controller.canDiscardPlayerHand(), false);
+
+        state.phase = 'turn';
+        state.currentPlayer = 'opponent';
+        assert.equal(Controller.canDiscardPlayerHand(), false);
+
+        state.currentPlayer = 'player';
+        state.isResolving = true;
+        assert.equal(Controller.canDiscardPlayerHand(), false);
+        assert.equal(await Controller.discardPlayerHand(), false);
+        assert.equal(handIds('player').length, 1, 'a rejected sweep leaves the hand alone');
+    } finally {
+        tearDown();
+    }
+});
+
+test('a SWITCH item is not undoable and resets the undo stack for later actions', async () => {
+    const state = setUpPlayerTurn();
+    const player = state.players.player;
+    const switched = makePokemonCard('player', ['WATER']);
+
+    player.board[0] = switched;
+
+    const switchRecord = pick(arena.GameData.items, item => (
+        Array.isArray(item.status) && item.status.includes('SWITCH')
+    ), 'a switching item');
+    const earlierCard = makePlainAttackCard('player', ['FIRE']);
+    const switchCard = makeItemCard('player', switchRecord);
+    const laterCard = makePlainAttackCard('player', ['WATER']);
+
+    player.hand = [earlierCard, switchCard, laterCard];
+
+    try {
+        // An ordinary action before the switch is undoable as usual.
+        Controller.handleCardDrop(earlierCard.id, { kind: 'discard' });
+        await waitForIdle();
+
+        assert.equal(Controller.canUndoAction(), true);
+
+        state.phase = 'selecting-item-target';
+        state.pendingActionCardId = switchCard.id;
+        await Controller.usePendingItem({ cardId: switched.id, kind: 'single', owner: 'player' });
+        await waitForIdle();
+
+        assert.ok(!cardIds(state.players.player.board.filter(Boolean)).includes(switched.id), 'the target left the board');
+        assert.equal(arena.state.undoStack.length, 0, 'the switch wiped the undo history');
+        assert.equal(Controller.canUndoAction(), false);
+        assert.equal(Controller.undoLastAction(), false);
+
+        // Anything played after the switch builds a fresh, undoable stack.
+        Controller.handleCardDrop(laterCard.id, { kind: 'discard' });
+        await waitForIdle();
+
+        assert.equal(Controller.canUndoAction(), true);
+        assert.equal(Controller.undoLastAction(), true);
+        assert.deepEqual(handIds('player'), [laterCard.id]);
+        assert.ok(
+            !cardIds(state.players.player.board.filter(Boolean)).includes(switched.id),
+            'undoing a later action must not walk back the switch'
+        );
+        assert.ok(!handIds('player').includes(earlierCard.id), 'the pre-switch discard stays discarded');
+    } finally {
+        tearDown();
+    }
+});
+
 test('three actions undo one at a time back to the start of the turn', async () => {
     const state = setUpPlayerTurn();
     const attacker = makePokemonCard('player', ['FIRE']);
@@ -440,6 +556,27 @@ test('the rendered action bar enables Undo only while an action is undoable', as
         assert.equal(Controller.undoLastAction(), true);
 
         assert.match(state.elements.board.innerHTML, /class="arena-button arena-button--undo" type="button" data-action="undo" disabled>Undo</);
+    } finally {
+        tearDown();
+    }
+});
+
+test('the rendered action bar enables Discard Hand only while the hand has cards', async () => {
+    const state = setUpPlayerTurn();
+
+    state.players.player.board[0] = makePokemonCard('player', ['FIRE']);
+    state.players.player.hand = [makePlainAttackCard('player', ['WATER'])];
+
+    try {
+        arena.Render.render();
+
+        assert.match(state.elements.board.innerHTML, /data-action="discard-hand" >Discard Hand</);
+
+        await Controller.discardPlayerHand();
+        await waitForIdle();
+        arena.Render.render();
+
+        assert.match(state.elements.board.innerHTML, /data-action="discard-hand" disabled>Discard Hand</);
     } finally {
         tearDown();
     }
