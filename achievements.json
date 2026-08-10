@@ -7,5 +7,23 @@
     "atLeast": 1,
     "hidden": false,
     "enabled": true
+  },
+  {
+    "id": "halfway-point",
+    "name": "Serious Challenger",
+    "description": "Made it past the first two gym leaders",
+    "stat": "battles.won.rank.Boss",
+    "atLeast": 2,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "nuzlocked",
+    "name": "Nuzlocked",
+    "description": "Lost a run",
+    "stat": "battles.lost",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
   }
 ]

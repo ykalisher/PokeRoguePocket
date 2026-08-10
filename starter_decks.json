@@ -6,9 +6,10 @@
     "pokemon": ["Blastoise", "Feraligatr"],
     "attacks": [
       { "name": "Surf", "count": 2 },
-      { "name": "Waterfall", "count": 2 },
+      { "name": "Waterfall", "count": 1 },
       { "name": "Crunch", "count": 1 },
-      { "name": "Sucker Punch", "count": 1 }
+      { "name": "Sucker Punch", "count": 1 },
+      { "name": "Haze", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
@@ -22,10 +23,11 @@
     "type": "GRASS",
     "pokemon": ["Venusaur", "Meganium"],
     "attacks": [
-      { "name": "Razor Leaf", "count": 3 },
+      { "name": "Razor Leaf", "count": 2 },
       { "name": "Sleep Powder", "count": 1 },
       { "name": "Sludge Bomb", "count": 1 },
-      { "name": "Moon Blast", "count": 1 }
+      { "name": "Moon Blast", "count": 1 },
+      { "name": "Energy Ball", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
@@ -39,15 +41,73 @@
     "type": "FIRE",
     "pokemon": ["Charizard", "Typhlosion"],
     "attacks": [
-      { "name": "Flame Thrower", "count": 2 },
+      { "name": "Flame Thrower", "count": 1 },
       { "name": "Fire Spin", "count": 2 },
       { "name": "Air Slash", "count": 1 },
-      { "name": "Shadow Ball", "count": 1 }
+      { "name": "Shadow Ball", "count": 1 },
+      { "name": "Will-o-wisp", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
       { "name": "Withdraw Wand", "count": 1 }
     ],
     "enabled": true
+  },
+  {
+    "id": "dark",
+    "name": "Dark",
+    "type": "DARK",
+    "pokemon": ["Inteleon", "Incineroar"],
+    "attacks": [
+      { "name": "Sucker Punch", "count": 2 },
+      { "name": "Murky Water", "count": 2 },
+      { "name": "Fire Fang", "count": 2 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "halfway-point"
+  },
+  {
+    "id": "fighting",
+    "name": "Fighting",
+    "type": "FIGHTING",
+    "pokemon": ["Infernape", "Quaquaval"],
+    "attacks": [
+      { "name": "Air Slash", "count": 1 },
+      { "name": "Chomp", "count": 1 },
+      { "name": "Fire Spin", "count": 1 },
+      { "name": "Surf", "count": 1 },
+      { "name": "Karate Smash", "count": 1 },
+      { "name": "Kick in the Face", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "halfway-point"
+  },
+  {
+    "id": "human",
+    "name": "Human",
+    "type": "HUMAN",
+    "pokemon": ["Cinderace", "Chesnaut"],
+    "attacks": [
+      { "name": "Razor Leaf", "count": 1 },
+      { "name": "Fire Spin", "count": 1 },
+      { "name": "Energy Ball", "count": 1 },
+      { "name": "Flame Thrower", "count": 1 },
+      { "name": "Sleep Powder", "count": 1 },
+      { "name": "Trick", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "halfway-point"
   }
 ]
