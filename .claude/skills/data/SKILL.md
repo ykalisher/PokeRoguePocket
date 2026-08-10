@@ -41,6 +41,15 @@ user needs EVERY listed type; default is any shared type).
 `statChanges` (StatChange[]; legacy files may hold Status values here — the
 engine moves non-stat entries into `status` at load).
 
+`starter_decks.json`: `id` (slug), `name`, `type` (PokeType), `pokemon` (flat name
+array), `attacks`/`items` (`{ name, count }`), `enabled`, plus optional
+`requiresAchievement` — an achievement id from `achievements.json` that must be
+unlocked before the deck can be picked. Omit the key for an always-available deck
+(never write `""`); at least one enabled deck must stay always available, or a fresh
+profile has nothing to start with. Both validators error on an unknown id
+(`starterDecks.unknown-achievement`) and on an all-gated file
+(`starterDecks.none-unlocked`).
+
 `trainers.json` (31): `name`, `sprite`, `cash`, `rank` (Rank),
 `typeSpecialization` (PokeType), `pokemon`/`attacks`/`items` (names that must
 exist in the other files — validated by the tests).
@@ -99,6 +108,19 @@ engine defaults an absent kind to `attack`, which is almost never intended.
 `tests/data_validation.test.js` — treat a bad `mode`/`cardKind`, a missing `name`, a
 non-string `text`, or a `name` that does not exist in the matching data file as an
 error.
+
+An optional `subject` widens the gate from cards to achievements:
+
+```json
+{ "subject": "achievement", "mode": "has", "name": "champion", "text": "optional message" }
+```
+
+With `subject: "achievement"`, `name` is an **achievement id** from
+`achievements.json` (not a card name) and `cardKind` is ignored; satisfaction reads
+`window.PokeProfile.isUnlocked(id)` and fails closed when the profile module is
+absent. Omitting `subject` (or `"card"`) keeps the card behavior above. The default
+message becomes `Requires the "<achievement name>" achievement.`. An id that does not
+exist in `achievements.json` is an error (`events.unknown-condition-achievement`).
 
 ## Event card requirements (`events.json`)
 
