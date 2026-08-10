@@ -119,7 +119,7 @@
     "imagePath": "assets/items/EFFECT_AMPLIFIER.svg"
   },
   {
-    "name": "MOOMOO_MILK",
+    "name": "Moomoo Milk",
     "target": "ALLY",
     "status": [
       "HEAL"
