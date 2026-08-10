@@ -1125,5 +1125,365 @@
     "requires": [
       { "id": "tyranitar", "cardKind": "pokemon", "name": "Tyranitar" }
     ]
+  },
+  {
+    "type": "trainer",
+    "title": "Dialga Appears!",
+    "id": "dialga-battle",
+    "body": "You encountered Dialga!",
+    "trainerName": "Dialga",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Dialga" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Metal Burst" }
+    ],
+    "enabled": true,
+    "kicker": "Dialga",
+    "battleTitle": "Battle Dialga!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Dialga Joins your Team",
+    "locations": ["mt-coronet"]
+  },
+  {
+    "type": "trainer",
+    "title": "Palkia Appears!",
+    "id": "palkia-battle",
+    "body": "You encountered Palkia!",
+    "trainerName": "Palkia",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Palkia" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Great Flood" }
+    ],
+    "enabled": true,
+    "kicker": "Palkia",
+    "battleTitle": "Battle Palkia!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Palkia Joins your Team",
+    "locations": ["lake-of-rage"]
+  },
+  {
+    "type": "trainer",
+    "title": "Giratina Appears!",
+    "id": "giratina-battle",
+    "body": "You encountered Giratina!",
+    "trainerName": "Giratina",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Giratina" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Lovecraftian Horror" }
+    ],
+    "enabled": true,
+    "kicker": "Giratina",
+    "battleTitle": "Battle Giratina!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Giratina Joins your Team",
+    "locations": ["origin-cave"]
+  },
+  {
+    "type": "trainer",
+    "title": "Volcarona Appears!",
+    "id": "volcarona-battle",
+    "body": "You encountered Volcarona!",
+    "trainerName": "Volcarona",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Volcarona" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Roaring Swarm" }
+    ],
+    "enabled": true,
+    "kicker": "Volcarona",
+    "battleTitle": "Battle Volcarona!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Volcarona Joins your Team",
+    "locations": ["relic-castle"]
+  },
+  {
+    "type": "trainer",
+    "title": "Cobalion Appears!",
+    "id": "cobalion-battle",
+    "body": "You encountered Cobalion!",
+    "trainerName": "Cobalion",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Cobalion" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Sacred Sword" }
+    ],
+    "enabled": true,
+    "kicker": "Cobalion",
+    "battleTitle": "Battle Cobalion!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Cobalion Joins your Team",
+    "locations": ["fuego-ironworks"]
+  },
+  {
+    "type": "trainer",
+    "title": "Terrakion Appears!",
+    "id": "terrakion-battle",
+    "body": "You encountered Terrakion!",
+    "trainerName": "Terrakion",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Terrakion" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Sacred Sword" }
+    ],
+    "enabled": true,
+    "kicker": "Terrakion",
+    "battleTitle": "Battle Terrakion!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Terrakion Joins your Team",
+    "locations": ["mt-silver"]
+  },
+  {
+    "type": "trainer",
+    "title": "Virizion Appears!",
+    "id": "virizion-battle",
+    "body": "You encountered Virizion!",
+    "trainerName": "Virizion",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Virizion" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Sacred Sword" }
+    ],
+    "enabled": true,
+    "kicker": "Virizion",
+    "battleTitle": "Battle Virizion!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Virizion Joins your Team",
+    "locations": ["petalburg-woods"]
+  },
+  {
+    "type": "trainer",
+    "title": "Reshiram Appears!",
+    "id": "reshiram-battle",
+    "body": "You encountered Reshiram!",
+    "trainerName": "Reshiram",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Reshiram" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Hyper Beam" }
+    ],
+    "enabled": true,
+    "kicker": "Reshiram",
+    "battleTitle": "Battle Reshiram!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Reshiram Joins your Team",
+    "locations": ["celestial-tower"]
+  },
+  {
+    "type": "trainer",
+    "title": "Zekrom Appears!",
+    "id": "zekrom-battle",
+    "body": "You encountered Zekrom!",
+    "trainerName": "Zekrom",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Zekrom" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Hyper Beam" }
+    ],
+    "enabled": true,
+    "kicker": "Zekrom",
+    "battleTitle": "Battle Zekrom!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Zekrom Joins your Team",
+    "locations": ["meteor-falls"]
+  },
+  {
+    "type": "trainer",
+    "title": "Kyurem Appears!",
+    "id": "kyurem-battle",
+    "body": "You encountered Kyurem!",
+    "trainerName": "Kyurem",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Kyurem" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Hyper Beam" }
+    ],
+    "enabled": true,
+    "kicker": "Kyurem",
+    "battleTitle": "Battle Kyurem!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Kyurem Joins your Team",
+    "locations": ["giant-chasm"]
+  },
+  {
+    "type": "trainer",
+    "title": "Keldeo Appears!",
+    "id": "keldeo-battle",
+    "body": "You encountered Keldeo!",
+    "trainerName": "Keldeo",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Keldeo" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Sacred Sword" }
+    ],
+    "enabled": true,
+    "kicker": "Keldeo",
+    "battleTitle": "Battle Keldeo!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Keldeo Joins your Team",
+    "locations": ["dewford-town"]
+  },
+  {
+    "type": "trainer",
+    "title": "Xerneas Appears!",
+    "id": "xerneas-battle",
+    "body": "You encountered Xerneas!",
+    "trainerName": "Xerneas",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Xerneas" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Dazzling Aura" }
+    ],
+    "enabled": true,
+    "kicker": "Xerneas",
+    "battleTitle": "Battle Xerneas!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Xerneas Joins your Team",
+    "locations": ["lake-valor"]
+  },
+  {
+    "type": "trainer",
+    "title": "Yveltal Appears!",
+    "id": "yveltal-battle",
+    "body": "You encountered Yveltal!",
+    "trainerName": "Yveltal",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Yveltal" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Dreadful Atmosphere" }
+    ],
+    "enabled": true,
+    "kicker": "Yveltal",
+    "battleTitle": "Battle Yveltal!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Yveltal Joins your Team",
+    "locations": ["chamber-of-emptiness"]
+  },
+  {
+    "type": "trainer",
+    "title": "Tapu Koko Appears!",
+    "id": "tapu-koko-battle",
+    "body": "You encountered Tapu Koko!",
+    "trainerName": "Tapu Koko",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Tapu Koko" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Thunder Storm" }
+    ],
+    "enabled": true,
+    "kicker": "Tapu Koko",
+    "battleTitle": "Battle Tapu Koko!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Tapu Koko Joins your Team",
+    "terrains": ["Island"]
+  },
+  {
+    "type": "trainer",
+    "title": "Tapu Lele Appears!",
+    "id": "tapu-lele-battle",
+    "body": "You encountered Tapu Lele!",
+    "trainerName": "Tapu Lele",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Tapu Lele" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Shatter Reality" }
+    ],
+    "enabled": true,
+    "kicker": "Tapu Lele",
+    "battleTitle": "Battle Tapu Lele!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Tapu Lele Joins your Team",
+    "terrains": ["Island"]
+  },
+  {
+    "type": "trainer",
+    "title": "Tapu Bulu Appears!",
+    "id": "tapu-bulu-battle",
+    "body": "You encountered Tapu Bulu!",
+    "trainerName": "Tapu Bulu",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Tapu Bulu" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Frenzy Plant" }
+    ],
+    "enabled": true,
+    "kicker": "Tapu Bulu",
+    "battleTitle": "Battle Tapu Bulu!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Tapu Bulu Joins your Team",
+    "terrains": ["Island"]
+  },
+  {
+    "type": "trainer",
+    "title": "Tapu Fini Appears!",
+    "id": "tapu-fini-battle",
+    "body": "You encountered Tapu Fini!",
+    "trainerName": "Tapu Fini",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Tapu Fini" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Healing River" }
+    ],
+    "enabled": true,
+    "kicker": "Tapu Fini",
+    "battleTitle": "Battle Tapu Fini!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Tapu Fini Joins your Team",
+    "terrains": ["Island"]
+  },
+  {
+    "type": "trainer",
+    "title": "Okidogi Appears!",
+    "id": "okidogi-battle",
+    "body": "You encountered Okidogi!",
+    "trainerName": "Okidogi",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Okidogi" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Gunk Shot" }
+    ],
+    "enabled": true,
+    "kicker": "Okidogi",
+    "battleTitle": "Battle Okidogi!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Okidogi Joins your Team",
+    "terrains": ["Forest", "Urban"]
+  },
+  {
+    "type": "trainer",
+    "title": "Munkidori Appears!",
+    "id": "munkidori-battle",
+    "body": "You encountered Munkidori!",
+    "trainerName": "Munkidori",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Munkidori" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Gunk Shot" }
+    ],
+    "enabled": true,
+    "kicker": "Munkidori",
+    "battleTitle": "Battle Munkidori!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Munkidori Joins your Team",
+    "terrains": ["Forest", "Urban"]
+  },
+  {
+    "type": "trainer",
+    "title": "Fezandipiti Appears!",
+    "id": "fezandipiti-battle",
+    "body": "You encountered Fezandipiti!",
+    "trainerName": "Fezandipiti",
+    "rewardCash": 0,
+    "rewardEffects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Fezandipiti" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Gunk Shot" }
+    ],
+    "enabled": true,
+    "kicker": "Fezandipiti",
+    "battleTitle": "Battle Fezandipiti!",
+    "battleButtonText": "Let's go!",
+    "resultTitle": "Fezandipiti Joins your Team",
+    "terrains": ["Forest", "Urban"]
   }
 ]

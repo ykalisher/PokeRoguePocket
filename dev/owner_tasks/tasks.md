@@ -17,7 +17,7 @@
 - [x] #007 added:2026-07-20 done:2026-07-20 needs:- :: More dual-typed moves
 - [x] #008 added:2026-07-20 done:2026-07-20 needs:- :: Confirm every type has base set of usable moves
 - [x] #009 added:2026-07-20 done:2026-07-20 needs:- :: Change gym leaders and elites to use megas instead of legendaries
-- [ ] #010 added:2026-07-20 needs:- :: Download backgrounds
+- [x] #010 added:2026-07-20 done:2026-08-10 needs:- :: Download backgrounds
 - [x] #011 added:2026-07-20 done:2026-07-20 needs:- :: Fix gym leaders
 - [x] #012 added:2026-07-20 done:2026-07-31 needs:- :: check ace trainers
 - [x] #013 added:2026-07-20 done:2026-07-31 needs:- :: check event trainers
@@ -33,27 +33,27 @@
 - [x] #023 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Celebi
 - [x] #024 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Lugia
 - [x] #025 added:2026-07-22 done:2026-07-31 needs:- :: Create event for Ho-oh
-- [ ] #026 added:2026-07-22 needs:- :: Create event for Dialga
-- [ ] #027 added:2026-07-22 needs:- :: Create event for Palkia
-- [ ] #028 added:2026-07-22 needs:- :: Create event for Giratina
+- [x] #026 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Dialga
+- [x] #027 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Palkia
+- [x] #028 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Giratina
 - [x] #029 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Darkrai
-- [ ] #030 added:2026-07-22 needs:- :: Create event for Volcarona
-- [ ] #031 added:2026-07-22 needs:- :: Create event for Cobalion
-- [ ] #032 added:2026-07-22 needs:- :: Create event for Terrakion
-- [ ] #033 added:2026-07-22 needs:- :: Create event for Virizion
-- [ ] #034 added:2026-07-22 needs:- :: Create event for Reshiram
-- [ ] #035 added:2026-07-22 needs:- :: Create event for Zekrom
-- [ ] #036 added:2026-07-22 needs:- :: Create event for Kyurem
-- [ ] #037 added:2026-07-22 needs:- :: Create event for Keldeo
-- [ ] #038 added:2026-07-22 needs:- :: Create event for Xerneas
-- [ ] #039 added:2026-07-22 needs:- :: Create event for Yveltal
-- [ ] #040 added:2026-07-22 needs:- :: Create event for Tapu Koko
-- [ ] #041 added:2026-07-22 needs:- :: Create event for Tapu Bulu
-- [ ] #042 added:2026-07-22 needs:- :: Create event for Tapu Lele
-- [ ] #043 added:2026-07-22 needs:- :: Create event for Tapu Fini
-- [ ] #044 added:2026-07-22 needs:- :: Create event for Tapu Okidogi
-- [ ] #045 added:2026-07-22 needs:- :: Create event for Tapu Munkidori
-- [ ] #046 added:2026-07-22 needs:- :: Create event for Tapu Fezandipiti
+- [x] #030 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Volcarona
+- [x] #031 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Cobalion
+- [x] #032 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Terrakion
+- [x] #033 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Virizion
+- [x] #034 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Reshiram
+- [x] #035 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Zekrom
+- [x] #036 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Kyurem
+- [x] #037 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Keldeo
+- [x] #038 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Xerneas
+- [x] #039 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Yveltal
+- [x] #040 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Tapu Koko
+- [x] #041 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Tapu Bulu
+- [x] #042 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Tapu Lele
+- [x] #043 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Tapu Fini
+- [x] #044 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Tapu Okidogi
+- [x] #045 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Tapu Munkidori
+- [x] #046 added:2026-07-22 done:2026-08-10 needs:- :: Create event for Tapu Fezandipiti
 - [x] #047 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-heat conversion
 - [x] #048 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-wash conversion
 - [x] #049 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-frost conversion
