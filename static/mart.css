@@ -186,11 +186,7 @@
     grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
     gap: 14px;
     padding: 14px;
-    background:
-        linear-gradient(90deg, rgba(251, 246, 232, 0.045) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(251, 246, 232, 0.035) 1px, transparent 1px),
-        var(--mart-panel-deep);
-    background-size: 42px 42px, 42px 42px, auto;
+    background: var(--mart-panel-deep);
 }
 
 .mart-offers {

@@ -414,6 +414,9 @@ body {
     --pb-steel: #c3c8cf;
     /* Thickness of the ball's centre band. */
     --pb-band: clamp(16px, 4vh, 30px);
+    /* The colour of the ball's shell half. Red on the pages that never receive
+       a location; the run pages below re-point it at their location's accent. */
+    --pb-shell-hue: var(--pb-red);
 }
 
 /* Menu-family pages (home, starter picker) go light: shell-coloured ground,
@@ -491,11 +494,12 @@ body {
             var(--pb-shell) 100%);
 }
 
-/* The menu panel is the ball's centre button: white face, thick ink ring, and
-   a shell-coloured halo separating the ring from the band. */
+/* The menu panel is the ball's centre button, drawn as a rounded plate rather
+   than a circle: white face, thick ink ring, and a shell-coloured halo
+   separating the ring from the band. */
 .pokeball-page .main-menu {
     /* Narrower than the default panel so the band and both ball halves stay
-       visible around it on a phone, where the panel cannot go fully round. */
+       visible around it. */
     width: min(86vw, 460px);
     padding: clamp(22px, 6vw, 40px);
     border: clamp(4px, 1vw, 8px) solid var(--pb-ink);
@@ -511,19 +515,13 @@ body {
     color: var(--pb-ink);
 }
 
-/* Wide and tall enough for a true circle: the panel goes round and its rows
-   centre inside it. Below this it stays a rounded plate so the buttons never
-   get squeezed off a small screen. */
+/* Room to breathe: the plate widens and its rows get more air, but it keeps
+   its rectangle at every size. */
 @media (min-width: 620px) and (min-height: 700px) {
     .pokeball-page .main-menu {
-        /* Wider than the default panel so the title and the four buttons clear
-           the circle's edges without crowding. */
         width: min(92vw, 520px);
-        aspect-ratio: 1;
-        align-content: center;
         gap: 22px;
         padding: clamp(34px, 5vw, 54px);
-        border-radius: 50%;
     }
 }
 
@@ -611,8 +609,10 @@ body {
 /*
  * These keep their dark shell — the card art needs it — so the theme lands as
  * ink-charcoal panels with the ball's red as the accent and steel as the glow.
+ * The battle board is also a .game-page but carries a location palette, so it
+ * opts out through .pokeball-run rather than having the red forced on it.
  */
-.game-page.pokeball-theme {
+.game-page.pokeball-theme:not(.pokeball-run) {
     --loc-accent: var(--pb-red);
     --loc-glow: #aeb6c1;
     --loc-surface: #2b3038;
@@ -625,6 +625,211 @@ body {
         color-mix(in srgb, var(--pb-red) 24%, var(--loc-bg-mid)) 190px,
         var(--loc-bg-mid) 300px,
         var(--loc-bg-deep) 100%);
+}
+
+/* --- Poke Ball theme on the run pages (location-tinted) --- */
+
+/*
+ * The run pages (area map, capture, mart, event, attack, battle) already carry
+ * a per-location palette, so they wear the ball in that location's colour
+ * rather than red: `pokeball-run` re-points the shell at --loc-accent and
+ * everything below derives from it.
+ *
+ * Two washes exist because a raw accent ranges from near-white (safari-zone)
+ * to deep purple (old-chateau). Anything that carries the pages' light text is
+ * mixed down into --loc-bg-deep, which lands dark enough at every accent; the
+ * raw hue is kept for hairlines and glyphs, where nothing sits on top of it.
+ *
+ * Declared after .pokeball-theme so the --pb-ink override below wins the tie
+ * between two single-class selectors on the same <body>.
+ */
+.pokeball-run {
+    --pb-shell-hue: var(--loc-accent);
+    /* Shell fill and its lit variant (top of a shell panel, button faces). */
+    --pb-shell-face: color-mix(in srgb, var(--loc-accent) 34%, var(--loc-bg-deep));
+    --pb-shell-face-lit: color-mix(in srgb, var(--loc-accent) 48%, var(--loc-bg-deep));
+    /* Text on a shell fill: the accent pulled towards white so a dark accent
+       still reads, while the hue survives. */
+    --pb-shell-text: color-mix(in srgb, var(--loc-accent) 42%, var(--pb-white));
+    /* The band under a shell panel. Thinner than the home page's centre band,
+       which spans a whole viewport rather than one panel edge. */
+    --pb-band-thin: clamp(6px, 1.1vh, 10px);
+    /* Near-black band: the run grounds are dark already, so the ball's ink has
+       to go darker than them to read as a band instead of another panel. */
+    --pb-ink: #0d1014;
+
+    /* Ground: the coloured half washing down into the location's own deep
+       slate, so the page reads as the ball top-down even where a shell panel
+       does not reach. Overrides the token block on `body` (0,1,0 beats 0,0,1).
+       This is the bottom layer of --page-bg-stack, so a location that ships
+       background art covers it entirely and the shell panels alone carry the
+       ball there; where there is no art, the stack's scrim tones this down. */
+    --page-bg: linear-gradient(180deg,
+        color-mix(in srgb, var(--loc-accent) 58%, var(--loc-bg-deep)) 0,
+        color-mix(in srgb, var(--loc-accent) 20%, var(--loc-bg-mid)) 220px,
+        var(--loc-bg-mid) 380px,
+        var(--loc-bg-deep) 100%);
+}
+
+/*
+ * Shell panel: the ball's coloured half as a component. A hairline of the raw
+ * location accent along the top, the washed fill under it, and the ball's band
+ * as a fat ink bottom edge. Every run page renders one of these topbars above
+ * its content, so the band always lands under the header whatever height the
+ * header's own contents give it.
+ */
+.pokeball-run .area-topbar,
+.pokeball-run .capture-topbar,
+.pokeball-run .mart-topbar,
+.pokeball-run .event-topbar,
+.pokeball-run .attack-topbar {
+    border: 2px solid var(--pb-ink);
+    border-bottom-width: var(--pb-band-thin);
+    border-radius: 14px;
+    background:
+        linear-gradient(180deg,
+            var(--pb-shell-hue) 0, var(--pb-shell-hue) 4px,
+            var(--pb-shell-face-lit) 4px,
+            var(--pb-shell-face) 100%);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.34);
+}
+
+/* Kickers sit on the shell fill, so they take the lightened accent. */
+.pokeball-run .area-kicker,
+.pokeball-run .capture-kicker,
+.pokeball-run .mart-kicker,
+.pokeball-run .event-kicker,
+.pokeball-run .attack-kicker {
+    color: var(--pb-shell-text);
+}
+
+/*
+ * Run-page buttons pick up the menu's chunky ball button: ink outline, shell
+ * face, and a hard bottom shadow that collapses on press. The list is explicit
+ * because each page names its own buttons; `.btn.btn-back` is doubled up to
+ * clear the `.area-page .btn-back` rules, which live in the later stylesheets.
+ */
+.pokeball-run .arena-button,
+.pokeball-run .btn.btn-back,
+.pokeball-run .mart-buy-button,
+.pokeball-run .mart-service-button,
+.pokeball-run .mart-continue-button,
+.pokeball-run .event-primary-button,
+.pokeball-run .event-secondary-button,
+.pokeball-run .event-icon-button {
+    border: 2px solid var(--pb-ink);
+    background-color: var(--pb-shell-face-lit);
+    color: #fbf6e8;
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.45);
+}
+
+.pokeball-run .arena-button:hover:not(:disabled),
+.pokeball-run .arena-button:focus-visible:not(:disabled),
+.pokeball-run .btn.btn-back:hover,
+.pokeball-run .btn.btn-back:focus-visible,
+.pokeball-run .mart-buy-button:hover:not(:disabled),
+.pokeball-run .mart-service-button:hover:not(:disabled),
+.pokeball-run .mart-continue-button:hover,
+.pokeball-run .event-primary-button:hover:not(:disabled),
+.pokeball-run .event-secondary-button:hover:not(:disabled),
+.pokeball-run .event-icon-button:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--loc-accent) 62%, var(--loc-bg-deep));
+}
+
+.pokeball-run .arena-button:active:not(:disabled),
+.pokeball-run .btn.btn-back:active,
+.pokeball-run .mart-buy-button:active:not(:disabled),
+.pokeball-run .mart-service-button:active:not(:disabled),
+.pokeball-run .mart-continue-button:active,
+.pokeball-run .event-primary-button:active:not(:disabled),
+.pokeball-run .event-secondary-button:active:not(:disabled),
+.pokeball-run .event-icon-button:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+}
+
+.pokeball-run .arena-button:disabled,
+.pokeball-run .mart-buy-button:disabled,
+.pokeball-run .mart-service-button:disabled,
+.pokeball-run .event-primary-button:disabled,
+.pokeball-run .event-secondary-button:disabled {
+    border-color: rgba(13, 16, 20, 0.7);
+    background-color: rgba(0, 0, 0, 0.34);
+    box-shadow: none;
+}
+
+/*
+ * The map's wild-encounter node is a drawn Poke Ball, and on a themed run it
+ * takes the location's own colour: travelling from one location to the next
+ * recolours the ball. The raw accent is safe here because nothing sits on top
+ * of the shell half. The legend swatch picks this up from the same rule.
+ */
+.pokeball-run .area-icon--capture {
+    border-color: var(--pb-ink);
+    background: linear-gradient(180deg,
+        var(--pb-shell-hue) 0 46%,
+        var(--pb-ink) 46% 56%,
+        var(--pb-shell) 56% 100%);
+}
+
+.pokeball-run .area-icon--capture::after {
+    border-color: var(--pb-ink);
+    background-color: var(--pb-shell);
+}
+
+/* --- Battle board as a Poke Ball --- */
+
+/*
+ * The battle board is already the ball's shape: rival half, turn-control box,
+ * your half. So the rival panel takes the coloured shell, the control box
+ * becomes the band, and your panel takes the off-white half — as a pale edge
+ * and a whisper of light, because the cards below it need the dark ground.
+ *
+ * The wide layout (>=1100px) moves the control box into the right column, so
+ * the band lands as the panel edge it shares with the rival panel instead;
+ * both readings come from the same rules.
+ */
+.pokeball-run .side-panel--opponent {
+    border-color: var(--pb-ink);
+    border-top: 4px solid var(--pb-shell-hue);
+    /* Fat ink underside: the ball's band, in the gap the two panels share. The
+       wide layout keeps it, since the panels stay stacked there. */
+    border-bottom: var(--pb-band-thin) solid var(--pb-ink);
+    background:
+        linear-gradient(180deg,
+            var(--pb-shell-face) 0,
+            color-mix(in srgb, var(--loc-accent) 10%, var(--loc-surface)) 38%,
+            var(--loc-surface) 100%);
+}
+
+.pokeball-run .side-panel--player {
+    border-color: var(--pb-ink);
+    border-top: 3px solid var(--pb-steel);
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--pb-shell) 9%, var(--loc-surface)) 0,
+            var(--loc-surface) 30%);
+}
+
+/* The band between the halves. Its underside is the player panel's own steel
+   edge, so the band only draws the shell-side line. */
+.pokeball-run .arena-status {
+    border-top: 3px solid var(--pb-shell-hue);
+    border-bottom: 0;
+    background-color: var(--pb-ink);
+}
+
+/* Wide layout: the control box is a right-hand panel rather than a divider, so
+   it goes back to a plain ink panel with the shell as its outline. */
+@media (min-width: 1100px) {
+    .pokeball-run .arena-status {
+        border: 2px solid var(--pb-ink);
+        border-top: 4px solid var(--pb-shell-hue);
+        background:
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--loc-accent) 16%, var(--pb-ink)) 0,
+                var(--pb-ink) 120px);
+    }
 }
 
 /* --- Arena Prototype --- */

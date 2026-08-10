@@ -1386,3 +1386,104 @@
     color: var(--muted);
     font-size: 0.8rem;
 }
+
+/* --- Poke Ball theme --- */
+
+/*
+ * The editor opts into `pokeball-theme` on <body>, which hands it the game's
+ * dark-page palette (red accent, charcoal ground) from static/styles.css. The
+ * rules below are the parts the shared sheet cannot reach: the tool's own
+ * header, tabs and buttons, restyled as the ball's shell, band and chips so
+ * the editor reads as the same product as the game.
+ */
+
+/* The header is the ball's coloured half, with the band as its bottom edge. */
+.pokeball-theme .editor-header {
+    border-bottom: clamp(6px, 1.1vh, 10px) solid var(--pb-ink);
+    background:
+        linear-gradient(180deg,
+            var(--pb-red) 0, var(--pb-red) 4px,
+            var(--pb-red-deep) 4px,
+            var(--pb-red-dark) 100%);
+}
+
+.pokeball-theme .editor-title {
+    color: var(--pb-white);
+}
+
+/* Tabs are ball chips: off-white when resting, red when active, both outlined
+   in ink so they read against the shell they sit on. */
+.pokeball-theme .editor-tab {
+    border: 2px solid var(--pb-ink);
+    background: rgba(0, 0, 0, 0.24);
+    color: var(--pb-white);
+}
+
+.pokeball-theme .editor-tab:hover {
+    border-color: var(--pb-ink);
+    background: rgba(0, 0, 0, 0.36);
+}
+
+.pokeball-theme .editor-tab.is-active {
+    border-color: var(--pb-ink);
+    background: var(--pb-white);
+    color: var(--pb-ink);
+}
+
+.pokeball-theme .editor-info-btn {
+    border: 2px solid var(--pb-ink);
+    background: var(--pb-white);
+    color: var(--pb-ink);
+}
+
+.pokeball-theme .editor-info-btn:hover {
+    border-color: var(--pb-ink);
+    background: var(--pb-shell);
+    color: var(--pb-ink);
+}
+
+/* Buttons take the menu's chunky ball button: ink outline over a flat face,
+   with a hard bottom shadow that collapses on press. */
+.pokeball-theme .editor-btn {
+    border: 2px solid var(--pb-ink);
+    background: var(--loc-surface);
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+.pokeball-theme .editor-btn:hover:not(:disabled) {
+    border-color: var(--pb-ink);
+    background: color-mix(in srgb, var(--pb-white) 12%, var(--loc-surface));
+}
+
+.pokeball-theme .editor-btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.pokeball-theme .editor-btn:disabled {
+    box-shadow: none;
+}
+
+.pokeball-theme .editor-btn--primary,
+.pokeball-theme .editor-btn--primary.is-dirty {
+    border-color: var(--pb-ink);
+    background-color: var(--pb-red);
+    color: var(--pb-white);
+}
+
+.pokeball-theme .editor-btn--primary:hover:not(:disabled),
+.pokeball-theme .editor-btn--primary.is-dirty:hover:not(:disabled) {
+    background-color: var(--pb-red-deep);
+}
+
+.pokeball-theme .editor-btn--danger {
+    border-color: var(--pb-ink);
+    background-color: var(--pb-red-dark);
+}
+
+/* Ghost buttons stay flat: they sit inside rows where a raised chip would
+   fight the surrounding text. */
+.pokeball-theme .editor-btn--ghost {
+    background: transparent;
+    box-shadow: none;
+}

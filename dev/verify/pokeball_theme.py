@@ -5,7 +5,8 @@ desktop viewports and asserts the layout survives every size:
 
   * no page scrolls horizontally, and no panel spills out of the viewport;
   * the home panel (the ball's centre button) stays centred on the ball's band,
-    has a white face with dark text, and goes circular only where it fits;
+    has a white face with dark text, and stays a rounded rectangle at every
+    size — it is deliberately not a circle;
   * the starter page's heading sits on the red strip and its deck cards are
     light plates with dark text.
 
@@ -198,12 +199,11 @@ def main():
                             f"{name}/{path}: panel ({home['panelH']}px) is taller"
                             f" than the viewport ({home['viewportH']}px)"
                         )
-                    # The circle only makes sense where there is room for it.
-                    roomy = width >= 620 and height >= 700
-                    if roomy != home["circular"]:
+                    # The panel is a rounded plate by design, never a circle.
+                    if home["circular"]:
                         errors.append(
-                            f"{name}/{path}: circular={home['circular']} at"
-                            f" {width}x{height} (expected {roomy})"
+                            f"{name}/{path}: panel went circular at"
+                            f" {width}x{height} (radius {home['radius']})"
                         )
 
                 if path == "starter.html":
