@@ -2996,7 +2996,8 @@
      * replacement keeps later queued attacks from hitting a newly drawn Pokemon.
      * The defeat check counts pending Fossil revivals, so a knockout at the
      * limit still queues a replacement when a Fossil refund can keep the owner
-     * in the battle.
+     * in the battle. The knockout turn is stamped on the card because the Fossil
+     * revival queue orders by it and holds a Fossil back until a later turn.
      */
     function knockOutPokemon(ownerId, pokemonCard) {
         const owner = state.players[ownerId];
@@ -3006,6 +3007,7 @@
         if (!removedCard) return;
 
         removedCard.faceUp = true;
+        removedCard.knockoutTurn = state.turnNumber;
         owner.knockout.unshift(removedCard);
         owner.knockoutCount = (Number(owner.knockoutCount) || 0) + 1;
         model.updatePokemonLeft(owner);
@@ -3034,12 +3036,19 @@
         return true;
     }
 
+    /**
+     * End-of-turn replacement pass: every slot vacated this turn is filled by an
+     * eligible Fossil revival when one is waiting, otherwise by a Pokemon deck
+     * draw. Slots left open on an earlier turn are revisited for revival only,
+     * because a Fossil that went down while its owner's Pokemon deck was empty
+     * has no fresh knockout to ride back in on.
+     */
     async function resolvePendingPokemonReplacements() {
-        if (!Array.isArray(state.pendingPokemonReplacements) || state.pendingPokemonReplacements.length === 0) return false;
-
-        const replacements = state.pendingPokemonReplacements.slice();
+        const replacements = collectPokemonReplacements();
 
         state.pendingPokemonReplacements = [];
+
+        if (replacements.length === 0) return false;
 
         for (const replacement of replacements) {
             if (checkGameOver()) return true;
@@ -3056,6 +3065,8 @@
                 await animatePokemonEnterBoard(owner.id, fossilCard, 'knockout');
                 continue;
             }
+
+            if (replacement.revivalOnly) continue;
 
             const replacementCard = drawReplacementPokemon(owner, replacement.slotIndex);
 
@@ -3077,6 +3088,35 @@
         return checkGameOver();
     }
 
+    /**
+     * The slots this end-of-turn pass has to fill: the ones knockouts queued
+     * this turn, plus - for a side with a Fossil ready to revive - any board
+     * slot still open from an earlier turn. Those extras are revival only,
+     * because a slot only stays open when the Pokemon deck has run dry.
+     */
+    function collectPokemonReplacements() {
+        const replacements = Array.isArray(state.pendingPokemonReplacements)
+            ? state.pendingPokemonReplacements.slice()
+            : [];
+
+        Object.values(state.players || {}).forEach(owner => {
+            if (!owner || !Array.isArray(owner.board)) return;
+            if (model.findRevivableFossilIndex(owner) === -1) return;
+
+            owner.board.forEach((card, slotIndex) => {
+                const alreadyQueued = replacements.some(replacement => (
+                    replacement.ownerId === owner.id && replacement.slotIndex === slotIndex
+                ));
+
+                if (card || alreadyQueued) return;
+
+                replacements.push({ ownerId: owner.id, revivalOnly: true, slotIndex });
+            });
+        });
+
+        return replacements;
+    }
+
     function drawReplacementPokemon(owner, slotIndex) {
         if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT || owner.board[slotIndex]) return null;
 
@@ -3085,7 +3125,9 @@
         if (!replacementCard) {
             owner.lostByPokemonDeck = true;
             model.updatePokemonLeft(owner);
-            logEvent(`${owner.name} had no Pokemon left to draw.`);
+            logEvent(model.countPendingFossilRevivals(owner) > 0
+                ? `${owner.name} had no Pokemon left to draw - the slot is held for a reviving Fossil.`
+                : `${owner.name} had no Pokemon left to draw.`);
             return null;
         }
 
@@ -3096,9 +3138,10 @@
 
     /**
      * FOSSIL special rule: during end-of-turn replacement, a once-per-card
-     * Fossil already in the knockout pile can return to the vacated slot.
-     * Its earlier knockout is refunded so revival grants a real extra life.
-     * Eligibility lives in the model so the defeat check stays in sync.
+     * Fossil already in the knockout pile can return to the open slot, ahead of
+     * any Pokemon deck draw. Its earlier knockout is refunded so revival grants
+     * a real extra life. Queue order and the wait rule live in the model so the
+     * defeat check stays in sync.
      */
     function reviveFossilPokemonFromKnockout(owner, slotIndex) {
         if (slotIndex < 0 || slotIndex >= BOARD_SLOT_COUNT || owner.board[slotIndex]) return null;
@@ -3611,10 +3654,11 @@
         // Exposed for tests: sleep wake-ladder timing (phase 21).
         resolveSleepAttempt,
         tickSleepTimersWithoutAttack,
-        // Exposed for tests: overkill damage capping and Fossil-aware
-        // knockout-limit deferral.
+        // Exposed for tests: overkill damage capping, end-of-turn replacement,
+        // and Fossil-aware knockout-limit deferral.
         damagePokemon,
         knockOutPokemon,
+        resolvePendingPokemonReplacements,
         reviveFossilPokemonFromKnockout,
         // Exposed for tests: KO-aware/status-aware opponent attack targeting
         // (phase 40).

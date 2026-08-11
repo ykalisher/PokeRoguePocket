@@ -43,9 +43,22 @@ When a Pokemon is knocked out:
 - Otherwise, a new Pokemon is drawn from the Pokemon deck and played into the
   open slot.
 
+Fossil revival follows a queue, and each Fossil card can use it once:
+
+- A Fossil never revives on the turn it was knocked out. From the next turn on
+  it takes the first open board slot at end of turn, ahead of a deck draw -
+  usually the slot left by the next ally to be knocked out.
+- A slot that stayed open because the Pokemon deck was empty is also fair game,
+  so a Fossil downed with an empty deck comes back a turn later on its own.
+- If its owner has no Pokemon left on the board or in the Pokemon deck, waiting
+  would end the battle, so it revives at the end of the turn it went down.
+- When several Fossils are waiting, they revive in the order they were knocked
+  out, one per open slot.
+
 The game ends when either player's whole team has been knocked out - that is,
 their knockout count reaches the number of Pokemon they brought into the
-battle.
+battle. Knockouts a waiting Fossil can still refund do not count toward that
+limit.
 
 When a Switch effect is played on a Pokemon:
 

@@ -498,41 +498,65 @@
     }
 
     /**
-     * Index of the knockout-pile Fossil that end-of-turn replacement should
-     * revive, or -1 when none is eligible. A Fossil normally waits for another
-     * ally to be knocked out, so the most recent knockout (index 0) is skipped -
-     * unless its owner has no Pokemon left on the board or in the Pokemon deck,
-     * in which case waiting would end the battle before the revival ever
-     * happened, so it revives at the end of the turn it went down.
+     * Turn the card was knocked out on, recorded by the controller when it
+     * enters the knockout pile. Cards that never went down - and piles from
+     * saves written before knockout turns were tracked - report 0, which reads
+     * as "knocked out long ago" so a restored Fossil is not stuck waiting.
      */
-    function findRevivableFossilIndex(player) {
-        if (!player || !Array.isArray(player.knockout)) return -1;
-
-        const laterIndex = player.knockout.findIndex((card, index) => index > 0 && isFossilRevivalCandidate(card));
-
-        if (laterIndex !== -1) return laterIndex;
-        if (countRemainingPokemon(player) > 0) return -1;
-
-        return isFossilRevivalCandidate(player.knockout[0]) ? 0 : -1;
+    function getCardKnockoutTurn(card) {
+        return Number.isFinite(card && card.knockoutTurn) ? card.knockoutTurn : 0;
     }
 
     /**
-     * Counts knockout-pile Fossils that can still revive during end-of-turn
-     * replacement, following the same eligibility rules as
-     * findRevivableFossilIndex(): each unused Fossil below the most recent
-     * knockout, plus the most recent knockout itself when its owner has no
-     * other Pokemon left.
+     * The Fossil revival queue: knockout-pile Fossils that end-of-turn
+     * replacement may revive right now, first knocked out first, so a Fossil
+     * specialist's pile empties in the order it filled.
+     *
+     * A Fossil sits out the rest of the turn it went down on and revives at the
+     * end of a later turn, taking the next slot that opens. The exception is an
+     * owner with nothing left on the board or in the Pokemon deck: waiting would
+     * end the battle before the revival ever happened, so every candidate is
+     * ready at the end of the turn it was knocked out.
+     *
+     * The knockout pile is newest-first, so a higher index means an earlier
+     * knockout - that breaks ties between Fossils downed on the same turn.
+     */
+    function getRevivableFossilQueue(player) {
+        if (!player || !Array.isArray(player.knockout)) return [];
+
+        const noPokemonLeft = countRemainingPokemon(player) === 0;
+
+        return player.knockout
+            .map((card, index) => ({ card, index, knockoutTurn: getCardKnockoutTurn(card) }))
+            .filter(entry => isFossilRevivalCandidate(entry.card) && (
+                noPokemonLeft || entry.knockoutTurn < state.turnNumber
+            ))
+            .sort((first, second) => (
+                first.knockoutTurn - second.knockoutTurn || second.index - first.index
+            ));
+    }
+
+    /**
+     * Index of the knockout-pile Fossil that end-of-turn replacement should
+     * revive next, or -1 when no Fossil is eligible yet.
+     */
+    function findRevivableFossilIndex(player) {
+        const queue = getRevivableFossilQueue(player);
+
+        return queue.length > 0 ? queue[0].index : -1;
+    }
+
+    /**
+     * Counts knockout-pile Fossils that still have their revival, including any
+     * waiting out the turn they went down on. isPlayerDefeated() discounts the
+     * knockouts they can refund, and a side only reaches the knockout limit with
+     * an empty board and Pokemon deck - exactly when every waiting Fossil
+     * becomes ready - so no counted revival can be one that never arrives.
      */
     function countPendingFossilRevivals(player) {
         if (!player || !Array.isArray(player.knockout)) return 0;
 
-        const laterCount = player.knockout.filter((card, index) => (
-            index > 0 && isFossilRevivalCandidate(card)
-        )).length;
-
-        if (countRemainingPokemon(player) > 0) return laterCount;
-
-        return laterCount + (isFossilRevivalCandidate(player.knockout[0]) ? 1 : 0);
+        return player.knockout.filter(isFossilRevivalCandidate).length;
     }
 
     /**
@@ -1906,8 +1930,10 @@
         drawCard,
         drawCardsUpToHandSize,
         drawPokemonToBoard,
+        countPendingFossilRevivals,
         findHandCard,
         findRevivableFossilIndex,
+        getRevivableFossilQueue,
         applyStatChange,
         applyBattleSnapshot,
         addDragonGemEffect,
