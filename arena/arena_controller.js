@@ -38,7 +38,8 @@
  *    effects are applied, and the attack card is discarded.
  * 9. resolveEndOfTurnStatuses() applies Poison/Burn damage, ticks Sleep for
  *     sleeping Pokemon that did not already attempt to wake this turn, clears
- *     end-of-turn statuses such as Flinch/Protect/Fatigue, then checks game over.
+ *     end-of-turn statuses such as Flinch/Protect/Fatigue and any effect boost
+ *     played this turn, then checks game over.
  * 10. Any queued knockout replacements are revived/drawn and animated.
  * 11. If the battle is still active, startPlayerTurn() begins the next turn.
  *
@@ -2400,9 +2401,10 @@
     }
 
     /**
-     * Applies the standalone effect-boost item: sets a persistent per-side flag so
-     * the side's attacks trigger their secondary effects more often and bias
-     * multi-hit toward more hits for the rest of the battle.
+     * Applies the standalone effect-boost item: sets a per-side flag so the side's
+     * attacks trigger their secondary effects more often and bias multi-hit toward
+     * more hits. The flag lasts for the current turn only - end-of-turn cleanup
+     * clears it once that turn's queued attacks have resolved.
      */
     function applyEffectBoostItemEffect(itemCard, actorId) {
         const actor = state.players[actorId];
@@ -2415,8 +2417,8 @@
         }
 
         logEvent(`${actor.name} used ${model.getCardName(itemCard)}.`);
-        logEvent(`${actor.name}'s attacks now trigger their effects more often.`);
-        showPopup(`${model.getCardName(itemCard)}: effect chances boosted for the battle.`);
+        logEvent(`${actor.name}'s attacks trigger their effects more often this turn.`);
+        showPopup(`${model.getCardName(itemCard)}: effect chances boosted for this turn.`);
         return true;
     }
 
@@ -2613,6 +2615,7 @@
 
         const sleepTickResults = tickSleepTimersWithoutAttack();
         const removedStatuses = clearTurnStatuses();
+        const clearedBoosts = clearExpiredEffectBoosts();
 
         if (damageResults.length > 0) {
             damageResults.forEach(result => {
@@ -2624,7 +2627,12 @@
             });
         }
 
-        if (damageResults.length === 0 && sleepTickResults.length === 0 && removedStatuses.length === 0) return false;
+        if (
+            damageResults.length === 0
+            && sleepTickResults.length === 0
+            && removedStatuses.length === 0
+            && clearedBoosts.length === 0
+        ) return false;
 
         render();
 
@@ -2679,6 +2687,23 @@
         });
 
         return removedStatuses;
+    }
+
+    /**
+     * Ends any effect boost played this turn. Runs after the turn's queued attacks
+     * have resolved, so the boost applies to exactly one turn of attacks.
+     */
+    function clearExpiredEffectBoosts() {
+        const cleared = [];
+
+        ['player', 'opponent'].forEach(ownerId => {
+            if (!model.clearEffectBoost(ownerId)) return;
+
+            cleared.push(ownerId);
+            logEvent(`${state.players[ownerId].name}'s effect boost ended.`);
+        });
+
+        return cleared;
     }
 
     /**
@@ -3647,7 +3672,8 @@
         undoLastAction,
         useDragonGemItemFromHand,
         useEffectBoostItemFromHand,
-        // Exposed for tests: effect-boost roll sites (phase 20).
+        // Exposed for tests: effect-boost roll sites (phase 20) and its one-turn expiry.
+        clearExpiredEffectBoosts,
         getRandomMultiAttackHitCount,
         maybeApplyAttackStatuses,
         maybeApplyAttackStatChanges,

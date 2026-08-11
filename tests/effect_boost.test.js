@@ -131,6 +131,45 @@ test('playing the Effect Amplifier sets the side boost flag and removes the card
     assert.equal(Model.hasEffectBoost('opponent'), false);
 });
 
+test('the effect boost expires in end-of-turn cleanup, one turn after it was played', async () => {
+    setupBattle();
+
+    const player = arena.state.players.player;
+
+    player.hand = [makeEffectBoostItemCard('player')];
+    await Controller.useEffectBoostItemFromHand('player', player.hand[0].id);
+    assert.equal(Model.hasEffectBoost('player'), true);
+
+    // The boost is still live while the turn's queued attacks resolve; only the
+    // end-of-turn sweep takes it away.
+    const cleared = Controller.clearExpiredEffectBoosts();
+
+    assert.deepEqual(cleared, ['player']);
+    assert.equal(Model.hasEffectBoost('player'), false);
+
+    // A second sweep has nothing left to clear.
+    assert.deepEqual(Controller.clearExpiredEffectBoosts(), []);
+});
+
+test('an expired effect boost lets the side play another amplifier next turn', async () => {
+    setupBattle();
+
+    const player = arena.state.players.player;
+    const first = makeEffectBoostItemCard('player');
+    const second = makeEffectBoostItemCard('player');
+
+    player.hand = [first, second];
+
+    assert.equal(await Controller.useEffectBoostItemFromHand('player', first.id), true);
+    // While the boost is up, a second amplifier is not playable.
+    assert.equal(await Controller.useEffectBoostItemFromHand('player', second.id), false);
+
+    Controller.clearExpiredEffectBoosts();
+
+    assert.equal(await Controller.useEffectBoostItemFromHand('player', second.id), true);
+    assert.equal(Model.hasEffectBoost('player'), true);
+});
+
 test('effect boost doubles a damaging attack secondary-status trigger chance', () => {
     setupBattle();
 

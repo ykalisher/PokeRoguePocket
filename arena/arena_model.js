@@ -1071,7 +1071,8 @@
 
     /**
      * Standalone effect-boost item (NOT a dragon gem): a SIDE item carrying the
-     * EFFECT_BOOST status. It sets a per-side flag that persists for the battle.
+     * EFFECT_BOOST status. It sets a per-side flag that lasts a single turn and is
+     * cleared during end-of-turn cleanup, after that turn's attacks have resolved.
      */
     function isEffectBoostItemCard(card) {
         if (!isItemCard(card)) return false;
@@ -1092,6 +1093,19 @@
         const player = state.players[playerId];
 
         return Boolean(player && player.effectBoost);
+    }
+
+    /**
+     * Ends a side's effect boost. Called during end-of-turn cleanup so the boost
+     * covers only the turn it was played on. Returns whether a boost was cleared.
+     */
+    function clearEffectBoost(playerId) {
+        const player = state.players[playerId];
+
+        if (!player || !player.effectBoost) return false;
+
+        player.effectBoost = false;
+        return true;
     }
 
     function normalizeDragonGemEffects(effects) {
@@ -1951,6 +1965,7 @@
         getDragonGemEffectForItem,
         getDragonGemEffects,
         applyEffectBoost,
+        clearEffectBoost,
         hasEffectBoost,
         isEffectBoostItemCard,
         getEffectiveKnockoutLimit,

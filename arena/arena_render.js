@@ -187,7 +187,7 @@
         if (!arena.Model.hasEffectBoost(player.id)) return '';
 
         const definition = arena.Model.getStatusIconPath('EFFECT_BOOST');
-        const title = 'Effect Boost: attacks trigger their effects more often';
+        const title = 'Effect Boost: attacks trigger their effects more often this turn';
 
         return `
             <div class="effect-boost-tray effect-boost-tray--${player.id}" aria-label="${player.name} Effect Boost">
