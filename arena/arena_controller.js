@@ -926,24 +926,46 @@
     }
 
     /**
-     * Discards every card left in the player's hand as one command. The sweep is
-     * a single undo step: one snapshot is taken up front and the per-card
-     * discards skip their own, so one Undo press restores the whole hand.
+     * Discards every card left in the player's hand as one command. The whole
+     * hand leaves at once: each card's hand position is measured up front, then
+     * all the ghosts fly to the discard pile in a single parallel animation.
+     * The sweep is also a single undo step — one snapshot is taken up front, so
+     * one Undo press restores the whole hand.
      */
     async function discardPlayerHand() {
         if (!canDiscardPlayerHand()) return false;
 
         const player = state.players.player;
-        const cardIds = player.hand.map(card => card.id);
+        const flights = player.hand.map(card => ({
+            card,
+            sourceCenter: getHandCardCenter('player', card.id) || getArenaCenter()
+        }));
 
         model.pushUndoSnapshot('discarding your hand');
 
-        for (let index = 0; index < cardIds.length; index += 1) {
-            await discardHandCardFromHand('player', cardIds[index], `${player.name} discarded`, {
-                recordUndo: false,
-                releaseInput: index === cardIds.length - 1
-            });
-        }
+        flights.forEach(flight => {
+            model.removeCardFromHand(player, flight.card.id);
+            flight.card.faceUp = true;
+        });
+
+        clearPendingAction();
+
+        if (state.currentPlayer === 'player') state.phase = 'turn';
+
+        state.isResolving = true;
+        render();
+
+        await Promise.all(flights.map(
+            flight => animateDiscardCard('player', flight.card, flight.sourceCenter)
+        ));
+
+        flights.forEach(flight => {
+            player.discard.unshift(flight.card);
+            logEvent(`${player.name} discarded ${model.getCardName(flight.card)}.`);
+        });
+
+        state.isResolving = false;
+        render();
 
         return true;
     }
@@ -952,9 +974,7 @@
         const owner = state.players[ownerId];
         const sourceCenter = getHandCardCenter(ownerId, cardId) || getArenaCenter();
         const pendingCard = model.findHandCard(owner, cardId);
-        const recorded = options.recordUndo === false
-            ? false
-            : recordUndoPoint(ownerId, pendingCard);
+        const recorded = recordUndoPoint(ownerId, pendingCard);
         const card = model.removeCardFromHand(owner, cardId);
         const shouldReleaseInput = options.releaseInput !== undefined
             ? options.releaseInput
