@@ -76,12 +76,10 @@
     "type": "FIGHTING",
     "pokemon": ["Infernape", "Quaquaval"],
     "attacks": [
-      { "name": "Air Slash", "count": 1 },
-      { "name": "Chomp", "count": 1 },
       { "name": "Fire Spin", "count": 1 },
       { "name": "Surf", "count": 1 },
-      { "name": "Karate Smash", "count": 1 },
-      { "name": "Kick in the Face", "count": 1 }
+      { "name": "Karate Smash", "count": 2 },
+      { "name": "Kick in the Face", "count": 2 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
@@ -98,10 +96,9 @@
     "attacks": [
       { "name": "Razor Leaf", "count": 1 },
       { "name": "Fire Spin", "count": 1 },
-      { "name": "Energy Ball", "count": 1 },
       { "name": "Flame Thrower", "count": 1 },
-      { "name": "Sleep Powder", "count": 1 },
-      { "name": "Trick", "count": 1 }
+      { "name": "Power-up Punch", "count": 2 },
+      { "name": "Sleep Powder", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
@@ -109,5 +106,138 @@
     ],
     "enabled": true,
     "requiresAchievement": "halfway-point"
+  },
+  {
+    "id": "dragon",
+    "name": "Dragon",
+    "type": "DRAGON",
+    "pokemon": ["Salamence", "Dragonite"],
+    "attacks": [
+      { "name": "Dragon Dance", "count": 1 },
+      { "name": "Dragon Claw", "count": 2 },
+      { "name": "Dragon's Breath", "count": 1 },
+      { "name": "Air Slash", "count": 1 },
+      { "name": "Sucker Punch", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 },
+      { "name": "Fire Gem", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "champion"
+  },
+  {
+    "id": "steel",
+    "name": "Steel",
+    "type": "STEEL",
+    "pokemon": ["Steelix", "Magnezone"],
+    "attacks": [
+      { "name": "Flash Cannon", "count": 1 },
+      { "name": "Iron Head", "count": 2 },
+      { "name": "Iron Defense", "count": 1 },
+      { "name": "Discharge", "count": 1 },
+      { "name": "Bulldoze", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "champion"
+  },
+  {
+    "id": "fossil",
+    "name": "Fossil",
+    "type": "FOSSIL",
+    "pokemon": ["Armaldo", "Aurorus"],
+    "attacks": [
+      { "name": "Ancient Energy", "count": 1 },
+      { "name": "Ancient Power", "count": 3 },
+      { "name": "Ice Beam", "count": 1 },
+      { "name": "Swarming Strike", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "champion"
+  },
+  {
+    "id": "gourmet",
+    "name": "Gourmet",
+    "type": "GOURMET",
+    "pokemon": ["Snorlax", "Lickilicky"],
+    "attacks": [
+      { "name": "Burp", "count": 1 },
+      { "name": "Chomp", "count": 1 },
+      { "name": "Snack Up", "count": 1 },
+      { "name": "Stockpile", "count": 1 },
+      { "name": "Crunch", "count": 1 },
+      { "name": "Body Slam", "count": 1 }
+    ],
+    "items": [],
+    "enabled": true,
+    "requiresAchievement": "champion"
+  },
+  {
+    "id": "baby",
+    "name": "Baby",
+    "type": "HUMAN",
+    "pokemon": ["Meditite", "Riolu"],
+    "attacks": [
+      { "name": "Power-up Punch", "count": 2 },
+      { "name": "Mega Punch", "count": 2 },
+      { "name": "Meditate", "count": 1 },
+      { "name": "Overwork", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 },
+      { "name": "Babiri Berry", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "champion"
+  },
+  {
+    "id": "artificial",
+    "name": "Artificial",
+    "type": "ARTIFICIAL",
+    "pokemon": ["Iron Hands", "Iron Thorns"],
+    "attacks": [
+      { "name": "Discharge", "count": 1 },
+      { "name": "Increase Capacity", "count": 1 },
+      { "name": "Energize", "count": 1 },
+      { "name": "Thunder Bolt", "count": 1 },
+      { "name": "Karate Smash", "count": 1 },
+      { "name": "Rock Slide", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "champion"
+  },
+  {
+    "id": "astro",
+    "name": "Astro",
+    "type": "PSYCHIC",
+    "pokemon": ["Solrock", "Lunatone"],
+    "attacks": [
+      { "name": "Gravity", "count": 1 },
+      { "name": "Mind Break", "count": 1 },
+      { "name": "Expanding Force", "count": 1 },
+      { "name": "Rock Slide", "count": 1 },
+      { "name": "Sucker Punch", "count": 1 },
+      { "name": "Flame Thrower", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "champion"
   }
 ]
