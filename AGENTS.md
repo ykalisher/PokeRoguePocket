@@ -8,7 +8,7 @@ The project should remain simple, portable, and easy to understand. Prefer clear
 
 ## Key Rules for LLMs and Agents
 
-- Never add or commit anything using git commands unless expicitly asked to. You may run other git commands to view the commit history and compare previous versions of the project or files.
+- Never add or commit anything using git commands unless expicitly asked to. The exception to this rule is with worktrees, which may be committed to directly (but request permission to merge into branches). You may run other git commands to view the commit history and compare previous versions of the project or files.
 
 - The `scripts/manage_*.js` tools are interactive CLIs for the project owner only. Agents must not run or extend them; edit the JSON data files directly and validate with `node tests/run_all.js`.
 
