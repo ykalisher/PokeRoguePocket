@@ -628,10 +628,36 @@
                 nodeId: encounter.nodeId || nodeId,
                 releaseUsed: Boolean(encounter.releaseUsed),
                 statsRecorded: Boolean(encounter.statsRecorded),
-                tradeAcceptedType: encounter.tradeAcceptedType || null,
-                tradeOfferedType: encounter.tradeOfferedType || null,
-                tradeUsed: Boolean(encounter.tradeUsed)
+                trades: normalizeMartTrades(encounter)
             }]));
+    }
+
+    /**
+     * Trade offers persist as { acceptedType, offeredName, used }. Saves from
+     * before the second offer existed carry a single trade as the flat
+     * tradeAcceptedType / tradeOfferedType / tradeUsed fields; migrate those
+     * to a one-entry array (the offered species was not stored back then, so
+     * it stays null). PokeLocations.sanitizeMartTrades then tops the list up
+     * to MART_TRADE_COUNT and re-rolls whatever is stale.
+     */
+    function normalizeMartTrades(encounter) {
+        if (!Array.isArray(encounter.trades)) {
+            if (!encounter.tradeAcceptedType && !encounter.tradeUsed) return [];
+
+            return [{
+                acceptedType: encounter.tradeAcceptedType || null,
+                offeredName: null,
+                used: Boolean(encounter.tradeUsed)
+            }];
+        }
+
+        return encounter.trades
+            .filter(trade => trade && typeof trade === 'object')
+            .map(trade => ({
+                acceptedType: trade.acceptedType || null,
+                offeredName: trade.offeredName || null,
+                used: Boolean(trade.used)
+            }));
     }
 
     function normalizeAttackEncounters(attackEncounters) {
@@ -836,6 +862,7 @@
         markEventUsed,
         markTrainerUsed,
         normalizeLocationSnapshot,
+        normalizeMartEncounters,
         rebuildActionDeckForActivePokemon,
         saveRunState,
         swapBenchPokemon

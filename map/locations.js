@@ -940,9 +940,13 @@
     }
 
     // --- Mart trade service (phase 46) --------------------------------------
-    // Both types are rolled once, when the encounter is created, and persist
-    // until the trade is used or the roll goes stale (see sanitizeMartEncounter
-    // in map/area.js).
+    // Each mart offers MART_TRADE_COUNT independent trades. An offer's wanted
+    // type AND the exact species it hands back are rolled once, when the
+    // encounter is created, and persist until that offer is used or its roll
+    // goes stale (see sanitizeMartTrades, called from map/area.js and
+    // map/mart.js).
+
+    const MART_TRADE_COUNT = 2;
 
     function getDistinctRecordTypes(records) {
         const types = new Set();
@@ -975,20 +979,89 @@
 
     /**
      * Uniform pick over obtainable species whose types include offeredType,
-     * excluding excludeName when possible (falls back to including it if
-     * it's the only match, since the pool is never empty on a valid roll).
+     * excluding `exclude` (a name or a list of names) when possible — falls
+     * back to including them if they are the only matches, since the pool is
+     * never empty on a valid roll.
      */
-    function chooseTradeResultRecord(gameData, offeredType, excludeName) {
+    function chooseTradeResultRecord(gameData, offeredType, exclude) {
+        const excluded = new Set((Array.isArray(exclude) ? exclude : [exclude]).filter(Boolean));
         const matching = getObtainablePokemonPool(gameData)
             .filter(record => getRecordTypes(record).includes(offeredType));
-        const withoutExcluded = matching.filter(record => record.name !== excludeName);
+        const withoutExcluded = matching.filter(record => !excluded.has(record.name));
         const candidates = withoutExcluded.length > 0 ? withoutExcluded : matching;
 
         return candidates.length > 0 ? randomPick(candidates) : null;
     }
 
+    /**
+     * Rolls one whole trade offer: the wanted type plus the exact species the
+     * mart hands back, so the player can see what they are trading for.
+     * excludeNames keeps an offer off the other offers' species (and off the
+     * species the run already owns) when the pool allows it.
+     * Returns null when the run has nothing tradeable.
+     */
+    function rollMartTrade(run, gameData, excludeNames) {
+        const types = rollMartTradeTypes(run, gameData);
+
+        if (!types) return null;
+
+        const owned = getRunPokemonRecords(run).map(record => record.name);
+        const exclude = [...(Array.isArray(excludeNames) ? excludeNames : []), ...owned];
+        const record = chooseTradeResultRecord(gameData, types.offeredType, exclude);
+
+        if (!record) return null;
+
+        return { acceptedType: types.acceptedType, offeredName: record.name };
+    }
+
+    function martTradeIsStale(trade, run, gameData) {
+        if (!trade || !trade.acceptedType || !trade.offeredName) return true;
+        if (!getRunPokemonRecords(run).some(record => getRecordTypes(record).includes(trade.acceptedType))) return true;
+        return !getObtainablePokemonPool(gameData).some(record => record.name === trade.offeredName);
+    }
+
+    /**
+     * Brings encounter.trades up to MART_TRADE_COUNT valid offers, re-rolling
+     * any that went stale: old saves missing the fields, the player no longer
+     * owning a pokemon of the wanted type, or the offered species having left
+     * the obtainable pool (data changed). Used offers are never touched, and
+     * re-rolls avoid the other offers' species. (Pre-array saves are migrated
+     * to a one-entry `trades` array by normalizeMartEncounters in
+     * map/run_state.js, so their offers land here as stale entries.)
+     * Returns whether anything changed.
+     */
+    function sanitizeMartTrades(encounter, run, gameData) {
+        const existing = Array.isArray(encounter.trades) ? encounter.trades : [];
+        const trades = [];
+        let changed = !Array.isArray(encounter.trades) || encounter.trades.length !== MART_TRADE_COUNT;
+
+        for (let index = 0; index < MART_TRADE_COUNT; index += 1) {
+            const trade = existing[index] || null;
+
+            if (trade && (trade.used || !martTradeIsStale(trade, run, gameData))) {
+                trades.push(trade);
+                continue;
+            }
+
+            const excludeNames = trades.map(other => other.offeredName).filter(Boolean);
+            const rolled = rollMartTrade(run, gameData, excludeNames);
+
+            trades.push({
+                acceptedType: rolled ? rolled.acceptedType : null,
+                offeredName: rolled ? rolled.offeredName : null,
+                used: Boolean(trade && trade.used)
+            });
+            changed = true;
+        }
+
+        encounter.trades = trades;
+
+        return changed;
+    }
+
     global.PokeLocations = {
         LEVEL_CONFIG,
+        MART_TRADE_COUNT,
         // Alias kept so callers that never load game data (Node tests, the
         // data editor's engine refs) still see the built-in decks.
         STARTER_DECKS: BUILTIN_STARTER_DECKS,
@@ -1022,7 +1095,9 @@
         isObtainablePokemon,
         isStarterDeckUnlocked,
         listAllPaths,
+        rollMartTrade,
         rollMartTradeTypes,
+        sanitizeMartTrades,
         runHasDragonGemPrereqs,
         runOwnsLegendaryPokemon
     };

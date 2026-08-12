@@ -260,6 +260,176 @@ test('chooseTradeResultRecord falls back to the excluded name when it is the onl
     }
 });
 
+test('chooseTradeResultRecord takes a list of excluded names', () => {
+    const gameData = fixtureTradeGameData();
+
+    for (let iteration = 0; iteration < 200; iteration += 1) {
+        assert.equal(P.chooseTradeResultRecord(gameData, 'WATER', ['Trade Water B']).name, 'Trade Water A');
+        // Excluding every match still yields one rather than nothing.
+        const exhausted = P.chooseTradeResultRecord(gameData, 'WATER', ['Trade Water A', 'Trade Water B']);
+        assert.ok(['Trade Water A', 'Trade Water B'].includes(exhausted.name));
+    }
+});
+
+// --- Two visible trade offers -----------------------------------------------
+// Three obtainable species per type, so a re-roll can always avoid both the
+// other offer's species and the one species the run owns of that type.
+
+function fixtureMultiTradeGameData() {
+    return {
+        pokemon: [
+            makePokemon('Multi Water A', '0311', ['WATER']),
+            makePokemon('Multi Water B', '0312', ['WATER']),
+            makePokemon('Multi Water C', '0313', ['WATER']),
+            makePokemon('Multi Grass A', '0314', ['GRASS']),
+            makePokemon('Multi Grass B', '0315', ['GRASS']),
+            makePokemon('Multi Grass C', '0316', ['GRASS'])
+        ]
+    };
+}
+
+function multiTradeRun(gameData) {
+    const run = emptyRun();
+    addPokemon(run, gameData.pokemon[0]);
+    addPokemon(run, gameData.pokemon[3], true);
+    return run;
+}
+
+test('rollMartTrade names an obtainable species and never one the run already owns', () => {
+    const gameData = fixtureMultiTradeGameData();
+    const run = multiTradeRun(gameData);
+    const obtainableNames = P.getObtainablePokemonPool(gameData).map(record => record.name);
+
+    for (let iteration = 0; iteration < 200; iteration += 1) {
+        const rolled = P.rollMartTrade(run, gameData, ['Multi Water B']);
+
+        assert.ok(rolled, 'expected a roll since the run owns pokemon');
+        assert.ok(['WATER', 'GRASS'].includes(rolled.acceptedType), `unexpected acceptedType: ${rolled.acceptedType}`);
+        assert.ok(obtainableNames.includes(rolled.offeredName), `unexpected offeredName: ${rolled.offeredName}`);
+        assert.ok(!['Multi Water A', 'Multi Grass A'].includes(rolled.offeredName), 'offered a species the run owns');
+        assert.notEqual(rolled.offeredName, 'Multi Water B', 'ignored excludeNames');
+    }
+});
+
+test('rollMartTrade returns null when the run owns no pokemon', () => {
+    assert.equal(P.rollMartTrade(emptyRun(), fixtureMultiTradeGameData(), []), null);
+});
+
+test('sanitizeMartTrades fills an encounter with MART_TRADE_COUNT distinct offers', () => {
+    const gameData = fixtureMultiTradeGameData();
+    const run = multiTradeRun(gameData);
+
+    for (let iteration = 0; iteration < 100; iteration += 1) {
+        const encounter = { trades: [] };
+        assert.equal(P.sanitizeMartTrades(encounter, run, gameData), true);
+        assert.equal(encounter.trades.length, P.MART_TRADE_COUNT);
+
+        const offeredNames = encounter.trades.map(trade => trade.offeredName);
+        assert.equal(new Set(offeredNames).size, offeredNames.length, `duplicate offers: ${offeredNames}`);
+        encounter.trades.forEach(trade => {
+            assert.ok(trade.acceptedType, 'offer without a wanted type');
+            assert.ok(trade.offeredName, 'offer without a named species');
+            assert.equal(trade.used, false);
+        });
+
+        // A valid list is left exactly as it is.
+        const before = JSON.stringify(encounter.trades);
+        assert.equal(P.sanitizeMartTrades(encounter, run, gameData), false);
+        assert.equal(JSON.stringify(encounter.trades), before);
+    }
+});
+
+test('sanitizeMartTrades never touches a used offer, even a stale one', () => {
+    const gameData = fixtureMultiTradeGameData();
+    const run = multiTradeRun(gameData);
+    const used = { acceptedType: 'FIRE', offeredName: 'Not A Species', used: true };
+    const encounter = { trades: [used] };
+
+    P.sanitizeMartTrades(encounter, run, gameData);
+
+    assert.equal(encounter.trades.length, P.MART_TRADE_COUNT);
+    assert.deepEqual(encounter.trades[0], { acceptedType: 'FIRE', offeredName: 'Not A Species', used: true });
+    assert.ok(encounter.trades[1].offeredName, 'the missing second offer should have been rolled');
+});
+
+test('sanitizeMartTrades re-rolls an offer whose wanted type the run no longer owns', () => {
+    const gameData = fixtureMultiTradeGameData();
+    const run = multiTradeRun(gameData);
+    const encounter = {
+        trades: [
+            { acceptedType: 'FIRE', offeredName: 'Multi Water B', used: false },
+            { acceptedType: 'WATER', offeredName: 'Multi Grass B', used: false }
+        ]
+    };
+
+    assert.equal(P.sanitizeMartTrades(encounter, run, gameData), true);
+    assert.ok(['WATER', 'GRASS'].includes(encounter.trades[0].acceptedType));
+    assert.ok(encounter.trades[0].offeredName);
+    assert.deepEqual(encounter.trades[1], { acceptedType: 'WATER', offeredName: 'Multi Grass B', used: false });
+});
+
+test('sanitizeMartTrades re-rolls an offer whose species left the obtainable pool', () => {
+    const gameData = fixtureMultiTradeGameData();
+    const run = multiTradeRun(gameData);
+    const encounter = {
+        trades: [
+            { acceptedType: 'WATER', offeredName: 'Retired Species', used: false },
+            { acceptedType: 'GRASS', offeredName: 'Multi Water C', used: false }
+        ]
+    };
+
+    assert.equal(P.sanitizeMartTrades(encounter, run, gameData), true);
+    assert.notEqual(encounter.trades[0].offeredName, 'Retired Species');
+    assert.ok(P.getObtainablePokemonPool(gameData).some(record => record.name === encounter.trades[0].offeredName));
+});
+
+test('normalizeMartEncounters migrates a pre-array trade, keeping its used flag', () => {
+    const normalized = R.normalizeMartEncounters({
+        'shop-1': { nodeId: 'shop-1', tradeAcceptedType: 'WATER', tradeOfferedType: 'GRASS', tradeUsed: true },
+        'shop-2': { nodeId: 'shop-2', tradeAcceptedType: 'FIRE', tradeOfferedType: 'WATER', tradeUsed: false },
+        'shop-3': { nodeId: 'shop-3' }
+    });
+
+    assert.deepEqual(normalized['shop-1'].trades, [{ acceptedType: 'WATER', offeredName: null, used: true }]);
+    assert.deepEqual(normalized['shop-2'].trades, [{ acceptedType: 'FIRE', offeredName: null, used: false }]);
+    assert.deepEqual(normalized['shop-3'].trades, []);
+    assert.equal('tradeAcceptedType' in normalized['shop-1'], false);
+    assert.equal('tradeUsed' in normalized['shop-1'], false);
+});
+
+test('normalizeMartEncounters keeps trade offers as { acceptedType, offeredName, used }', () => {
+    const normalized = R.normalizeMartEncounters({
+        'shop-1': {
+            nodeId: 'shop-1',
+            trades: [
+                { acceptedType: 'WATER', offeredName: 'Multi Grass A', used: true, stray: 'dropped' },
+                null,
+                { offeredName: 'Multi Water B' }
+            ]
+        }
+    });
+
+    assert.deepEqual(normalized['shop-1'].trades, [
+        { acceptedType: 'WATER', offeredName: 'Multi Grass A', used: true },
+        { acceptedType: null, offeredName: 'Multi Water B', used: false }
+    ]);
+});
+
+test('a used offer survives a save/load round-trip so the mart cannot re-roll it', () => {
+    const gameData = fixtureMultiTradeGameData();
+    const run = multiTradeRun(gameData);
+    const encounter = { nodeId: 'shop-1', trades: [] };
+
+    P.sanitizeMartTrades(encounter, run, gameData);
+    encounter.trades[0].used = true;
+    const takenName = encounter.trades[0].offeredName;
+
+    const reloaded = R.normalizeMartEncounters({ 'shop-1': encounter })['shop-1'];
+    assert.equal(P.sanitizeMartTrades(reloaded, run, gameData), false);
+    assert.equal(reloaded.trades[0].used, true);
+    assert.equal(reloaded.trades[0].offeredName, takenName);
+});
+
 test('a simulated trade keeps total pokemon count constant', () => {
     const gameData = fixtureTradeGameData();
     const [, , , waterA, waterB, grassA] = gameData.pokemon;
@@ -270,7 +440,8 @@ test('a simulated trade keeps total pokemon count constant', () => {
 
     const totalBefore = run.collections.pokemon.length + run.collections.bench.pokemon.length;
     const tradedAwayCard = run.collections.pokemon[0];
-    const resultRecord = P.chooseTradeResultRecord(gameData, 'GRASS', tradedAwayCard.pokemon.name);
+    // The mart now hands back the species named on the offer, looked up by name.
+    const resultRecord = P.findPokemonByNameOrId(gameData, 'Trade Grass A');
     assert.ok(resultRecord);
 
     run.collections.pokemon = run.collections.pokemon.filter(card => card.id !== tradedAwayCard.id);

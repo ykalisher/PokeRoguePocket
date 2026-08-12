@@ -116,7 +116,7 @@
         const serviceButton = event.target.closest('[data-mart-service]');
 
         if (serviceButton) {
-            handleMartService(serviceButton.dataset.martService);
+            handleMartService(serviceButton.dataset.martService, serviceButton.dataset.tradeIndex);
             return;
         }
 
@@ -211,13 +211,13 @@
         render();
     }
 
-    function handleMartService(service) {
+    function handleMartService(service, tradeIndex) {
         if (service === 'release') {
             releaseSelectedPokemon();
         } else if (service === 'remove-attack') {
             openAttackRemovalPicker();
         } else if (service === 'trade') {
-            tradeSelectedPokemon();
+            tradeSelectedPokemon(tradeIndex);
         }
     }
 
@@ -234,9 +234,9 @@
         runStore.balancePokemonCollections(state.run);
         runStore.rebuildActionDeckForActivePokemon(state.run);
         state.encounter.releaseUsed = true;
-        // Releasing can be the pokemon that made the trade's accepted type
-        // ownable — re-roll rather than leaving a permanently dead trade.
-        repairMartTradeTypes();
+        // Releasing can be the pokemon that made a trade's wanted type
+        // ownable — re-roll rather than leaving a permanently dead offer.
+        repairMartTrades();
         runStore.saveRunState(state.run);
         state.selectedPokemonId = null;
         setMessage(`Released ${selectedCard.pokemon.name}.`);
@@ -248,16 +248,13 @@
             getTotalPokemonCount() >= 4;
     }
 
-    function tradeSelectedPokemon() {
+    function tradeSelectedPokemon(index) {
         const selectedCard = getPokemonCardById(state.selectedPokemonId);
+        const trade = getTrade(index);
 
-        if (!canTradePokemon()) return;
+        if (!canTradePokemon(index)) return;
 
-        const resultRecord = locations.chooseTradeResultRecord(
-            arena.GameData,
-            state.encounter.tradeOfferedType,
-            selectedCard.pokemon.name
-        );
+        const resultRecord = locations.findPokemonByNameOrId(arena.GameData, trade.offeredName);
 
         if (!resultRecord) return;
 
@@ -275,43 +272,37 @@
         runStore.addPokemonCard(state.run, newCard);
         runStore.balancePokemonCollections(state.run);
         runStore.rebuildActionDeckForActivePokemon(state.run);
-        state.encounter.tradeUsed = true;
+        trade.used = true;
+        // The traded-away pokemon may have been the only one matching the
+        // other offer's wanted type — re-roll rather than leaving it dead.
+        repairMartTrades();
         runStore.saveRunState(state.run);
         state.selectedPokemonId = null;
         setMessage(`Traded ${selectedCard.pokemon.name} for ${resultRecord.name}.`);
     }
 
-    function canTradePokemon() {
-        const selectedCard = getPokemonCardById(state.selectedPokemonId);
-
-        return Boolean(selectedCard) &&
-            !state.encounter.tradeUsed &&
-            Boolean(state.encounter.tradeAcceptedType) &&
-            getRecordTypes(selectedCard.pokemon).includes(state.encounter.tradeAcceptedType);
+    function getTrades() {
+        return Array.isArray(state.encounter.trades) ? state.encounter.trades : [];
     }
 
-    /**
-     * Re-rolls the mart's trade types when stale (mirrors
-     * map/area.js sanitizeMartTradeTypes): missing fields, the player no
-     * longer owning a pokemon of tradeAcceptedType, or the offered type's
-     * obtainable pool having gone empty. No-op once used.
-     */
-    function repairMartTradeTypes() {
-        if (state.encounter.tradeUsed) return false;
+    function getTrade(index) {
+        return getTrades()[Number(index)] || null;
+    }
 
-        const allPokemon = [...state.run.collections.pokemon, ...state.run.collections.bench.pokemon];
-        const stillValid = Boolean(state.encounter.tradeAcceptedType) &&
-            Boolean(state.encounter.tradeOfferedType) &&
-            allPokemon.some(card => getRecordTypes(card.pokemon).includes(state.encounter.tradeAcceptedType)) &&
-            locations.getObtainablePokemonPool(arena.GameData)
-                .some(record => getRecordTypes(record).includes(state.encounter.tradeOfferedType));
+    function canTradePokemon(index) {
+        const selectedCard = getPokemonCardById(state.selectedPokemonId);
+        const trade = getTrade(index);
 
-        if (stillValid) return false;
+        return Boolean(selectedCard) &&
+            Boolean(trade) &&
+            !trade.used &&
+            Boolean(trade.acceptedType) &&
+            Boolean(trade.offeredName) &&
+            getRecordTypes(selectedCard.pokemon).includes(trade.acceptedType);
+    }
 
-        const rolled = locations.rollMartTradeTypes(state.run, arena.GameData);
-        state.encounter.tradeAcceptedType = rolled ? rolled.acceptedType : null;
-        state.encounter.tradeOfferedType = rolled ? rolled.offeredType : null;
-        return true;
+    function repairMartTrades() {
+        return locations.sanitizeMartTrades(state.encounter, state.run, arena.GameData);
     }
 
     function getTotalPokemonCount() {
@@ -471,7 +462,7 @@
                 <div class="mart-service-list">
                     ${renderReleaseService()}
                     ${renderAttackRemovalService()}
-                    ${renderTradeService()}
+                    ${getTrades().map(renderTradeService).join('')}
                 </div>
                 <section class="mart-pokemon-deck" aria-label="Pokemon deck">
                     <header class="mart-mini-header">
@@ -526,30 +517,40 @@
         `;
     }
 
-    function renderTradeService() {
-        const used = Boolean(state.encounter.tradeUsed);
-        const acceptedType = state.encounter.tradeAcceptedType;
-        const offeredType = state.encounter.tradeOfferedType;
-        const canTrade = canTradePokemon();
+    function renderTradeService(trade, index) {
+        const used = Boolean(trade.used);
+        const acceptedType = trade.acceptedType;
+        const offeredRecord = trade.offeredName
+            ? locations.findPokemonByNameOrId(arena.GameData, trade.offeredName)
+            : null;
+        const offeredName = offeredRecord ? offeredRecord.name : null;
+        const canTrade = canTradePokemon(index);
         const disabled = used || !canTrade ? 'disabled' : '';
         const buttonText = used ? 'Used' : 'Trade';
         const helperText = used
-            ? `Traded for a ${offeredType}-type Pokemon.`
-            : !acceptedType || !offeredType
+            ? `Traded for ${offeredName || 'a Pokemon'}.`
+            : !acceptedType || !offeredName
                 ? 'No trade available.'
                 : !state.selectedPokemonId
-                    ? `Select a ${acceptedType}-type Pokemon to trade.`
+                    ? `Select a ${acceptedType}-type Pokemon to trade for ${offeredName}.`
                     : !canTrade
                         ? `Selected Pokemon must be ${acceptedType}-type.`
-                        : `Trade for a random ${offeredType}-type Pokemon.`;
+                        : `Trade your Pokemon for ${offeredName}.`;
+        const preview = offeredRecord
+            ? arena.Render.renderCardPreview(
+                runStore.createPokemonCard(offeredRecord, 'player', `mart-trade-${index}-${formatId(offeredRecord.name)}`),
+                { className: 'mart-trade-card' }
+            )
+            : '';
 
         return `
-            <article class="mart-service-row ${used ? 'is-used' : ''}">
+            <article class="mart-service-row mart-trade-row ${used ? 'is-used' : ''}">
+                ${preview}
                 <div class="mart-service-info">
-                    <h3>Trade: Wanted ${acceptedType || '?'} -&gt; Offered ${offeredType || '?'}</h3>
+                    <h3>Trade ${acceptedType || '?'}&nbsp;&rarr; ${offeredName || '?'}</h3>
                     <span class="mart-service-requirement">${helperText}</span>
                 </div>
-                <button class="mart-service-button" type="button" data-mart-service="trade" ${disabled}>${buttonText}</button>
+                <button class="mart-service-button" type="button" data-mart-service="trade" data-trade-index="${index}" ${disabled}>${buttonText}</button>
             </article>
         `;
     }
@@ -669,7 +670,7 @@
         const itemNames = repairOfferNames('items', state.encounter.itemNames, ITEM_COUNT);
         const namesChanged = didNameListChange(state.encounter.attackNames, attackNames) ||
             didNameListChange(state.encounter.itemNames, itemNames);
-        const tradeChanged = repairMartTradeTypes();
+        const tradeChanged = repairMartTrades();
 
         state.encounter.attackNames = attackNames;
         state.encounter.itemNames = itemNames;

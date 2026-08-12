@@ -146,7 +146,7 @@ def force_mart_encounter(page):
                 boughtItemNames: [],
                 attackRemovalUsed: false,
                 releaseUsed: false,
-                tradeUsed: false,
+                trades: [],
                 statsRecorded: false
             }
         };

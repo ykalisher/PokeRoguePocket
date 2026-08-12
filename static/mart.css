@@ -358,6 +358,16 @@
     flex-shrink: 0;
 }
 
+/* Trade rows carry a preview of the pokemon on offer, so the info block
+   takes the slack between the card and the button. */
+.mart-trade-row .mart-service-info {
+    flex: 1 1 auto;
+}
+
+.mart-trade-card {
+    flex-shrink: 0;
+}
+
 .mart-pokemon-grid,
 .mart-attack-picker-grid {
     min-width: 0;
@@ -380,7 +390,8 @@
 }
 
 .mart-pokemon-choice .playing-card,
-.mart-attack-choice .playing-card {
+.mart-attack-choice .playing-card,
+.playing-card.mart-trade-card {
     /* Re-scope the card tokens so the interior (portrait, name, stats)
        shrinks with the mini card instead of overflowing into overlap. */
     --card-w: 72px;
@@ -393,19 +404,23 @@
 
 /* Compact interior text for the 72px picker cards. */
 .mart-pokemon-choice .card-portrait,
-.mart-attack-choice .card-portrait {
+.mart-attack-choice .card-portrait,
+.mart-trade-card .card-portrait {
     width: calc(var(--card-w) * 0.58);
 }
 
 .mart-pokemon-choice .card-name,
-.mart-attack-choice .card-name {
+.mart-attack-choice .card-name,
+.mart-trade-card .card-name {
     font-size: 0.5rem;
 }
 
 .mart-pokemon-choice .health-row,
 .mart-pokemon-choice .stat-grid,
 .mart-attack-choice .health-row,
-.mart-attack-choice .stat-grid {
+.mart-attack-choice .stat-grid,
+.mart-trade-card .health-row,
+.mart-trade-card .stat-grid {
     font-size: 0.46rem;
 }
 
@@ -469,5 +484,15 @@
     .mart-offer-grid {
         grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
         gap: 10px;
+    }
+
+    /* Card + text + button share one narrow row, so shrink the preview. */
+    .playing-card.mart-trade-card {
+        --card-w: 58px;
+    }
+
+    .mart-trade-row {
+        gap: 8px;
+        padding: 8px 10px;
     }
 }
