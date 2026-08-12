@@ -475,7 +475,12 @@
             name: record.name,
             statChanges: rawStatChanges.filter(change => statChangeTypes.includes(change)),
             status: [...rawStatuses, ...rawStatChanges.filter(change => !statChangeTypes.includes(change))],
-            target: record.target
+            target: record.target,
+            // Vitamins (Protein/Iron/Carbos): a permanent, per-instance boost
+            // applied the moment the item is received. Absent on every other
+            // item, and arena.Model.isVitaminItem keys off vitaminStat.
+            vitaminAmount: record.vitaminAmount,
+            vitaminStat: record.vitaminStat
         };
     }
 

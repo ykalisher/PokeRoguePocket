@@ -1523,7 +1523,8 @@
                 attack: 0,
                 defense: 0,
                 speed: 0
-            }
+            },
+            vitamins: []
         };
     }
 

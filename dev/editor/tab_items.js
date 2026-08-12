@@ -17,6 +17,11 @@
     const escapeHtml = EditorListView.escapeHtml;
     const escapeAttr = EditorListView.escapeAttr;
 
+    // Mirrors STAT_LABELS in arena/arena_model.js and VITAMIN_STATS in
+    // dev/editor/validate.js — the stats a vitamin item may permanently raise.
+    const VITAMIN_STATS = ['attack', 'defense', 'speed'];
+    const DEFAULT_VITAMIN_AMOUNT = 5;
+
     function enumOptions(map) {
         return Object.values(map).sort().map((value) => ({ value, label: value }));
     }
@@ -57,6 +62,14 @@
                 key: 'statChanges',
                 label: 'Stat changes',
                 render: (record) => escapeHtml(Array.isArray(record.statChanges) ? record.statChanges.join(', ') : '')
+            },
+            {
+                key: 'vitamin',
+                label: 'Vitamin',
+                render: (record) => (VITAMIN_STATS.includes(record.vitaminStat)
+                    ? escapeHtml(`+${record.vitaminAmount == null ? DEFAULT_VITAMIN_AMOUNT : record.vitaminAmount} ${record.vitaminStat}`)
+                    : ''),
+                sortValue: (record) => record.vitaminStat || ''
             }
         ];
     }
@@ -145,6 +158,14 @@
                     ${chipListHtml('statChanges', statChanges, statChangeValues(), statusSet)}
                 </label>
             </div>
+            <div class="editor-form-row">
+                <label>Vitamin stat${selectHtml('vitaminStat', draft.vitaminStat || '', ['', ...VITAMIN_STATS])}</label>
+                ${draft.vitaminStat ? `
+                    <label>Vitamin dose
+                        <input type="number" name="vitaminAmount" min="1" step="1" value="${escapeAttr(String(draft.vitaminAmount == null ? DEFAULT_VITAMIN_AMOUNT : draft.vitaminAmount))}">
+                    </label>
+                ` : '<p class="editor-muted">Set a vitamin stat to turn this into a Protein-style item: consumed on receipt, permanently raising one stat of one Pokemon. Ordinary battle items leave it blank.</p>'}
+            </div>
         `;
     }
 
@@ -171,6 +192,32 @@
 
             const field = target.name;
             if (!field) return;
+
+            // Clearing the vitamin stat drops both keys rather than leaving an
+            // empty string behind: their absence is what marks an ordinary
+            // battle item, and validate.js errors on a dose without a stat.
+            if (field === 'vitaminStat') {
+                if (target.value) {
+                    draft.vitaminStat = target.value;
+                    if (draft.vitaminAmount == null) draft.vitaminAmount = DEFAULT_VITAMIN_AMOUNT;
+                } else {
+                    delete draft.vitaminStat;
+                    delete draft.vitaminAmount;
+                }
+                paint();
+                api.markDirty();
+                api.refreshPreview();
+                return;
+            }
+
+            if (field === 'vitaminAmount') {
+                const amount = Number(target.value);
+
+                draft.vitaminAmount = Number.isFinite(amount) ? amount : DEFAULT_VITAMIN_AMOUNT;
+                api.markDirty();
+                api.refreshPreview();
+                return;
+            }
 
             draft[field] = target.value;
             if (field === 'target') paint();

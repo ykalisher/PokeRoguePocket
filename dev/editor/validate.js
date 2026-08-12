@@ -25,9 +25,18 @@
         'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card', 'gain-random-baby',
         'lose-random-cards', 'lose-random-pokemon', 'remove-selected-card',
         'duplicate-selected-card', 'duplicate-random-card', 'replace-selected-card',
-        'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon'
+        'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon',
+        'boost-selected-pokemon'
     ];
     const DEFAULT_EVENT_TYPES = ['gift', 'choice', 'trainer'];
+
+    // Mirrors STAT_LABELS in arena/arena_model.js — the stats a vitamin item
+    // may permanently raise.
+    const VITAMIN_STATS = ['attack', 'defense', 'speed'];
+
+    function isVitaminRecord(record) {
+        return Boolean(record) && VITAMIN_STATS.includes(record.vitaminStat);
+    }
 
     // Mirrors MUSIC_CATEGORIES in arena/arena_data.js (the vocabulary the
     // engine actually accepts when normalizing music.json).
@@ -301,6 +310,20 @@
                     issues.push(err('items.json', key, 'items.bad-stat-change', `${key}: bad statChange ${change}`, 'statChanges'));
                 }
             });
+
+            // Vitamins (Protein/Iron/Carbos) carry a permanent flat boost
+            // applied on receipt. vitaminStat is the marker the engine keys off
+            // (arena.Model.isVitaminItem), so a typo here silently turns the
+            // item back into an ordinary battle card.
+            if (record.vitaminStat != null && !VITAMIN_STATS.includes(record.vitaminStat)) {
+                issues.push(err('items.json', key, 'items.bad-vitamin-stat', `${key}: bad vitaminStat ${record.vitaminStat} (expected ${VITAMIN_STATS.join('/')})`, 'vitaminStat'));
+            }
+            if (record.vitaminAmount != null && !(Number.isFinite(record.vitaminAmount) && record.vitaminAmount > 0)) {
+                issues.push(err('items.json', key, 'items.bad-vitamin-amount', `${key}: vitaminAmount must be a positive number`, 'vitaminAmount'));
+            }
+            if (record.vitaminAmount != null && record.vitaminStat == null) {
+                issues.push(err('items.json', key, 'items.vitamin-amount-without-stat', `${key}: vitaminAmount set without vitaminStat`, 'vitaminStat'));
+            }
         });
 
         return issues;
@@ -477,6 +500,22 @@
                 }
                 if (effect.locationTypes !== undefined && effect.type !== 'gain-random-card' && effect.type !== 'gain-random-baby') {
                     issues.push(warn('events.json', key, 'events.effect-location-types-unused', `${key}: locationTypes is not read by ${effect.type}`, 'effects'));
+                }
+                if (effect.type === 'boost-selected-pokemon') {
+                    const vitaminNames = (cardNames && cardNames.vitamin) || new Set();
+
+                    if (!effect.item) {
+                        issues.push(err('events.json', key, 'events.missing-effect-item', `${key}: boost-selected-pokemon needs an item`, 'effects'));
+                    } else if (!vitaminNames.has(effect.item)) {
+                        issues.push(err('events.json', key, 'events.unknown-effect-vitamin', `${key}: ${effect.item} is not a vitamin item (needs vitaminStat in items.json)`, 'effects'));
+                    }
+                }
+                // A vitamin is consumed on receipt and never becomes a deck
+                // card, so handing one out as a card would mint a dead card the
+                // player can never use. boost-selected-pokemon is the way.
+                if (effect.type === 'gain-card' && effect.cardKind === 'item' && effect.name &&
+                    cardNames && cardNames.vitamin && cardNames.vitamin.has(effect.name)) {
+                    issues.push(err('events.json', key, 'events.vitamin-granted-as-card', `${key}: ${effect.name} is a vitamin — use boost-selected-pokemon, not gain-card`, 'effects'));
                 }
             });
 
@@ -1054,6 +1093,7 @@
         const pokemonNames = new Set(pokemon.map((record) => record.name));
         const attackNames = new Set(attacks.map((record) => record.name));
         const itemNames = new Set(items.map((record) => record.name));
+        const vitaminNames = new Set(items.filter(isVitaminRecord).map((record) => record.name));
         const trainerNames = new Set(trainers.map((record) => record.name));
         const achievementIds = new Set((data.achievements || []).map((record) => record && record.id).filter(Boolean));
         const eventGrantedPokemon = new Set(
@@ -1068,7 +1108,7 @@
             ...validateAttacks(attacks, enums),
             ...validateItems(items, enums),
             ...validateTrainers(trainers, pokemonNames, attackNames, itemNames, enums),
-            ...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames }, achievementIds),
+            ...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames, vitamin: vitaminNames }, achievementIds),
             ...validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums, achievementIds),
             ...validateLocations(locations, enums, starterDecks),
             ...validateAchievements(achievements, enums, events, starterDecks),

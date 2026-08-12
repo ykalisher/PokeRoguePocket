@@ -1812,6 +1812,45 @@ button.playing-card:focus-visible {
     object-fit: contain;
 }
 
+/* Permanent vitamin tokens sitting under the Pokemon name. One per vitamin
+   given to this specific card, so the row grows across a run — it wraps rather
+   than widening the card, and stays narrower than the status tokens so a
+   well-fed Pokemon still fits the tiny mobile card column. */
+.vitamin-token-row {
+    grid-column: 1 / -1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1px;
+    margin-top: 1px;
+    pointer-events: none;
+}
+
+.vitamin-token {
+    width: clamp(10px, 1vw, 14px);
+    height: clamp(10px, 1vw, 14px);
+    display: grid;
+    place-items: center;
+    padding: 1px;
+    border-radius: 999px;
+    border: 1px solid rgba(37, 27, 24, 0.62);
+    background-color: rgba(252, 248, 238, 0.97);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Per-stat tints, matching the vitamin icon colours. */
+.vitamin-token--attack { background-color: #ffd0c4; border-color: #b3441e; }
+.vitamin-token--defense { background-color: #cfe0f7; border-color: #3c5a8f; }
+.vitamin-token--speed { background-color: #ffeea8; border-color: #a8830f; }
+
+.vitamin-token img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
 /* Pokemon health percentage and bar row. */
 .health-row {
     display: grid;
@@ -2084,6 +2123,25 @@ button.playing-card:focus-visible {
 .action-stat-change {
     gap: 2px;
     padding: 1px 2px;
+}
+
+/* Vitamin badge on item cards. Flat permanent points, not stage steps, so it
+   reads as a plain number instead of the arrow group next to it. */
+.action-vitamin-badge {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 1px 3px;
+    border: 1px solid rgba(37, 27, 24, 0.24);
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.46);
+    color: rgba(37, 27, 24, 0.78);
+    font-size: 0.38rem;
+    font-weight: 900;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 /* Stat abbreviation in stat-change badges. */

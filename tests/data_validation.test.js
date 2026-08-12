@@ -139,6 +139,40 @@ test('items.json entries are well-formed', () => {
                 `${record.name}: bad statChange ${change}`
             );
         });
+
+        // Vitamins carry a permanent flat boost applied the moment the item is
+        // received. vitaminStat is the marker arena.Model.isVitaminItem keys
+        // off, so a typo silently turns the item back into a battle card.
+        if (record.vitaminStat !== undefined) {
+            assert.ok(VITAMIN_STATS.has(record.vitaminStat), `${record.name}: bad vitaminStat ${record.vitaminStat}`);
+        }
+        if (record.vitaminAmount !== undefined) {
+            assert.ok(record.vitaminStat !== undefined, `${record.name}: vitaminAmount set without vitaminStat`);
+            assert.ok(
+                Number.isFinite(record.vitaminAmount) && record.vitaminAmount > 0,
+                `${record.name}: vitaminAmount must be a positive number`
+            );
+        }
+    });
+});
+
+test('vitamins are never handed out as deck cards', () => {
+    assert.ok(VITAMIN_NAMES.size > 0, 'expected at least one vitamin item to guard');
+
+    starterDecks.forEach(deck => {
+        (Array.isArray(deck.items) ? deck.items : []).forEach(entry => {
+            const name = entry && entry.name;
+
+            assert.ok(!VITAMIN_NAMES.has(name),
+                `${deck.id}: ${name} is a vitamin — it is consumed on receipt and cannot be a deck card`);
+        });
+    });
+
+    trainers.forEach(trainer => {
+        (Array.isArray(trainer.items) ? trainer.items : []).forEach(name => {
+            assert.ok(!VITAMIN_NAMES.has(name),
+                `${trainer.name}: ${name} is a vitamin — it has no battle effect`);
+        });
     });
 });
 
@@ -218,10 +252,17 @@ const VALID_EFFECT_TYPES = new Set([
     'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card', 'gain-random-baby',
     'lose-random-cards', 'lose-random-pokemon', 'remove-selected-card',
     'duplicate-selected-card', 'duplicate-random-card', 'replace-selected-card',
-    'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon'
+    'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon',
+    'boost-selected-pokemon'
 ]);
 
 const VALID_EVENT_TYPES = new Set(['gift', 'choice', 'trainer']);
+
+// Mirrors STAT_LABELS in arena/arena_model.js — the stats a vitamin may raise.
+const VITAMIN_STATS = new Set(['attack', 'defense', 'speed']);
+const VITAMIN_NAMES = new Set(
+    items.filter(record => VITAMIN_STATS.has(record.vitaminStat)).map(record => record.name)
+);
 
 function collectEventEffects(event) {
     const effects = [];
@@ -332,6 +373,20 @@ test('events.json entries are well-formed', () => {
                 effect.replacement.types.forEach(type => {
                     assert.ok(VALID_TYPES.has(type), `${event.id}: bad replacement type filter ${type}`);
                 });
+            }
+
+            if (effect.type === 'boost-selected-pokemon') {
+                assert.ok(effect.item, `${event.id}: boost-selected-pokemon needs an item`);
+                assert.ok(VITAMIN_NAMES.has(effect.item),
+                    `${event.id}: ${effect.item} is not a vitamin item (needs vitaminStat in items.json)`);
+            }
+
+            // A vitamin is consumed on receipt and never becomes a deck card,
+            // so granting one as a card would mint a card the player can never
+            // use. boost-selected-pokemon is the only way to hand one out.
+            if (effect.type === 'gain-card' && effect.cardKind === 'item') {
+                assert.ok(!VITAMIN_NAMES.has(effect.name),
+                    `${event.id}: ${effect.name} is a vitamin — use boost-selected-pokemon, not gain-card`);
             }
 
             if (effect.locationTypes !== undefined) {

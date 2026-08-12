@@ -161,6 +161,11 @@
             return;
         }
 
+        if (arena.Model.isVitaminItem(record)) {
+            buyVitamin(record, cost);
+            return;
+        }
+
         const card = kind === 'attack'
             ? runStore.createAttackCard(record, 'player', runStore.allocateCardId(state.run, 'attack', record.name))
             : runStore.createItemCard(record, 'player', runStore.allocateCardId(state.run, 'item', record.name));
@@ -172,6 +177,30 @@
         setMessage(result.zone === 'bench'
             ? `Bought ${record.name}. It went to the bench.`
             : `Bought ${record.name}.`);
+    }
+
+    /**
+     * A vitamin is consumed the instant it is bought, so it never becomes a
+     * deck card — it needs a target Pokemon first. The mart already keeps a
+     * selection for its release/trade services, so buying reuses that instead
+     * of introducing a second picker.
+     */
+    function buyVitamin(record, cost) {
+        const selectedCard = getPokemonCardById(state.selectedPokemonId);
+
+        if (!selectedCard) {
+            setMessage(`Select a Pokemon below to give ${record.name} to.`);
+            return;
+        }
+
+        const applied = arena.Model.applyVitaminToCard(selectedCard, record);
+
+        if (!applied) return;
+
+        state.run.cash = getCash() - cost;
+        getBoughtNames('item').push(record.name);
+        runStore.saveRunState(state.run);
+        setMessage(`${selectedCard.pokemon.name} gained +${applied.amount} ${applied.label} from ${applied.name}.`);
     }
 
     function selectPokemon(cardId) {
@@ -409,8 +438,14 @@
         const card = createOfferCard(kind, record);
         const bought = offerIsBought(kind, record.name);
         const canAfford = getCash() >= cost;
-        const disabled = bought || !canAfford ? 'disabled' : '';
-        const buttonText = bought ? 'Sold' : canAfford ? `Buy ${cost}` : `Need ${cost}`;
+        // A vitamin is spent on a Pokemon the moment it is bought, so the
+        // button stays disabled until one is selected in the services panel.
+        const needsTarget = arena.Model.isVitaminItem(record) && !getPokemonCardById(state.selectedPokemonId);
+        const disabled = bought || !canAfford || needsTarget ? 'disabled' : '';
+        const buttonText = bought ? 'Sold'
+            : !canAfford ? `Need ${cost}`
+            : needsTarget ? 'Pick Pokemon'
+            : `Buy ${cost}`;
 
         return `
             <article class="mart-offer-card ${bought ? 'is-sold' : ''}">

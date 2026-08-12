@@ -1517,5 +1517,68 @@
         ]
       }
     ]
+  },
+  {
+    "type": "gift",
+    "title": "The Nutritionist",
+    "id": "vitamin-protein",
+    "body": "A trainer in a lab coat waves you over to a folding table stacked with supplements. \"Free sample! One shake of this and your Pokémon will hit like a truck. Well — one of them will. Pick carefully.\"",
+    "buttonText": "Take the Protein",
+    "effects": [
+      { "type": "boost-selected-pokemon", "selectionId": "target", "item": "Protein" }
+    ],
+    "enabled": true,
+    "kicker": "Protein",
+    "actionTitle": "Who drinks it?",
+    "requires": [
+      {
+        "id": "target",
+        "cardKind": "pokemon",
+        "label": "Choose a Pokemon",
+        "prompt": "Permanently +5 Attack."
+      }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "The Nutritionist",
+    "id": "vitamin-iron",
+    "body": "The same lab coat, a different folding table. \"You again! Try the Iron this time — builds a Pokémon that simply refuses to go down. Only enough for one, mind you.\"",
+    "buttonText": "Take the Iron",
+    "effects": [
+      { "type": "boost-selected-pokemon", "selectionId": "target", "item": "Iron" }
+    ],
+    "enabled": true,
+    "kicker": "Iron",
+    "actionTitle": "Who takes it?",
+    "requires": [
+      {
+        "id": "target",
+        "cardKind": "pokemon",
+        "label": "Choose a Pokemon",
+        "prompt": "Permanently +5 Defense."
+      }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "The Nutritionist",
+    "id": "vitamin-carbos",
+    "body": "The folding table has been moved somewhere new, and so has the lab coat. \"Carbos today. Quickest Pokémon in the region drink this. One dose, one Pokémon — your call.\"",
+    "buttonText": "Take the Carbos",
+    "effects": [
+      { "type": "boost-selected-pokemon", "selectionId": "target", "item": "Carbos" }
+    ],
+    "enabled": true,
+    "kicker": "Carbos",
+    "actionTitle": "Who takes it?",
+    "requires": [
+      {
+        "id": "target",
+        "cardKind": "pokemon",
+        "label": "Choose a Pokemon",
+        "prompt": "Permanently +5 Speed."
+      }
+    ]
   }
 ]

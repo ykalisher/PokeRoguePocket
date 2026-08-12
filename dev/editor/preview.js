@@ -66,7 +66,11 @@
             name: record.name,
             statChanges: rawStatChanges.filter((change) => statChangeTypes.includes(change)),
             status: [...rawStatuses, ...rawStatChanges.filter((change) => !statChangeTypes.includes(change))],
-            target: record.target
+            target: record.target,
+            // Mirrors normalizeItem() in arena/arena_data.js: without these the
+            // live preview would drop a vitamin's permanent-boost badge.
+            vitaminAmount: record.vitaminAmount,
+            vitaminStat: record.vitaminStat
         };
     }
 

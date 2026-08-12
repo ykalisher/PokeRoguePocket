@@ -265,7 +265,8 @@
                 attack: 0,
                 defense: 0,
                 speed: 0
-            }
+            },
+            vitamins: []
         };
     }
 
@@ -287,6 +288,23 @@
             kind: 'item',
             owner
         };
+    }
+
+    /**
+     * arena_model owns the vitamin vocabulary; run_state reaches it lazily so
+     * script load order never matters. The fallback still copies the list
+     * rather than dropping it, so a boost can never be lost to a missing model.
+     */
+    function copyPokemonVitamins(card) {
+        const model = global.CardArena && global.CardArena.Model;
+
+        if (model && typeof model.copyPokemonVitamins === 'function') {
+            return model.copyPokemonVitamins(card);
+        }
+
+        return Array.isArray(card && card.vitamins)
+            ? card.vitamins.map(vitamin => ({ ...vitamin }))
+            : [];
     }
 
     function allocateCardId(run, kind, name) {
@@ -431,6 +449,10 @@
             if (!megaRecord || !run.collections.pokemon[index]) return;
 
             const megaCard = createPokemonCard(megaRecord, 'player', allocateCardId(run, 'pokemon', megaRecord.name));
+
+            // Vitamins are an investment in this Pokemon, not in its current
+            // form, so they follow it through the evolution.
+            megaCard.vitamins = copyPokemonVitamins(babyCard);
 
             run.collections.pokemon[index] = megaCard;
             summary.push({
@@ -796,6 +818,7 @@
         applyMegaEvolutions,
         balancePokemonCollections,
         clearRunState,
+        copyPokemonVitamins,
         createAttackCard,
         createItemCard,
         createPokemonCard,

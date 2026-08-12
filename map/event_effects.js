@@ -459,6 +459,8 @@
                 return tradeSelectedPokemon(run, runStore, gameData, effect.selectionId, selections, effect.replacement || {});
             case 'trade-random-pokemon':
                 return tradeRandomPokemon(run, runStore, gameData, effect.replacement || {});
+            case 'boost-selected-pokemon':
+                return boostSelectedPokemon(run, gameData, effect.selectionId, selections, effect.item);
             default:
                 return [];
         }
@@ -576,6 +578,30 @@
         return removedName ? [`Lost ${removedName}.`] : [];
     }
 
+    /**
+     * Vitamins are consumed the moment they are received, so the event grants
+     * the boost directly instead of handing over an item card. The Pokemon is
+     * picked through the ordinary `requires` grid, which already offers every
+     * Pokemon the run owns, active and bench.
+     */
+    function boostSelectedPokemon(run, gameData, selectionId, selections, itemName) {
+        const model = getArenaModel();
+        const selectedCard = getSelectedCard(run, selectionId, selections);
+        const item = findRecord(gameData, 'item', itemName);
+
+        if (!model || !selectedCard || !item) return [];
+
+        const applied = model.applyVitaminToCard(selectedCard, item);
+
+        if (!applied) return [];
+
+        return [`${getCardName(selectedCard)} gained +${applied.amount} ${applied.label} from ${applied.name}.`];
+    }
+
+    function getArenaModel() {
+        return global.CardArena && global.CardArena.Model ? global.CardArena.Model : null;
+    }
+
     function duplicateSelectedCard(run, runStore, selectionId, selections) {
         const selectedCard = getSelectedCard(run, selectionId, selections);
 
@@ -605,13 +631,13 @@
         return summarizeNames('Duplicated', duplicatedNames);
     }
 
-    function replaceSelectedCard(run, runStore, gameData, selectionId, selections, replacement) {
+    function replaceSelectedCard(run, runStore, gameData, selectionId, selections, replacement, options) {
         const entry = getSelectedCardEntry(run, selectionId, selections);
 
         if (!entry) return [];
 
         const sourceKind = getCardKind(entry.card);
-        const replacementCard = createReplacementCard(run, runStore, gameData, sourceKind, entry.card, replacement);
+        const replacementCard = createReplacementCard(run, runStore, gameData, sourceKind, entry.card, replacement, options);
 
         if (!replacementCard) return [];
 
@@ -622,12 +648,12 @@
         return [`Replaced ${removedName} with ${getCardName(replacementCard)}.`];
     }
 
-    function replaceRandomCards(run, runStore, gameData, cardKind, count, replacement) {
+    function replaceRandomCards(run, runStore, gameData, cardKind, count, replacement, options) {
         const entries = shuffleRecords(getCardsByKind(run, cardKind)).slice(0, count);
         const summary = [];
 
         entries.forEach(entry => {
-            const replacementCard = createReplacementCard(run, runStore, gameData, cardKind, entry.card, replacement);
+            const replacementCard = createReplacementCard(run, runStore, gameData, cardKind, entry.card, replacement, options);
 
             if (!replacementCard) return;
 
@@ -641,27 +667,43 @@
         return summary;
     }
 
+    // Trades hand the Pokemon away and get a different one back, so the
+    // vitamins spent on it are gone with it — otherwise a trade would be a way
+    // to launder every vitamin you own onto a better species. Mega stones use
+    // the plain replace-* path above, which keeps them.
     function tradeSelectedPokemon(run, runStore, gameData, selectionId, selections, replacement) {
         return replaceSelectedCard(run, runStore, gameData, selectionId, selections, {
             ...replacement,
             cardKind: 'pokemon'
-        });
+        }, { carryVitamins: false });
     }
 
     function tradeRandomPokemon(run, runStore, gameData, replacement) {
         return replaceRandomCards(run, runStore, gameData, 'pokemon', 1, {
             ...replacement,
             cardKind: 'pokemon'
-        });
+        }, { carryVitamins: false });
     }
 
-    function createReplacementCard(run, runStore, gameData, sourceKind, sourceCard, replacement) {
+    function createReplacementCard(run, runStore, gameData, sourceKind, sourceCard, replacement, options) {
         const cardKind = normalizeCardKind(replacement.cardKind || replacement.kind || sourceKind);
         const record = replacement.name
             ? findRecord(gameData, cardKind, replacement.name)
             : chooseGrantRecord(run, gameData, cardKind, getCardName(sourceCard), replacement);
+        const replacementCard = record ? createCardsFromRecord(run, runStore, cardKind, record, 1)[0] : null;
 
-        return record ? createCardsFromRecord(run, runStore, cardKind, record, 1)[0] : null;
+        if (!replacementCard) return null;
+
+        // Mega evolution runs through here (the mega-stone gift events use
+        // replace-selected-card), and a Protein spent on Blastoise has to still
+        // be there on Mega Blastoise. Pokemon -> Pokemon only.
+        const carryVitamins = !options || options.carryVitamins !== false;
+
+        if (carryVitamins && getCardKind(sourceCard) === 'pokemon' && cardKind === 'pokemon') {
+            replacementCard.vitamins = copyVitamins(runStore, sourceCard);
+        }
+
+        return replacementCard;
     }
 
     function createCardsFromRecord(run, runStore, cardKind, record, count) {
@@ -684,15 +726,30 @@
         return cards;
     }
 
+    function copyVitamins(runStore, card) {
+        if (runStore && typeof runStore.copyPokemonVitamins === 'function') {
+            return runStore.copyPokemonVitamins(card);
+        }
+
+        return Array.isArray(card && card.vitamins)
+            ? card.vitamins.map(vitamin => ({ ...vitamin }))
+            : [];
+    }
+
     function createCardFromSource(run, runStore, sourceCard) {
         if (!sourceCard || !runStore) return null;
 
         if (sourceCard.kind === 'pokemon' || sourceCard.pokemon) {
-            return runStore.createPokemonCard(
+            const duplicatedCard = runStore.createPokemonCard(
                 sourceCard.pokemon,
                 'player',
                 runStore.allocateCardId(run, 'pokemon', getCardName(sourceCard))
             );
+
+            // Owner decision: a duplicate is a full copy, vitamins included.
+            duplicatedCard.vitamins = copyVitamins(runStore, sourceCard);
+
+            return duplicatedCard;
         }
 
         if (sourceCard.kind === 'attack' || sourceCard.attack) {
@@ -865,7 +922,7 @@
         // because this module has no hard dependency on map/locations.js.
         const obtainableRecords = cardKind === 'pokemon' && global.PokeLocations && typeof global.PokeLocations.isObtainablePokemon === 'function'
             ? records.filter(record => global.PokeLocations.isObtainablePokemon(record, gameData))
-            : records;
+            : records.filter(record => cardKind !== 'item' || !isVitaminRecord(record));
         const filteredRecords = excludeName
             ? obtainableRecords.filter(record => getRecordName(record) !== excludeName)
             : obtainableRecords;
@@ -882,6 +939,15 @@
         if (choices.length === 0) return null;
 
         return choices[randomInt(0, choices.length - 1)];
+    }
+
+    // Vitamins are consumed on receipt and never become deck cards, so a random
+    // item grant must never roll one — it would mint a dead, unplayable card.
+    // They are handed out by boost-selected-pokemon and the mart instead.
+    function isVitaminRecord(record) {
+        const model = getArenaModel();
+
+        return model ? model.isVitaminItem(record) : Boolean(record && record.vitaminStat);
     }
 
     function recordMatchesTypes(record, typeSet) {

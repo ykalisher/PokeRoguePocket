@@ -91,10 +91,10 @@
         [5, '3.5x'],
         [6, '4x']
     ]);
-    const BASE_STAT_KEYS = Object.freeze({
-        attack: 'baseAttack',
-        defense: 'baseDefense',
-        speed: 'baseSpeed'
+    const STAT_TITLES = Object.freeze({
+        attack: 'Attack',
+        defense: 'Defense',
+        speed: 'Speed'
     });
     const CARD_BACK_PATHS = Object.freeze({
         deck: 'assets/card-backs/ACTION_CARD_BACK.png',
@@ -554,6 +554,7 @@
                     ${renderStatusTokens(card)}
                     <div class="type-row">${renderTypeIcons(species.types, 'type-row', options)}</div>
                     <span class="card-name">${species.name}</span>
+                    ${renderVitaminTokens(card)}
                 </div>
             </div>
             <div class="health-row" aria-label="${healthPercent}% health">
@@ -588,6 +589,33 @@
     }
 
     /**
+     * One token per vitamin administered, in the order they were given, sitting
+     * under the card name. Unlike status tokens these never expire — they are a
+     * permanent record of what the player spent on this specific card.
+     */
+    function renderVitaminTokens(card) {
+        const vitamins = arena.Model.getPokemonVitamins(card);
+
+        if (vitamins.length === 0) return '';
+
+        const labels = vitamins.map(vitamin => formatVitaminLabel(vitamin));
+
+        return `
+            <div class="vitamin-token-row" aria-label="Vitamins: ${labels.join(', ')}">
+                ${vitamins.map((vitamin, index) => `
+                    <span class="vitamin-token vitamin-token--${vitamin.stat}" title="${labels[index]}">
+                        <img src="${vitamin.imagePath}" alt="${labels[index]}">
+                    </span>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function formatVitaminLabel(vitamin) {
+        return `${vitamin.name} (+${vitamin.amount} ${STAT_TITLES[vitamin.stat]})`;
+    }
+
+    /**
      * Renders one effective stat cell. The number is the true stat after every
      * multiplier; the color says what moved it. A status touching this stat wins
      * over the stage color, and its direction comes from the multiplier — a
@@ -602,15 +630,10 @@
             defense: 'D',
             speed: 'S'
         };
-        const titles = {
-            attack: 'Attack',
-            defense: 'Defense',
-            speed: 'Speed'
-        };
         const stage = arena.Model.getPokemonStatStage(card, stat);
         const statusMultiplier = arena.Model.getPokemonStatusMultiplier(card, stat);
         const modifierClass = getStatCellModifierClass(stage, statusMultiplier);
-        const title = getStatCellTitle(card, stat, titles[stat], stage, statusMultiplier);
+        const title = getStatCellTitle(card, stat, STAT_TITLES[stat], stage, statusMultiplier);
 
         return `<span class="stat-cell${modifierClass}" title="${title}">${labels[stat]} ${arena.Model.getPokemonEffectiveStat(card, stat)}</span>`;
     }
@@ -643,7 +666,7 @@
 
         if (parts.length === 0) return label;
 
-        const baseStat = Number(card.pokemon[BASE_STAT_KEYS[stat]]) || 0;
+        const baseStat = arena.Model.getPokemonBaseStat(card, stat);
 
         return `${label} ${baseStat} → ${arena.Model.getPokemonEffectiveStat(card, stat)} (${parts.join(', ')})`;
     }
@@ -709,9 +732,30 @@
         if (statusIcons) parts.push(statusIcons);
         if (statChanges) parts.push(statChanges);
 
+        const vitaminBadge = renderVitaminBadge(card);
+
+        if (vitaminBadge) parts.push(vitaminBadge);
+
         if (parts.length === 0) return '';
 
         return `<div class="action-card-effects">${parts.join('')}</div>`;
+    }
+
+    /**
+     * A vitamin's permanent boost, shown on the item card in the mart. Unlike
+     * statChanges these are flat points, not stage steps, so they get a plain
+     * numeric badge rather than arrows.
+     */
+    function renderVitaminBadge(card) {
+        const item = arena.Model.isItemCard(card) ? card.item : null;
+
+        if (!arena.Model.isVitaminItem(item)) return '';
+
+        const shortLabels = { attack: 'ATK', defense: 'DEF', speed: 'SPD' };
+        const amount = arena.Model.getVitaminAmount(item);
+        const label = `Permanently +${amount} ${STAT_TITLES[item.vitaminStat]}`;
+
+        return `<span class="action-vitamin-badge" title="${label}" aria-label="${label}">+${amount} ${shortLabels[item.vitaminStat]}</span>`;
     }
 
     function renderActionStatusIcons(statuses) {

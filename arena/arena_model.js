@@ -49,6 +49,7 @@
     });
     const NORMAL_STAT_CHANGE_LIMIT = 1;
     const HUMAN_STAT_CHANGE_MULTIPLIER = 2;
+    const DEFAULT_VITAMIN_AMOUNT = 5;
     const FIGHTING_STATUS_ATTACK_MULTIPLIER = 1.5;
     const STAT_LABELS = Object.freeze({
         attack: { baseKey: 'baseAttack', label: 'Attack', shortLabel: 'ATK' },
@@ -645,7 +646,16 @@
                 const speciesName = card && card.pokemon ? card.pokemon.name : card && card.name;
                 const species = findRecordByName(pokemonRecords, speciesName) || (card && card.pokemon);
 
-                return species ? createPokemonCard(species, playerId, `${prefix}-PKM-${index + 1}`) : null;
+                if (!species) return null;
+
+                const battleCard = createPokemonCard(species, playerId, `${prefix}-PKM-${index + 1}`);
+
+                // The run card is discarded here and the deck is shuffled right
+                // after, so per-instance state has to be carried across now —
+                // there is no way to re-pair run roster with battle deck later.
+                battleCard.vitamins = copyPokemonVitamins(card);
+
+                return battleCard;
             })
             .filter(Boolean);
     }
@@ -783,7 +793,8 @@
             kind: 'pokemon',
             owner,
             pokemon,
-            statStages: createDefaultStatStages()
+            statStages: createDefaultStatStages(),
+            vitamins: []
         };
     }
 
@@ -1517,6 +1528,88 @@
         return STAT_STAGE_MULTIPLIERS[getPokemonStatStage(card, stat)] || 1;
     }
 
+    // --- Vitamins: permanent, per-instance stat boosts ----------------------
+    // Protein/Iron/Carbos permanently raise one stat of ONE roster card for the
+    // rest of the run. The boost lives on the CARD, never on card.pokemon: that
+    // species record is shared by every card of the species — including the
+    // rival's — so mutating it would boost both of your Blastoise and the
+    // opponent's too. Each entry is self-contained (stat, amount, icon) so
+    // render and damage math never need a gameData lookup, and it survives both
+    // localStorage round-trips untouched.
+
+    function isVitaminItem(item) {
+        return Boolean(item) && Boolean(STAT_LABELS[item.vitaminStat]);
+    }
+
+    function getVitaminAmount(item) {
+        const amount = Number(item && item.vitaminAmount);
+
+        return Number.isFinite(amount) && amount > 0 ? amount : DEFAULT_VITAMIN_AMOUNT;
+    }
+
+    function getPokemonVitamins(card) {
+        if (!isPokemonCard(card) || !Array.isArray(card.vitamins)) return [];
+
+        return card.vitamins.filter(vitamin => vitamin && STAT_LABELS[vitamin.stat]);
+    }
+
+    function getPokemonStatBoost(card, stat) {
+        if (!STAT_LABELS[stat]) return 0;
+
+        return getPokemonVitamins(card).reduce((total, vitamin) => {
+            const amount = Number(vitamin.amount);
+
+            return vitamin.stat === stat && Number.isFinite(amount) ? total + amount : total;
+        }, 0);
+    }
+
+    /**
+     * Appends one vitamin to a card. The only writer of card.vitamins — every
+     * other site (mega evolution, duplication, battle deck construction) copies
+     * an existing list rather than building entries of its own.
+     */
+    function applyVitaminToCard(card, item) {
+        if (!isPokemonCard(card) || !isVitaminItem(item)) return null;
+
+        const stat = item.vitaminStat;
+        const amount = getVitaminAmount(item);
+
+        if (!Array.isArray(card.vitamins)) {
+            card.vitamins = [];
+        }
+
+        card.vitamins.push({
+            amount,
+            imagePath: item.imagePath || '',
+            name: item.name,
+            stat
+        });
+
+        return { amount, label: STAT_LABELS[stat].label, name: item.name, stat };
+    }
+
+    /**
+     * Fresh copies for the seams that destroy and rebuild a Pokemon card. The
+     * array and its entries are never shared between two cards, so boosting one
+     * Blastoise can never leak into another.
+     */
+    function copyPokemonVitamins(card) {
+        return getPokemonVitamins(card).map(vitamin => ({ ...vitamin }));
+    }
+
+    /**
+     * The card's base stat including permanent vitamin boosts, before stage and
+     * status multipliers. Single source of truth for "what is this card's base
+     * stat" — render, damage math, and speed ordering all route through it.
+     */
+    function getPokemonBaseStat(card, stat) {
+        if (!isPokemonCard(card) || !STAT_LABELS[stat]) return 0;
+
+        const baseStat = Number(card.pokemon[STAT_LABELS[stat].baseKey]) || 0;
+
+        return Math.max(1, baseStat + getPokemonStatBoost(card, stat));
+    }
+
     /**
      * Returns the displayed/effective battle stat after stage, status, and type
      * multipliers. Used by render, damage math, and speed ordering.
@@ -1524,8 +1617,7 @@
     function getPokemonEffectiveStat(card, stat) {
         if (!isPokemonCard(card) || !STAT_LABELS[stat]) return 0;
 
-        const baseStat = Number(card.pokemon[STAT_LABELS[stat].baseKey]) || 0;
-        const stagedStat = baseStat * getPokemonStatMultiplier(card, stat);
+        const stagedStat = getPokemonBaseStat(card, stat) * getPokemonStatMultiplier(card, stat);
 
         return Math.max(1, Math.round(stagedStat * getPokemonStatusMultiplier(card, stat)));
     }
@@ -1970,9 +2062,16 @@
         isEffectBoostItemCard,
         getEffectiveKnockoutLimit,
         getHealthPercent,
+        getPokemonBaseStat,
         getPokemonEffectiveStat,
+        getPokemonStatBoost,
         getPokemonStatMultiplier,
         getPokemonStatStage,
+        getPokemonVitamins,
+        getVitaminAmount,
+        applyVitaminToCard,
+        copyPokemonVitamins,
+        isVitaminItem,
         getPokemonSpeed,
         getStatChangesForPokemon,
         getPokemonStatusEntry,

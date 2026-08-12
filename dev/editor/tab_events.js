@@ -39,7 +39,8 @@
 
     const SELECTION_EFFECT_TYPES = [
         'remove-selected-card', 'duplicate-selected-card',
-        'replace-selected-card', 'trade-selected-pokemon'
+        'replace-selected-card', 'trade-selected-pokemon',
+        'boost-selected-pokemon'
     ];
 
     // Which fields each effect type shows. 'replacement' = full replacement
@@ -59,7 +60,8 @@
         'replace-selected-card': ['selectionId', 'replacement'],
         'replace-random-card': ['cardKind', 'count', 'replacement'],
         'trade-selected-pokemon': ['selectionId', 'replacementPokemon'],
-        'trade-random-pokemon': ['replacementPokemon']
+        'trade-random-pokemon': ['replacementPokemon'],
+        'boost-selected-pokemon': ['selectionId', 'vitaminItem']
     };
 
     // ------------------------------------------------------------- enums
@@ -371,6 +373,7 @@
             case 'replace-random-card': return `Replace ${getCount(effect)} random ${kind} → ${replName}`;
             case 'trade-selected-pokemon': return `Trade selected Pokemon → ${replName}`;
             case 'trade-random-pokemon': return `Trade a random Pokemon → ${replName}`;
+            case 'boost-selected-pokemon': return `Give ${effect.item || '(no vitamin)'} to selected Pokemon${effect.selectionId ? ` (${effect.selectionId})` : ''}`;
             case 'gain-random-baby': return `Gain a random baby Pokemon${effect.locationTypes === true ? ' (this area\'s types)' : ''}`;
             default: return effect.type || '(unknown effect)';
         }
@@ -712,6 +715,8 @@
                 return `<label>Type filter${effectTypesChipsHtml(effect, index, owner)}</label>`;
             case 'locationTypes':
                 return `<label class="editor-form-checkbox"><input type="checkbox" data-scope="eff-location-types" ${base}${effect.locationTypes ? ' checked' : ''}> Match this location's types</label>`;
+            case 'vitaminItem':
+                return `<label>Vitamin<input type="text" list="${datalistForStore('items')}" data-scope="eff" ${base} data-field="item" value="${escapeAttr(effect.item || '')}" placeholder="Protein">${unknownBadge('items', effect.item)}</label>`;
             case 'selectionId':
                 return selectionSelectHtml(effect, index, action);
             case 'replacement':

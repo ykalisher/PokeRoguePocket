@@ -267,6 +267,73 @@ test('items: bad target', () => {
     assert.ok(hasCode(issues, 'items.bad-target'));
 });
 
+test('items: bad vitaminStat', () => {
+    const data = withItems((items) => { items[0].vitaminStat = 'luck'; });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'items.bad-vitamin-stat'));
+});
+
+test('items: non-positive vitaminAmount', () => {
+    const data = withItems((items) => {
+        items[0].vitaminStat = 'attack';
+        items[0].vitaminAmount = 0;
+    });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'items.bad-vitamin-amount'));
+});
+
+test('items: vitaminAmount without vitaminStat', () => {
+    const data = withItems((items) => {
+        delete items[0].vitaminStat;
+        items[0].vitaminAmount = 5;
+    });
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'items.vitamin-amount-without-stat'));
+});
+
+test('events: boost-selected-pokemon naming a non-vitamin item', () => {
+    const nonVitamin = pick(live.data.items, (item) => !item.vitaminStat, 'an ordinary battle item');
+    const data = structuredClone(live.data);
+
+    data.events.push({
+        type: 'gift', id: 'vitamin-validation-fixture', title: 'Fixture', body: 'Fixture',
+        enabled: true,
+        requires: [{ id: 'target', cardKind: 'pokemon' }],
+        effects: [{ type: 'boost-selected-pokemon', selectionId: 'target', item: nonVitamin.name }]
+    });
+
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.unknown-effect-vitamin'));
+});
+
+test('events: boost-selected-pokemon with no item', () => {
+    const data = structuredClone(live.data);
+
+    data.events.push({
+        type: 'gift', id: 'vitamin-validation-fixture-2', title: 'Fixture', body: 'Fixture',
+        enabled: true,
+        requires: [{ id: 'target', cardKind: 'pokemon' }],
+        effects: [{ type: 'boost-selected-pokemon', selectionId: 'target' }]
+    });
+
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.missing-effect-item'));
+});
+
+test('events: a vitamin handed out as a deck card', () => {
+    const vitamin = pick(live.data.items, (item) => Boolean(item.vitaminStat), 'a vitamin item');
+    const data = structuredClone(live.data);
+
+    data.events.push({
+        type: 'gift', id: 'vitamin-validation-fixture-3', title: 'Fixture', body: 'Fixture',
+        enabled: true,
+        effects: [{ type: 'gain-card', cardKind: 'item', count: 1, name: vitamin.name }]
+    });
+
+    const issues = validateAll(data, { enums: live.enums });
+    assert.ok(hasCode(issues, 'events.vitamin-granted-as-card'));
+});
+
 test('trainers: unknown pokemon name', () => {
     const data = withTrainers((trainers) => { trainers[0].pokemon.push('Not A Real Pokemon'); });
     const issues = validateAll(data, { enums: live.enums });

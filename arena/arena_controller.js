@@ -2489,17 +2489,11 @@
         return Math.max(1, Math.round(getPokemonBaseStat(pokemonCard, stat) * getBattleStatMultiplier(pokemonCard, stat)));
     }
 
+    // Delegates so permanent vitamin boosts land in the damage math too. ICE
+    // attacks call this directly (attackUsesBaseStatsOnly), bypassing
+    // getPokemonEffectiveStat, so the boost has to be inside the base stat.
     function getPokemonBaseStat(pokemonCard, stat) {
-        const baseStatKeys = {
-            attack: 'baseAttack',
-            defense: 'baseDefense',
-            speed: 'baseSpeed'
-        };
-        const baseStatKey = baseStatKeys[stat];
-
-        if (!model.isPokemonCard(pokemonCard) || !baseStatKey) return 0;
-
-        return Math.max(1, Number(pokemonCard.pokemon[baseStatKey]) || 0);
+        return model.getPokemonBaseStat(pokemonCard, stat);
     }
 
     function getDamageVarianceMultiplier() {

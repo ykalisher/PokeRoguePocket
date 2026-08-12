@@ -60,7 +60,8 @@ const EFFECT_TYPES = [
     'gain-cash', 'lose-cash', 'gain-card', 'gain-random-card', 'gain-random-baby',
     'lose-random-cards', 'lose-random-pokemon', 'remove-selected-card',
     'duplicate-selected-card', 'duplicate-random-card', 'replace-selected-card',
-    'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon'
+    'replace-random-card', 'trade-selected-pokemon', 'trade-random-pokemon',
+    'boost-selected-pokemon'
 ];
 const EVENT_TYPES = ['gift', 'choice', 'trainer'];
 const EXTENSIONS = {

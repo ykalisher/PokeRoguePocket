@@ -125,5 +125,32 @@
       "HEAL"
     ],
     "statChanges": []
+  },
+  {
+    "name": "Protein",
+    "target": "ALLY",
+    "status": [],
+    "statChanges": [],
+    "imagePath": "assets/items/PROTEIN.svg",
+    "vitaminStat": "attack",
+    "vitaminAmount": 5
+  },
+  {
+    "name": "Iron",
+    "target": "ALLY",
+    "status": [],
+    "statChanges": [],
+    "imagePath": "assets/items/IRON.svg",
+    "vitaminStat": "defense",
+    "vitaminAmount": 5
+  },
+  {
+    "name": "Carbos",
+    "target": "ALLY",
+    "status": [],
+    "statChanges": [],
+    "imagePath": "assets/items/CARBOS.svg",
+    "vitaminStat": "speed",
+    "vitaminAmount": 5
   }
 ]
