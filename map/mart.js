@@ -683,7 +683,7 @@
     function repairOfferNames(collectionKey, names, count) {
         const availableNames = new Set(
             getUniqueGameRecords(collectionKey)
-                .filter(record => locations.isMartOfferAllowed(record, collectionKey, state.run))
+                .filter(record => locations.isMartOfferRetained(record, collectionKey, state.run))
                 .map(record => record.name)
         );
         const seenNames = new Set();

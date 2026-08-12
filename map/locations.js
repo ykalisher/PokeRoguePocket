@@ -886,7 +886,8 @@
     }
 
     // --- Mart stock eligibility (phase 43) ---------------------------------
-    // No LEGENDARY-typed attack in stock without an owned LEGENDARY pokemon;
+    // Every attack in stock shares at least one type with an owned pokemon;
+    // no LEGENDARY-typed attack in stock without an owned LEGENDARY pokemon;
     // no dragon-gem item in stock without both a DRAGON attack and a DRAGON
     // pokemon owned. "Owned" = active or bench.
 
@@ -924,11 +925,41 @@
     }
 
     /**
-     * Whether a candidate record may appear in mart stock for the given
-     * collection. Evaluated at encounter creation/repair time only — gaining
-     * a legendary/dragon prereq later does not retro-upgrade existing stock.
+     * Keeps the attack shelf relevant: an attack only stocks if some owned
+     * pokemon shares one of its types. Attacks marked full_type_requirements
+     * still stock on a single shared type, so stock is "worth buying", not
+     * strictly "usable right now". A typeless attack fits anything, and a run
+     * with no pokemon at all matches everything so the shelf is never empty.
+     */
+    function runHasTypeMatchForAttack(attack, run) {
+        const attackTypes = getRecordTypes(attack);
+        if (attackTypes.length === 0) return true;
+
+        const pokemonRecords = getRunPokemonRecords(run);
+        if (pokemonRecords.length === 0) return true;
+
+        return pokemonRecords.some(record => getRecordTypes(record).some(type => attackTypes.includes(type)));
+    }
+
+    /**
+     * Whether a candidate record may be drawn into fresh mart stock. Evaluated
+     * at encounter creation/refill time only — gaining a legendary/dragon
+     * prereq later does not retro-upgrade existing stock.
      */
     function isMartOfferAllowed(record, collectionKey, run) {
+        if (!isMartOfferRetained(record, collectionKey, run)) return false;
+        if (collectionKey === 'attacks') return runHasTypeMatchForAttack(record, run);
+
+        return true;
+    }
+
+    /**
+     * Whether an offer already on the shelf may stay there. The attack type
+     * filter is deliberately absent: attack stock is rolled once, when the
+     * player walks into the mart, so using the trade service mid-visit cannot
+     * swap attacks out from under them.
+     */
+    function isMartOfferRetained(record, collectionKey, run) {
         if (!record) return false;
         if (collectionKey === 'attacks') {
             return !(getRecordTypes(record).includes('LEGENDARY') && !runOwnsLegendaryPokemon(run));
@@ -1091,6 +1122,7 @@
         isBabyPokemon,
         isEventOnlyPokemon,
         isMartOfferAllowed,
+        isMartOfferRetained,
         isMegaPokemon,
         isObtainablePokemon,
         isStarterDeckUnlocked,

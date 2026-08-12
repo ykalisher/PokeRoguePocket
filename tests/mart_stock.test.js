@@ -40,6 +40,35 @@ function typesOf(record) {
 function itemIsDragonGem(item) {
     return Boolean(item && Array.isArray(item.status) && item.status.includes('DRAGON_GEM'));
 }
+function sharesType(recordA, recordB) {
+    const typesB = typesOf(recordB);
+    return typesOf(recordA).some(type => typesB.includes(type));
+}
+// The stock rule, restated from the run's side: an attack belongs on the shelf
+// when some owned pokemon (active or bench) shares one of its types.
+function attackMatchesRunTypes(attack, run) {
+    const owned = [...run.collections.pokemon, ...run.collections.bench.pokemon].map(card => card.pokemon);
+    return owned.some(record => sharesType(attack, record));
+}
+function expectedLegalAttacks(gameData, run) {
+    return gameData.attacks.filter(attack => (
+        attackMatchesRunTypes(attack, run) &&
+        !(typesOf(attack).includes('LEGENDARY') && !run.collections.pokemon
+            .concat(run.collections.bench.pokemon)
+            .some(card => typesOf(card.pokemon).includes('LEGENDARY')))
+    ));
+}
+// A pokemon whose types some ungated attack shares, so type-filtered stock is
+// never empty in the fixtures below.
+function pickPlainPokemon(gameData) {
+    return pick(
+        gameData.pokemon,
+        p => P.isObtainablePokemon(p, gameData) &&
+            !typesOf(p).includes('DRAGON') &&
+            gameData.attacks.some(a => !typesOf(a).includes('LEGENDARY') && sharesType(a, p)),
+        'an obtainable non-dragon pokemon with at least one matching ungated attack'
+    );
+}
 // Draw mimics the shuffle-and-slice used by chooseMartCardNames/chooseOfferNames,
 // filtered through isMartOfferAllowed exactly as the real draw paths do.
 function drawNames(records, collectionKey, run, count) {
@@ -51,14 +80,32 @@ function drawNames(records, collectionKey, run, count) {
     }
     return shuffled.slice(0, count).map(record => record.name);
 }
+// Repair mimics sanitizeMartCardNames/repairOfferNames: keep the offers that
+// are still retained, top the shelf back up with a fresh draw.
+function repairNames(records, collectionKey, run, names, count) {
+    const retained = new Set(
+        records.filter(record => P.isMartOfferRetained(record, collectionKey, run)).map(record => record.name)
+    );
+    const kept = names.filter(name => retained.has(name));
+    if (kept.length >= count) return kept;
+
+    const refill = drawNames(records, collectionKey, run, count)
+        .filter(name => !kept.includes(name))
+        .slice(0, count - kept.length);
+    return [...kept, ...refill];
+}
 
 test('isMartOfferAllowed: legendary attacks require an owned legendary pokemon', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
     const legendaryAttack = pick(gameData.attacks, a => typesOf(a).includes('LEGENDARY'), 'a legendary attack');
-    const normalAttack = pick(gameData.attacks, a => !typesOf(a).includes('LEGENDARY') && !typesOf(a).includes('DRAGON'), 'an ungated attack');
     const legendaryPokemon = pick(gameData.pokemon, p => typesOf(p).includes('LEGENDARY'), 'a legendary pokemon');
-    const plainPokemon = pick(gameData.pokemon, p => P.isObtainablePokemon(p, gameData) && !typesOf(p).includes('DRAGON'), 'a plain obtainable non-dragon pokemon');
+    const plainPokemon = pickPlainPokemon(gameData);
+    const normalAttack = pick(
+        gameData.attacks,
+        a => !typesOf(a).includes('LEGENDARY') && sharesType(a, plainPokemon),
+        'an ungated attack matching the plain pokemon'
+    );
 
     const runWithoutLegendary = emptyRun();
     addPokemon(runWithoutLegendary, plainPokemon);
@@ -79,7 +126,7 @@ test('isMartOfferAllowed: dragon-gem items require both a DRAGON attack and a DR
     const normalItem = pick(gameData.items, i => !itemIsDragonGem(i), 'a non-gem item');
     const dragonAttack = pick(gameData.attacks, a => typesOf(a).includes('DRAGON'), 'a dragon attack');
     const dragonPokemon = pick(gameData.pokemon, p => typesOf(p).includes('DRAGON'), 'a dragon pokemon');
-    const plainPokemon = pick(gameData.pokemon, p => P.isObtainablePokemon(p, gameData) && !typesOf(p).includes('DRAGON'), 'a plain obtainable non-dragon pokemon');
+    const plainPokemon = pickPlainPokemon(gameData);
     const plainAttack = pick(gameData.attacks, a => !typesOf(a).includes('LEGENDARY') && !typesOf(a).includes('DRAGON'), 'an ungated attack');
 
     const noPrereqsRun = emptyRun();
@@ -117,27 +164,99 @@ test('filtered pools drop exactly the gated cards for an ineligible run', async 
     await loadRealGameData();
     const gameData = arena.GameData;
     const run = emptyRun();
-    addPokemon(run, pick(gameData.pokemon, p => P.isObtainablePokemon(p, gameData) && !typesOf(p).includes('DRAGON'), 'a plain obtainable non-dragon pokemon'));
+    addPokemon(run, pickPlainPokemon(gameData));
     addAttack(run, pick(gameData.attacks, a => !typesOf(a).includes('LEGENDARY') && !typesOf(a).includes('DRAGON'), 'an ungated attack'));
 
     const legalAttacks = gameData.attacks.filter(record => P.isMartOfferAllowed(record, 'attacks', run));
     const legalItems = gameData.items.filter(record => P.isMartOfferAllowed(record, 'items', run));
-    const legendaryAttackCount = gameData.attacks.filter(a => typesOf(a).includes('LEGENDARY')).length;
     const gemItemCount = gameData.items.filter(itemIsDragonGem).length;
-    assert.equal(legalAttacks.length, gameData.attacks.length - legendaryAttackCount);
+    assert.deepEqual(legalAttacks.map(a => a.name), expectedLegalAttacks(gameData, run).map(a => a.name));
     assert.equal(legalItems.length, gameData.items.length - gemItemCount);
-    assert.ok(legendaryAttackCount > 0 && gemItemCount > 0, 'gated cards must exist so the filter is meaningful');
+    assert.ok(gemItemCount > 0, 'gated items must exist so the filter is meaningful');
+    assert.ok(
+        gameData.attacks.some(a => typesOf(a).includes('LEGENDARY')) &&
+        gameData.attacks.some(a => !attackMatchesRunTypes(a, run)),
+        'gated and off-type attacks must exist so the filter is meaningful'
+    );
     assert.ok(legalAttacks.length > 0 && legalItems.length > 0, 'filtered pools must stay non-empty');
+});
+
+test('every stocked attack shares a type with an owned pokemon, active or benched', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const run = emptyRun();
+    const activePokemon = pickPlainPokemon(gameData);
+    const benchPokemon = pick(
+        gameData.pokemon,
+        p => P.isObtainablePokemon(p, gameData) && !sharesType(p, activePokemon),
+        'an obtainable pokemon sharing no type with the active one'
+    );
+    addPokemon(run, activePokemon);
+    addPokemon(run, benchPokemon, true);
+
+    const legalAttacks = gameData.attacks.filter(record => P.isMartOfferAllowed(record, 'attacks', run));
+    assert.ok(legalAttacks.length > 0, 'the shelf must not be empty');
+    legalAttacks.forEach(attack => {
+        assert.ok(
+            sharesType(attack, activePokemon) || sharesType(attack, benchPokemon),
+            `${attack.name} shares no type with either owned pokemon`
+        );
+    });
+    // The bench pokemon really does widen the shelf, so bench membership counts.
+    assert.ok(
+        legalAttacks.some(attack => !sharesType(attack, activePokemon) && sharesType(attack, benchPokemon)),
+        'expected at least one attack stocked only because of the benched pokemon'
+    );
+});
+
+test('a mid-visit trade never swaps out attacks already on the shelf', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const run = emptyRun();
+    const tradedAway = pickPlainPokemon(gameData);
+    const tradedFor = pick(
+        gameData.pokemon,
+        p => P.isObtainablePokemon(p, gameData) && !sharesType(p, tradedAway),
+        'an obtainable pokemon sharing no type with the traded-away one'
+    );
+    const tradedAwayCard = addPokemon(run, tradedAway);
+
+    const stock = drawNames(gameData.attacks, 'attacks', run, 8);
+    assert.ok(stock.length > 0, 'the shelf must not be empty before the trade');
+
+    // The trade service hands the old pokemon over and puts the new one in.
+    run.collections.pokemon = run.collections.pokemon.filter(card => card.id !== tradedAwayCard.id);
+    addPokemon(run, tradedFor);
+    assert.ok(
+        stock.some(name => !attackMatchesRunTypes(gameData.attacks.find(a => a.name === name), run)),
+        'the trade must have stranded at least one stocked attack for this test to mean anything'
+    );
+
+    assert.deepEqual(repairNames(gameData.attacks, 'attacks', run, stock, 8), stock);
+});
+
+test('a run with no pokemon yet is not type-filtered, so the shelf is never empty', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const run = emptyRun();
+    const legalAttacks = gameData.attacks.filter(record => P.isMartOfferAllowed(record, 'attacks', run));
+
+    assert.deepEqual(
+        legalAttacks.map(a => a.name),
+        gameData.attacks.filter(a => !typesOf(a).includes('LEGENDARY')).map(a => a.name)
+    );
 });
 
 test('filtered draw never surfaces a forbidden name for an ineligible run, over 200 draws', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
     const run = emptyRun();
-    addPokemon(run, pick(gameData.pokemon, p => P.isObtainablePokemon(p, gameData) && !typesOf(p).includes('DRAGON'), 'a plain obtainable non-dragon pokemon'));
+    const ownedPokemon = pickPlainPokemon(gameData);
+    addPokemon(run, ownedPokemon);
     addAttack(run, pick(gameData.attacks, a => !typesOf(a).includes('LEGENDARY') && !typesOf(a).includes('DRAGON'), 'an ungated attack'));
 
     const forbiddenAttack = pick(gameData.attacks, a => typesOf(a).includes('LEGENDARY'), 'a legendary attack').name;
+    const offTypeAttack = pick(gameData.attacks, a => !sharesType(a, ownedPokemon), 'an attack sharing no type with the owned pokemon').name;
     const forbiddenItem = pick(gameData.items, itemIsDragonGem, 'a dragon-gem item').name;
 
     for (let iteration = 0; iteration < 200; iteration += 1) {
@@ -145,10 +264,12 @@ test('filtered draw never surfaces a forbidden name for an ineligible run, over 
         const itemNames = drawNames(gameData.items, 'items', run, 4);
 
         assert.ok(!attackNames.includes(forbiddenAttack), 'legendary attack leaked into an ineligible draw');
+        assert.ok(!attackNames.includes(offTypeAttack), 'off-type attack leaked into a draw');
         assert.ok(!itemNames.includes(forbiddenItem), 'dragon-gem item leaked into an ineligible draw');
         attackNames.forEach(name => {
             const record = gameData.attacks.find(entry => entry.name === name);
             assert.equal(P.isMartOfferAllowed(record, 'attacks', run), true, `${name} should be allowed`);
+            assert.ok(sharesType(record, ownedPokemon), `${name} shares no type with the owned pokemon`);
         });
         itemNames.forEach(name => {
             const record = gameData.items.find(entry => entry.name === name);
@@ -157,7 +278,7 @@ test('filtered draw never surfaces a forbidden name for an ineligible run, over 
     }
 });
 
-test('eligible runs can still draw the full range, including legendary attacks and dragon gems', async () => {
+test('eligible runs can still draw legendary attacks and dragon gems, within the type filter', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
     const run = emptyRun();
@@ -167,7 +288,11 @@ test('eligible runs can still draw the full range, including legendary attacks a
 
     const legalAttacks = gameData.attacks.filter(record => P.isMartOfferAllowed(record, 'attacks', run));
     const legalItems = gameData.items.filter(record => P.isMartOfferAllowed(record, 'items', run));
-    assert.equal(legalAttacks.length, gameData.attacks.length);
+    // Owning a legendary lifts the legendary gate, so the type rule is all that
+    // is left: every attack sharing a type with the roster is on the shelf.
+    assert.deepEqual(legalAttacks.map(a => a.name), expectedLegalAttacks(gameData, run).map(a => a.name));
+    assert.ok(legalAttacks.some(a => typesOf(a).includes('LEGENDARY')), 'legendary attacks stay stockable');
+    assert.ok(legalAttacks.some(a => typesOf(a).includes('DRAGON')), 'dragon attacks stay stockable');
     assert.equal(legalItems.length, gameData.items.length);
 });
 
