@@ -654,6 +654,14 @@ test('achievements: unreachable event warns', () => {
     assert.equal(warning.severity, 'warning');
 });
 
+test('achievements: unreachable starter deck warns', () => {
+    const data = withAchievements((achievements) => { achievements[0].stat = 'runs.completed.starter.not-a-real-deck'; });
+    const issues = validateAll(data, { enums: live.enums });
+    const warning = issues.find((issue) => issue.code === 'achievements.unreachable-starter');
+    assert.ok(warning, 'expected an achievements.unreachable-starter warning');
+    assert.equal(warning.severity, 'warning');
+});
+
 test('findReferences(achievement, champion) includes an event conditioned on it', () => {
     const data = withCondition('choice', { mode: 'has', subject: 'achievement', name: 'champion' });
     const refs = findReferences(data, 'achievement', 'champion', live.engineRefs);

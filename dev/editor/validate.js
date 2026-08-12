@@ -790,11 +790,12 @@
         return statPrefixes.some((prefix) => value.startsWith(prefix) && value.length > prefix.length);
     }
 
-    function validateAchievements(achievements, enums, events) {
+    function validateAchievements(achievements, enums, events, starterDecks) {
         const issues = [];
         const statKeys = (enums && enums.statKeys) || DEFAULT_STAT_KEYS;
         const statPrefixes = (enums && enums.statPrefixes) || DEFAULT_STAT_PREFIXES;
         const eventIds = new Set((events || []).map((event) => event && event.id).filter(Boolean));
+        const starterIds = new Set((starterDecks || []).map((deck) => deck && deck.id).filter(Boolean));
 
         const seenIds = new Set();
 
@@ -825,6 +826,11 @@
                 const eventId = record.stat.slice('events.seen.'.length);
                 if (!eventIds.has(eventId)) {
                     issues.push(warn('achievements.json', key, 'achievements.unreachable-event', `${key}: stat names unknown event ${eventId}`, 'stat'));
+                }
+            } else if (typeof record.stat === 'string' && record.stat.startsWith('runs.completed.starter.')) {
+                const starterId = record.stat.slice('runs.completed.starter.'.length);
+                if (!starterIds.has(starterId)) {
+                    issues.push(warn('achievements.json', key, 'achievements.unreachable-starter', `${key}: stat names unknown starter deck ${starterId}`, 'stat'));
                 }
             }
 
@@ -1065,7 +1071,7 @@
             ...validateEvents(events, trainerNames, enums, locations, { attack: attackNames, item: itemNames, pokemon: pokemonNames }, achievementIds),
             ...validateStarterDecks(starterDecks, pokemon, attacks, items, pokemonNames, attackNames, itemNames, enums, achievementIds),
             ...validateLocations(locations, enums, starterDecks),
-            ...validateAchievements(achievements, enums, events),
+            ...validateAchievements(achievements, enums, events, starterDecks),
             ...validateMusic(music, enums, assetIndex),
             ...validateNameCharacters(data),
             ...validateEngineRefs(pokemonNames, attackNames, itemNames, engineRefs),

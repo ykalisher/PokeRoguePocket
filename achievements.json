@@ -25,5 +25,122 @@
     "atLeast": 1,
     "hidden": false,
     "enabled": true
+  },
+  {
+    "id": "starter-water",
+    "name": "Tidal Force",
+    "description": "Win a run with the Water starter deck.",
+    "stat": "runs.completed.starter.water",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-grass",
+    "name": "In Full Bloom",
+    "description": "Win a run with the Grass starter deck.",
+    "stat": "runs.completed.starter.grass",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-fire",
+    "name": "Trial by Fire",
+    "description": "Win a run with the Fire starter deck.",
+    "stat": "runs.completed.starter.fire",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-dark",
+    "name": "Shadow Play",
+    "description": "Win a run with the Dark starter deck.",
+    "stat": "runs.completed.starter.dark",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-fighting",
+    "name": "Black Belt",
+    "description": "Win a run with the Fighting starter deck.",
+    "stat": "runs.completed.starter.fighting",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-human",
+    "name": "Only Human",
+    "description": "Win a run with the Human starter deck.",
+    "stat": "runs.completed.starter.human",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-dragon",
+    "name": "Dragon Tamer",
+    "description": "Win a run with the Dragon starter deck.",
+    "stat": "runs.completed.starter.dragon",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-steel",
+    "name": "Forged in Steel",
+    "description": "Win a run with the Steel starter deck.",
+    "stat": "runs.completed.starter.steel",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-fossil",
+    "name": "Ancient History",
+    "description": "Win a run with the Fossil starter deck.",
+    "stat": "runs.completed.starter.fossil",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-gourmet",
+    "name": "Clean Plate",
+    "description": "Win a run with the Gourmet starter deck.",
+    "stat": "runs.completed.starter.gourmet",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-baby",
+    "name": "Growing Pains",
+    "description": "Win a run with the Baby starter deck.",
+    "stat": "runs.completed.starter.baby",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-artificial",
+    "name": "Paradox Protocol",
+    "description": "Win a run with the Artificial starter deck.",
+    "stat": "runs.completed.starter.artificial",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-astro",
+    "name": "Written in the Stars",
+    "description": "Win a run with the Astro starter deck.",
+    "stat": "runs.completed.starter.astro",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
   }
 ]

@@ -106,6 +106,24 @@ test('isKnownStat accepts the closed set and open-ended prefixes', () => {
     assert.equal(PokeProfile.isKnownStat('events.seen.'), false);
 });
 
+// The per-starter counter arena/game.js bumps on a run victory
+// (`runs.completed.starter.<id>`) only unlocks the deck that was played.
+test('a per-starter counter unlocks only that deck achievement', () => {
+    const achievements = [
+        { atLeast: 1, id: 'starter-water', stat: 'runs.completed.starter.water' },
+        { atLeast: 1, id: 'starter-fire', stat: 'runs.completed.starter.fire' }
+    ];
+
+    const unlocked = PokeProfile.record({ 'runs.completed': 1, 'runs.completed.starter.water': 1 }, achievements);
+
+    assert.deepEqual(unlocked.map(entry => entry.id), ['starter-water']);
+    assert.equal(PokeProfile.isUnlocked('starter-fire'), false);
+
+    PokeProfile.record({ 'runs.completed': 1, 'runs.completed.starter.fire': 1 }, achievements);
+
+    assert.equal(PokeProfile.isUnlocked('starter-fire'), true);
+});
+
 test('getProgress clamps current at threshold and reports unlocked', () => {
     PokeProfile.bumpStat('runs.completed', 5);
 

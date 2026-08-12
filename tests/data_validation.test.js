@@ -524,6 +524,25 @@ test('achievements.json entries are well-formed', () => {
     });
 });
 
+// runs.completed.starter.<id> is bumped by arena/game.js with the run's own
+// starterId, so a suffix that names no deck is a counter nothing ever writes.
+test('every starter-deck achievement names a real deck', () => {
+    const prefix = 'runs.completed.starter.';
+    const deckIds = new Set(starterDecks.map(deck => deck.id));
+    const starterAchievements = achievements.filter(
+        achievement => typeof achievement.stat === 'string' && achievement.stat.startsWith(prefix)
+    );
+
+    assert.ok(starterAchievements.length > 0, 'expected at least one per-starter achievement');
+
+    starterAchievements.forEach(achievement => {
+        assert.ok(
+            deckIds.has(achievement.stat.slice(prefix.length)),
+            `${achievement.id}: stat names unknown starter deck ${achievement.stat.slice(prefix.length)}`
+        );
+    });
+});
+
 test('music.json entries are well-formed', () => {
     assert.ok(Array.isArray(music), 'music.json must be an array');
 
