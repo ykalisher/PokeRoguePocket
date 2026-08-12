@@ -3,9 +3,8 @@
 1. Data editor (port 8933): open the Starters tab, gate the fire deck on the
    "Champion" achievement with the new "Unlocked by achievement" select, save,
    and confirm `requiresAchievement` landed in starter_decks.json.
-2. starter.html (port 8931) with an empty profile: fire renders locked,
-   disabled, with the requirement blurb; water/grass stay pickable; clicking
-   the locked card does nothing.
+2. starter.html (port 8931) with an empty profile: fire is not rendered at all;
+   water/grass stay pickable.
 3. area.html?newRun=1&starter=fire with an empty profile: the gate is not
    bypassable by URL -- the run falls back to an unlocked deck.
 4. Seed the profile with the champion unlock: fire becomes pickable and the
@@ -120,29 +119,17 @@ def check_locked_picker(page, base, screenshot_path):
     page.wait_for_selector(".starter-card[data-starter='water']", timeout=15000)
     page.evaluate("localStorage.clear()")
     page.reload()
-    page.wait_for_selector(".starter-card[data-starter='fire']", timeout=15000)
+    page.wait_for_selector(".starter-card[data-starter='water']", timeout=15000)
 
-    fire = page.query_selector(".starter-card[data-starter='fire']")
-    assert "starter-card--locked" in (fire.get_attribute("class") or ""), "fire should render locked"
-    assert fire.is_disabled(), "a locked deck's button must be disabled"
-    lock_text = page.text_content(".starter-card[data-starter='fire'] .starter-card-lock")
-    assert "Champion" in lock_text, f"expected the achievement name in the lock blurb, got {lock_text!r}"
-    assert "Finish a full run" in lock_text, f"expected the achievement description, got {lock_text!r}"
-    assert page.query_selector(".starter-card[data-starter='fire'] .starter-card-cta") is None, \
-        "a locked deck must not show the 'Choose this deck' call to action"
+    assert page.query_selector(".starter-card[data-starter='fire']") is None, \
+        "a locked deck must not appear in the picker at all"
 
     for open_id in ("water", "grass"):
         card = page.query_selector(f".starter-card[data-starter='{open_id}']")
+        assert card is not None, f"{open_id} should still be listed"
         assert not card.is_disabled(), f"{open_id} should stay pickable"
-        assert "starter-card--locked" not in (card.get_attribute("class") or "")
     page.screenshot(path=screenshot_path)
-    print(f"OK: fire is locked with its requirement blurb, water/grass pickable; screenshot: {screenshot_path}")
-
-    page.click(".starter-card[data-starter='fire']", force=True)
-    page.wait_for_timeout(400)
-    assert page.evaluate("location.pathname").endswith("starter.html"), \
-        "clicking a locked deck must not navigate to a run"
-    print("OK: clicking the locked deck does nothing")
+    print(f"OK: fire is hidden while locked, water/grass pickable; screenshot: {screenshot_path}")
 
 
 def check_url_cannot_bypass(page, base):
@@ -164,12 +151,12 @@ def check_unlocked_picker(page, base, screenshot_path):
     page.wait_for_selector(".starter-card[data-starter='fire']", timeout=15000)
 
     fire = page.query_selector(".starter-card[data-starter='fire']")
+    assert fire is not None, "fire should reappear once champion is unlocked"
     assert not fire.is_disabled(), "fire should be pickable once champion is unlocked"
-    assert "starter-card--locked" not in (fire.get_attribute("class") or "")
     assert page.query_selector(".starter-card[data-starter='fire'] .starter-card-cta") is not None, \
-        "an unlocked deck shows the call to action again"
+        "an unlocked deck shows the call to action"
     page.screenshot(path=screenshot_path)
-    print(f"OK: champion unlocked -> fire is pickable again; screenshot: {screenshot_path}")
+    print(f"OK: champion unlocked -> fire is back and pickable; screenshot: {screenshot_path}")
 
     page.click(".starter-card[data-starter='fire']")
     page.wait_for_function(f"() => localStorage.getItem('{RUN_KEY}')", timeout=15000)
