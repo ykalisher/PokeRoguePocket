@@ -441,6 +441,102 @@
     background-color: color-mix(in srgb, var(--gold) 28%, transparent);
 }
 
+/* Confirmation dialog for the destructive services (release, trade, attack
+   removal). It renders after the attack picker, so it stacks on top of it. */
+.mart-confirm {
+    width: min(520px, calc(100vw - 28px));
+    max-height: calc(100dvh - 28px);
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    overflow-y: auto;
+    padding: 20px;
+    border: 1px solid rgba(251, 246, 232, 0.22);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(251, 246, 232, 0.08), rgba(0, 0, 0, 0.16)),
+        var(--loc-surface);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.54);
+    text-align: center;
+}
+
+.mart-confirm-title {
+    margin: 0;
+    color: #fbf6e8;
+    font-size: 1.3rem;
+    line-height: 1.1;
+    letter-spacing: 0;
+}
+
+.mart-confirm-text {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 760;
+}
+
+.mart-confirm-cards {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.playing-card.mart-confirm-card {
+    --card-w: clamp(104px, 30vw, 132px);
+    --card-h: calc(var(--card-w) * 1.52);
+    width: var(--card-w);
+    height: var(--card-h);
+    flex-shrink: 0;
+}
+
+.mart-confirm-arrow {
+    color: var(--gold);
+    font-size: 1.5rem;
+    font-weight: 900;
+}
+
+.mart-confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.mart-confirm-button {
+    min-width: 120px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    border: 1px solid rgba(251, 246, 232, 0.22);
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.26);
+    color: #fbf6e8;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 820;
+    cursor: pointer;
+}
+
+.mart-confirm-button.is-confirm {
+    background-color: color-mix(in srgb, var(--coral) 34%, transparent);
+}
+
+.mart-confirm-button:hover,
+.mart-confirm-button:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--gold) 72%, transparent);
+    outline-offset: 2px;
+    background-color: rgba(251, 246, 232, 0.14);
+}
+
+.mart-confirm-button.is-confirm:hover,
+.mart-confirm-button.is-confirm:focus-visible {
+    background-color: color-mix(in srgb, var(--coral) 52%, transparent);
+}
+
 @media (max-width: 920px) {
     .mart-shell {
         padding: 66px 10px 14px;

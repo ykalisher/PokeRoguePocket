@@ -184,6 +184,9 @@ def main():
         choice = page.query_selector("[data-remove-attack-id]")
         removed_name = choice.get_attribute("aria-label")
         choice.click()
+        # Picking a card now opens a confirmation dialog before the charge.
+        page.wait_for_selector("[data-mart-confirm-overlay]")
+        page.click("[data-resolve-mart-confirm]")
 
         page.wait_for_function(
             "(expected) => JSON.parse(localStorage.getItem('%s')).cash === expected"

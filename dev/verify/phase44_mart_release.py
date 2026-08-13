@@ -157,6 +157,9 @@ def main():
             print("FAIL: release button should be enabled once a pokemon is selected (>=4 total)")
 
         button.click()
+        # Releasing now goes through a confirmation dialog showing the card.
+        page.wait_for_selector("[data-mart-confirm-overlay]")
+        page.click("[data-resolve-mart-confirm]")
         page.wait_for_function(
             "(expected) => JSON.parse(localStorage.getItem('%s')).collections.pokemon"
             ".concat(JSON.parse(localStorage.getItem('%s')).collections.bench.pokemon).length === expected"

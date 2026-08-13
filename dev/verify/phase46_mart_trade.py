@@ -219,6 +219,9 @@ def main():
             before_count = total_pokemon(page)
             before_cash = get_run(page)["cash"]
             trade_button(page, 0).click()
+            # Trading now goes through a confirmation dialog showing both cards.
+            page.wait_for_selector("[data-mart-confirm-overlay]")
+            page.click("[data-resolve-mart-confirm]")
             page.wait_for_function(
                 "() => JSON.parse(localStorage.getItem('%s')).martEncounters['shop-1'].trades[0].used === true"
                 % RUN_KEY,

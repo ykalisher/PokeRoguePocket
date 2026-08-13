@@ -18,6 +18,8 @@
     const state = {
         attackRemovalPicker: false,
         cardWindow: null,
+        // { kind: 'release' | 'trade' | 'remove-attack', tradeIndex, cardId }
+        confirm: null,
         elements: {},
         encounter: null,
         message: '',
@@ -61,6 +63,27 @@
     }
 
     function handleMartClick(event) {
+        // The confirmation dialog sits on top of every other overlay, so its
+        // buttons are routed before anything underneath it.
+        const resolveConfirmButton = event.target.closest('[data-resolve-mart-confirm]');
+
+        if (resolveConfirmButton) {
+            resolveConfirm();
+            return;
+        }
+
+        const cancelConfirmButton = event.target.closest('[data-cancel-mart-confirm]');
+
+        if (cancelConfirmButton) {
+            closeConfirm();
+            return;
+        }
+
+        if (event.target.matches('[data-mart-confirm-overlay]')) {
+            closeConfirm();
+            return;
+        }
+
         const closeButton = event.target.closest('[data-close-card-window]');
 
         if (closeButton) {
@@ -95,7 +118,7 @@
         const removeAttackButton = event.target.closest('[data-remove-attack-id]');
 
         if (removeAttackButton) {
-            removeAttackCard(removeAttackButton.dataset.removeAttackId);
+            openAttackRemovalConfirm(removeAttackButton.dataset.removeAttackId);
             return;
         }
 
@@ -130,7 +153,9 @@
     function handleKeyDown(event) {
         if (event.key !== 'Escape') return;
 
-        if (state.cardWindow) {
+        if (state.confirm) {
+            closeConfirm();
+        } else if (state.cardWindow) {
             closeCardWindow();
         } else if (state.attackRemovalPicker) {
             closeAttackRemovalPicker();
@@ -213,12 +238,46 @@
 
     function handleMartService(service, tradeIndex) {
         if (service === 'release') {
-            releaseSelectedPokemon();
+            openConfirm({ kind: 'release' }, canReleasePokemon());
         } else if (service === 'remove-attack') {
             openAttackRemovalPicker();
         } else if (service === 'trade') {
-            tradeSelectedPokemon(tradeIndex);
+            openConfirm({ kind: 'trade', tradeIndex: Number(tradeIndex) }, canTradePokemon(tradeIndex));
         }
+    }
+
+    function openConfirm(confirmation, allowed) {
+        if (!allowed) return;
+
+        state.confirm = confirmation;
+        render();
+    }
+
+    function closeConfirm() {
+        state.confirm = null;
+        render();
+    }
+
+    /**
+     * The three destructive services all run from here, so each mutator below
+     * only stages its message and this renders once for the whole exchange.
+     */
+    function resolveConfirm() {
+        const confirmation = state.confirm;
+
+        if (!confirmation) return;
+
+        state.confirm = null;
+
+        if (confirmation.kind === 'release') {
+            releaseSelectedPokemon();
+        } else if (confirmation.kind === 'trade') {
+            tradeSelectedPokemon(confirmation.tradeIndex);
+        } else if (confirmation.kind === 'remove-attack') {
+            removeAttackCard(confirmation.cardId);
+        }
+
+        render();
     }
 
     function releaseSelectedPokemon() {
@@ -239,7 +298,7 @@
         repairMartTrades();
         runStore.saveRunState(state.run);
         state.selectedPokemonId = null;
-        setMessage(`Released ${selectedCard.pokemon.name}.`);
+        state.message = `Released ${selectedCard.pokemon.name}.`;
     }
 
     function canReleasePokemon() {
@@ -278,7 +337,7 @@
         repairMartTrades();
         runStore.saveRunState(state.run);
         state.selectedPokemonId = null;
-        setMessage(`Traded ${selectedCard.pokemon.name} for ${resultRecord.name}.`);
+        state.message = `Traded ${selectedCard.pokemon.name} for ${resultRecord.name}.`;
     }
 
     function getTrades() {
@@ -321,8 +380,12 @@
         render();
     }
 
+    function openAttackRemovalConfirm(cardId) {
+        openConfirm({ kind: 'remove-attack', cardId }, Boolean(getOwnedAttackCard(cardId)) && canRemoveAttack());
+    }
+
     function removeAttackCard(cardId) {
-        const card = getOwnedAttackCards().find(attackCard => attackCard.id === cardId);
+        const card = getOwnedAttackCard(cardId);
 
         if (!card || !canRemoveAttack()) return;
 
@@ -336,7 +399,11 @@
         state.encounter.attackRemovalUsed = true;
         runStore.saveRunState(state.run);
         state.attackRemovalPicker = false;
-        setMessage(`Removed ${card.attack.name}.`);
+        state.message = `Removed ${card.attack.name}.`;
+    }
+
+    function getOwnedAttackCard(cardId) {
+        return getOwnedAttackCards().find(attackCard => attackCard.id === cardId) || null;
     }
 
     function canRemoveAttack() {
@@ -388,7 +455,85 @@
             </section>
             ${state.cardWindow ? renderCardWindow() : ''}
             ${state.attackRemovalPicker ? renderAttackRemovalPicker() : ''}
+            ${state.confirm ? renderConfirmDialog() : ''}
         `;
+    }
+
+    function renderConfirmDialog() {
+        const details = getConfirmDetails();
+
+        if (!details) return '';
+
+        return `
+            <div class="area-overlay" data-mart-confirm-overlay>
+                <section class="mart-confirm" role="dialog" aria-modal="true" aria-labelledby="mart-confirm-title">
+                    <h2 class="mart-confirm-title" id="mart-confirm-title">${details.title}</h2>
+                    <p class="mart-confirm-text">${details.text}</p>
+                    <div class="mart-confirm-cards">${details.cards}</div>
+                    <div class="mart-confirm-actions">
+                        <button class="mart-confirm-button" type="button" data-cancel-mart-confirm>Cancel</button>
+                        <button class="mart-confirm-button is-confirm" type="button" data-resolve-mart-confirm>${details.confirmText}</button>
+                    </div>
+                </section>
+            </div>
+        `;
+    }
+
+    function getConfirmDetails() {
+        if (state.confirm.kind === 'release') {
+            const selectedCard = getPokemonCardById(state.selectedPokemonId);
+
+            if (!selectedCard) return null;
+
+            return {
+                title: 'Release this Pokemon?',
+                text: `${selectedCard.pokemon.name} is gone for the rest of the run.`,
+                cards: renderConfirmCard(selectedCard),
+                confirmText: 'Release'
+            };
+        }
+
+        if (state.confirm.kind === 'trade') {
+            const selectedCard = getPokemonCardById(state.selectedPokemonId);
+            const trade = getTrade(state.confirm.tradeIndex);
+            const offeredRecord = trade && trade.offeredName
+                ? locations.findPokemonByNameOrId(arena.GameData, trade.offeredName)
+                : null;
+
+            if (!selectedCard || !offeredRecord) return null;
+
+            const offeredCard = runStore.createPokemonCard(
+                offeredRecord,
+                'player',
+                `mart-confirm-trade-${formatId(offeredRecord.name)}`
+            );
+
+            return {
+                title: 'Make this trade?',
+                text: `${selectedCard.pokemon.name} is traded away for ${offeredRecord.name}.`,
+                cards: `
+                    ${renderConfirmCard(selectedCard)}
+                    <span class="mart-confirm-arrow" aria-hidden="true">&rarr;</span>
+                    ${renderConfirmCard(offeredCard)}
+                `,
+                confirmText: 'Trade'
+            };
+        }
+
+        const attackCard = getOwnedAttackCard(state.confirm.cardId);
+
+        if (!attackCard) return null;
+
+        return {
+            title: 'Remove this attack?',
+            text: `${attackCard.attack.name} is removed for good, for ${ATTACK_REMOVAL_COST} coins.`,
+            cards: renderConfirmCard(attackCard),
+            confirmText: `Remove ${ATTACK_REMOVAL_COST}`
+        };
+    }
+
+    function renderConfirmCard(card) {
+        return arena.Render.renderCardPreview(card, { className: 'mart-confirm-card' });
     }
 
     function renderMoney() {
