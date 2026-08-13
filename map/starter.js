@@ -38,7 +38,7 @@
 
         return `
             <button type="button" class="starter-card" data-starter="${escapeHtml(deck.id)}">
-                <span class="starter-card-type">${formatType(deck.type)}</span>
+                <span class="starter-card-type">${escapeHtml(deck.name)}</span>
                 <span class="starter-card-pokemon">${pokemon}</span>
                 <ul class="starter-card-cards">${cards}</ul>
                 <span class="starter-card-cta">Choose this deck</span>
@@ -73,12 +73,6 @@
         return Array.isArray(records)
             ? records.find(record => record.name === name) || null
             : null;
-    }
-
-    function formatType(type) {
-        if (!type) return '';
-
-        return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
     }
 
     function escapeHtml(value) {
