@@ -888,8 +888,10 @@
     // --- Mart stock eligibility (phase 43) ---------------------------------
     // Every attack in stock shares at least one type with an owned pokemon;
     // no LEGENDARY-typed attack in stock without an owned LEGENDARY pokemon;
-    // no dragon-gem item in stock without both a DRAGON attack and a DRAGON
-    // pokemon owned. "Owned" = active or bench.
+    // no dragon-gem item in stock without both a DRAGON pokemon and a damaging,
+    // opponent-targeting DRAGON attack owned. "Owned" = active or bench.
+
+    const DRAGON_GEM_ATTACK_TARGETS = Object.freeze(['OPPONENT', 'ALL_OPPONENTS']);
 
     function getRunPokemonRecords(run) {
         const collections = run && run.collections;
@@ -914,8 +916,22 @@
         return getRunPokemonRecords(run).some(record => getRecordTypes(record).includes('LEGENDARY'));
     }
 
+    /**
+     * Whether an attack is one a dragon gem can actually pay off on. The battle
+     * engine only applies a gem's paired status to a *damaging* DRAGON attack
+     * (see getDragonGemStatusesForAttack in arena/arena_controller.js), so a
+     * self-buff like Dragon Dance leaves a gem a dead card and must not count.
+     */
+    function attackEnablesDragonGem(attack) {
+        if (!attack) return false;
+        if (!getRecordTypes(attack).includes('DRAGON')) return false;
+        if (!DRAGON_GEM_ATTACK_TARGETS.includes(attack.target)) return false;
+
+        return Number(attack.basePower) > 0;
+    }
+
     function runHasDragonGemPrereqs(run) {
-        const hasDragonAttack = getRunAttackRecords(run).some(record => getRecordTypes(record).includes('DRAGON'));
+        const hasDragonAttack = getRunAttackRecords(run).some(attackEnablesDragonGem);
         const hasDragonPokemon = getRunPokemonRecords(run).some(record => getRecordTypes(record).includes('DRAGON'));
         return hasDragonAttack && hasDragonPokemon;
     }
@@ -1099,6 +1115,7 @@
         TOTAL_LEVELS,
         advanceRunToNextLevel,
         applyLocationTheme,
+        attackEnablesDragonGem,
         bossNodeIdForLevel,
         chooseAttackCardOptions,
         chooseNextLocation,

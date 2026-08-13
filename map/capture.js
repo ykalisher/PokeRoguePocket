@@ -424,7 +424,7 @@
     }
 
     function chooseDragonGemReward(attack) {
-        if (!getRecordTypes(attack, ['type1', 'type2']).includes('DRAGON')) return null;
+        if (!locations.attackEnablesDragonGem(attack)) return null;
         if (actionDeckHasDragonGem()) return null;
 
         const dragonGems = getDragonGemItems();

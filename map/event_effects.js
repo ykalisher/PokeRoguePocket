@@ -551,11 +551,11 @@
      * the grant still happens. An authored `types` list stays strict.
      */
     function chooseGrantRecord(run, gameData, cardKind, excludeName, source) {
-        const record = chooseRandomRecord(gameData, cardKind, excludeName, resolveGrantTypes(run, source));
+        const record = chooseRandomRecord(run, gameData, cardKind, excludeName, resolveGrantTypes(run, source));
 
         if (record || !usesLocationTypes(source)) return record;
 
-        return chooseRandomRecord(gameData, cardKind, excludeName, null);
+        return chooseRandomRecord(run, gameData, cardKind, excludeName, null);
     }
 
     function loseRandomCards(run, cardKind, count, options = {}) {
@@ -915,14 +915,14 @@
         return records.find(record => getRecordName(record) === name) || null;
     }
 
-    function chooseRandomRecord(gameData, cardKind, excludeName = null, types = null) {
+    function chooseRandomRecord(run, gameData, cardKind, excludeName = null, types = null) {
         const collectionKey = getRecordCollectionKey(cardKind);
         const records = getUniqueRecords(gameData && gameData[collectionKey]);
         // Pokemon picks never include babies, megas, or legendaries. Guarded
         // because this module has no hard dependency on map/locations.js.
         const obtainableRecords = cardKind === 'pokemon' && global.PokeLocations && typeof global.PokeLocations.isObtainablePokemon === 'function'
             ? records.filter(record => global.PokeLocations.isObtainablePokemon(record, gameData))
-            : records.filter(record => cardKind !== 'item' || !isVitaminRecord(record));
+            : records.filter(record => cardKind !== 'item' || isGrantableItemRecord(record, run));
         const filteredRecords = excludeName
             ? obtainableRecords.filter(record => getRecordName(record) !== excludeName)
             : obtainableRecords;
@@ -939,6 +939,31 @@
         if (choices.length === 0) return null;
 
         return choices[randomInt(0, choices.length - 1)];
+    }
+
+    // Which items a *random* grant may roll. Named grants are an explicit
+    // authoring choice and bypass this entirely.
+    function isGrantableItemRecord(record, run) {
+        if (isVitaminRecord(record)) return false;
+
+        return !isDragonGemRecord(record) || runHasDragonGemPrereqs(run);
+    }
+
+    // A dragon gem is a dead card without a damaging, opponent-targeting DRAGON
+    // attack to spend it on, so a random item grant must not mint one into a run
+    // that cannot use it — the same rule the mart shelf applies. Guarded because
+    // this module has no hard dependency on map/locations.js; without it, the
+    // conservative answer is to withhold the gem.
+    function isDragonGemRecord(record) {
+        return Boolean(record && Array.isArray(record.status) && record.status.includes('DRAGON_GEM'));
+    }
+
+    function runHasDragonGemPrereqs(run) {
+        return Boolean(
+            global.PokeLocations &&
+            typeof global.PokeLocations.runHasDragonGemPrereqs === 'function' &&
+            global.PokeLocations.runHasDragonGemPrereqs(run)
+        );
     }
 
     // Vitamins are consumed on receipt and never become deck cards, so a random

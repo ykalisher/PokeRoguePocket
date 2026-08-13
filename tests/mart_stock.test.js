@@ -40,6 +40,14 @@ function typesOf(record) {
 function itemIsDragonGem(item) {
     return Boolean(item && Array.isArray(item.status) && item.status.includes('DRAGON_GEM'));
 }
+// The gem rule, restated independently of map/locations.js: a gem only earns its
+// slot when the run owns a DRAGON attack the battle engine will fire it on, i.e.
+// one that damages opponents. A DRAGON self-buff does not qualify the run.
+function attackEnablesGem(attack) {
+    return typesOf(attack).includes('DRAGON') &&
+        ['OPPONENT', 'ALL_OPPONENTS'].includes(attack.target) &&
+        Number(attack.basePower) > 0;
+}
 function sharesType(recordA, recordB) {
     const typesB = typesOf(recordB);
     return typesOf(recordA).some(type => typesB.includes(type));
@@ -119,12 +127,12 @@ test('isMartOfferAllowed: legendary attacks require an owned legendary pokemon',
     assert.equal(P.isMartOfferAllowed(normalAttack, 'attacks', runWithLegendary), true);
 });
 
-test('isMartOfferAllowed: dragon-gem items require both a DRAGON attack and a DRAGON pokemon owned', async () => {
+test('isMartOfferAllowed: dragon-gem items require both an offensive DRAGON attack and a DRAGON pokemon owned', async () => {
     await loadRealGameData();
     const gameData = arena.GameData;
     const gemItem = pick(gameData.items, itemIsDragonGem, 'a dragon-gem item');
     const normalItem = pick(gameData.items, i => !itemIsDragonGem(i), 'a non-gem item');
-    const dragonAttack = pick(gameData.attacks, a => typesOf(a).includes('DRAGON'), 'a dragon attack');
+    const dragonAttack = pick(gameData.attacks, attackEnablesGem, 'a damaging opponent-targeting dragon attack');
     const dragonPokemon = pick(gameData.pokemon, p => typesOf(p).includes('DRAGON'), 'a dragon pokemon');
     const plainPokemon = pickPlainPokemon(gameData);
     const plainAttack = pick(gameData.attacks, a => !typesOf(a).includes('LEGENDARY') && !typesOf(a).includes('DRAGON'), 'an ungated attack');
@@ -150,6 +158,27 @@ test('isMartOfferAllowed: dragon-gem items require both a DRAGON attack and a DR
     addAttack(bothPrereqsRun, dragonAttack, true); // bench attack counts too
     assert.equal(P.isMartOfferAllowed(gemItem, 'items', bothPrereqsRun), true);
     assert.equal(P.isMartOfferAllowed(normalItem, 'items', bothPrereqsRun), true);
+});
+
+test('isMartOfferAllowed: a DRAGON attack that does not damage opponents does not unlock gems', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const gemItem = pick(gameData.items, itemIsDragonGem, 'a dragon-gem item');
+    const dragonPokemon = pick(gameData.pokemon, p => typesOf(p).includes('DRAGON'), 'a dragon pokemon');
+    const inertDragonAttack = pick(
+        gameData.attacks,
+        a => typesOf(a).includes('DRAGON') && !attackEnablesGem(a),
+        'a dragon attack that does not damage opponents'
+    );
+
+    const run = emptyRun();
+    addPokemon(run, dragonPokemon);
+    addAttack(run, inertDragonAttack);
+    assert.equal(P.isMartOfferAllowed(gemItem, 'items', run), false);
+
+    // Adding a qualifying attack alongside it flips the run eligible.
+    addAttack(run, pick(gameData.attacks, attackEnablesGem, 'a damaging opponent-targeting dragon attack'));
+    assert.equal(P.isMartOfferAllowed(gemItem, 'items', run), true);
 });
 
 test('non-attack/item collections are always allowed regardless of run state', async () => {
