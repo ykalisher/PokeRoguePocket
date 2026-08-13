@@ -554,7 +554,7 @@
                     ${renderStatusTokens(card)}
                     <div class="type-row">${renderTypeIcons(species.types, 'type-row', options)}</div>
                     <span class="card-name">${species.name}</span>
-                    ${renderVitaminTokens(card)}
+                    ${options.showVitamins ? renderVitaminTokens(card) : ''}
                 </div>
             </div>
             <div class="health-row" aria-label="${healthPercent}% health">
@@ -591,7 +591,9 @@
     /**
      * One token per vitamin administered, in the order they were given, sitting
      * under the card name. Unlike status tokens these never expire — they are a
-     * permanent record of what the player spent on this specific card.
+     * permanent record of what the player spent on this specific card. Only
+     * card previews show them (options.showVitamins); the battle board keeps
+     * the cards uncluttered, since the boost is already in the stat numbers.
      */
     function renderVitaminTokens(card) {
         const vitamins = arena.Model.getPokemonVitamins(card);
@@ -877,6 +879,9 @@
      * overview screens.
      */
     function renderCardPreview(card, options = {}) {
+        // Previews are where the player inspects a card, so vitamin tokens
+        // belong here; a caller can still opt out with showVitamins: false.
+        const contentOptions = { showVitamins: true, ...options };
         const className = options.className ? ` ${options.className}` : '';
         const attributes = options.attributes || '';
         const kindClass = ` card-kind-${card.kind}`;
@@ -884,7 +889,7 @@
 
         return `
             <div class="playing-card overview-card${kindClass}${className}" ${attributes} aria-label="${ariaLabel}">
-                ${renderCardContent(card, true, options)}
+                ${renderCardContent(card, true, contentOptions)}
             </div>
         `;
     }
