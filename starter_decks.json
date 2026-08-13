@@ -41,11 +41,11 @@
     "type": "FIRE",
     "pokemon": ["Charizard", "Typhlosion"],
     "attacks": [
-      { "name": "Flame Thrower", "count": 1 },
       { "name": "Fire Spin", "count": 2 },
       { "name": "Air Slash", "count": 1 },
       { "name": "Shadow Ball", "count": 1 },
-      { "name": "Will-o-wisp", "count": 1 }
+      { "name": "Will-o-wisp", "count": 1 },
+      { "name": "Flame Thrower", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
@@ -78,8 +78,9 @@
     "attacks": [
       { "name": "Fire Spin", "count": 1 },
       { "name": "Surf", "count": 1 },
-      { "name": "Karate Smash", "count": 2 },
-      { "name": "Kick in the Face", "count": 2 }
+      { "name": "Karate Smash", "count": 1 },
+      { "name": "Kick in the Face", "count": 2 },
+      { "name": "Swords Dance", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
@@ -96,8 +97,7 @@
     "attacks": [
       { "name": "Razor Leaf", "count": 1 },
       { "name": "Fire Spin", "count": 1 },
-      { "name": "Flame Thrower", "count": 1 },
-      { "name": "Power-up Punch", "count": 2 },
+      { "name": "Power-up Punch", "count": 3 },
       { "name": "Sleep Powder", "count": 1 }
     ],
     "items": [
@@ -184,18 +184,17 @@
   {
     "id": "baby",
     "name": "Baby",
-    "type": "HUMAN",
+    "type": "FIGHTING",
     "pokemon": ["Meditite", "Riolu"],
     "attacks": [
       { "name": "Power-up Punch", "count": 2 },
       { "name": "Mega Punch", "count": 2 },
-      { "name": "Meditate", "count": 1 },
-      { "name": "Overwork", "count": 1 }
+      { "name": "Swords Dance", "count": 2 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
       { "name": "Withdraw Wand", "count": 1 },
-      { "name": "Babiri Berry", "count": 1 }
+      { "name": "Salac Berry", "count": 1 }
     ],
     "enabled": true,
     "requiresAchievement": "champion"
@@ -211,7 +210,8 @@
       { "name": "Energize", "count": 1 },
       { "name": "Thunder Bolt", "count": 1 },
       { "name": "Karate Smash", "count": 1 },
-      { "name": "Rock Slide", "count": 1 }
+      { "name": "Rock Slide", "count": 1 },
+      { "name": "Thunder Wave", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
