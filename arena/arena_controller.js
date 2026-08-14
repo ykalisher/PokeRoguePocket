@@ -1941,23 +1941,40 @@
 
     /**
      * Builds the mutable resolution queue from both players' plannedActions and
-     * adds priority, current Speed, and a random tie breaker.
+     * adds priority, current Speed, a tie breaker, and the ready order.
+     *
+     * The random tie breaker is drawn once per attacking Pokemon rather than
+     * once per action, so a Pokemon holding several attacks (Energize grants an
+     * ally an extra one) keeps them together instead of interleaving them with
+     * an equally fast rival. queueIndex then keeps that Pokemon's own attacks in
+     * the order they were readied: first readied, first resolved.
      */
     function createResolutionActions() {
+        const tieBreakers = new Map();
+        const attackerTieBreaker = action => {
+            const attackerKey = `${action.owner}:${action.userCardId}`;
+
+            if (!tieBreakers.has(attackerKey)) tieBreakers.set(attackerKey, Math.random());
+
+            return tieBreakers.get(attackerKey);
+        };
+
         return [
             ...state.plannedActions.player,
             ...state.plannedActions.opponent
-        ].map(action => ({
+        ].map((action, index) => ({
             ...action,
             priority: getActionPriority(action),
+            queueIndex: index,
             speed: getActionSpeed(action),
-            tieBreaker: Math.random()
+            tieBreaker: attackerTieBreaker(action)
         }));
     }
 
     /**
      * Recomputes priority and Speed for unresolved actions, then orders highest
-     * priority first, highest Speed second, random tie breaker last.
+     * priority first, highest Speed second, the per-attacker tie breaker third,
+     * and ready order last.
      */
     function sortResolutionActions(actions) {
         actions.forEach(action => {
@@ -1972,7 +1989,8 @@
         return (
             right.priority - left.priority ||
             right.speed - left.speed ||
-            left.tieBreaker - right.tieBreaker
+            left.tieBreaker - right.tieBreaker ||
+            left.queueIndex - right.queueIndex
         );
     }
 
@@ -3683,6 +3701,9 @@
         // Exposed for tests: KO-aware/status-aware opponent attack targeting
         // (phase 40).
         chooseOpponentTarget,
-        computeAttackDamage
+        computeAttackDamage,
+        // Exposed for tests: attack resolution ordering.
+        createResolutionActions,
+        sortResolutionActions
     };
 })(window.CardArena = window.CardArena || {});
