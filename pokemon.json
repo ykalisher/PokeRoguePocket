@@ -3325,7 +3325,7 @@
     "baseHealth": 85,
     "baseAttack": 85,
     "baseDefense": 100,
-    "baseSpeed": 60
+    "baseSpeed": 65
   },
   {
     "name": "Mawile",
@@ -3333,9 +3333,33 @@
     "type2": "FAIRY",
     "type3": "MONSTER",
     "id": "0303",
-    "baseHealth": 70,
+    "baseHealth": 75,
     "baseAttack": 105,
     "baseDefense": 105,
     "baseSpeed": 50
+  },
+  {
+    "name": "Mega Sableye",
+    "type1": "GHOST",
+    "type2": "DARK",
+    "type3": "ROCK",
+    "id": "9302",
+    "baseHealth": 90,
+    "baseAttack": 85,
+    "baseDefense": 110,
+    "baseSpeed": 105,
+    "eventOnly": true
+  },
+  {
+    "name": "Mega Mawile",
+    "type1": "STEEL",
+    "type2": "FAIRY",
+    "type3": "MONSTER",
+    "id": "9303",
+    "baseHealth": 100,
+    "baseAttack": 115,
+    "baseDefense": 115,
+    "baseSpeed": 60,
+    "eventOnly": true
   }
 ]
