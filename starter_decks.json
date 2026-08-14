@@ -79,8 +79,9 @@
       { "name": "Fire Spin", "count": 1 },
       { "name": "Surf", "count": 1 },
       { "name": "Karate Smash", "count": 1 },
-      { "name": "Kick in the Face", "count": 2 },
-      { "name": "Swords Dance", "count": 1 }
+      { "name": "Kick in the Face", "count": 1 },
+      { "name": "Swords Dance", "count": 1 },
+      { "name": "Low Kick", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
@@ -97,8 +98,9 @@
     "attacks": [
       { "name": "Razor Leaf", "count": 1 },
       { "name": "Fire Spin", "count": 1 },
-      { "name": "Power-up Punch", "count": 3 },
-      { "name": "Sleep Powder", "count": 1 }
+      { "name": "Power-up Punch", "count": 2 },
+      { "name": "Sleep Powder", "count": 1 },
+      { "name": "Meditate", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
@@ -162,7 +164,7 @@
       { "name": "Withdraw Wand", "count": 1 }
     ],
     "enabled": true,
-    "requiresAchievement": "champion"
+    "requiresAchievement": "multiple-champ"
   },
   {
     "id": "gourmet",
@@ -177,19 +179,23 @@
       { "name": "Crunch", "count": 1 },
       { "name": "Body Slam", "count": 1 }
     ],
-    "items": [],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
     "enabled": true,
     "requiresAchievement": "champion"
   },
   {
     "id": "baby",
     "name": "Baby",
-    "type": "FIGHTING",
+    "type": "HUMAN",
     "pokemon": ["Meditite", "Riolu"],
     "attacks": [
       { "name": "Power-up Punch", "count": 2 },
-      { "name": "Mega Punch", "count": 2 },
-      { "name": "Swords Dance", "count": 2 }
+      { "name": "Mega Punch", "count": 1 },
+      { "name": "Swords Dance", "count": 2 },
+      { "name": "Mind Read", "count": 1 }
     ],
     "items": [
       { "name": "Sitrus Berry", "count": 1 },
@@ -197,7 +203,7 @@
       { "name": "Salac Berry", "count": 1 }
     ],
     "enabled": true,
-    "requiresAchievement": "champion"
+    "requiresAchievement": "multiple-champ"
   },
   {
     "id": "artificial",
@@ -218,7 +224,7 @@
       { "name": "Withdraw Wand", "count": 1 }
     ],
     "enabled": true,
-    "requiresAchievement": "champion"
+    "requiresAchievement": "multiple-champ"
   },
   {
     "id": "astro",
@@ -238,6 +244,88 @@
       { "name": "Withdraw Wand", "count": 1 }
     ],
     "enabled": true,
+    "requiresAchievement": "multiple-champ"
+  },
+  {
+    "id": "rotom",
+    "name": "Rotom",
+    "type": "ARTIFICIAL",
+    "pokemon": ["Rotom-Frost", "Rotom-Heat"],
+    "attacks": [
+      { "name": "Discharge", "count": 1 },
+      { "name": "Thunder Bolt", "count": 1 },
+      { "name": "Ice Beam", "count": 1 },
+      { "name": "Flame Thrower", "count": 1 },
+      { "name": "Energize", "count": 1 },
+      { "name": "Freeze-Dry", "count": 1 },
+      { "name": "Fire Spin", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "halfway-point"
+  },
+  {
+    "id": "ice",
+    "name": "Ice",
+    "type": "ICE",
+    "pokemon": ["Abomasnow", "Empoleon"],
+    "attacks": [
+      { "name": "Freeze-Dry", "count": 1 },
+      { "name": "Ice Beam", "count": 1 },
+      { "name": "Flash Cannon", "count": 1 },
+      { "name": "Razor Leaf", "count": 1 },
+      { "name": "Haze", "count": 1 },
+      { "name": "Sleep Powder", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
     "requiresAchievement": "champion"
+  },
+  {
+    "id": "divine",
+    "name": "Mandate of Heaven",
+    "type": "DRAGON",
+    "pokemon": ["Giratina", "Porygon2"],
+    "attacks": [
+      { "name": "Shadow Ball", "count": 1 },
+      { "name": "Dragon Claw", "count": 1 },
+      { "name": "Divine Power", "count": 1 },
+      { "name": "Hyper Beam", "count": 1 },
+      { "name": "Lovecraftian Horror", "count": 1 },
+      { "name": "Energize", "count": 1 },
+      { "name": "Curse", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 },
+      { "name": "Dark Gem", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "divine"
+  },
+  {
+    "id": "bug",
+    "name": "Bug",
+    "type": "BUG",
+    "pokemon": ["Heracross", "Masquerain"],
+    "attacks": [
+      { "name": "Swarming Strike", "count": 2 },
+      { "name": "Buzz Up", "count": 1 },
+      { "name": "Low Kick", "count": 1 },
+      { "name": "Air Slash", "count": 1 },
+      { "name": "Intimidating Stare", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "halfway-point"
   }
 ]

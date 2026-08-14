@@ -1580,5 +1580,181 @@
         "prompt": "Permanently +5 Speed."
       }
     ]
+  },
+  {
+    "type": "choice",
+    "title": "A Bizarre Rotom Machine",
+    "id": "trash-can",
+    "body": "While you're walking, a small trash can attached to a drone flies up to you. \"Hello! Do you have any waste to dispose of? I'll take it to be recycled or resold, and I'll pay you for it!\"",
+    "choices": [
+      {
+        "title": "Give Rotom an Item",
+        "id": "throw-away-item",
+        "description": "",
+        "buttonText": "Choose Item",
+        "requires": [
+          { "id": "item-to-remove", "cardKind": "item" }
+        ],
+        "effects": [
+          { "type": "remove-selected-card", "amount": 1, "selectionId": "item-to-remove" },
+          { "type": "gain-cash", "amount": 50 }
+        ]
+      },
+      {
+        "title": "Do Nothing",
+        "id": "do-nothing",
+        "description": "",
+        "buttonText": "Keep Walking",
+        "requires": [],
+        "effects": []
+      }
+    ],
+    "enabled": true,
+    "kicker": "Remove an Item"
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-heraa",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Heracross!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "cardKind": "pokemon",
+        "count": 1,
+        "replacement": { "cardKind": "pokemon", "name": "Mega Heracross" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Heracross",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Heracross" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "heracross", "cardKind": "pokemon", "name": "Heracross" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-pinsir",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Pinsir!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "req-1",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Pinsir" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Pinsir",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Pinsir" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "req-1", "cardKind": "pokemon", "name": "Pinsir" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-aero",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Aerodactyl!!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "req-1",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Aerodactyl" }
+      }
+    ],
+    "enabled": true,
+    "actionTitle": "Mega Evolve!",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Aerodactyl" }
+    ],
+    "kicker": "Mega Aerodactyl",
+    "requires": [
+      { "id": "req-1", "cardKind": "pokemon", "name": "Aerodactyl" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-absol",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Absol!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "replacement": { "cardKind": "pokemon", "name": "Mega Absol" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Absol",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Absol" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "req-1", "cardKind": "pokemon", "name": "Absol" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-garch",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Garchomp!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "replacement": { "cardKind": "pokemon", "name": "Mega Garchomp" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Garchomp",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Garchomp" }
+    ],
+    "actionTitle": "Mega Evolve!",
+    "requires": [
+      { "id": "req-1", "cardKind": "pokemon", "name": "Garchomp" }
+    ]
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-audino",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Audino!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "cardKind": "pokemon",
+        "count": 1,
+        "selectionId": "req-1",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Audino" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Audino",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Audino" }
+    ],
+    "requires": [
+      { "id": "req-1", "cardKind": "pokemon", "name": "Audino" }
+    ],
+    "actionTitle": "Mega Evolve!"
   }
 ]

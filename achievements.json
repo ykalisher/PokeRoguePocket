@@ -28,7 +28,7 @@
   },
   {
     "id": "starter-water",
-    "name": "Tidal Force",
+    "name": "Ocean's Blessing",
     "description": "Win a run with the Water starter deck.",
     "stat": "runs.completed.starter.water",
     "atLeast": 1,
@@ -91,7 +91,7 @@
   },
   {
     "id": "starter-steel",
-    "name": "Forged in Steel",
+    "name": "Iron Fist",
     "description": "Win a run with the Steel starter deck.",
     "stat": "runs.completed.starter.steel",
     "atLeast": 1,
@@ -109,7 +109,7 @@
   },
   {
     "id": "starter-gourmet",
-    "name": "Clean Plate",
+    "name": "Master Chef",
     "description": "Win a run with the Gourmet starter deck.",
     "stat": "runs.completed.starter.gourmet",
     "atLeast": 1,
@@ -139,6 +139,60 @@
     "name": "Written in the Stars",
     "description": "Win a run with the Astro starter deck.",
     "stat": "runs.completed.starter.astro",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "multiple-champ",
+    "name": "Not a Fluke",
+    "description": "Become champion for a second time",
+    "stat": "runs.completed",
+    "atLeast": 2,
+    "hidden": true,
+    "enabled": true
+  },
+  {
+    "id": "divine",
+    "name": "Divine Right",
+    "description": "Experience a lot of divine intervention.",
+    "stat": "events.seen.divine-intervention",
+    "atLeast": 20,
+    "hidden": true,
+    "enabled": true
+  },
+  {
+    "id": "starter-ice",
+    "name": "Snowdragon's Ice Queen",
+    "description": "Win a run with the Ice starter deck.",
+    "stat": "runs.completed.starter.ice",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-rotom",
+    "name": "Rotom Royalty",
+    "description": "Win a run with the Rotom starter deck.",
+    "stat": "runs.completed.starter.rotom",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-legend",
+    "name": "Child of Heaven",
+    "description": "Win a run with the Mandate of Heaven starter deck.",
+    "stat": "runs.completed.starter.divine",
+    "atLeast": 1,
+    "hidden": true,
+    "enabled": true
+  },
+  {
+    "id": "starter-bug",
+    "name": "Bug Catcher",
+    "description": "Win a run with the Bug starter deck.",
+    "stat": "runs.completed.starter.bug",
     "atLeast": 1,
     "hidden": false,
     "enabled": true

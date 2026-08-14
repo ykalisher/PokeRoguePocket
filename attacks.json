@@ -1571,5 +1571,17 @@
     ],
     "target": "OPPONENT",
     "full_type_requirements": false
+  },
+  {
+    "name": "Low Kick",
+    "type1": "FIGHTING",
+    "type2": "NONE",
+    "basePower": 50,
+    "status": "NONE",
+    "statChanges": [
+      "SPEED_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": false
   }
 ]
