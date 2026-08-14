@@ -1624,6 +1624,7 @@
         "amount": 1,
         "cardKind": "pokemon",
         "count": 1,
+        "selectionId": "heracross",
         "replacement": { "cardKind": "pokemon", "name": "Mega Heracross" }
       }
     ],
@@ -1695,6 +1696,7 @@
       {
         "type": "replace-selected-card",
         "amount": 1,
+        "selectionId": "req-1",
         "replacement": { "cardKind": "pokemon", "name": "Mega Absol" }
       }
     ],
@@ -1718,6 +1720,7 @@
       {
         "type": "replace-selected-card",
         "amount": 1,
+        "selectionId": "req-1",
         "replacement": { "cardKind": "pokemon", "name": "Mega Garchomp" }
       }
     ],
@@ -1754,6 +1757,102 @@
     ],
     "requires": [
       { "id": "req-1", "cardKind": "pokemon", "name": "Audino" }
+    ],
+    "actionTitle": "Mega Evolve!"
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-gardevoir",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Gardevoir!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "req-1",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Gardevoir" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Gardevoir",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Gardevoir" }
+    ],
+    "requires": [
+      { "id": "req-1", "cardKind": "pokemon", "name": "Gardevoir" }
+    ],
+    "actionTitle": "Mega Evolve!"
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-gallade",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Gallade!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "req-1",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Gallade" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Gallade",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Gallade" }
+    ],
+    "requires": [
+      { "id": "req-1", "cardKind": "pokemon", "name": "Gallade" }
+    ],
+    "actionTitle": "Mega Evolve!"
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-sableye",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Sableye!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "req-1",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Sableye" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Sableye",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Sableye" }
+    ],
+    "requires": [
+      { "id": "req-1", "cardKind": "pokemon", "name": "Sableye" }
+    ],
+    "actionTitle": "Mega Evolve!"
+  },
+  {
+    "type": "gift",
+    "title": "A Gift from the Professor",
+    "id": "mega-mawile",
+    "body": "You hear a voice call your name, and turn around to see the Pokémon professor's aide running towards you. \"Hey! The professor just found this mega stone for your Mawile!\"",
+    "buttonText": "Take the stone",
+    "effects": [
+      {
+        "type": "replace-selected-card",
+        "amount": 1,
+        "selectionId": "req-1",
+        "replacement": { "cardKind": "pokemon", "name": "Mega Mawile" }
+      }
+    ],
+    "enabled": true,
+    "kicker": "Mega Mawile",
+    "conditions": [
+      { "mode": "has", "cardKind": "pokemon", "name": "Mawile" }
+    ],
+    "requires": [
+      { "id": "req-1", "cardKind": "pokemon", "name": "Mawile" }
     ],
     "actionTitle": "Mega Evolve!"
   }

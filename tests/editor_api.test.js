@@ -16,8 +16,14 @@ const FILE_NAMES = ['pokemon', 'attacks', 'items', 'trainers', 'events', 'locati
 // Seeds a fixture data dir from the real, already-valid root JSON files
 // (simpler than hand-rolling minimal fixtures, and it satisfies the
 // roster/graph dataset rules for free — see 27-editor-server.md step 3).
+// Every dir handed out gets removed by the after() hook below — otherwise each
+// run strands 19 copies of the dataset in os.tmpdir() forever, and on a
+// tmpfs /tmp that eventually fills the mount and fails the whole suite.
+const fixtureDirs = [];
+
 function makeFixtureDir() {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'editor-api-'));
+    fixtureDirs.push(dir);
     FILE_NAMES.forEach((name) => {
         fs.copyFileSync(path.join(ROOT, `${name}.json`), path.join(dir, `${name}.json`));
     });
@@ -116,6 +122,7 @@ before(async () => {
 
 after(async () => {
     await closeServer(sharedServer);
+    fixtureDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true }));
 });
 
 // --------------------------------------------------------------- /api/data
