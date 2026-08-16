@@ -227,23 +227,23 @@
       "Sleep Powder",
       "Ooze",
       "Razor Leaf",
-      "Sludge Strike",
       "Sludge Bomb",
       "Razor Leaf",
       "Razor Leaf",
-      "Sludge Strike",
       "Razor Leaf",
       "Toxic",
       "Sludge Bomb",
-      "Razor Leaf",
       "Ancient Energy",
-      "Razor Leaf",
       "Sludge Bomb",
       "Ooze",
+      "Sludge Bomb",
+      "Energy Ball",
+      "Energy Ball",
+      "Energy Ball",
+      "Energy Ball",
       "Razor Leaf",
-      "Sludge Strike",
-      "Sludge Strike",
-      "Razor Leaf"
+      "Energy Ball",
+      "Energy Ball"
     ],
     "items": [
       "Sitrus Berry",
@@ -875,9 +875,9 @@
       "Razor Leaf",
       "Bulldoze",
       "Dragon Claw",
-      "Razor Leaf",
-      "Razor Leaf",
-      "Bulldoze"
+      "Bulldoze",
+      "Energy Ball",
+      "Energy Ball"
     ],
     "items": [
       "Grass Gem",
@@ -1108,18 +1108,18 @@
       "Sleep Powder",
       "Sludge Bomb",
       "Razor Leaf",
-      "Razor Leaf",
       "Snack Up",
       "Chomp",
-      "Razor Leaf",
       "Body Slam",
-      "Sleep Powder",
       "Sludge Bomb",
       "Chomp",
-      "Razor Leaf",
       "Body Slam",
+      "Espresso Shot",
+      "Energy Ball",
+      "Energy Ball",
+      "Energy Ball",
       "Razor Leaf",
-      "Espresso Shot"
+      "Energy Ball"
     ],
     "items": [
       "Sitrus Berry",
@@ -1142,7 +1142,6 @@
     "attacks": [
       "Ooze",
       "Sludge Bomb",
-      "Sludge Strike",
       "Toxic Pit",
       "Air Slash",
       "Toxic",
@@ -1152,10 +1151,11 @@
       "Sludge Bomb",
       "Sludge Bomb",
       "Ooze",
-      "Ooze",
       "Air Slash",
       "Tailwind",
-      "Air Slash"
+      "Air Slash",
+      "Sludge Bomb",
+      "Ooze"
     ],
     "items": [
       "Lum Berry",
@@ -2107,18 +2107,18 @@
       "Dragon Claw",
       "Razor Leaf",
       "Sleep Powder",
-      "Razor Leaf",
-      "Razor Leaf",
       "Dragon Claw",
       "Burp",
       "Chomp",
       "Sludge Bomb",
       "Bulldoze",
       "Dragonfruit Juice",
-      "Dragon Claw",
       "Sludge Bomb",
       "Bulldoze",
-      "Razor Leaf"
+      "Energy Ball",
+      "Energy Ball",
+      "Energy Ball",
+      "Energy Ball"
     ],
     "items": [
       "Sitrus Berry",
@@ -2902,20 +2902,18 @@
       "Karate Smash",
       "Karate Smash",
       "Kick in the Face",
-      "Sludge Strike",
-      "Sludge Strike",
-      "Sludge Strike",
       "Discharge",
       "Crunch",
       "Shadow Ball",
       "Jumpscare",
-      "Sludge Bomb"
+      "Sludge Bomb",
+      "Sludge Bomb",
+      "Ooze",
+      "Kick in the Face"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Babiri Berry"
     ]
   },
@@ -3349,7 +3347,7 @@
       "Dragonfruit Juice",
       "Dragonfruit Juice",
       "Dragonfruit Juice",
-      "Dragonfruit Juice"
+      "Energy Ball"
     ],
     "items": [
       "Sitrus Berry",
@@ -3537,23 +3535,22 @@
       "Buzz Up",
       "Buzz Up",
       "Expanding Force",
-      "Expanding Force",
-      "Expanding Force",
       "Future Sight",
       "Sludge Bomb",
       "Ooze",
       "Ooze",
       "Ooze",
-      "Ooze",
-      "Sludge Strike"
+      "Sludge Bomb",
+      "Sludge Bomb",
+      "Mind Break",
+      "Mind Break"
     ],
     "items": [
       "Sitrus Berry",
       "Lum Berry",
       "Poison Gem",
-      "Withdraw Wand",
-      "Withdraw Wand",
-      "Babiri Berry"
+      "Babiri Berry",
+      "Liechi Berry"
     ]
   },
   {
