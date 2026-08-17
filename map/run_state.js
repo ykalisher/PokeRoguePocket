@@ -618,7 +618,7 @@
             .filter(([, encounter]) => encounter && typeof encounter === 'object')
             .map(([nodeId, encounter]) => [nodeId, {
                 attackNames: normalizeNameList(encounter.attackNames),
-                attackRemovalUsed: Boolean(encounter.attackRemovalUsed),
+                attackRemovalsUsed: normalizeAttackRemovalsUsed(encounter),
                 boughtAttackNames: normalizeNameList(encounter.boughtAttackNames),
                 boughtItemNames: normalizeNameList(encounter.boughtItemNames),
                 completed: Boolean(encounter.completed),
@@ -630,6 +630,19 @@
                 statsRecorded: Boolean(encounter.statsRecorded),
                 trades: normalizeMartTrades(encounter)
             }]));
+    }
+
+    /**
+     * Attack removals persist as a count, since a mart may sell more than one
+     * (see PokeLocations.getMartStock). Saves from before the count existed
+     * carry the single-use `attackRemovalUsed` flag; migrate those to 0 or 1.
+     */
+    function normalizeAttackRemovalsUsed(encounter) {
+        const used = Number(encounter.attackRemovalsUsed);
+
+        if (Number.isFinite(used) && used > 0) return Math.floor(used);
+
+        return encounter.attackRemovalUsed ? 1 : 0;
     }
 
     /**

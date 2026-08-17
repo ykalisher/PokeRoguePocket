@@ -1060,6 +1060,19 @@
         return true;
     }
 
+    // --- Mart stock size -----------------------------------------------------
+    // How deep a mart's shelves are and how many attack removals it will sell,
+    // for both encounter creation (map/area.js) and the top-up repair the mart
+    // page runs (map/mart.js). Marts on the final level stock more of
+    // everything: it is the player's last chance to shape the deck.
+
+    const MART_STOCK = Object.freeze({ attacks: 8, items: 4, attackRemovals: 1 });
+    const FINAL_LEVEL_MART_STOCK = Object.freeze({ attacks: 13, items: 6, attackRemovals: 2 });
+
+    function getMartStock(level) {
+        return Number(level) >= TOTAL_LEVELS ? FINAL_LEVEL_MART_STOCK : MART_STOCK;
+    }
+
     // --- Mart trade service (phase 46) --------------------------------------
     // Each mart offers MART_TRADE_COUNT independent trades. An offer's wanted
     // type AND the exact species it hands back are rolled once, when the
@@ -1183,6 +1196,7 @@
     global.PokeLocations = {
         FINAL_LEVEL_LOCATION_ID,
         LEVEL_CONFIG,
+        MART_STOCK,
         MART_TRADE_COUNT,
         // Alias kept so callers that never load game data (Node tests, the
         // data editor's engine refs) still see the built-in decks.
@@ -1205,6 +1219,7 @@
         getLearnableDualTypeAttacks,
         getLocationById,
         getLocations,
+        getMartStock,
         getMegaTargetKeys,
         getObtainablePokemonPool,
         getRunAttackRecords,

@@ -1077,14 +1077,15 @@
             return existingEncounter;
         }
 
+        const stock = locations.getMartStock(getRunLevel());
         const encounter = {
-            attackNames: chooseMartCardNames('attacks', 8),
+            attackNames: chooseMartCardNames('attacks', stock.attacks),
             boughtAttackNames: [],
             boughtItemNames: [],
             completed: false,
             completedAt: null,
             createdAt: new Date().toISOString(),
-            itemNames: chooseMartCardNames('items', 4),
+            itemNames: chooseMartCardNames('items', stock.items),
             nodeId: node.id,
             trades: []
         };
@@ -1131,8 +1132,9 @@
     }
 
     function sanitizeMartEncounter(encounter) {
-        const attackNames = sanitizeMartCardNames('attacks', encounter.attackNames, 8);
-        const itemNames = sanitizeMartCardNames('items', encounter.itemNames, 4);
+        const stock = locations.getMartStock(getRunLevel());
+        const attackNames = sanitizeMartCardNames('attacks', encounter.attackNames, stock.attacks);
+        const itemNames = sanitizeMartCardNames('items', encounter.itemNames, stock.items);
         const namesChanged = didNameListChange(encounter.attackNames, attackNames) ||
             didNameListChange(encounter.itemNames, itemNames);
         const tradeChanged = locations.sanitizeMartTrades(encounter, state.run, arena.GameData);

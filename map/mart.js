@@ -5,8 +5,6 @@
 (function bootMartPage(arena, runStore, locations) {
     'use strict';
 
-    const ATTACK_COUNT = 8;
-    const ITEM_COUNT = 4;
     const ATTACK_COST = 70;
     const ITEM_COST = 90;
     const ATTACK_REMOVAL_COST = 50;
@@ -396,7 +394,7 @@
 
         state.run.cash = getCash() - ATTACK_REMOVAL_COST;
         runStore.rebuildActionDeckForActivePokemon(state.run);
-        state.encounter.attackRemovalUsed = true;
+        state.encounter.attackRemovalsUsed = getAttackRemovalsUsed() + 1;
         runStore.saveRunState(state.run);
         state.attackRemovalPicker = false;
         state.message = `Removed ${card.attack.name}.`;
@@ -407,9 +405,19 @@
     }
 
     function canRemoveAttack() {
-        return !state.encounter.attackRemovalUsed &&
+        return getAttackRemovalsLeft() > 0 &&
             getCash() >= ATTACK_REMOVAL_COST &&
             getOwnedAttackCards().length > 0;
+    }
+
+    function getAttackRemovalsUsed() {
+        const used = Number(state.encounter.attackRemovalsUsed);
+
+        return Number.isFinite(used) && used > 0 ? Math.floor(used) : 0;
+    }
+
+    function getAttackRemovalsLeft() {
+        return Math.max(0, getMartStock().attackRemovals - getAttackRemovalsUsed());
     }
 
     function getOwnedAttackCards() {
@@ -640,7 +648,9 @@
     }
 
     function renderAttackRemovalService() {
-        const used = Boolean(state.encounter.attackRemovalUsed);
+        const stock = getMartStock();
+        const removalsLeft = getAttackRemovalsLeft();
+        const used = removalsLeft === 0;
         const ownedCount = getOwnedAttackCards().length;
         const disabled = used || getCash() < ATTACK_REMOVAL_COST || ownedCount === 0 ? 'disabled' : '';
         const buttonText = used
@@ -650,12 +660,17 @@
                 : ownedCount === 0
                     ? 'No attacks'
                     : `Remove ${ATTACK_REMOVAL_COST}`;
+        // Marts that stock a single removal keep the original wording; deeper
+        // shelves (the final level) show how many are still on offer.
+        const requirement = stock.attackRemovals > 1
+            ? `Permanently remove an attack card &mdash; ${removalsLeft} of ${stock.attackRemovals} left`
+            : 'Permanently remove one attack card';
 
         return `
             <article class="mart-service-row ${used ? 'is-used' : ''}">
                 <div class="mart-service-info">
                     <h3>Remove an Attack</h3>
-                    <span class="mart-service-requirement">Permanently remove one attack card</span>
+                    <span class="mart-service-requirement">${requirement}</span>
                 </div>
                 <button class="mart-service-button" type="button" data-mart-service="remove-attack" ${disabled}>${buttonText}</button>
             </article>
@@ -811,8 +826,9 @@
     }
 
     function repairMartEncounter() {
-        const attackNames = repairOfferNames('attacks', state.encounter.attackNames, ATTACK_COUNT);
-        const itemNames = repairOfferNames('items', state.encounter.itemNames, ITEM_COUNT);
+        const stock = getMartStock();
+        const attackNames = repairOfferNames('attacks', state.encounter.attackNames, stock.attacks);
+        const itemNames = repairOfferNames('items', state.encounter.itemNames, stock.items);
         const namesChanged = didNameListChange(state.encounter.attackNames, attackNames) ||
             didNameListChange(state.encounter.itemNames, itemNames);
         const tradeChanged = repairMartTrades();
@@ -922,6 +938,14 @@
 
     function getCash() {
         return Number.isFinite(state.run && state.run.cash) ? state.run.cash : 0;
+    }
+
+    function getMartStock() {
+        return locations.getMartStock(getRunLevel());
+    }
+
+    function getRunLevel() {
+        return state.run && Number.isFinite(state.run.level) ? state.run.level : 1;
     }
 
     function setMessage(message) {

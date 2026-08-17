@@ -537,6 +537,55 @@ test('sanitizeMartTrades re-rolls an offer whose species left the obtainable poo
     assert.ok(P.getObtainablePokemonPool(gameData).some(record => record.name === encounter.trades[0].offeredName));
 });
 
+test('getMartStock stocks the final level deeper than every level before it', () => {
+    const base = P.getMartStock(1);
+    const final = P.getMartStock(P.TOTAL_LEVELS);
+
+    assert.deepEqual(base, P.MART_STOCK);
+    ['attacks', 'items', 'attackRemovals'].forEach(key => {
+        assert.ok(Number.isInteger(base[key]) && base[key] > 0, `base stock ${key} must be a positive integer`);
+        assert.ok(final[key] > base[key], `final-level stock ${key} must beat the base stock`);
+    });
+
+    assert.equal(final.attacks, base.attacks + 5);
+    assert.equal(final.items, base.items + 2);
+    assert.equal(final.attackRemovals, base.attackRemovals + 1);
+});
+
+test('getMartStock treats every level before the last as base stock', () => {
+    for (let level = 1; level < P.TOTAL_LEVELS; level += 1) {
+        assert.deepEqual(P.getMartStock(level), P.MART_STOCK, `level ${level} should carry base stock`);
+    }
+
+    // Missing/garbage levels fall back to the base stock rather than the bonus.
+    assert.deepEqual(P.getMartStock(undefined), P.MART_STOCK);
+    assert.deepEqual(P.getMartStock(null), P.MART_STOCK);
+});
+
+test('normalizeMartEncounters migrates the old single-use removal flag to a count', () => {
+    const normalized = R.normalizeMartEncounters({
+        'shop-1': { nodeId: 'shop-1', attackRemovalUsed: true },
+        'shop-2': { nodeId: 'shop-2', attackRemovalUsed: false },
+        'shop-3': { nodeId: 'shop-3' },
+        'shop-4': { nodeId: 'shop-4', attackRemovalsUsed: 2 },
+        'shop-5': { nodeId: 'shop-5', attackRemovalsUsed: 'nonsense' }
+    });
+
+    assert.equal(normalized['shop-1'].attackRemovalsUsed, 1);
+    assert.equal(normalized['shop-2'].attackRemovalsUsed, 0);
+    assert.equal(normalized['shop-3'].attackRemovalsUsed, 0);
+    assert.equal(normalized['shop-4'].attackRemovalsUsed, 2);
+    assert.equal(normalized['shop-5'].attackRemovalsUsed, 0);
+    assert.equal('attackRemovalUsed' in normalized['shop-1'], false);
+});
+
+test('a removal count survives a save/load round-trip', () => {
+    const encounter = { nodeId: 'shop-1', attackRemovalsUsed: 1, trades: [] };
+    const reloaded = R.normalizeMartEncounters({ 'shop-1': encounter })['shop-1'];
+
+    assert.equal(reloaded.attackRemovalsUsed, 1);
+});
+
 test('normalizeMartEncounters migrates a pre-array trade, keeping its used flag', () => {
     const normalized = R.normalizeMartEncounters({
         'shop-1': { nodeId: 'shop-1', tradeAcceptedType: 'WATER', tradeOfferedType: 'GRASS', tradeUsed: true },
