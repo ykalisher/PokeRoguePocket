@@ -76,6 +76,8 @@
         arena.Render.render();
         model.saveBattleState();
     };
+    // Open action log group, if any. See beginActionLogGroup().
+    let activeLogGroup = null;
 
     /**
      * Starts a brand-new battle after the page decides not to restore saved state.
@@ -174,8 +176,6 @@
 
         if (drawnCards.length > 0) {
             logEvent(`${player.name} drew ${drawnCards.length} ${drawnCards.length === 1 ? 'card' : 'cards'}.`);
-        } else {
-            logEvent(`${player.name} kept their hand.`);
         }
 
         render();
@@ -392,7 +392,6 @@
         state.selectedCardId = cardId;
         state.phase = 'selecting-attack-user';
 
-        logEvent(`Choose a Pokemon to use ${model.getCardName(attackCard)}.`);
         render();
     }
 
@@ -432,7 +431,6 @@
 
         state.phase = 'selecting-attack-target';
 
-        logEvent(`Choose a target for ${model.getCardName(attackCard)}.`);
         render();
     }
 
@@ -494,7 +492,6 @@
         state.selectedCardId = cardId;
         state.phase = 'selecting-item-target';
 
-        logEvent(`Choose a target for ${model.getCardName(itemCard)}.`);
         render();
     }
 
@@ -636,7 +633,6 @@
             userCardId: userCard.id
         });
 
-        logEvent(`${model.getCardName(userCard)} readied ${model.getCardName(attackCard)}.`);
         clearPendingAction();
         state.phase = 'turn';
         render();
@@ -698,7 +694,6 @@
         await animateArtificialAttackCard(itemCard, impactCenter || sourceCenter, 'player');
 
         model.removeCardFromPlay(player, itemCard);
-        logEvent(`${model.getCardName(itemCard)} was removed from play for the rest of the battle.`);
         state.isResolving = false;
         render();
     }
@@ -741,7 +736,6 @@
         await animateArtificialAttackCard(removedCard, impactCenter || sourceCenter, ownerId);
 
         model.removeCardFromPlay(owner, removedCard);
-        logEvent(`${model.getCardName(removedCard)} was removed from play for the rest of the battle.`);
 
         if (ownerId === 'player') {
             state.isResolving = false;
@@ -806,7 +800,6 @@
         await animateArtificialAttackCard(removedCard, impactCenter || sourceCenter, ownerId);
 
         model.removeCardFromPlay(owner, removedCard);
-        logEvent(`${model.getCardName(removedCard)} was removed from play for the rest of the battle.`);
 
         if (ownerId === 'player') {
             state.isResolving = false;
@@ -857,7 +850,6 @@
         showPopup(`${model.getCardName(userCard)} used ${model.getCardName(removedCard)}.`);
         applyTrainerEffects(removedCard, ownerId, userCard);
         model.removeCardFromPlay(owner, removedCard);
-        logEvent(`${model.getCardName(removedCard)} was removed from play for the rest of the battle.`);
 
         if (ownerId === 'player') {
             state.isResolving = false;
@@ -923,7 +915,7 @@
     async function discardPlayerHandCard(cardId) {
         if (!canPlayerDiscardHandCard(cardId)) return false;
 
-        return discardHandCardFromHand('player', cardId, `${state.players.player.name} discarded`);
+        return discardHandCardFromHand('player', cardId);
     }
 
     /**
@@ -962,8 +954,8 @@
 
         flights.forEach(flight => {
             player.discard.unshift(flight.card);
-            logEvent(`${player.name} discarded ${model.getCardName(flight.card)}.`);
         });
+        logDiscardedCards('player', flights.length);
 
         state.isResolving = false;
         render();
@@ -971,7 +963,7 @@
         return true;
     }
 
-    async function discardHandCardFromHand(ownerId, cardId, messagePrefix = null, options = {}) {
+    async function discardHandCardFromHand(ownerId, cardId, options = {}) {
         const owner = state.players[ownerId];
         const sourceCenter = getHandCardCenter(ownerId, cardId) || getArenaCenter();
         const pendingCard = model.findHandCard(owner, cardId);
@@ -997,10 +989,7 @@
         await animateDiscardCard(ownerId, card, sourceCenter);
 
         owner.discard.unshift(card);
-
-        if (messagePrefix) {
-            logEvent(`${messagePrefix} ${model.getCardName(card)}.`);
-        }
+        logDiscardedCards(ownerId);
 
         state.isResolving = !shouldReleaseInput;
         render();
@@ -1355,8 +1344,6 @@
 
         if (drawnCards.length > 0) {
             logEvent(`${opponent.name} drew ${drawnCards.length} ${drawnCards.length === 1 ? 'card' : 'cards'}.`);
-        } else {
-            logEvent(`${opponent.name} kept their hand.`);
         }
 
         render();
@@ -1412,7 +1399,6 @@
         const opponent = state.players.opponent;
         const attackers = model.getBoardCards('opponent');
         const claimedStatusTargets = new Set();
-        let chosenCount = 0;
 
         attackers.forEach(userCard => {
             while (model.canQueueAnotherAttack('opponent', userCard.id)) {
@@ -1432,14 +1418,8 @@
                     speed: model.getPokemonSpeed(userCard),
                     userCardId: userCard.id
                 });
-                chosenCount += 1;
-                logEvent(`${opponent.name} readied ${model.getCardName(attackCard)}.`);
             }
         });
-
-        if (chosenCount === 0) {
-            logEvent(`${opponent.name} readied no attacks.`);
-        }
     }
 
     /**
@@ -1455,7 +1435,7 @@
         for (const card of discardCards) {
             if (state.finished || state.currentPlayer !== 'opponent') return;
 
-            await discardHandCardFromHand('opponent', card.id, `${opponent.name} discarded`, { releaseInput: false });
+            await discardHandCardFromHand('opponent', card.id, { releaseInput: false });
             await model.sleep(120);
         }
     }
@@ -1553,7 +1533,6 @@
         await animateArtificialAttackCard(itemCard, impactCenter || sourceCenter, 'opponent');
 
         model.removeCardFromPlay(opponent, itemCard);
-        logEvent(`${model.getCardName(itemCard)} was removed from play for the rest of the battle.`);
         render();
         await model.sleep(180);
 
@@ -1962,15 +1941,6 @@
 
         if (checkGameOver()) return;
 
-        const skippedAttackers = model.getBoardCards('player').filter(card => (
-            !model.hasQueuedAttack('player', card.id) &&
-            !model.hasUsableAttackInHand(state.players.player, card)
-        ));
-
-        skippedAttackers.forEach(card => {
-            logEvent(`${model.getCardName(card)} has no usable attack.`);
-        });
-
         state.currentPlayer = 'opponent';
         state.isResolving = true;
         state.phase = 'opponent-planning';
@@ -2228,10 +2198,7 @@
             return { blocked: false, changed: true };
         }
 
-        if (Math.random() >= CONFUSION_SELF_DAMAGE_CHANCE) {
-            logEvent(`${model.getCardName(attacker)} fought through confusion.`);
-            return { blocked: false };
-        }
+        if (Math.random() >= CONFUSION_SELF_DAMAGE_CHANCE) return { blocked: false };
 
         const damageResult = damagePokemonByStatus(ownerId, attacker, CONFUSION_DAMAGE_PERCENT, 'confusion');
 
@@ -2326,28 +2293,25 @@
         }
 
         const statuses = model.getActionStatuses(action.card);
-        const statChanges = model.getActionStatChanges(action.card);
         const isDamaging = isDamagingAttack(action.card);
         const isMultiAttack = statuses.includes('MULTI_ATTACK');
         const dragonGemStatuses = getDragonGemStatusesForAttack(action.owner, action.card, isDamaging);
         const boosted = model.hasEffectBoost(action.owner);
-        let handledEffect = false;
 
         showPopup(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}.`);
+        beginActionLogGroup(`${model.getCardName(attacker)} used ${model.getCardName(action.card)}.`);
         const impactCenter = await animateAttackCard(action, targets);
 
         if (statuses.includes('SWITCH')) {
             for (const target of targets) {
                 await switchPokemon(target.owner, target.card);
             }
-            handledEffect = true;
         } else {
             if (hasHealthHealing(statuses)) {
                 targets.forEach(target => healPokemon(target.card));
-                handledEffect = true;
             }
 
-            handledEffect = applyStatusHealingEffects(statuses, targets) || handledEffect;
+            applyStatusHealingEffects(statuses, targets);
 
             if (isDamaging) {
                 if (isMultiAttack) {
@@ -2359,24 +2323,20 @@
                     render();
                     await model.sleep(560);
                 }
-                handledEffect = true;
             }
 
-            handledEffect = maybeApplyAttackStatChanges(
+            maybeApplyAttackStatChanges(
                 action.card,
                 getStatChangeTargets(action, attacker, targets),
                 isDamaging,
                 isMultiAttack ? MULTI_ATTACK_STAT_CHANGE_TRIGGER_CHANCE : STAT_CHANGE_TRIGGER_CHANCE,
                 boosted
-            ) || handledEffect;
-            handledEffect = applyStatRevertEffects(statuses, targets) || handledEffect;
-            handledEffect = maybeApplyAttackStatuses(action.card, targets, isDamaging, dragonGemStatuses, boosted) || handledEffect;
+            );
+            applyStatRevertEffects(statuses, targets);
+            maybeApplyAttackStatuses(action.card, targets, isDamaging, dragonGemStatuses, boosted);
         }
 
-        if (!handledEffect && statChanges.length === 0) {
-            logEvent(`${model.getCardName(action.card)} had no effect.`);
-        }
-
+        endActionLogGroup();
         await discardActionCard(action, impactCenter);
     }
 
@@ -2458,6 +2418,8 @@
         const statChanges = model.getActionStatChanges(itemCard);
         let didSomething = false;
 
+        beginActionLogGroup(`${state.players[actorId].name} used ${model.getCardName(itemCard)}.`);
+
         if (statuses.includes('SWITCH')) {
             for (const target of targets) {
                 await switchPokemon(target.owner, target.card);
@@ -2483,7 +2445,7 @@
             didSomething = true;
         }
 
-        logEvent(`${state.players[actorId].name} used ${model.getCardName(itemCard)}.`);
+        endActionLogGroup();
         showPopup(didSomething
             ? `${model.getCardName(itemCard)} took effect.`
             : `${model.getCardName(itemCard)} had no immediate effect.`
@@ -2500,13 +2462,7 @@
             return false;
         }
 
-        logEvent(`${actor.name} used ${result.effect.label}.`);
-
-        if (result.replaced) {
-            logEvent(`${result.effect.label} replaced ${result.replacedEffect.label}.`);
-        }
-
-        logEvent(`${actor.name}'s Dragon attacks can now apply ${result.effect.statusLabel}.`);
+        logEvent(`${actor.name} used ${result.effect.label}${result.replaced ? ` over ${result.replacedEffect.label}` : ''}: Dragon attacks can now apply ${result.effect.statusLabel}.`);
         showPopup(`${result.effect.label}: Dragon attacks may apply ${result.effect.statusLabel}.`);
         return true;
     }
@@ -2527,8 +2483,7 @@
             return false;
         }
 
-        logEvent(`${actor.name} used ${model.getCardName(itemCard)}.`);
-        logEvent(`${actor.name}'s attacks trigger their effects more often this turn.`);
+        logEvent(`${actor.name} used ${model.getCardName(itemCard)}: attacks trigger their effects more often this turn.`);
         showPopup(`${model.getCardName(itemCard)}: effect chances boosted for this turn.`);
         return true;
     }
@@ -2540,7 +2495,7 @@
      */
     function damagePokemon(ownerId, pokemonCard, attackerCard, actionCard) {
         if (isProtectedFromDamage(pokemonCard)) {
-            logEvent(`${model.getCardName(pokemonCard)} was protected from damage.`);
+            logCardEvent(pokemonCard, 'was protected from damage');
             return {
                 cardId: pokemonCard.id,
                 damage: 0,
@@ -2554,7 +2509,7 @@
         const damagePercent = Math.ceil((actualDamage / pokemonCard.pokemon.baseHealth) * 100);
 
         pokemonCard.currentHealth = Math.max(0, pokemonCard.currentHealth - actualDamage);
-        logEvent(`${model.getCardName(pokemonCard)} took ${actualDamage} damage.`);
+        logCardDamage(pokemonCard, actualDamage);
 
         if (pokemonCard.currentHealth === 0) {
             knockOutPokemon(ownerId, pokemonCard);
@@ -2631,7 +2586,7 @@
         if (!pokemonCard || pokemonCard.currentHealth <= 0) return null;
 
         if (isProtectedFromDamage(pokemonCard)) {
-            logEvent(`${model.getCardName(pokemonCard)} was protected from ${damageLabel} damage.`);
+            logCardEvent(pokemonCard, `was protected from ${damageLabel} damage`);
             return {
                 cardId: pokemonCard.id,
                 damage: 0,
@@ -2646,7 +2601,7 @@
         if (actualDamage <= 0) return null;
 
         pokemonCard.currentHealth = Math.max(0, pokemonCard.currentHealth - actualDamage);
-        logEvent(`${model.getCardName(pokemonCard)} took ${actualDamage} ${damageLabel} damage.`);
+        logCardDamage(pokemonCard, actualDamage, damageLabel);
 
         return {
             cardId: pokemonCard.id,
@@ -2680,7 +2635,9 @@
             await model.sleep(260);
         }
 
-        logEvent(`${model.getCardName(actionCard)} hit ${executedHits} ${executedHits === 1 ? 'time' : 'times'}.`);
+        setActionLogHeadline(
+            `${model.getCardName(attacker)} used ${model.getCardName(actionCard)} ${executedHits} ${executedHits === 1 ? 'time' : 'times'}.`
+        );
     }
 
     /**
@@ -2822,10 +2779,7 @@
 
         const triggerChance = boosted ? Math.min(1, STATUS_TRIGGER_CHANCE * 2) : STATUS_TRIGGER_CHANCE;
 
-        if (isDamaging && Math.random() >= triggerChance) {
-            logEvent(`${model.getCardName(actionCard)} status did not activate.`);
-            return false;
-        }
+        if (isDamaging && Math.random() >= triggerChance) return false;
 
         return applyStatusesToTargets(statuses, targets);
     }
@@ -2875,37 +2829,14 @@
         return appliedAny;
     }
 
+    // Only statuses that actually landed are logged; a status blocked by one
+    // the target already has is a non-event and stays out of the log.
     function logStatusResult(pokemonCard, results) {
         const addedResults = results.filter(result => result.added);
-        const blockedResults = results.filter(result => result.blocked);
 
-        if (addedResults.length > 0) {
-            const statusNames = addedResults
-                .map(result => result.label)
-                .join(', ');
+        if (addedResults.length === 0) return;
 
-            logEvent(`${model.getCardName(pokemonCard)} gained ${statusNames}.`);
-            return;
-        }
-
-        if (blockedResults.length > 0) {
-            const activeStatusNames = [...new Set(blockedResults.map(result => result.label))].join(', ');
-            const attemptedStatusNames = [...new Set(blockedResults.map(result => result.attemptedLabel))].join(', ');
-
-            if (activeStatusNames === attemptedStatusNames) {
-                logEvent(`${model.getCardName(pokemonCard)} already has ${activeStatusNames}.`);
-                return;
-            }
-
-            logEvent(`${model.getCardName(pokemonCard)} already has ${activeStatusNames} and could not gain ${attemptedStatusNames}.`);
-            return;
-        }
-
-        const statusNames = results
-            .map(result => result.label)
-            .join(', ');
-
-        logEvent(`${model.getCardName(pokemonCard)} already has ${statusNames}.`);
+        logCardEvent(pokemonCard, `gained ${addedResults.map(result => result.label).join(', ')}`);
     }
 
     /**
@@ -2947,7 +2878,7 @@
             if (!model.clearPokemonStatChanges(target.card)) return;
 
             revertedAny = true;
-            logEvent(`${model.getCardName(target.card)}'s stat changes were reverted.`);
+            logCardEvent(target.card, 'had its stat changes reverted');
         });
 
         return revertedAny;
@@ -2988,7 +2919,7 @@
             .map(status => status.label)
             .join(', ');
 
-        logEvent(`${model.getCardName(pokemonCard)} recovered from ${statusNames}.`);
+        logCardEvent(pokemonCard, `recovered from ${statusNames}`);
     }
 
     /**
@@ -3002,10 +2933,7 @@
 
         const effectiveChance = boosted ? Math.min(1, triggerChance * 2) : triggerChance;
 
-        if (isDamaging && Math.random() >= effectiveChance) {
-            logEvent(`${model.getCardName(actionCard)} stat changes did not activate.`);
-            return false;
-        }
+        if (isDamaging && Math.random() >= effectiveChance) return false;
 
         return applyStatChangesToTargets(statChanges, targets);
     }
@@ -3045,19 +2973,20 @@
         return appliedAny;
     }
 
+    // Stats already pinned at their limit did not change, so they are left out.
+    // An action that moves the same stat twice reports only where it ended up.
     function logStatChangeResult(pokemonCard, results) {
-        const changedResults = results.filter(result => result.changed);
+        const finalStages = new Map();
 
-        if (changedResults.length === 0) {
-            logEvent(`${model.getCardName(pokemonCard)}'s affected stats are already at their limits.`);
-            return;
-        }
+        results
+            .filter(result => result.changed)
+            .forEach(result => finalStages.set(result.shortLabel, result.nextStage));
 
-        const summary = changedResults
-            .map(result => `${result.shortLabel} ${model.formatStatStage(result.nextStage)}`)
-            .join(', ');
+        if (finalStages.size === 0) return;
 
-        logEvent(`${model.getCardName(pokemonCard)}'s ${summary}.`);
+        logCardEvent(pokemonCard, [...finalStages]
+            .map(([shortLabel, stage]) => `${shortLabel} ${model.formatStatStage(stage)}`)
+            .join(', '));
     }
 
     function showStatChangeAnimations(ownerId, cardId, results) {
@@ -3091,7 +3020,7 @@
         const healing = Math.ceil(pokemonCard.pokemon.baseHealth * DAMAGE_PERCENT);
 
         pokemonCard.currentHealth = Math.min(pokemonCard.pokemon.baseHealth, pokemonCard.currentHealth + healing);
-        logEvent(`${model.getCardName(pokemonCard)} healed ${healing} HP.`);
+        logCardEvent(pokemonCard, `healed ${healing} HP`);
     }
 
     /**
@@ -3108,13 +3037,15 @@
 
         model.clearPokemonStatChanges(removedCard);
         model.putPokemonOnBottomOfDeck(owner, removedCard);
-        logEvent(`${model.getCardName(removedCard)} went to the bottom of ${owner.name}'s Pokemon deck.`);
 
         const replacementCard = model.drawPokemonToBoard(owner, slotIndex);
 
+        logCardEvent(removedCard, replacementCard
+            ? `was switched out for ${model.getCardName(replacementCard)}`
+            : `was switched out to the bottom of ${owner.name}'s Pokemon deck`);
+
         if (replacementCard) {
             markCardArriving(replacementCard);
-            logEvent(`${owner.name} drew ${model.getCardName(replacementCard)} into the open slot.`);
             render();
             await animatePokemonEnterBoard(ownerId, replacementCard, 'pokemon-deck');
         }
@@ -3141,7 +3072,7 @@
         owner.knockout.unshift(removedCard);
         owner.knockoutCount = (Number(owner.knockoutCount) || 0) + 1;
         model.updatePokemonLeft(owner);
-        logEvent(`${model.getCardName(removedCard)} was knocked out.`);
+        logCardEvent(removedCard, 'was knocked out');
 
         if (model.isPlayerDefeated(owner)) return;
 
@@ -3378,6 +3309,112 @@
         const turnLabel = state.turnNumber > 0 ? `Turn ${state.turnNumber}` : 'Setup';
 
         return `${turnLabel}: ${message}`;
+    }
+
+    /**
+     * Attack and item resolution group their outcomes instead of logging each
+     * one: everything that happened to a single Pokemon - damage, statuses,
+     * stat changes, healing, knockout - merges into one line, and the whole
+     * group sits under one "<user> used <card>." headline. Outside a group the
+     * same helpers log one line immediately, as before.
+     */
+    function beginActionLogGroup(headline) {
+        activeLogGroup = { headline, targets: [] };
+    }
+
+    function setActionLogHeadline(headline) {
+        if (activeLogGroup) activeLogGroup.headline = headline;
+    }
+
+    /**
+     * Closes the open group. The log is newest-first, so the target lines are
+     * written oldest-first and the headline last: the group then reads top-down
+     * as the headline followed by one line per affected Pokemon.
+     */
+    function endActionLogGroup() {
+        const group = activeLogGroup;
+
+        activeLogGroup = null;
+
+        if (!group) return;
+
+        group.targets
+            .map(formatActionLogTarget)
+            .filter(Boolean)
+            .reverse()
+            .forEach(line => logEvent(line));
+
+        logEvent(group.headline);
+    }
+
+    function formatActionLogTarget(target) {
+        const notes = target.damage > 0
+            ? [`took ${target.damage} damage`, ...target.notes]
+            : target.notes;
+
+        return notes.length > 0 ? `${target.name} ${notes.join(', ')}.` : null;
+    }
+
+    function getActionLogTarget(pokemonCard) {
+        if (!activeLogGroup || !pokemonCard) return null;
+
+        let target = activeLogGroup.targets.find(entry => entry.cardId === pokemonCard.id);
+
+        if (!target) {
+            target = { cardId: pokemonCard.id, damage: 0, name: model.getCardName(pokemonCard), notes: [] };
+            activeLogGroup.targets.push(target);
+        }
+
+        return target;
+    }
+
+    /** Records "<Pokemon> <note>" for the card an action just affected. */
+    function logCardEvent(pokemonCard, note) {
+        const target = getActionLogTarget(pokemonCard);
+
+        if (!target) {
+            logEvent(`${model.getCardName(pokemonCard)} ${note}.`);
+            return;
+        }
+
+        target.notes.push(note);
+    }
+
+    /** Damage from repeated hits adds up into one "took N damage" clause. */
+    function logCardDamage(pokemonCard, damage, damageLabel = '') {
+        const target = getActionLogTarget(pokemonCard);
+
+        if (!target) {
+            logEvent(`${model.getCardName(pokemonCard)} took ${damage}${damageLabel ? ` ${damageLabel}` : ''} damage.`);
+            return;
+        }
+
+        target.damage += damage;
+    }
+
+    /**
+     * Discards are logged as one running count per player per turn instead of
+     * one line per card: each new discard replaces that turn's line. The count
+     * is read back out of the log itself, so undo and reload stay in step
+     * without another piece of battle state to serialize.
+     */
+    function logDiscardedCards(ownerId, count = 1) {
+        const owner = state.players[ownerId];
+
+        if (!owner || count <= 0) return;
+
+        const prefix = formatLogEvent(`${owner.name} discarded `);
+        const index = state.log.findIndex(entry => (
+            entry.startsWith(prefix) && /^\d+ cards?\.$/.test(entry.slice(prefix.length))
+        ));
+        let total = count;
+
+        if (index !== -1) {
+            total += parseInt(state.log[index].slice(prefix.length), 10) || 0;
+            state.log.splice(index, 1);
+        }
+
+        logEvent(`${owner.name} discarded ${total} ${total === 1 ? 'card' : 'cards'}.`);
     }
 
     function markCardsArriving(cards) {
@@ -3799,6 +3836,10 @@
         computeAttackDamage,
         // Exposed for tests: attack resolution ordering.
         createResolutionActions,
-        sortResolutionActions
+        sortResolutionActions,
+        // Exposed for tests: battle-log grouping and the per-turn discard tally.
+        beginActionLogGroup,
+        endActionLogGroup,
+        logDiscardedCards
     };
 })(window.CardArena = window.CardArena || {});
