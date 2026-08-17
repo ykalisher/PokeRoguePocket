@@ -330,6 +330,54 @@
         return { addedCard: card, zone: 'bench' };
     }
 
+    /**
+     * Swaps a replacement into the exact slot the outgoing Pokemon held, so
+     * trading away a party member leaves the incoming Pokemon in the party
+     * instead of dropping it on the bench behind whoever
+     * balancePokemonCollections would promote into the gap — the same rule mega
+     * evolution follows. Benched Pokemon keep their bench slot the same way, and
+     * an id that is not owned falls back to the plain add path. The action deck
+     * is rebuilt afterwards because the replacement's types decide which attacks
+     * the party can play. Returns { actionChanges, removedCard, zone }.
+     */
+    function replacePokemonCard(run, targetCardId, replacementCard) {
+        if (!run || !isPokemonCard(replacementCard)) {
+            return { actionChanges: null, removedCard: null, zone: null };
+        }
+
+        ensureCollections(run);
+
+        const location = findPokemonCardLocation(run, targetCardId);
+        const removedCard = location
+            ? location.cards.splice(location.index, 1, replacementCard)[0]
+            : null;
+        const zone = location ? location.zone : addPokemonCard(run, replacementCard).zone;
+
+        return {
+            actionChanges: rebuildActionDeckForActivePokemon(run),
+            removedCard,
+            zone
+        };
+    }
+
+    function findPokemonCardLocation(run, cardId) {
+        if (!cardId) return null;
+
+        const activeIndex = run.collections.pokemon.findIndex(card => card.id === cardId);
+
+        if (activeIndex !== -1) {
+            return { cards: run.collections.pokemon, index: activeIndex, zone: 'active' };
+        }
+
+        const benchIndex = run.collections.bench.pokemon.findIndex(card => card.id === cardId);
+
+        if (benchIndex !== -1) {
+            return { cards: run.collections.bench.pokemon, index: benchIndex, zone: 'bench' };
+        }
+
+        return null;
+    }
+
     function addActionCard(run, card) {
         if (!run || !card) return { addedCard: null, zone: null };
 
@@ -877,6 +925,7 @@
         normalizeLocationSnapshot,
         normalizeMartEncounters,
         rebuildActionDeckForActivePokemon,
+        replacePokemonCard,
         saveRunState,
         swapBenchPokemon
     };

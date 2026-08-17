@@ -315,27 +315,46 @@
 
         if (!resultRecord) return;
 
-        state.run.collections.pokemon = state.run.collections.pokemon
-            .filter(card => card.id !== selectedCard.id);
-        state.run.collections.bench.pokemon = state.run.collections.bench.pokemon
-            .filter(card => card.id !== selectedCard.id);
-
         const newCard = runStore.createPokemonCard(
             resultRecord,
             'player',
             runStore.allocateCardId(state.run, 'pokemon', resultRecord.name)
         );
+        // The Pokemon coming in takes the exact slot the one going out held, so
+        // trading a party member never demotes its replacement to the bench.
+        // replacePokemonCard also rebuilds the action deck, because the new
+        // party decides which attacks are playable.
+        const { actionChanges } = runStore.replacePokemonCard(state.run, selectedCard.id, newCard);
 
-        runStore.addPokemonCard(state.run, newCard);
-        runStore.balancePokemonCollections(state.run);
-        runStore.rebuildActionDeckForActivePokemon(state.run);
         trade.used = true;
         // The traded-away pokemon may have been the only one matching the
         // other offer's wanted type — re-roll rather than leaving it dead.
         repairMartTrades();
         runStore.saveRunState(state.run);
         state.selectedPokemonId = null;
-        state.message = `Traded ${selectedCard.pokemon.name} for ${resultRecord.name}.`;
+        state.message = `Traded ${selectedCard.pokemon.name} for ${resultRecord.name}.${formatActionChangeNote(actionChanges)}`;
+    }
+
+    // A trade can change which attacks the party can play, and the status line
+    // is the only place a player would notice before opening the deck.
+    function formatActionChangeNote(actionChanges) {
+        if (!actionChanges) return '';
+
+        const notes = [];
+
+        if (actionChanges.addedToDeck.length > 0) {
+            notes.push(`${formatAttackCount(actionChanges.addedToDeck.length)} joined the action deck`);
+        }
+
+        if (actionChanges.movedToBench.length > 0) {
+            notes.push(`${formatAttackCount(actionChanges.movedToBench.length)} moved to the attack bench`);
+        }
+
+        return notes.length > 0 ? ` ${notes.join(', ')}.` : '';
+    }
+
+    function formatAttackCount(count) {
+        return count === 1 ? '1 attack' : `${count} attacks`;
     }
 
     function getTrades() {
