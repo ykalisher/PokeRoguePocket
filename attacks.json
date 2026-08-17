@@ -356,8 +356,7 @@
     "status": "NONE",
     "statChanges": [
       "DEFENSE_UP",
-      "DEFENSE_UP",
-      "SPEED_DOWN"
+      "DEFENSE_UP"
     ],
     "target": "SELF",
     "full_type_requirements": false
@@ -537,9 +536,7 @@
     "type2": "DARK",
     "basePower": 60,
     "status": "FLINCH",
-    "statChanges": [
-      "SPEED_DOWN"
-    ],
+    "statChanges": [],
     "target": "ALL_OPPONENTS",
     "full_type_requirements": true
   },
@@ -1410,7 +1407,7 @@
     "type1": "FIRE",
     "type2": "DARK",
     "basePower": 65,
-    "status": "BURN",
+    "status": "FLINCH",
     "statChanges": [
       "ATTACK_DOWN"
     ],
@@ -1522,7 +1519,7 @@
     "basePower": 0,
     "status": "PROTECT",
     "statChanges": [
-      "ATTACK_UP"
+      "SPEED_UP"
     ],
     "target": "SELF",
     "full_type_requirements": true
