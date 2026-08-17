@@ -403,5 +403,14 @@
     "theme": { "accent": "#876dad", "glow": "#ededed", "surface": "#15171b", "bgDeep": "#0a0e15", "bgMid": "#101620" },
     "background": "",
     "enabled": true
+  },
+  {
+    "id": "elite-four",
+    "name": "Elite Four",
+    "terrain": "Elite",
+    "types": ["HUMAN", "DRAGON", "FIGHTING"],
+    "theme": { "accent": "#fdbb8b", "glow": "#b87333", "surface": "#3c1417", "bgDeep": "#17100e", "bgMid": "#271a13" },
+    "background": "",
+    "enabled": false
   }
 ]

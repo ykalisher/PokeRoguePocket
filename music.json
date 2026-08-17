@@ -159,5 +159,12 @@
     "category": "legendary",
     "file": "assets/music/hgss-ho-oh.mp3",
     "enabled": true
+  },
+  {
+    "id": "bw-relic-castle",
+    "title": "BW - Relic Castle",
+    "category": "trainer",
+    "file": "assets/music/bw-relic-castle.mp3",
+    "enabled": true
   }
 ]
