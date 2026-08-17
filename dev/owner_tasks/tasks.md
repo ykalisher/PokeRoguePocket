@@ -59,8 +59,8 @@
 - [x] #049 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-frost conversion
 - [x] #050 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-fan conversion
 - [x] #051 added:2026-07-22 done:2026-07-31 needs:- :: Create event for rotom-mow conversion
-- [ ] #052 added:2026-07-22 needs:- :: Create events for future pokemon
-- [ ] #053 added:2026-07-22 needs:- :: Create event for future archaludon
+- [x] #052 added:2026-07-22 done:2026-08-17 needs:- :: Create events for future pokemon
+- [x] #053 added:2026-07-22 done:2026-08-17 needs:- :: Create event for future archaludon
 - [x] #054 added:2026-07-31 done:2026-08-01 needs:- :: Events to give artificial items or attacks
-- [ ] #055 added:2026-07-31 needs:- :: More attacks for each type with stat-changing effects
-- [ ] #056 added:2026-08-03 needs:- :: Too many human type trainers
+- [x] #055 added:2026-07-31 done:2026-08-17 needs:- :: More attacks for each type with stat-changing effects
+- [x] #056 added:2026-08-03 done:2026-08-17 needs:- :: Too many human type trainers

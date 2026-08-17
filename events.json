@@ -1855,5 +1855,69 @@
       { "id": "req-1", "cardKind": "pokemon", "name": "Mawile" }
     ],
     "actionTitle": "Mega Evolve!"
+  },
+  {
+    "type": "gift",
+    "title": "A Portal Opens",
+    "id": "portal-iron-bundle",
+    "body": "The air tears open in front of you. A portal hums, and an Iron Bundle steps out of it before the rift snaps shut.",
+    "buttonText": "Welcome it",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Iron Bundle" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Energize" }
+    ],
+    "enabled": true,
+    "kicker": "Iron Bundle",
+    "actionTitle": "Iron Bundle Joins your Team!",
+    "rewardText": "Iron Bundle joined your team, and you gained an Energize!",
+    "types": ["WATER", "ICE", "ARTIFICIAL"]
+  },
+  {
+    "type": "gift",
+    "title": "A Portal Opens",
+    "id": "portal-iron-hands",
+    "body": "The air tears open in front of you. A portal hums, and an Iron Hands steps out of it before the rift snaps shut.",
+    "buttonText": "Welcome it",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Iron Hands" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Energize" }
+    ],
+    "enabled": true,
+    "kicker": "Iron Hands",
+    "actionTitle": "Iron Hands Joins your Team!",
+    "rewardText": "Iron Hands joined your team, and you gained an Energize!",
+    "types": ["ELECTRIC", "FIGHTING", "ARTIFICIAL"]
+  },
+  {
+    "type": "gift",
+    "title": "A Portal Opens",
+    "id": "portal-iron-thorns",
+    "body": "The air tears open in front of you. A portal hums, and an Iron Thorns steps out of it before the rift snaps shut.",
+    "buttonText": "Welcome it",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Iron Thorns" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Energize" }
+    ],
+    "enabled": true,
+    "kicker": "Iron Thorns",
+    "actionTitle": "Iron Thorns Joins your Team!",
+    "rewardText": "Iron Thorns joined your team, and you gained an Energize!",
+    "types": ["ROCK", "ELECTRIC", "ARTIFICIAL"]
+  },
+  {
+    "type": "gift",
+    "title": "A Portal Opens",
+    "id": "portal-iron-valiant",
+    "body": "The air tears open in front of you. A portal hums, and an Iron Valiant steps out of it before the rift snaps shut.",
+    "buttonText": "Welcome it",
+    "effects": [
+      { "type": "gain-card", "amount": 1, "cardKind": "pokemon", "count": 1, "name": "Iron Valiant" },
+      { "type": "gain-card", "amount": 1, "cardKind": "attack", "count": 1, "name": "Energize" }
+    ],
+    "enabled": true,
+    "kicker": "Iron Valiant",
+    "actionTitle": "Iron Valiant Joins your Team!",
+    "rewardText": "Iron Valiant joined your team, and you gained an Energize!",
+    "types": ["FAIRY", "FIGHTING", "ARTIFICIAL"]
   }
 ]
