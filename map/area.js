@@ -318,7 +318,7 @@
                     ${renderMuteButton()}
                     ${renderMoney()}
                     ${renderDeckButton('actions', 'Action deck', state.collections.actions.length)}
-                    ${renderDeckButton('pokemon', 'Pokemon cards', state.collections.pokemon.length)}
+                    ${renderPokemonDeckButton()}
                     ${renderBenchButton()}
                 </div>
             </header>
@@ -356,6 +356,22 @@
             <button class="area-deck-button" type="button" data-card-window="${collectionKey}" aria-label="Open ${label}" title="${label}">
                 <img src="${CARD_BACKS[collectionKey]}" alt="">
                 <span class="area-deck-count">${count}</span>
+            </button>
+        `;
+    }
+
+    /**
+     * The Pokemon deck opens the bench window, not a read-only card list:
+     * looking at your team and swapping a benched Pokemon into it are the same
+     * screen, reached from either HUD button.
+     */
+    function renderPokemonDeckButton() {
+        const label = 'Pokemon cards';
+
+        return `
+            <button class="area-deck-button" type="button" data-bench-window aria-label="Open ${label}" title="${label}">
+                <img src="${CARD_BACKS.pokemon}" alt="">
+                <span class="area-deck-count">${state.collections.pokemon.length}</span>
             </button>
         `;
     }
@@ -516,26 +532,21 @@
     }
 
     function renderCardWindow() {
+        // Only the action deck uses this window on the map — the Pokemon deck
+        // button opens the bench window instead.
         const cards = getCardWindowCards();
-        const title = state.cardWindow === 'pokemon' ? 'Pokemon Cards' : 'Action Deck';
-        const countText = state.cardWindow === 'actions'
-            ? `${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`
-            : `${cards.length} active, ${getBenchPokemon().length} benched`;
-        const content = state.cardWindow === 'actions'
-            ? renderActionCardSections(cards)
-            : renderPokemonCardSections(cards);
 
         return `
             <div class="area-overlay" data-card-window-overlay>
                 <section class="area-card-window" role="dialog" aria-modal="true" aria-labelledby="area-card-window-title">
                     <header class="area-card-window-header">
                         <div>
-                            <h2 class="area-card-window-title" id="area-card-window-title">${title}</h2>
-                            <span class="area-card-window-count">${countText}</span>
+                            <h2 class="area-card-window-title" id="area-card-window-title">Action Deck</h2>
+                            <span class="area-card-window-count">${cards.length} ${cards.length === 1 ? 'card' : 'cards'}</span>
                         </div>
                         <button class="area-card-window-close" type="button" data-close-card-window aria-label="Close card window">x</button>
                     </header>
-                    <div class="area-card-window-body">${content}</div>
+                    <div class="area-card-window-body">${renderActionCardSections(cards)}</div>
                 </section>
             </div>
         `;
@@ -676,20 +687,6 @@
             renderCardSection('Attacks', attacks, { highlight: true }),
             benched.length > 0 ? renderCardSection('Benched', benched) : '',
             renderCardSection('Items', items)
-        ].join('');
-    }
-
-    /**
-     * The Pokemon window mirrors the action window: the deck you battle with
-     * first, then whatever is waiting on the bench. Both sections always show
-     * so the bench is never hidden behind the bench button.
-     */
-    function renderPokemonCardSections(cards) {
-        const benched = getBenchPokemon().slice().sort(compareCardsByName);
-
-        return [
-            renderCardSection('Active Pokemon', cards),
-            renderCardSection('Bench Pokemon', benched)
         ].join('');
     }
 
