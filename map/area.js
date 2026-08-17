@@ -987,7 +987,7 @@
             return existingEncounter;
         }
 
-        const attackOptions = locations.chooseAttackCardOptions(arena.GameData, getLocationTypes());
+        const attackOptions = locations.chooseAttackCardOptions(arena.GameData, getLocationTypes(), state.run);
         const encounter = {
             completed: false,
             createdAt: new Date().toISOString(),
@@ -1276,7 +1276,7 @@
         });
 
         if (nextOptions.length === 0) {
-            nextOptions = locations.chooseAttackCardOptions(arena.GameData, getLocationTypes()).map(attack => attack.name);
+            nextOptions = locations.chooseAttackCardOptions(arena.GameData, getLocationTypes(), state.run).map(attack => attack.name);
         }
 
         const changed = nextOptions.length !== originalOptions.length ||

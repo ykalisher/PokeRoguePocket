@@ -750,13 +750,22 @@
      * to every offerable attack so an attack node is never empty.
      */
     function getAttackCardPool(gameData, locationTypes) {
-        const attacks = gameData && Array.isArray(gameData.attacks) ? gameData.attacks : [];
-        const offerable = uniqueByName(attacks).filter(isOfferableAttack);
-        const types = Array.isArray(locationTypes) ? locationTypes : [];
-
-        const matched = offerable.filter(record => getRecordTypes(record).some(type => types.includes(type)));
+        const offerable = getOfferableAttacks(gameData);
+        const matched = filterAttacksByLocationTypes(offerable, locationTypes);
 
         return matched.length > 0 ? matched : offerable;
+    }
+
+    function getOfferableAttacks(gameData) {
+        const attacks = gameData && Array.isArray(gameData.attacks) ? gameData.attacks : [];
+
+        return uniqueByName(attacks).filter(isOfferableAttack);
+    }
+
+    function filterAttacksByLocationTypes(attacks, locationTypes) {
+        const types = Array.isArray(locationTypes) ? locationTypes : [];
+
+        return attacks.filter(record => getRecordTypes(record).some(type => types.includes(type)));
     }
 
     function isOfferableAttack(record) {
@@ -767,13 +776,50 @@
         return !types.includes('LEGENDARY') && !types.includes('ARTIFICIAL');
     }
 
+    /**
+     * On-type attacks that demand two types at once (`full_type_requirements`
+     * with both slots filled) and that some pokemon on the run's team — active
+     * or bench — actually satisfies, i.e. it has BOTH required types (the same
+     * rule as pokemonCanUseAttack in arena/arena_model.js). Location fallback
+     * is deliberately absent: an off-type pick would not be the "on-type,
+     * usable right now" reward this list exists to guarantee.
+     */
+    function getLearnableDualTypeAttacks(gameData, locationTypes, run) {
+        const teamTypes = getRunPokemonRecords(run).map(getRecordTypes);
+
+        if (teamTypes.length === 0) return [];
+
+        const onType = filterAttacksByLocationTypes(getOfferableAttacks(gameData), locationTypes);
+
+        return onType.filter(record => {
+            if (!record.full_type_requirements) return false;
+
+            const required = getRecordTypes(record);
+
+            return required.length >= 2 &&
+                teamTypes.some(pokemonTypes => required.every(type => pokemonTypes.includes(type)));
+        });
+    }
+
     // 1-3 distinct attacks, matching the wild-capture encounter's offer size.
-    function chooseAttackCardOptions(gameData, locationTypes) {
+    // The first slot is reserved for a dual-requirement attack the player's
+    // team can already use (see getLearnableDualTypeAttacks); when no such
+    // attack exists the whole offer is drawn from the plain location pool.
+    // The rest of the offer stays untargeted on purpose.
+    function chooseAttackCardOptions(gameData, locationTypes, run) {
         const pool = getAttackCardPool(gameData, locationTypes);
 
         if (pool.length === 0) return [];
 
-        return shuffle(pool.slice()).slice(0, randomInt(1, Math.min(3, pool.length)));
+        const count = randomInt(1, Math.min(3, pool.length));
+        const dualTypePicks = getLearnableDualTypeAttacks(gameData, locationTypes, run);
+        const guaranteed = dualTypePicks.length > 0 ? randomPick(dualTypePicks) : null;
+
+        if (!guaranteed) return shuffle(pool.slice()).slice(0, count);
+
+        const rest = shuffle(pool.filter(record => record.name !== guaranteed.name));
+
+        return shuffle([guaranteed, ...rest.slice(0, count - 1)]);
     }
 
     // --- Baby/mega pokemon (phase 42) -------------------------------------
@@ -1126,6 +1172,7 @@
         findPokemonByNameOrId,
         getAttackCardPool,
         getBabyPokemonPool,
+        getLearnableDualTypeAttacks,
         getLocationById,
         getLocations,
         getMegaTargetKeys,

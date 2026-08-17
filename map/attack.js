@@ -325,7 +325,7 @@
         });
 
         if (nextOptions.length === 0) {
-            nextOptions = locations.chooseAttackCardOptions(arena.GameData, getLocationTypes()).map(record => record.name);
+            nextOptions = locations.chooseAttackCardOptions(arena.GameData, getLocationTypes(), state.run).map(record => record.name);
         }
 
         const changed = nextOptions.length !== originalOptions.length ||
