@@ -1404,28 +1404,25 @@
     /**
      * Queues legal attacks for each opponent Pokemon that can attack with a
      * card in hand, up to its attack allowance for this turn. The attacks will
-     * resolve later with the player's queued moves.
+     * resolve later with the player's queued moves. Targets that a queued
+     * attack is already guaranteed to status are claimed as the queue is built,
+     * so two rivals never spend their turn stacking statuses on one Pokemon.
      */
     function chooseOpponentAttacks() {
         const opponent = state.players.opponent;
         const attackers = model.getBoardCards('opponent');
+        const claimedStatusTargets = new Set();
         let chosenCount = 0;
 
         attackers.forEach(userCard => {
             while (model.canQueueAnotherAttack('opponent', userCard.id)) {
-                const attackCard = opponent.hand.find(card => (
-                    model.isAttackCard(card) &&
-                    !model.isArtificialAttackCard(card) &&
-                    model.pokemonCanUseAttack(userCard, card) &&
-                    model.getTargetOptionsForAction(card, 'opponent', userCard.id).length > 0
-                ));
+                const plan = chooseOpponentAttackPlan(userCard, claimedStatusTargets);
 
-                if (!attackCard) return;
+                if (!plan) return;
 
-                const selection = chooseOpponentTarget(attackCard, userCard);
+                const { card: attackCard, selection } = plan;
 
-                if (!selection) return;
-
+                claimStatusTargets(attackCard, selection, claimedStatusTargets);
                 model.removeCardFromHand(opponent, attackCard.id);
                 attackCard.faceUp = true;
                 state.plannedActions.opponent.push({
@@ -1785,27 +1782,121 @@
      * Chooses attack targets for opponent queued attacks, preferring player
      * group targets, then an intelligently scored player single target, then
      * the first legal fallback. Single-target scoring: pure status attacks
-     * (no base power) aim at the highest-Attack non-statused Pokemon, except
-     * Paralysis which aims at the highest Speed; damaging attacks prefer a
-     * guaranteed kill (highest Attack among lethal targets), else the target
-     * closest to dying relative to this hit.
+     * (no base power) aim at the highest-Attack Pokemon with an open status
+     * slot, except Paralysis which aims at the highest Speed; damaging attacks
+     * prefer a guaranteed kill (highest Attack among lethal targets), else the
+     * target closest to dying relative to this hit. claimedStatusTargets holds
+     * the Pokemon an attack queued earlier this turn will already status.
      */
-    function chooseOpponentTarget(attackCard, userCard) {
+    function chooseOpponentTarget(attackCard, userCard, claimedStatusTargets = new Set()) {
         const options = model.getTargetOptionsForAction(attackCard, 'opponent', userCard.id);
-        const preferredGroup = options.find(option => option.kind === 'group' && option.owner === 'player');
-        const preferredSingle = chooseOpponentAttackSingleTarget(attackCard, userCard, options);
-        const fallback = options[0];
+        const preferredGroup = options.find(option => (
+            option.kind === 'group' &&
+            option.owner === 'player' &&
+            !isWastedStatusPlay(attackCard, option, claimedStatusTargets)
+        ));
+        const preferredSingle = chooseOpponentAttackSingleTarget(attackCard, userCard, options, claimedStatusTargets);
+        const fallback = chooseOpponentFallbackTarget(attackCard, options, claimedStatusTargets);
 
         return preferredGroup || preferredSingle || fallback || null;
     }
 
     /**
+     * Last-resort target for attacks the scoring rules do not cover, such as
+     * SELF or ALLY moves. A pure status move takes the first option that still
+     * has an open status slot so Protect lands on a clean Pokemon rather than
+     * one that is already statused.
+     */
+    function chooseOpponentFallbackTarget(attackCard, options, claimedStatusTargets) {
+        if (isPureStatusAction(attackCard)) {
+            const openOption = options.find(option => !isWastedStatusPlay(attackCard, option, claimedStatusTargets));
+
+            if (openOption) return openOption;
+        }
+
+        return options[0] || null;
+    }
+
+    /**
+     * Chooses which card an opponent Pokemon attacks with. Cards are tried in
+     * hand order and the first one with a worthwhile target wins; a pure status
+     * move whose targets are all spoken for is skipped so the rival plays
+     * something else (or nothing) instead of a move that resolves into nothing.
+     */
+    function chooseOpponentAttackPlan(userCard, claimedStatusTargets) {
+        const usableCards = state.players.opponent.hand.filter(card => (
+            model.isAttackCard(card) &&
+            !model.isArtificialAttackCard(card) &&
+            model.pokemonCanUseAttack(userCard, card) &&
+            model.getTargetOptionsForAction(card, 'opponent', userCard.id).length > 0
+        ));
+
+        for (const attackCard of usableCards) {
+            const selection = chooseOpponentTarget(attackCard, userCard, claimedStatusTargets);
+
+            if (!selection || isWastedStatusPlay(attackCard, selection, claimedStatusTargets)) continue;
+
+            return { card: attackCard, selection };
+        }
+
+        return null;
+    }
+
+    /**
+     * True for an action whose only outcome is a persistent status: no damage
+     * and no stat changes. Iron Defense still buffs Defense on a statused
+     * Pokemon, so it does not count.
+     */
+    function isPureStatusAction(actionCard) {
+        return getBattleStatuses(actionCard).length > 0 &&
+            !isDamagingAttack(actionCard) &&
+            model.getActionStatChanges(actionCard).length === 0;
+    }
+
+    /**
+     * True when a pure status action would hit only Pokemon whose status slot
+     * is already filled or already claimed this turn. A Pokemon holds one
+     * persistent status at a time (model.applyStatus blocks the rest), so such
+     * a play does nothing at all.
+     */
+    function isWastedStatusPlay(actionCard, selection, claimedStatusTargets) {
+        if (!isPureStatusAction(actionCard)) return false;
+
+        const targets = model.getCardsForTargetSelection(selection);
+
+        return targets.length > 0 && targets.every(target => (
+            hasClaimedStatusSlot(target.owner, target.card, claimedStatusTargets)
+        ));
+    }
+
+    /**
+     * Records every Pokemon a queued attack will certainly status. Damaging
+     * attacks only roll for their status, so they claim nothing.
+     */
+    function claimStatusTargets(attackCard, selection, claimedStatusTargets) {
+        if (isDamagingAttack(attackCard) || getBattleStatuses(attackCard).length === 0) return;
+
+        model.getCardsForTargetSelection(selection).forEach(target => {
+            claimedStatusTargets.add(getStatusClaimKey(target.owner, target.card.id));
+        });
+    }
+
+    function hasClaimedStatusSlot(ownerId, pokemonCard, claimedStatusTargets) {
+        return model.getPokemonStatuses(pokemonCard).length > 0 ||
+            claimedStatusTargets.has(getStatusClaimKey(ownerId, pokemonCard.id));
+    }
+
+    function getStatusClaimKey(ownerId, cardId) {
+        return `${ownerId}:${cardId}`;
+    }
+
+    /**
      * Scores the legal single player targets of a queued opponent attack. See
      * chooseOpponentTarget for the rules; PROTECT-ed Pokemon are skipped by
-     * the status rule (never statusless) and treated as un-KO-able/worst by
-     * the damage rule.
+     * the status rule (their status slot is filled) and treated as
+     * un-KO-able/worst by the damage rule.
      */
-    function chooseOpponentAttackSingleTarget(attackCard, userCard, options) {
+    function chooseOpponentAttackSingleTarget(attackCard, userCard, options, claimedStatusTargets = new Set()) {
         const candidates = options
             .filter(option => option.kind === 'single' && option.owner === 'player')
             .map(option => ({ card: model.getBoardCardById(option.owner, option.cardId), option }))
@@ -1817,7 +1908,9 @@
         const inflictedStatuses = getBattleStatuses(attackCard);
 
         if (inflictedStatuses.length > 0 && basePower === 0) {
-            const statuslessCandidates = candidates.filter(candidate => model.getPokemonStatuses(candidate.card).length === 0);
+            const statuslessCandidates = candidates.filter(candidate => (
+                !hasClaimedStatusSlot(candidate.option.owner, candidate.card, claimedStatusTargets)
+            ));
 
             if (statuslessCandidates.length > 0) {
                 const scoreFn = inflictedStatuses.includes('PARALYSIS')
@@ -3699,7 +3792,9 @@
         resolvePendingPokemonReplacements,
         reviveFossilPokemonFromKnockout,
         // Exposed for tests: KO-aware/status-aware opponent attack targeting
-        // (phase 40).
+        // (phase 40) and the turn-level status-claim rules that stop the rival
+        // from stacking statuses on one Pokemon.
+        chooseOpponentAttacks,
         chooseOpponentTarget,
         computeAttackDamage,
         // Exposed for tests: attack resolution ordering.

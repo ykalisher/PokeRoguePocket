@@ -492,3 +492,212 @@ test('chooseOpponentTarget returns null when no legal single target resolves', (
 
     assert.equal(selection, null);
 });
+
+// --- Rival status-move discipline -------------------------------------------
+// Statuses are exclusive (Model.applyStatus blocks a second one), so the rival
+// must not aim a pure status move at a Pokemon whose status slot is already
+// filled, nor at one an attack queued earlier the same turn will fill.
+
+function makeStatusAttackCard(owner, attackOverrides) {
+    return {
+        attack: Object.assign({
+            basePower: 0,
+            full_type_requirements: false,
+            name: 'Test Status Attack',
+            statChanges: [],
+            status: [],
+            target: 'ALL_OPPONENTS',
+            types: ['NORMAL']
+        }, attackOverrides),
+        faceUp: false,
+        id: `TEST-ATK-${Math.random().toString(36).slice(2)}`,
+        kind: 'attack',
+        owner
+    };
+}
+
+function startOpponentPlanningState() {
+    const state = arena.state;
+
+    state.players = {
+        opponent: Model.createPlayer('opponent', 'Rival'),
+        player: Model.createPlayer('player', 'You')
+    };
+    state.plannedActions = { opponent: [], player: [] };
+    state.extraAttacks = { opponent: {}, player: {} };
+    state.turnNumber = 1;
+
+    return state;
+}
+
+function plannedAttackNames() {
+    return arena.state.plannedActions.opponent.map(action => action.card.attack.name);
+}
+
+test('the rival skips Protect on a Pokemon that already carries a status', () => {
+    const state = startOpponentPlanningState();
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+
+    Model.applyStatus(attacker, 'BURN');
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = makePokemonCard('player', ['NORMAL']);
+    state.players.opponent.hand = [
+        makeStatusAttackCard('opponent', { name: 'Protect', status: ['PROTECT'], target: 'SELF' })
+    ];
+
+    Controller.chooseOpponentAttacks();
+
+    assert.deepEqual(plannedAttackNames(), []);
+    assert.equal(state.players.opponent.hand.length, 1);
+});
+
+test('the rival still uses Protect on a Pokemon with an open status slot', () => {
+    const state = startOpponentPlanningState();
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = makePokemonCard('player', ['NORMAL']);
+    state.players.opponent.hand = [
+        makeStatusAttackCard('opponent', { name: 'Protect', status: ['PROTECT'], target: 'SELF' })
+    ];
+
+    Controller.chooseOpponentAttacks();
+
+    assert.deepEqual(plannedAttackNames(), ['Protect']);
+    assert.equal(state.plannedActions.opponent[0].selection.cardId, attacker.id);
+});
+
+test('a statused Pokemon still plays a Protect move that also changes stats', () => {
+    const state = startOpponentPlanningState();
+    const attacker = makePokemonCard('opponent', ['STEEL']);
+
+    Model.applyStatus(attacker, 'BURN');
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = makePokemonCard('player', ['NORMAL']);
+    state.players.opponent.hand = [
+        makeStatusAttackCard('opponent', {
+            name: 'Iron Defense',
+            statChanges: ['DEFENSE_UP'],
+            status: ['PROTECT'],
+            target: 'SELF',
+            types: ['STEEL']
+        })
+    ];
+
+    Controller.chooseOpponentAttacks();
+
+    assert.deepEqual(plannedAttackNames(), ['Iron Defense']);
+});
+
+test('an ally-targeted status move picks the ally with an open status slot', () => {
+    const state = startOpponentPlanningState();
+    const attacker = makePokemonCard('opponent', ['NORMAL']);
+    const statusedAlly = makePokemonCard('opponent', ['NORMAL']);
+    const cleanAlly = makePokemonCard('opponent', ['NORMAL']);
+
+    Model.applyStatus(statusedAlly, 'BURN');
+    state.players.opponent.board[0] = attacker;
+    state.players.opponent.board[1] = statusedAlly;
+    state.players.opponent.board[2] = cleanAlly;
+    state.players.player.board[0] = makePokemonCard('player', ['NORMAL']);
+
+    const attackCard = makeStatusAttackCard('opponent', {
+        name: 'Ally Guard',
+        status: ['PROTECT'],
+        target: 'ALLY'
+    });
+    const selection = Controller.chooseOpponentTarget(attackCard, attacker);
+
+    assert.equal(selection.cardId, cleanAlly.id);
+});
+
+test('a second rival does not aim a guaranteed status at Pokemon the first already statuses', () => {
+    const state = startOpponentPlanningState();
+    const first = makePokemonCard('opponent', ['GHOST']);
+    const second = makePokemonCard('opponent', ['GHOST']);
+
+    state.players.opponent.board[0] = first;
+    state.players.opponent.board[1] = second;
+    state.players.player.board[0] = makePokemonCard('player', ['NORMAL']);
+    state.players.player.board[1] = makePokemonCard('player', ['NORMAL']);
+    state.players.opponent.hand = [
+        makeStatusAttackCard('opponent', { name: 'Jumpscare', status: ['FLINCH'], types: ['GHOST'] }),
+        makeStatusAttackCard('opponent', { name: 'Curse', status: ['FATIGUE'], types: ['GHOST'] }),
+        makeStatusAttackCard('opponent', {
+            basePower: 40,
+            name: 'Shadow Hit',
+            target: 'OPPONENT',
+            types: ['GHOST']
+        })
+    ];
+
+    Controller.chooseOpponentAttacks();
+
+    assert.deepEqual(plannedAttackNames(), ['Jumpscare', 'Shadow Hit']);
+    assert.deepEqual(state.players.opponent.hand.map(card => card.attack.name), ['Curse']);
+});
+
+test('a single-target status move avoids the Pokemon an earlier queued status already claims', () => {
+    const state = startOpponentPlanningState();
+    const first = makePokemonCard('opponent', ['NORMAL']);
+    const second = makePokemonCard('opponent', ['NORMAL']);
+    const strongest = makePokemonCard('player', ['NORMAL']);
+    const weaker = makePokemonCard('player', ['NORMAL']);
+
+    strongest.pokemon.baseAttack = 200;
+    weaker.pokemon.baseAttack = 100;
+
+    state.players.opponent.board[0] = first;
+    state.players.opponent.board[1] = second;
+    state.players.player.board[0] = strongest;
+    state.players.player.board[1] = weaker;
+    state.players.opponent.hand = [
+        makeStatusAttackCard('opponent', { name: 'Hypnosis', status: ['SLEEP'], target: 'OPPONENT' }),
+        makeStatusAttackCard('opponent', { name: 'Toxic', status: ['POISON'], target: 'OPPONENT' })
+    ];
+
+    Controller.chooseOpponentAttacks();
+
+    assert.deepEqual(plannedAttackNames(), ['Hypnosis', 'Toxic']);
+    assert.equal(state.plannedActions.opponent[0].selection.cardId, strongest.id);
+    assert.equal(state.plannedActions.opponent[1].selection.cardId, weaker.id);
+});
+
+test('a group status move is skipped once every player Pokemon is statused', () => {
+    const state = startOpponentPlanningState();
+    const attacker = makePokemonCard('opponent', ['GHOST']);
+    const statused = makePokemonCard('player', ['NORMAL']);
+
+    Model.applyStatus(statused, 'SLEEP');
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = statused;
+    state.players.opponent.hand = [
+        makeStatusAttackCard('opponent', { name: 'Curse', status: ['FATIGUE'], types: ['GHOST'] })
+    ];
+
+    Controller.chooseOpponentAttacks();
+
+    assert.deepEqual(plannedAttackNames(), []);
+});
+
+test('a damaging status attack still queues against an already-statused target', () => {
+    const state = startOpponentPlanningState();
+    const attacker = makePokemonCard('opponent', ['FIRE']);
+    const statused = makePokemonCard('player', ['NORMAL']);
+
+    Model.applyStatus(statused, 'SLEEP');
+    state.players.opponent.board[0] = attacker;
+    state.players.player.board[0] = statused;
+    state.players.opponent.hand = [
+        makeStatusAttackCard('opponent', {
+            basePower: 65,
+            name: 'Cursed Flame',
+            status: ['BURN'],
+            types: ['FIRE']
+        })
+    ];
+
+    Controller.chooseOpponentAttacks();
+
+    assert.deepEqual(plannedAttackNames(), ['Cursed Flame']);
+});
