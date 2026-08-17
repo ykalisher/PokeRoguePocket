@@ -31,7 +31,6 @@
     ],
     "items": [
       "Salac Berry",
-      "Withdraw Wand",
       "Liechi Berry"
     ]
   },
@@ -74,10 +73,8 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Withdraw Wand",
       "Liechi Berry",
-      "Psychic Gem",
-      "Withdraw Wand"
+      "Psychic Gem"
     ]
   },
   {
@@ -118,10 +115,8 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
       "Psychic Gem",
-      "Babiri Berry",
-      "Withdraw Wand"
+      "Babiri Berry"
     ]
   },
   {
@@ -162,9 +157,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -205,9 +198,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -248,10 +239,8 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
       "Salac Berry",
-      "Babiri Berry",
-      "Withdraw Wand"
+      "Babiri Berry"
     ]
   },
   {
@@ -292,8 +281,6 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Liechi Berry"
     ]
   },
@@ -335,10 +322,8 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
       "Liechi Berry",
-      "Babiri Berry",
-      "Withdraw Wand"
+      "Babiri Berry"
     ]
   },
   {
@@ -379,9 +364,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -411,7 +394,6 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Withdraw Wand",
       "Liechi Berry"
     ]
   },
@@ -441,7 +423,6 @@
     ],
     "items": [
       "Lum Berry",
-      "Withdraw Wand",
       "Sitrus Berry"
     ]
   },
@@ -503,8 +484,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Withdraw Wand"
+      "Lum Berry"
     ]
   },
   {
@@ -534,8 +514,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Withdraw Wand"
+      "Lum Berry"
     ]
   },
   {
@@ -565,8 +544,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Withdraw Wand"
+      "Lum Berry"
     ]
   },
   {
@@ -788,7 +766,6 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
       "Liechi Berry"
     ]
   },
@@ -979,8 +956,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Withdraw Wand"
+      "Lum Berry"
     ]
   },
   {
@@ -1015,8 +991,7 @@
     ],
     "items": [
       "Flame Orb",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -1051,8 +1026,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Salac Berry",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -1087,8 +1061,7 @@
     ],
     "items": [
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -1123,8 +1096,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Withdraw Wand"
+      "Lum Berry"
     ]
   },
   {
@@ -1159,7 +1131,6 @@
     ],
     "items": [
       "Lum Berry",
-      "Withdraw Wand",
       "Liechi Berry"
     ]
   },
@@ -1195,8 +1166,7 @@
     ],
     "items": [
       "Lum Berry",
-      "Dark Gem",
-      "Withdraw Wand"
+      "Dark Gem"
     ]
   },
   {
@@ -1231,8 +1201,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -1266,7 +1235,6 @@
       "Waterfall"
     ],
     "items": [
-      "Withdraw Wand",
       "Sitrus Berry",
       "Fire Gem"
     ]
@@ -1303,8 +1271,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Withdraw Wand"
+      "Lum Berry"
     ]
   },
   {
@@ -1340,7 +1307,6 @@
     "items": [
       "Lum Berry",
       "Salac Berry",
-      "Withdraw Wand",
       "Psychic Gem"
     ]
   },
@@ -1374,9 +1340,7 @@
       "Ice Beam",
       "Ancient Energy"
     ],
-    "items": [
-      "Withdraw Wand"
-    ]
+    "items": []
   },
   {
     "name": "Channeler Verna",
@@ -1410,8 +1374,7 @@
     ],
     "items": [
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -1446,8 +1409,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Liechi Berry",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -1482,8 +1444,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Lum Berry",
-      "Withdraw Wand"
+      "Lum Berry"
     ]
   },
   {
@@ -1518,7 +1479,6 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Withdraw Wand",
       "Babiri Berry"
     ]
   },
@@ -1554,7 +1514,6 @@
     ],
     "items": [
       "Liechi Berry",
-      "Withdraw Wand",
       "Salac Berry"
     ]
   },
@@ -1590,8 +1549,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Salac Berry",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -1627,7 +1585,6 @@
     "items": [
       "Lum Berry",
       "Salac Berry",
-      "Withdraw Wand",
       "Psychic Gem"
     ]
   },
@@ -1663,7 +1620,6 @@
     ],
     "items": [
       "Salac Berry",
-      "Withdraw Wand",
       "Babiri Berry"
     ]
   },
@@ -1699,7 +1655,6 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Withdraw Wand",
       "Dark Gem"
     ]
   },
@@ -1809,9 +1764,7 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -1852,9 +1805,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -1900,8 +1851,6 @@
     "items": [
       "Lum Berry",
       "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Psychic Gem",
       "Salac Berry"
     ]
@@ -1950,8 +1899,6 @@
       "Sitrus Berry",
       "Salac Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Dark Gem"
     ]
   },
@@ -1993,8 +1940,6 @@
     "items": [
       "Sitrus Berry",
       "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Electric Gem"
     ]
   },
@@ -2037,9 +1982,7 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -2080,9 +2023,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -2123,9 +2064,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -2167,9 +2106,7 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -2216,8 +2153,6 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Effect Amplifier"
     ]
   },
@@ -2259,8 +2194,6 @@
     "items": [
       "Sitrus Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Fire Gem"
     ]
   },
@@ -2302,9 +2235,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -2350,8 +2281,6 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Psychic Gem",
       "Effect Amplifier"
     ]
@@ -2400,9 +2329,7 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -2442,9 +2369,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -2485,8 +2410,6 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Liechi Berry"
     ]
   },
@@ -2528,9 +2451,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -2570,9 +2491,7 @@
     ],
     "items": [
       "Sitrus Berry",
-      "Flame Orb",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Flame Orb"
     ]
   },
   {
@@ -2613,9 +2532,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -2656,8 +2573,6 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Fire Gem"
     ]
   },
@@ -2699,9 +2614,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -2742,9 +2655,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -2785,8 +2696,6 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Fire Gem"
     ]
   },
@@ -2828,8 +2737,6 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Babiri Berry"
     ]
   },
@@ -2871,9 +2778,7 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Salac Berry"
     ]
   },
   {
@@ -2961,9 +2866,7 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -3009,8 +2912,6 @@
     "items": [
       "Sitrus Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Grass Gem",
       "Poison Gem"
     ]
@@ -3059,8 +2960,6 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Effect Amplifier"
     ]
   },
@@ -3108,9 +3007,7 @@
       "Sitrus Berry",
       "Flame Orb",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -3157,8 +3054,6 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Flame Orb"
     ]
   },
@@ -3205,8 +3100,6 @@
     "items": [
       "Lum Berry",
       "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Dark Gem",
       "Liechi Berry"
     ]
@@ -3255,9 +3148,7 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -3304,8 +3195,6 @@
       "Sitrus Berry",
       "Lum Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Grass Gem"
     ]
   },
@@ -3353,9 +3242,7 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Grass Gem",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Grass Gem"
     ]
   },
   {
@@ -3402,9 +3289,7 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -3450,8 +3335,6 @@
     "items": [
       "Salac Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Babiri Berry",
       "Salac Berry"
     ]
@@ -3500,8 +3383,6 @@
       "Sitrus Berry",
       "Lum Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Effect Amplifier"
     ]
   },
@@ -3596,8 +3477,6 @@
     "items": [
       "Sitrus Berry",
       "Lum Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Liechi Berry",
       "Babiri Berry"
     ]
@@ -3646,8 +3525,6 @@
       "Sitrus Berry",
       "Lum Berry",
       "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Sitrus Berry"
     ]
   },
@@ -3695,9 +3572,7 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Liechi Berry",
-      "Withdraw Wand",
-      "Withdraw Wand"
+      "Liechi Berry"
     ]
   },
   {
@@ -3744,8 +3619,6 @@
       "Sitrus Berry",
       "Lum Berry",
       "Salac Berry",
-      "Withdraw Wand",
-      "Withdraw Wand",
       "Dark Gem"
     ]
   },
