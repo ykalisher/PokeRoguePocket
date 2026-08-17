@@ -327,5 +327,64 @@
     ],
     "enabled": true,
     "requiresAchievement": "halfway-point"
+  },
+  {
+    "id": "electric",
+    "name": "Electric",
+    "type": "ELECTRIC",
+    "pokemon": ["Ampharos", "Luxray"],
+    "attacks": [
+      { "name": "Discharge", "count": 1 },
+      { "name": "Thunder Bolt", "count": 2 },
+      { "name": "Sucker Punch", "count": 1 },
+      { "name": "Helping Hand", "count": 1 },
+      { "name": "Fairy Light", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "halfway-point"
+  },
+  {
+    "id": "fairy",
+    "name": "Fairy",
+    "type": "FAIRY",
+    "pokemon": ["Milotic", "Gardevoir"],
+    "attacks": [
+      { "name": "Mist", "count": 1 },
+      { "name": "Surf", "count": 1 },
+      { "name": "Moon Blast", "count": 1 },
+      { "name": "Mind Break", "count": 1 },
+      { "name": "Expanding Force", "count": 1 },
+      { "name": "Helping Hand", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "halfway-point"
+  },
+  {
+    "id": "poison",
+    "name": "Poison",
+    "type": "POISON",
+    "pokemon": ["Muk", "Roserade"],
+    "attacks": [
+      { "name": "Energy Ball", "count": 1 },
+      { "name": "Ooze", "count": 1 },
+      { "name": "Sludge Bomb", "count": 1 },
+      { "name": "Crunch", "count": 1 },
+      { "name": "Sleep Powder", "count": 1 },
+      { "name": "Angered Roar", "count": 1 }
+    ],
+    "items": [
+      { "name": "Sitrus Berry", "count": 1 },
+      { "name": "Withdraw Wand", "count": 1 }
+    ],
+    "enabled": true,
+    "requiresAchievement": "halfway-point"
   }
 ]
