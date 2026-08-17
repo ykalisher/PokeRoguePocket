@@ -763,10 +763,11 @@
         // a missing, invalid or still-locked choice falls back to the first
         // unlocked deck.
         const starterId = normalizeStarterId(requestedStarterId);
+        const level = 1;
         const location = chooseLevelLocation({
+            level,
             requiredType: getStarterType(starterId)
         });
-        const level = 1;
 
         applyRunState(runStore.createRunState({
             area: locations.createAreaGraph(level, { includeEvents: hasAvailableEvents() }),
@@ -920,6 +921,7 @@
         // A v2 save written before a location was assigned (mid-development).
         // Assign one now the same way a fresh run would, so it stays playable.
         const location = chooseLevelLocation({
+            level: getRunLevel(),
             requiredType: getStarterType(state.run.starterId)
         });
 

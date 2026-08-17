@@ -13,6 +13,11 @@
 
     const TOTAL_LEVELS = 4;
 
+    // The final level is always the Elite Four. That location is reserved: it
+    // never enters the random pool the earlier levels draw from, and level
+    // TOTAL_LEVELS always plays there (see getFinalLevelLocation).
+    const FINAL_LEVEL_LOCATION_ID = 'elite-four';
+
     const LEVEL_CONFIG = Object.freeze({
         1: {
             nodeCount: 11,
@@ -115,8 +120,22 @@
         return gameData && Array.isArray(gameData.locations) ? gameData.locations : [];
     }
 
+    // The pool the levels before the last draw from: enabled records only, with
+    // the final level's reserved location held back.
     function getLocations(gameData) {
-        return getAllLocations(gameData).filter(location => location && location.enabled !== false);
+        return getAllLocations(gameData).filter(location => (
+            location && location.enabled !== false && location.id !== FINAL_LEVEL_LOCATION_ID
+        ));
+    }
+
+    /**
+     * The location reserved for level TOTAL_LEVELS. Looked up by id across every
+     * record — the `enabled` flag does not gate it, since the final level always
+     * plays here. Null when the data carries no such record, in which case
+     * chooseNextLocation falls back to normal selection.
+     */
+    function getFinalLevelLocation(gameData) {
+        return getLocationById(gameData, FINAL_LEVEL_LOCATION_ID);
     }
 
     /**
@@ -188,13 +207,20 @@
     }
 
     /**
-     * Picks the next location for a level. Applies a type filter (required type
-     * for level 1, or shared type with the previous level otherwise), prefers
-     * unvisited locations, and walks a relaxation ladder so the result is never
-     * null when any location data exists.
+     * Picks the next location for a level. The final level short-circuits to its
+     * reserved location. Otherwise applies a type filter (required type for
+     * level 1, or shared type with the previous level), prefers unvisited
+     * locations, and walks a relaxation ladder so the result is never null when
+     * any location data exists.
      */
     function chooseNextLocation(gameData, options) {
         const opts = options || {};
+
+        if (opts.level === TOTAL_LEVELS) {
+            const finalLocation = getFinalLevelLocation(gameData);
+            if (finalLocation) return finalLocation;
+        }
+
         const requiredType = opts.requiredType || null;
         const previousTypes = Array.isArray(opts.previousTypes) ? opts.previousTypes : [];
         const visited = new Set(Array.isArray(opts.visitedIds) ? opts.visitedIds : []);
@@ -643,7 +669,8 @@
 
     /**
      * Advances a run to its next level in place: bumps the level, picks a new
-     * location sharing a type with the current one, regenerates a fresh area
+     * location sharing a type with the current one (the final level always gets
+     * its reserved location instead), regenerates a fresh area
      * graph, and wipes every per-area encounter map. Collections, cash,
      * nextCardId, and starterId are left untouched. Caller guards level bounds.
      * The level's music track is cleared so the new level picks a new song.
@@ -656,6 +683,7 @@
         run.musicTrackId = null;
 
         const nextLocation = chooseNextLocation(gameData, {
+            level: run.level,
             previousTypes: run.location ? run.location.types : [],
             visitedIds: run.visitedLocationIds,
             previousId: run.location ? run.location.id : null
@@ -1153,6 +1181,7 @@
     }
 
     global.PokeLocations = {
+        FINAL_LEVEL_LOCATION_ID,
         LEVEL_CONFIG,
         MART_TRADE_COUNT,
         // Alias kept so callers that never load game data (Node tests, the
@@ -1172,6 +1201,7 @@
         findPokemonByNameOrId,
         getAttackCardPool,
         getBabyPokemonPool,
+        getFinalLevelLocation,
         getLearnableDualTypeAttacks,
         getLocationById,
         getLocations,

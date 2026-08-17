@@ -164,6 +164,80 @@ test('chooseNextLocation never returns null with any data present', () => {
     assert.ok(P.chooseNextLocation({ locations: [makeLoc('a', ['WATER'])] }, { requiredType: 'DRAGON' }));
 });
 
+test('chooseNextLocation always returns the reserved location on the final level', () => {
+    const finalId = P.FINAL_LEVEL_LOCATION_ID;
+    const gameData = {
+        locations: [
+            makeLoc('a', ['WATER']),
+            makeLoc('b', ['WATER']),
+            makeLoc(finalId, ['HUMAN'])
+        ]
+    };
+    for (let i = 0; i < 40; i++) {
+        const result = P.chooseNextLocation(gameData, {
+            level: P.TOTAL_LEVELS,
+            requiredType: 'WATER',
+            previousTypes: ['WATER'],
+            visitedIds: [finalId],
+            previousId: finalId
+        });
+        assert.equal(result.id, finalId);
+    }
+});
+
+test('the final level uses its reserved location even when that record is disabled', () => {
+    const finalId = P.FINAL_LEVEL_LOCATION_ID;
+    const gameData = { locations: [makeLoc('a', ['WATER']), makeLoc(finalId, ['HUMAN'], false)] };
+
+    assert.equal(P.chooseNextLocation(gameData, { level: P.TOTAL_LEVELS }).id, finalId);
+});
+
+test('chooseNextLocation falls back to normal selection when the reserved location is missing', () => {
+    const gameData = { locations: [makeLoc('a', ['WATER'])] };
+
+    assert.equal(P.chooseNextLocation(gameData, { level: P.TOTAL_LEVELS }).id, 'a');
+});
+
+test('the reserved final location never appears on earlier levels', () => {
+    const finalId = P.FINAL_LEVEL_LOCATION_ID;
+    const gameData = { locations: [makeLoc('a', ['HUMAN']), makeLoc(finalId, ['HUMAN'])] };
+
+    assert.ok(!P.getLocations(gameData).some(location => location.id === finalId));
+    for (let level = 1; level < P.TOTAL_LEVELS; level++) {
+        for (let i = 0; i < 20; i++) {
+            const result = P.chooseNextLocation(gameData, { level, previousTypes: ['HUMAN'] });
+            assert.equal(result.id, 'a', `level ${level} picked the reserved location`);
+        }
+    }
+});
+
+test('the reserved final location exists in the live data', async () => {
+    await loadRealGameData();
+
+    const reserved = P.getFinalLevelLocation(arena.GameData);
+    assert.ok(reserved, `locations.json has no ${P.FINAL_LEVEL_LOCATION_ID} record`);
+    assert.ok(Array.isArray(reserved.types) && reserved.types.length > 0);
+});
+
+test('advanceRunToNextLevel lands on the reserved location for the final level', () => {
+    const finalId = P.FINAL_LEVEL_LOCATION_ID;
+    const gameData = {
+        locations: [makeLoc('a', ['WATER', 'ICE']), makeLoc(finalId, ['HUMAN'])]
+    };
+    const run = {
+        level: P.TOTAL_LEVELS - 1,
+        location: { id: 'a', name: 'A', terrain: 'A', types: ['WATER', 'ICE'], theme: {}, background: null },
+        visitedLocationIds: ['a'],
+        area: { completed: true, graph: makeGraph(), bossNodeId: 'boss-11' }
+    };
+
+    P.advanceRunToNextLevel(run, gameData, { includeEvents: false });
+
+    assert.equal(run.level, P.TOTAL_LEVELS);
+    assert.equal(run.location.id, finalId);
+    assert.deepEqual(run.visitedLocationIds, ['a', finalId]);
+});
+
 test('chooseTrainer with a weight-100 config returns only that rank', () => {
     const gameData = {
         trainers: [
