@@ -185,10 +185,12 @@
     function renderCardWindow() {
         const cards = getCardWindowCards();
         const title = state.cardWindow === 'pokemon' ? 'Pokemon Cards' : 'Action Deck';
-        const countText = `${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`;
+        const countText = state.cardWindow === 'actions'
+            ? `${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`
+            : `${cards.length} active, ${getBenchedPokemonCards().length} benched`;
         const content = state.cardWindow === 'actions'
             ? renderActionCardSections(cards)
-            : renderCardGrid(cards);
+            : renderPokemonCardSections(cards);
 
         return `
             <div class="area-overlay" data-card-window-overlay>
@@ -215,6 +217,19 @@
             renderCardSection('Attacks', attacks, { highlight: true }),
             benched.length > 0 ? renderCardSection('Benched', benched) : '',
             renderCardSection('Items', items)
+        ].join('');
+    }
+
+    /**
+     * The Pokemon window mirrors the action window: the deck you battle with
+     * first, then whatever is waiting on the bench.
+     */
+    function renderPokemonCardSections(cards) {
+        const benched = getBenchedPokemonCards().slice().sort(compareCardsByName);
+
+        return [
+            renderCardSection('Active Pokemon', cards),
+            renderCardSection('Bench Pokemon', benched)
         ].join('');
     }
 
@@ -249,6 +264,11 @@
         const bench = state.run.collections.bench;
         const cards = bench && Array.isArray(bench.actions) ? bench.actions : [];
         return cards.filter(arena.Model.isAttackCard);
+    }
+
+    function getBenchedPokemonCards() {
+        const bench = state.run.collections.bench;
+        return bench && Array.isArray(bench.pokemon) ? bench.pokemon : [];
     }
 
     function renderAttackOption(attack, index) {

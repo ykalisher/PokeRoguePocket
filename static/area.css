@@ -693,11 +693,20 @@
     width: min(1120px, calc(100vw - 28px));
 }
 
+/*
+ * Stacked rows rather than side-by-side columns: the party reads as one row of
+ * cards, then a divider, then the bench rows underneath.
+ */
 .area-bench-layout {
     min-width: 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
+}
+
+.area-bench-layout > .area-bench-section + .area-bench-section {
+    padding-top: 18px;
+    border-top: 1px solid rgba(251, 246, 232, 0.18);
 }
 
 .area-bench-section,
@@ -908,10 +917,8 @@
 }
 
 @media (max-width: 720px) {
-    .area-bench-layout,
     .area-bench-footer {
         align-items: stretch;
-        grid-template-columns: 1fr;
         flex-direction: column;
     }
 }
