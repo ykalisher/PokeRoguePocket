@@ -737,7 +737,7 @@ body {
  * becomes the band, and your panel takes the off-white half — as a pale edge
  * and a whisper of light, because the cards below it need the dark ground.
  *
- * The wide layout (>=1100px) moves the control box into the right column, so
+ * The wide layout (>=1100px) moves the control box into the left column, so
  * the band lands as the panel edge it shares with the rival panel instead;
  * both readings come from the same rules.
  */
@@ -771,7 +771,7 @@ body {
     background-color: var(--pb-ink);
 }
 
-/* Wide layout: the control box is a right-hand panel rather than a divider, so
+/* Wide layout: the control box is a left-hand panel rather than a divider, so
    it goes back to a plain ink panel with the shell as its outline. */
 @media (min-width: 1100px) {
     .pokeball-run .arena-status {
@@ -1005,7 +1005,8 @@ body {
     grid-row: 2;
 }
 
-/* Discard and knockout piles stack together on the right side of the board row. */
+/* Discard and knockout piles stack together on the right side of the board row.
+   The wide layout re-columns them just left of the active slots instead. */
 .pile--discard,
 .pile--knockout {
     grid-column: 3;
@@ -3215,12 +3216,12 @@ button.playing-card:focus-visible {
         --panel-gap: clamp(8px, 1vw, 14px);
     }
 
-    /* Wide arena grid: opponent/player board plus right-side controls. */
+    /* Wide arena grid: left-side controls plus the opponent/player board. */
     .game-board {
         position: relative;
         height: 100dvh;
         min-height: 0;
-        grid-template-columns: minmax(0, 1fr) clamp(300px, 31vw, 380px);
+        grid-template-columns: clamp(300px, 31vw, 380px) minmax(0, 1fr);
         grid-template-rows: repeat(2, minmax(0, 1fr));
         padding: 12px 16px 16px;
     }
@@ -3234,14 +3235,34 @@ button.playing-card:focus-visible {
 
     /* Wide placement for opponent panel. */
     .side-panel--opponent {
-        grid-column: 1;
+        grid-column: 2;
         grid-row: 1;
     }
 
     /* Wide placement for player panel mirroring the opponent column. */
     .side-panel--player {
-        grid-column: 1;
+        grid-column: 2;
         grid-row: 2;
+    }
+
+    /* Wide board row: both pile pairs sit to the left of the active slots —
+       decks in the outer column, discard/KO just inside them. The pile columns
+       are sized to the card itself rather than a fraction of the row, so the
+       four piles read as one group and the slots keep the leftover width. */
+    .battle-row {
+        grid-template-columns:
+            var(--pile-card-w)
+            var(--pile-card-w)
+            minmax(160px, 1fr);
+    }
+
+    .pile--discard,
+    .pile--knockout {
+        grid-column: 2;
+    }
+
+    .played-slots {
+        grid-column: 3;
     }
 
     .side-panel--opponent .side-status {
@@ -3254,11 +3275,13 @@ button.playing-card:focus-visible {
         flex-shrink: 0;
     }
 
-    /* Wide turn-control box fills the right column so it can never bleed
-       over the player panel at short heights and the log gets the leftover. */
+    /* Wide turn-control box fills the left column so it can never bleed
+       over the player panel at short heights and the log gets the leftover.
+       Rows run turn header, selected card, log, then the button bar last so the
+       commands sit along the bottom edge of the box. */
     .arena-status {
         position: static;
-        grid-column: 2;
+        grid-column: 1;
         grid-row: 1 / -1;
         align-self: stretch;
         justify-self: stretch;
@@ -3268,7 +3291,7 @@ button.playing-card:focus-visible {
         min-height: 0;
         display: grid;
         grid-template-columns: auto 1fr;
-        grid-template-rows: auto auto auto minmax(0, 1fr);
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
         gap: 8px 10px;
         align-items: center;
         padding: 12px;
@@ -3280,8 +3303,16 @@ button.playing-card:focus-visible {
         box-shadow: 0 18px 38px rgba(0, 0, 0, 0.34);
     }
 
+    /* Turn label and instruction share the top row of the control box. */
+    .turn-pill {
+        grid-row: 1;
+        grid-column: 1;
+    }
+
     /* Allows wide turn text to shrink inside the control box. */
     .turn-copy {
+        grid-row: 1;
+        grid-column: 2;
         min-width: 0;
     }
 
@@ -3293,6 +3324,7 @@ button.playing-card:focus-visible {
     /* Wide selected-card pill spans the control box. */
     .selected-pill {
         grid-column: 1 / -1;
+        grid-row: 2;
         width: 100%;
         min-width: 0;
         justify-content: center;
@@ -3300,9 +3332,11 @@ button.playing-card:focus-visible {
         text-overflow: ellipsis;
     }
 
-    /* Wide action buttons stretch evenly. */
+    /* Wide action buttons stretch evenly along the bottom of the control box. */
     .action-bar {
         grid-column: 1 / -1;
+        grid-row: 4;
+        align-self: end;
         justify-content: stretch;
     }
 
@@ -3315,9 +3349,11 @@ button.playing-card:focus-visible {
         font-size: clamp(0.9rem, 0.95vw, 1rem);
     }
 
-    /* Wide event log fills the control box width and all leftover height. */
+    /* Wide event log fills the control box width and all leftover height,
+       sitting between the turn header and the bottom button bar. */
     .event-log {
         grid-column: 1 / -1;
+        grid-row: 3;
         align-self: stretch;
         width: 100%;
         min-height: 0;
@@ -3387,14 +3423,21 @@ button.playing-card:focus-visible {
         height: clamp(20px, calc(var(--card-w) * 0.21), 28px);
     }
 
-    /* Wide toast sits bottom-right over the log tail, clear of every card. */
+    /* Wide toast sits top-left over the control box's header, clear of every
+       card and of the command bar now anchored to the box's bottom edge. */
     .arena-popup {
-        top: auto;
-        bottom: 18px;
-        left: auto;
-        right: 18px;
+        top: 18px;
+        bottom: auto;
+        left: 18px;
+        right: auto;
         transform: none;
         max-width: min(30vw, 420px);
+    }
+
+    /* Pile viewer opens over the control column instead of across the board. */
+    .pile-window {
+        left: clamp(10px, 2.4vw, 28px);
+        right: auto;
     }
 
     /* Wide action-card name sizing. */
