@@ -150,12 +150,12 @@
 
     function render() {
         const attackOptions = getAttackOptions();
-        const terrain = state.encounter.terrain || 'Current Terrain';
 
         state.elements.root.innerHTML = `
             <header class="attack-topbar">
                 <div class="attack-title-group">
-                    <span class="attack-kicker">${terrain}</span>
+                    <span class="attack-kicker">${getLocationName()}</span>
+                    ${renderLocationTypes()}
                     <h1>${getPhaseTitle()}</h1>
                 </div>
                 <div class="attack-hud" aria-label="Run cards">
@@ -358,6 +358,26 @@
 
     function getAttackCardPool() {
         return locations.getAttackCardPool(arena.GameData, getLocationTypes());
+    }
+
+    function getLocationName() {
+        const location = state.run && state.run.location;
+
+        return (location && location.name) || state.encounter.terrain || 'Unknown Region';
+    }
+
+    function renderLocationTypes() {
+        const types = getLocationTypes();
+
+        if (types.length === 0) return '';
+
+        return `
+            <span class="attack-type-chips">
+                ${types.map(type =>
+                    `<img class="type-icon" src="assets/types-svgs/${type}.svg" alt="${type}" title="${type}">`
+                ).join('')}
+            </span>
+        `;
     }
 
     function getLocationTypes() {

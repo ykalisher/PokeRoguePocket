@@ -74,6 +74,12 @@
     text-transform: uppercase;
 }
 
+.capture-type-chips {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .capture-title-group h1 {
     margin: 0;
     color: #fbf6e8;

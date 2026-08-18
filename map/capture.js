@@ -177,7 +177,6 @@
 
     function render() {
         const pokemonOptions = getPokemonOptions();
-        const terrain = state.encounter.terrain || 'Current Terrain';
         const selectedPokemon = state.selectedPokemonCard
             ? state.selectedPokemonCard.pokemon.name
             : null;
@@ -185,7 +184,8 @@
         state.elements.root.innerHTML = `
             <header class="capture-topbar">
                 <div class="capture-title-group">
-                    <span class="capture-kicker">${terrain}</span>
+                    <span class="capture-kicker">${getLocationName()}</span>
+                    ${renderLocationTypes()}
                     <h1>${getPhaseTitle(selectedPokemon)}</h1>
                 </div>
                 <div class="capture-hud" aria-label="Run cards">
@@ -407,6 +407,26 @@
 
     function getAvailablePokemonForCurrentTerrain() {
         return locations.getWildPokemonPool(arena.GameData, getLocationTypes());
+    }
+
+    function getLocationName() {
+        const location = state.run && state.run.location;
+
+        return (location && location.name) || state.encounter.terrain || 'Unknown Region';
+    }
+
+    function renderLocationTypes() {
+        const types = getLocationTypes();
+
+        if (types.length === 0) return '';
+
+        return `
+            <span class="capture-type-chips">
+                ${types.map(type =>
+                    `<img class="type-icon" src="assets/types-svgs/${type}.svg" alt="${type}" title="${type}">`
+                ).join('')}
+            </span>
+        `;
     }
 
     function getLocationTypes() {
