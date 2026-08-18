@@ -544,7 +544,7 @@
     "name": "Swarming Strike",
     "type1": "BUG",
     "type2": "NONE",
-    "basePower": 20,
+    "basePower": 22,
     "status": "MULTI_ATTACK",
     "statChanges": [],
     "target": "OPPONENT",
@@ -1592,6 +1592,19 @@
     "status": "POISON",
     "statChanges": [],
     "target": "OPPONENT",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Sweet Scent",
+    "type1": "BUG",
+    "type2": "FLYING",
+    "basePower": 0,
+    "status": "NONE",
+    "statChanges": [
+      "SPEED_DOWN",
+      "ATTACK_DOWN"
+    ],
+    "target": "ALL_OPPONENTS",
     "full_type_requirements": true
   }
 ]
