@@ -196,5 +196,32 @@
     "atLeast": 1,
     "hidden": false,
     "enabled": true
+  },
+  {
+    "id": "starter-electric",
+    "name": "Live Wire",
+    "description": "Win a run with the Electric starter deck.",
+    "stat": "runs.completed.starter.electric",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-fairy",
+    "name": "Happily Ever After",
+    "description": "Win a run with the Fairy starter deck.",
+    "stat": "runs.completed.starter.fairy",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
+  },
+  {
+    "id": "starter-poison",
+    "name": "Toxic Personality",
+    "description": "Win a run with the Poison starter deck.",
+    "stat": "runs.completed.starter.poison",
+    "atLeast": 1,
+    "hidden": false,
+    "enabled": true
   }
 ]
