@@ -82,6 +82,10 @@
             continueFromWin();
         } else if (action === 'start-over') {
             if (window.confirm('Start a new game? This will discard your current run.')) startOver();
+        } else if (action === 'new-run') {
+            // Run-end windows only: the run is already finished, so there is
+            // nothing left to warn about discarding.
+            startOver();
         } else if (action === 'main-menu') {
             window.location.href = 'index.html';
         } else if (action === 'area-map') {
@@ -265,7 +269,7 @@
                 <p>You cleared all ${getTotalLevels()} levels and won the run.</p>
                 ${renderWinRewardSummary()}
                 <div class="battle-flow-actions">
-                    <button class="arena-button battle-flow-primary" type="button" data-battle-flow-action="start-over">Start over</button>
+                    <button class="arena-button battle-flow-primary" type="button" data-battle-flow-action="new-run">New run</button>
                     <button class="arena-button" type="button" data-battle-flow-action="main-menu">Main menu</button>
                 </div>
             </section>
@@ -279,7 +283,7 @@
                 <h1 id="battle-result-title">You lose</h1>
                 <p>Your run is over.</p>
                 <div class="battle-flow-actions">
-                    <button class="arena-button battle-flow-primary" type="button" data-battle-flow-action="start-over">Start over</button>
+                    <button class="arena-button battle-flow-primary" type="button" data-battle-flow-action="new-run">New run</button>
                     <button class="arena-button" type="button" data-battle-flow-action="main-menu">Main menu</button>
                 </div>
             </section>
