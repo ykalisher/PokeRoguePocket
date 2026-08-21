@@ -117,7 +117,7 @@
     "attacks": [
       { "name": "Dragon Dance", "count": 1 },
       { "name": "Dragon Claw", "count": 2 },
-      { "name": "Dragon's Breath", "count": 1 },
+      { "name": "DragonBreath", "count": 1 },
       { "name": "Air Slash", "count": 1 },
       { "name": "Sucker Punch", "count": 1 }
     ],
