@@ -3030,8 +3030,6 @@
       "Flaming Fist of Fury",
       "Fire Punch",
       "Fire Punch",
-      "Fire Punch",
-      "Flaming Fist of Fury",
       "Flaming Fist of Fury",
       "Flaming Fist of Fury",
       "Flaming Fist of Fury",
@@ -3046,9 +3044,11 @@
       "Meditate",
       "Meditate",
       "Flame Thrower",
+      "Fire Spin",
       "Flaming Fist of Fury",
-      "Fire Punch",
-      "Fire Spin"
+      "Chomp",
+      "Snack Up",
+      "Burp"
     ],
     "items": [
       "Sitrus Berry",

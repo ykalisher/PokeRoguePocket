@@ -751,7 +751,7 @@
   {
     "name": "Darmanitan",
     "type1": "FIRE",
-    "type2": "HUMAN",
+    "type2": "GOURMET",
     "type3": "NONE",
     "id": "0555",
     "baseHealth": 70,
@@ -1558,10 +1558,10 @@
     "type2": "POISON",
     "type3": "NONE",
     "id": "0045",
-    "baseHealth": 85,
+    "baseHealth": 90,
     "baseAttack": 105,
     "baseDefense": 85,
-    "baseSpeed": 55
+    "baseSpeed": 60
   },
   {
     "name": "Victreebel",
@@ -1668,10 +1668,10 @@
     "type2": "POISON",
     "type3": "MONSTER",
     "id": "0034",
-    "baseHealth": 80,
+    "baseHealth": 90,
     "baseAttack": 105,
     "baseDefense": 75,
-    "baseSpeed": 90
+    "baseSpeed": 85
   },
   {
     "name": "Dugtrio",
