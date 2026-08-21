@@ -296,6 +296,52 @@ test('chooseTrainer respects excludeNames but drops them before failing', () => 
     assert.equal(picked.name, 'a');
 });
 
+test('chooseTrainer ignores the location types at the Elite Four', () => {
+    const gameData = {
+        trainers: [makeTrainer('onType', 'Elite', 'WATER'), makeTrainer('offType', 'Elite', 'FIRE')]
+    };
+    const options = { level: P.TOTAL_LEVELS, nodeType: 'battle', locationTypes: ['WATER'] };
+    const seen = new Set();
+
+    for (let i = 0; i < 200; i++) {
+        seen.add(P.chooseTrainer(gameData, Object.assign({
+            locationId: P.FINAL_LEVEL_LOCATION_ID
+        }, options)).name);
+    }
+    assert.deepEqual([...seen].sort(), ['offType', 'onType']);
+
+    // Control: anywhere else the type match still wins.
+    for (let i = 0; i < 60; i++) {
+        const picked = P.chooseTrainer(gameData, Object.assign({ locationId: 'somewhere-else' }, options));
+        assert.equal(picked.name, 'onType');
+    }
+});
+
+test('the Elite Four draws elites of types the location does not carry', async () => {
+    const gameData = await loadRealGameData();
+    const finalLocation = P.getFinalLevelLocation(gameData);
+
+    assert.ok(finalLocation, 'game data carries no final-level location');
+
+    const seen = new Set();
+
+    for (let i = 0; i < 300; i++) {
+        const picked = P.chooseTrainer(gameData, {
+            level: P.TOTAL_LEVELS,
+            nodeType: 'battle',
+            locationId: finalLocation.id,
+            locationTypes: finalLocation.types
+        });
+
+        assert.equal(picked.rank, 'Elite', `${picked.name} is not an Elite`);
+        seen.add(picked.typeSpecialization);
+    }
+
+    const offType = [...seen].filter(type => !finalLocation.types.includes(type));
+
+    assert.ok(offType.length > 0, 'every elite drawn specialized in one of the location\'s own types');
+});
+
 test('isAllowedTrainerRank gates ranks by node type and level', () => {
     assert.equal(P.isAllowedTrainerRank({ rank: 'Ace' }, 'battle', 2), true);
     assert.equal(P.isAllowedTrainerRank({ rank: 'Ace' }, 'battle', 3), true);

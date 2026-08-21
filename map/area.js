@@ -888,6 +888,12 @@
         return location && Array.isArray(location.types) ? location.types : [];
     }
 
+    function getLocationId() {
+        const location = getRunLocation();
+
+        return location && location.id ? location.id : null;
+    }
+
     // Returns the requested starter id for a new run (may be null/invalid — the
     // caller validates it), or null when this is not a new-run request.
     function consumeNewRunRequest() {
@@ -1407,14 +1413,17 @@
     }
 
     // Single draw point for battle trainers. excludeNames spans the whole run
-    // (earlier areas included) so no opposing trainer shows up twice; the pick
-    // is recorded so it stays excluded once a level advance wipes the
-    // encounter maps. chooseTrainer drops the exclusions if the pool is too
-    // small to honor them.
+    // (earlier areas included) so no opposing trainer shows up twice — that is
+    // what keeps the Elite Four's four elites distinct from each other and from
+    // the elite at the end of level 3; the pick is recorded so it stays
+    // excluded once a level advance wipes the encounter maps. chooseTrainer
+    // drops the exclusions if the pool is too small to honor them, and reads
+    // locationId to decide whether the location's types bias the draw.
     function chooseTrainerForNode(node) {
         const trainer = locations.chooseTrainer(arena.GameData, {
             level: getRunLevel(),
             nodeType: node ? node.type : 'battle',
+            locationId: getLocationId(),
             locationTypes: getLocationTypes(),
             excludeNames: runStore.getExcludedTrainerNames(state.run, node ? node.id : null)
         });

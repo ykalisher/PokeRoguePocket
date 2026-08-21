@@ -40,10 +40,11 @@ function drawEvent(gameData, run) {
 
 // Mirrors area.js chooseTrainerForNode: exclude everything already drawn in
 // the run, then record the draw.
-function drawTrainer(gameData, run, { level, nodeType, locationTypes, nodeId }) {
+function drawTrainer(gameData, run, { level, nodeType, locationId, locationTypes, nodeId }) {
     const trainer = P.chooseTrainer(gameData, {
         level,
         nodeType,
+        locationId: locationId || null,
         locationTypes: locationTypes || [],
         excludeNames: R.getExcludedTrainerNames(run, nodeId || null)
     });
@@ -220,6 +221,53 @@ test('a full run of real trainer draws never repeats a trainer', async () => {
 
     assert.equal(new Set(drawn).size, drawn.length, `repeated trainer in ${drawn.join(', ')}`);
     assert.deepEqual(run.usedTrainerNames.slice().sort(), drawn.slice().sort());
+});
+
+test('the four Elite Four elites are distinct, including the level 3 boss', async () => {
+    await loadRealGameData();
+    const gameData = arena.GameData;
+    const finalLocation = P.getFinalLevelLocation(gameData);
+
+    assert.ok(finalLocation, 'game data carries no final-level location');
+
+    // Every Elite drawn in a run: the level 3 boss, then level 4's battle nodes
+    // and its own boss. Repeated so a rare unlucky draw cannot pass by chance.
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+        const run = newRun();
+        const drawn = [];
+
+        drawn.push(drawTrainer(gameData, run, {
+            level: 3, nodeType: 'boss', locationTypes: ['FIRE'], nodeId: P.bossNodeIdForLevel(3)
+        }));
+
+        const gauntlet = P.LEVEL_CONFIG[4];
+        const battleSteps = Object.entries(gauntlet.forcedTypes)
+            .filter(([, type]) => type === 'battle')
+            .map(([step]) => step);
+
+        battleSteps.forEach(step => {
+            drawn.push(drawTrainer(gameData, run, {
+                level: 4,
+                nodeType: 'battle',
+                locationId: finalLocation.id,
+                locationTypes: finalLocation.types,
+                nodeId: `battle-${step}`
+            }));
+        });
+
+        drawn.push(drawTrainer(gameData, run, {
+            level: 4,
+            nodeType: 'boss',
+            locationId: finalLocation.id,
+            locationTypes: finalLocation.types,
+            nodeId: P.bossNodeIdForLevel(4)
+        }));
+
+        const names = drawn.map(trainer => trainer.name);
+
+        drawn.forEach(trainer => assert.equal(trainer.rank, 'Elite', `${trainer.name} is not an Elite`));
+        assert.equal(new Set(names).size, names.length, `repeated elite in ${names.join(', ')}`);
+    }
 });
 
 test('a full run of real event draws never repeats an event', async () => {

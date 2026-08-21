@@ -283,15 +283,28 @@
     }
 
     /**
+     * True when a location draws its trainers with no regard for its own types.
+     * Only the Elite Four does: its four elites are picked from the whole Elite
+     * pool at random, so the location's types never bias the draw.
+     */
+    function ignoresLocationTypes(locationId) {
+        return locationId === FINAL_LEVEL_LOCATION_ID;
+    }
+
+    /**
      * Picks a map/boss trainer. Rolls a rank from the level's rank mix, then
      * walks a ladder preferring the rolled rank and a location-type match, and
      * relaxing both before dropping the exclusion list. Special-rank trainers
-     * are excluded at every rung.
+     * are excluded at every rung. At a location that ignores its own types
+     * (the Elite Four) the type-match rungs are skipped entirely, leaving the
+     * rolled rank and the exclusion list as the only filters.
      */
     function chooseTrainer(gameData, options) {
         const opts = options || {};
         const { level, nodeType } = opts;
-        const locationTypes = Array.isArray(opts.locationTypes) ? opts.locationTypes : [];
+        const locationTypes = ignoresLocationTypes(opts.locationId) || !Array.isArray(opts.locationTypes)
+            ? []
+            : opts.locationTypes;
         const excludeSet = new Set(Array.isArray(opts.excludeNames) ? opts.excludeNames : []);
 
         const trainers = (gameData && Array.isArray(gameData.trainers) ? gameData.trainers : [])
@@ -1227,6 +1240,7 @@
         getStarterDecks,
         getUnlockedStarterDecks,
         getWildPokemonPool,
+        ignoresLocationTypes,
         isAllowedTrainerRank,
         isBabyPokemon,
         isEventOnlyPokemon,
