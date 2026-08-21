@@ -1082,8 +1082,8 @@
   {
     "name": "Pawmot",
     "type1": "ELECTRIC",
-    "type2": "HUMAN",
-    "type3": "FIGHTING",
+    "type2": "FIGHTING",
+    "type3": "NONE",
     "id": "0923",
     "baseHealth": 70,
     "baseAttack": 100,

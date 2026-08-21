@@ -191,9 +191,9 @@
       "Mega Punch",
       "Kick in the Face",
       "Karate Smash",
-      "Thunder Punch",
       "Moon Blast",
-      "Helping Hand"
+      "Helping Hand",
+      "Kick in the Face"
     ],
     "items": [
       "Sitrus Berry",
@@ -406,20 +406,20 @@
     "pokemon": [
       "Toxtricity",
       "Electivire",
-      "Pawmot"
+      "Nidoqueen"
     ],
     "attacks": [
       "Mega Punch",
       "Thunder Punch",
       "Thunder Punch",
       "Trick",
-      "Thunder Punch",
       "Power-up Punch",
       "Discharge",
       "Power-up Punch",
-      "Thunder Punch",
       "Discharge",
-      "Ooze"
+      "Ooze",
+      "Sludge Bomb",
+      "Sludge Bomb"
     ],
     "items": [
       "Lum Berry",

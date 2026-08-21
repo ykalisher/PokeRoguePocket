@@ -1159,7 +1159,7 @@
     "type1": "WATER",
     "type2": "MONSTER",
     "basePower": 60,
-    "status": "FLINCH",
+    "status": "NONE",
     "statChanges": [
       "DEFENSE_DOWN"
     ],
@@ -1604,6 +1604,16 @@
       "SPEED_DOWN",
       "ATTACK_DOWN"
     ],
+    "target": "ALL_OPPONENTS",
+    "full_type_requirements": true
+  },
+  {
+    "name": "Twister",
+    "type1": "DRAGON",
+    "type2": "FLYING",
+    "basePower": 60,
+    "status": "NONE",
+    "statChanges": [],
     "target": "ALL_OPPONENTS",
     "full_type_requirements": true
   }
